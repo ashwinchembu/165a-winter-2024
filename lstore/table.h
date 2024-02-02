@@ -28,5 +28,7 @@ class Table {
     int num_columns;
     std::map<int, std::pair<int, int>> page_directory;
     // Index index();
+    int last_page = -1;
+    
     void merge(){}
 };
