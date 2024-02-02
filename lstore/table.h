@@ -28,14 +28,18 @@ class Record {
 // param key: int             #Index of table key in columns
 class Table {
     public:
-    Table(std::string name, int key, int num_columns): name(name), key(key), num_columns(num_columns) {};
-    
+    Table(std::string name, int key, int num_columns): name(name), key(key), num_columns(num_columns) {
+        this->index = new Index();
+        index->setTable(this);
+    };
+    friend class Index;
+
     private:
     std::string name;
     int key;
     int num_columns;
     std::map<int, std::vector<int>> page_directory;
-    Index index();
+    Index* index;
     int last_page = -1;
     std::vector<PageRange> pages;
     int num_update = 0;

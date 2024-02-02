@@ -4,9 +4,11 @@
  *
  */
 
-#include "index.h"
+#include <string>
+#include <vector>
 #include "table.h"
 #include "RID.h"
+#include "index.h"
 
 /***
  *

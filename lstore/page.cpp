@@ -1,3 +1,7 @@
+#include <vector>
+#include <iostream>
+#include "page.h"
+
 PageRange::PageRange (int num_pages) {
     for (int i = 0; i < num_pages; i++) {
         pages.push_back(new Page());
@@ -41,7 +45,7 @@ bool has_capacity() {
  * @param int value Value to write into
  *
  */
-void write(int value) {
+void Page::write(int value) {
     num_records++;
     // Write value in data somehow.
     return;
