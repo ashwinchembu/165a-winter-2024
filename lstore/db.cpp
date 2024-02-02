@@ -26,7 +26,9 @@ void Database::drop_table(std::string name){
 
 //Returns table with the passed name
 Table Database::get_table(std::string name){
-  if(tables.find(name) == std::map::end){
+  std::map<std::string, Table>::iterator iter;
+  iter = tables.find(name);
+  if(iter == std::map::end){
     throw std::invalid_argument("No table with that name was located.");
   }
   return *iter;
