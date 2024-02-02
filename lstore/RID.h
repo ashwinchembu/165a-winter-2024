@@ -6,8 +6,8 @@
 class RID {
 public:
     std::vector<int> page_range;
-    std::vector<int> int page;
-    std::vector<int> int slot;
+    std::vector<int> page;
+    std::vector<int> slot;
     int id;
     RID (int pr, int p, int s, int i) : page_range(pr), page(p), slot(s), id(i) {};
 };

@@ -20,7 +20,7 @@ class Page:
     
 
     def has_capacity(self):
-        if (self.num_records * 28) < 4096:
+        if (self.num_records * 4) < 4096:
             return True
         else:
             return False

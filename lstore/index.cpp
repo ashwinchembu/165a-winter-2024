@@ -47,6 +47,7 @@ std::vector<RID> Index::locate_range(int begin, int end, std::string column) {
  *
  */
 void Index::create_index(int column_number) {
+    
     return;
 }
 
