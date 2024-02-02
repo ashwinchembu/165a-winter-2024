@@ -15,6 +15,22 @@ class Index:
             value = table.page_directory().get(key, [])[self.key]
             self.key_index[value] = key
         #pass
+            
+        
+        '''
+            std::vector<std::map<int, int>> indices(table.num_columns);
+            int key;
+            create_index(key);
+
+            // def create_index(self, column_number):
+            void create_index(column_number) {
+                for (const auto& key : table.page_directory()) {
+                    const auto& entry = table.page_directory().at(key);
+                    int value = entry[key];
+                    key_index[value] = key;
+                }
+            }
+        '''
 
     """
     # returns the location of all records with the given value on column "column"
