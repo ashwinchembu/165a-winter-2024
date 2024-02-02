@@ -7,7 +7,14 @@ class Index:
     def __init__(self, table):
         # One index for each table. All our empty initially.
         self.indices = [None] *  table.num_columns
-        pass
+        self.key = table.key
+
+        self.key_index = {}
+
+        for key in table.page_directory().keys():
+            value = table.page_directory().get(key, [])[self.key]
+            self.key_index[value] = key
+        #pass
 
     """
     # returns the location of all records with the given value on column "column"

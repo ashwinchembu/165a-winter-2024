@@ -10,5 +10,6 @@ class Page:
 
     def write(self, value):
         self.num_records += 1
+        self.data.append(value)
         pass
 
