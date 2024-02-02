@@ -1,5 +1,7 @@
 #ifndef PAGEH
 #define PAGEH
+#include <vector>
+#include <iostream>
 
 class PageRange {
 private:
@@ -24,7 +26,7 @@ public:
     virtual ~Page ();
     bool has_capacity();
     void write(int value);
-    friend ostream& operator<<(ostream& os, const Page& p);
+    friend std::ostream& operator<<(std::ostream& os, const Page& p);
 };
 
 #endif

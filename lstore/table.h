@@ -1,9 +1,17 @@
+#ifndef TABLEH
+#define TABLEH
 # include <vector>
 # include <map>
 #include <utility>
 #include <ctime>
 #include <string>
-// # include "index.h"
+#include "index.h"
+#include "page.h"
+
+int INDIRECTION_COLUMN = 0;
+int RID_COLUMN = 1;
+int TIMESTAMP_COLUMN = 2;
+int SCHEMA_ENCODING_COLUMN = 3;
 
 class Record {
     public:
@@ -26,9 +34,12 @@ class Table {
     std::string name;
     int key;
     int num_columns;
-    std::map<int, std::pair<int, int>> page_directory;
-    // Index index();
+    std::map<int, std::vector<int>> page_directory;
+    Index index();
     int last_page = -1;
+    std::vector<PageRange> pages;
     
     void merge(){}
 };
+
+#endif
