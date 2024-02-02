@@ -24,7 +24,9 @@ class Query:
     def delete(self, primary_key):
         pass
     
-    
+    '''
+    auto it = myMap.find(keyToFind);
+    '''
     """
     # Insert a record with specified columns
     # Return True upon succesful insertion

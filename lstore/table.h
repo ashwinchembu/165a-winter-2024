@@ -38,6 +38,8 @@ class Table {
     Index index();
     int last_page = -1;
     std::vector<PageRange> pages;
+    int num_update = 0;
+    int num_insert = 0;
     
     void merge(){}
 };

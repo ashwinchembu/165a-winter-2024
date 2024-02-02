@@ -28,7 +28,7 @@ bool PageRange::has_capacity () {
  *
  */
 bool has_capacity() {
-    if (num_records * 28 < PAGE_SIZE) {
+    if (num_records * 4 < PAGE_SIZE) {
         return True;
     }
     return False;
