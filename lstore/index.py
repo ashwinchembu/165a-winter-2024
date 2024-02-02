@@ -37,6 +37,8 @@ class Index:
     """
 
     def locate(self, column, value):
+        # Locate specific value on specific column using the mechanism in index array.
+        # e.g. traverse on tree held by self.indices[column] look for value
         pass
 
     """
@@ -44,6 +46,7 @@ class Index:
     """
 
     def locate_range(self, begin, end, column):
+        # Same thing but range
         pass
 
     """

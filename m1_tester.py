@@ -12,15 +12,13 @@ db = Database()
 #       Here the first column would be student id and primary key
 grades_table = db.create_table('Grades', 5, 0)
 
-print(grades_table.name)
-
 # create a query class for the grades table
 query = Query(grades_table)
 
 # dictionary for records to test the database: test directory
 records = {}
 
-number_of_records = 1000
+number_of_records = 10
 number_of_aggregates = 100
 seed(3562901)
 
@@ -32,12 +30,15 @@ for i in range(0, number_of_records):
         key = 92106429 + randint(0, number_of_records)
 
     records[key] = [key, randint(0, 20), randint(0, 20), randint(0, 20), randint(0, 20)]
+    print("records[key]",records[key])
     query.insert(*records[key])
     # print('inserted', records[key])
 print("Insert finished")
+print(records)
 
 # Check inserted records using select query
 for key in records:
+    print(key)
     # select function will return array of records 
     # here we are sure that there is only one record in t hat array
     record = query.select(key, 0, [1, 1, 1, 1, 1])[0]

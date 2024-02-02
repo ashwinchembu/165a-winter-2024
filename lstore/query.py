@@ -1,6 +1,7 @@
 from lstore.table import Table, Record
 from lstore.index import Index
-
+from lstore.page import Page, PageSet
+import sys
 
 class Query:
     """
@@ -30,8 +31,18 @@ class Query:
     # Returns False if insert fails for whatever reason
     """
     def insert(self, *columns):
-        schema_encoding = '0' * self.table.num_columns
-        pass
+        if self.table.last_page == -1 or self.table.page_directory[self.table.last_page].has_capacity() == False:
+            self.table.page_directory[self.table.last_page+1] = PageSet(self.table.num_columns)
+            self.table.last_page += 1
+        # print(self.table.page_directory)
+        # print(self.table.page_directory[0])
+        for i in range(len(columns)):
+            print("page: ", i)
+            (self.table.page_directory[self.table.last_page]).pages[i].write(columns[i])
+            #print(self.table.page_directory[self.table.last_page].pages[i])
+        
+            
+        
 
     
     """
@@ -44,7 +55,25 @@ class Query:
     # Assume that select will never be called on a key that doesn't exist
     """
     def select(self, search_key, search_key_index, projected_columns_index):
-        pass
+        ret = []
+        #each pageset
+        for pageset in self.table.page_directory:
+            #each page(col)
+            col = search_key_index
+            key_page = self.table.page_directory[pageset].pages[col]
+            for row in range(len(key_page.data)):
+                if search_key == key_page.data[row]:
+                    record_col = []
+                    for ret_col in range(len(projected_columns_index)):
+                        if projected_columns_index[ret_col] == 1:
+                            #to_append_record = Record((ret_col, found_row), key_page[found_row], )
+                            record_col.append(self.table.page_directory[pageset].pages[ret_col].data[row])
+                            #ret.append(self.table.page_directory[pageset].pages[ret_col].data[found_row])
+                            
+                    ret.append(Record((pageset, row), search_key, record_col))
+        return ret
+            
+            
 
     
     """

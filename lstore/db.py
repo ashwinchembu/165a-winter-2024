@@ -32,7 +32,6 @@ class Database():
         del self.tables[name]
     
 
-    
     """
     # Returns table with the passed name
     """
