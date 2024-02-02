@@ -15,23 +15,6 @@ class Record {
         std::vector<int> columns;
 };
 
-// class Table:
-
-
-//     def __init__(self, name, num_columns, key):
-//         self.name = name
-//         self.key = key
-//         self.num_columns = num_columns
-//         self.page_directory = {}
-//         self.index = Index(self)
-
-//         self.page
-//         pass
-
-//     def __merge(self):
-//         print("merge is happening")
-//         pass
-
 // param name: string         #Table name
 // param num_columns: int     #Number of Columns: all columns are integer
 // param key: int             #Index of table key in columns
