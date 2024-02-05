@@ -47,7 +47,28 @@ std::vector<RID> Index::locate_range(int begin, int end, std::string column) {
  *
  */
 void Index::create_index(int column_number) {
-    
+    for (int i = 0; i < this->table->num_update; i++) {
+        auto loc = this->table->page_directory.find(i);
+        if (loc != this->table->page_directory.end()) { // if RID ID exist ie. not deleted
+            RID rid = loc->second;                      
+            PageRange pagerange = this->table->pages[rid.page_range[column_number]];
+            Page page = pagerange.getPageRangePages()[rid.page[column_number]];
+            int value = page.getData()[rid.slot[column_number]];
+
+            std::map<int, std::vector<RID>> index = indices[column_number];
+            auto val_loc = index.find(value);                // find if value already exist in map
+            if (val_loc != index.end()) {
+                index[value].push_back(rid);
+            } else {
+                index[value] = {rid};
+            }
+            indices[column_number] = index;
+            // int PageRange = rid.page_range[column_number];
+            // int page = ;
+            // int slot = rid.slot[column_number];
+            // int value = this->table->pages[PageRange].pages[page]
+        }
+    }
     return;
 }
 

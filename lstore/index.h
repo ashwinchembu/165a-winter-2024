@@ -16,7 +16,7 @@ public:
 private:
     /* data */
     Table* table;
-    std::vector<std::map<int, std::vector<RID>>> indices;
+    std::map<int, std::map<int, std::vector<RID>>> indices;
     //each index is a map, each element in the map corresponds to a key and a vector of rids
 };
 

@@ -38,7 +38,7 @@ class Table {
     std::string name;
     int key;
     int num_columns;
-    std::map<int, std::vector<int>> page_directory;
+    std::map<int, RID> page_directory; //<RID.id, RID>
     Index* index;
     int last_page = -1;
     std::vector<PageRange> pages;

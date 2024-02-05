@@ -16,6 +16,7 @@ public:
     PageRange (int num_pages) {};
     virtual ~PageRange ();
     bool has_capacity ();
+    std::vector<Page> getPageRangePages() {return pages;}
 };
 
 class Page {
@@ -32,7 +33,7 @@ public:
     bool has_capacity();
     void write(int value);
     friend std::ostream& operator<<(std::ostream& os, const Page& p);
-
+    char* getData(){return data;}
 };
 
 #endif
