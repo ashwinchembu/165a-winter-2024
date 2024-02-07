@@ -107,6 +107,16 @@ void Index::drop_index(int column_number) {
   return;
 }
 
+/***
+ *
+ * @TODO Verify this documentation
+ *
+ * Insert a new record on the index
+ *
+ * @param RID rid Rid of the record you want to insert to the index
+ * @param vector<int> columns Vector array of datas to be inserted
+ *
+ */
 void Index::insert_index(RID rid, std::vector<int>columns) {
     for (int i = 0; i< indices.size(); i++) {
         if (indices[i].size() > 0) {    //if there is a index for that column
@@ -115,6 +125,17 @@ void Index::insert_index(RID rid, std::vector<int>columns) {
     }
 }
 
+/***
+ *
+ * @TODO Verify this documentation
+ *
+ * Update a existing record's value to new ones
+ *
+ * @param RID rid Rid of the record to be updated
+ * @param vector<int> columns Vector of new datas to be updated with.
+ * @param vector<int> old_columns Vector of old datas to be updated from.
+ *
+ */
 void Index::update_index(RID rid, std::vector<int>columns, std::vector<int>old_columns){
     for (int i = 0; i< indices.size(); i++) {
         if (indices[i].size() > 0) {	//if there is a index for that column
