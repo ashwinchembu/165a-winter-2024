@@ -2,23 +2,38 @@
 #include <iostream>
 #include <cstdlib>
 #include "page.h"
+#include "table.h"
 
-PageRange::PageRange () {
+PageRange::PageRange (Record r) {
     for (int i = 0; i < NUM_PAGES; i++) {
-        page_range.push_back(new Page());
+        page_range.push_back(std::make_pair(nullptr, new Page()));
+    }
+    num_column = r.columns.size();
+    std::vector<int*> record_pointers(num_column + 3);
+    record_pointers[0] = (*(page_range[0].second)).write(r.rid); // RID column
+    record_pointers[1] = (*(page_range[1].second)).write(0); // Timestamp
+    record_pointers[2] = (*(page_range[2].second)).write(0); // schema encoding
+    // @TODO error or take action when there are more than 13 columns.
+    for (int i = 0; i < num_column; i++) {
+        record_pointers[3 + i] = (*(page_range[3 + i].second)).write(r.columns[i]);
+    }
+    RID rid(record_pointers, r.rid);
+    num_column = num_column + 3;
+    for (int i = 0; i < num_column; i++) {
+        page_range[i].first = &rid;
     }
 }
 
 /***
  *
- * Return if any page in the page range has capacity left or not.
+ * Return if any base page in the page range is full or not.
  *
  * @return True if all pages has capacity left, False if not
  *
  */
-bool PageRange::has_capacity () {
-    for (std::vector<Page*>::iterator itr = page_range.begin(); itr != page_range.end(); itr++) {
-        if (!((**itr).has_capacity())) {
+bool PageRange::base_has_capacity () {
+    for (std::vector<std::pair<RID, Page*>>::iterator itr = page_range.begin(); itr != page_range.end(); itr++) {
+        if ((*(*((*itr).first).pointers[INDIRECTION_COLUMN])) > 0 && !(*((*itr).second).has_capacity())) {
             return false;
         }
     }
@@ -41,9 +56,7 @@ Page::~Page() {
  *
  */
 bool Page::has_capacity() {
-    return(num_rows * sizeof(int) < PAGE_SIZE);
-    // Can this be
-    // return(num_rows < SLOT_NUM);
+    return(num_rows < SLOT_NUM);
 }
 
 /***

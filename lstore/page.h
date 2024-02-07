@@ -4,6 +4,8 @@
 #include <vector>
 #include <iostream>
 #include <cstdlib>
+#include "RID.h"
+#include "table.h"
 
 class Page {
 private:
@@ -27,17 +29,18 @@ public:
 class PageRange {
 private:
     /* data */
-    std::vector<Page*> page_range;
+    std::vector<std::pair<RID*, Page*>> page_range;
     /// @TODO Move this to config file
     const int PAGE_SIZE = 4096;
     const int PAGE_RANGE_SIZE = 65536; // Do we need this?
-    const int NUM_PAGES = PAGE_RANGE_SIZE / PAGE_SIZE;
-
-
+    const int NUM_BASE_PAGES = PAGE_RANGE_SIZE / PAGE_SIZE;
+    int num_column = 0;
 public:
-    PageRange ();
+    PageRange (Record r);
     virtual ~PageRange ();
-    bool has_capacity ();
+    int insert();
+    int update();
+    bool base_has_capacity ();
 };
 
 #endif

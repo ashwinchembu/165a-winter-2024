@@ -12,11 +12,11 @@ public:
     const int INDIRECTION_COLUMN = 0;
     const int TIMESTAMP_COLUMN = 1;
     const int SCHEMA_ENCODING_COLUMN = 2;
-    RID ();
+    // RID ();
+    RID (std::vector<int*> ptr, int i) : pointers(ptr), id(i) {};
     virtual ~RID ();
     std::vector<int*> pointers;
     int id;
-    RID (std::vector<int*> ptr, int i) : pointers(ptr), id(i) {};
     bool check_schema (int column_num);
     int column_with_one ();
 };
