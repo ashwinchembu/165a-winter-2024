@@ -1,15 +1,16 @@
 #ifndef RIDH
 #define RIDH
+#include <vector>
 
 // RID will hold page range, page number, slot number for each column in the record
 
 class RID {
 public:
-    std::vector<int> page_range;
-    std::vector<int> page;
-    std::vector<int> slot;
+    RID ();
+    virtual ~RID ();
+    std::vector<int*> pointers;
     int id;
-    RID (int pr, int p, int s, int i) : page_range(pr), page(p), slot(s), id(i) {};
+    RID (std::vector<int*> ptr, int i) : pointers(ptr), id(i) {};
 };
 
 #endif

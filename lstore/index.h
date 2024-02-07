@@ -1,15 +1,20 @@
 #ifndef INDEXH
 #define INDEXH
-#include "table.h"
+#include <unordered_map>
+#include <vector>
 #include "RID.h"
 
 class Index {
+private:
+    /* data */
+    Table table;
+    std::unordered_map<int, std::unordered_multimap<int, std::vector<RID>>> indices;
+
 public:
     Index () {};
     virtual ~Index ();
-    // Return pointer to array of RIDs
-    std::vector<RID> locate(std::string column, int value);
-    std::vector<RID> locate_range(int begin, int end, std::string column);
+    std::vector<RID> locate(int column_number, int value);
+    std::vector<RID> locate_range(int begin, int end, int column_number);
     void create_index(int column_number);
     void drop_index(int column_number);
     void setTable(Table* t){this->table = t;}
