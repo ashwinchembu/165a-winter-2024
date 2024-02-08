@@ -16,18 +16,26 @@ Table::Table(std::string name, int key, int num_columns): name(name), key(key), 
  *
  * Insert a record into appropriate base page.
  *
+ * @param Record record A record to insert
+ * @return RID of the new record upon successful insertion.
+ *
  */
 RID Table::insert(Record record) {
-    if (pages.size == 0) {
-        // Make a base page with given record
-        // Gather pointers and make a RID
+    if (pages.size() == 0) {
+        pages.pushback(PageRange(record)); // Make a base page with given record
         // return the RID for index or something
-        return rid;
+        return *(pages.back().page_range[0].first);
+    } else { // If there are base page already, just insert it normally.
+        return pages.back().insert(record);
     }
 }
 
 
-int Table::update();
+RID Table::update(RID rid, int column, int new_value) {
+    // @TODO Find the appropriate page range with rid and put in page_num
+    int page_num = -1;
+    return pages[page_num].update(rid, column, new_value);
+}
 
 /***
  *

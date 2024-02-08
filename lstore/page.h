@@ -29,7 +29,6 @@ public:
 class PageRange {
 private:
     /* data */
-    std::vector<std::pair<RID*, Page*>> page_range;
     /// @TODO Move this to config file
     const int PAGE_SIZE = 4096;
     const int PAGE_RANGE_SIZE = 65536; // Do we need this?
@@ -38,8 +37,9 @@ private:
 public:
     PageRange (Record r);
     virtual ~PageRange ();
-    int insert();
-    int update();
+    std::vector<std::pair<RID*, Page*>> page_range;
+    RID insert(Record r);
+    RID update(RID rid, int column, int new_value);
     bool base_has_capacity ();
 };
 
