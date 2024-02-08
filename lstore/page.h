@@ -37,7 +37,7 @@ private:
 public:
     PageRange (Record r);
     virtual ~PageRange ();
-    std::vector<std::pair<RID*, Page*>> page_range;
+    std::vector<std::pair<RID, Page*>> page_range;
     RID insert(Record r);
     RID update(RID rid, int column, int new_value);
     bool base_has_capacity ();
