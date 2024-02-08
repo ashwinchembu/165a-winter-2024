@@ -8,7 +8,6 @@ PageRange::PageRange (Record r) {
     std::vector<Page*> buffer;
     for (int i = 0; i < NUM_PAGES; i++) {
         buffer.push_back(new Page());
-        //page_range.push_back(std::make_pair(nullptr, new Page()));
     }
     num_column = r.columns.size();
     std::vector<int*> record_pointers(num_column + 3);
@@ -22,7 +21,7 @@ PageRange::PageRange (Record r) {
     RID rid(record_pointers, r.rid);
     num_column = num_column + 3;
     for (int i = 0; i < num_column; i++) {
-        page_range.push_back = std::make_pair(rid, buffer[i]);
+        page_range.push_back(std::make_pair(rid, buffer[i]));
     }
 }
 
@@ -40,6 +39,18 @@ bool PageRange::base_has_capacity () {
         }
     }
     return true;
+}
+
+
+RID insert(Record r) {
+    // Add this record to base pages
+    // Go through pages iteratively, and save data one by one.
+    // Correct pointers, and make RID class, return it.
+}
+
+RID update(RID rid, int column, int new_value) {
+    // Look for page available
+    // By using the num_columns,
 }
 
 Page::Page() {

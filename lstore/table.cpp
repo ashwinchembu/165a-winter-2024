@@ -41,14 +41,13 @@ RID Table::insert(Record record) {
  *
  */
 RID Table::update(RID rid, int column, int new_value) {
-    // @TODO Find the appropriate page range with rid and put in page_num
     int i = 0;
-    for (; i < page_range.size(); i++) {
-        if (page_range[i].first.id > rid.id) {
-            i--;
+    for (; i < pages.size(); i++) {
+        if (pages[i].page_range[0].first.id > rid.id) {
             break;
         }
     }
+    i--;
     return pages[i].update(rid, column, new_value);
 }
 
