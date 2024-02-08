@@ -50,7 +50,13 @@ RID insert(Record r) {
 
 RID update(RID rid, int column, int new_value) {
     // Look for page available
-    // By using the num_columns,
+	// Write data into the end of tail record, with valid schema encoding
+	// Create RID for this record
+    // By using the num_columns as offset, find base record with rid
+	// Put Indirection column of the base page into a variable
+	// Modify the indirection column of new update to saved indirection of base page
+	// Modify the indirection column of base page
+	// return RID of new update
 }
 
 Page::Page() {
