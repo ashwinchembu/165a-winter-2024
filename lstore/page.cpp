@@ -12,12 +12,12 @@ PageRange::PageRange (Record r) {
     }
     num_column = r.columns.size();
     std::vector<int*> record_pointers(num_column + 3);
-    record_pointers[0] = (*(page_range[0])).write(r.rid); // Indirection column
-    record_pointers[1] = (*(page_range[1])).write(0); // Timestamp
-    record_pointers[2] = (*(page_range[2])).write(0); // schema encoding
+    record_pointers[0] = page_range[0].second->write(r.rid); // Indirection column
+    record_pointers[1] = page_range[1].second->write(0); // Timestamp
+    record_pointers[2] = page_range[2].second->write(0); // schema encoding
     // @TODO error or take action when there are more than 13 columns.
     for (int i = 0; i < num_column; i++) {
-        record_pointers[3 + i] = (*(page_range[3 + i])).write(r.columns[i]);
+        record_pointers[3 + i] = (page_range[3 + i]).second->write(r.columns[i]);
     }
     RID rid(record_pointers, r.rid);
     num_column = num_column + 3;
@@ -59,7 +59,7 @@ bool PageRange::base_has_capacity () {
 RID PageRange::insert(Record r) {
     // Add this record to base pages
     // Go through pages iteratively, and save data one by one.
-    if (!(page_range[base_last].second.has_capacity)) {
+    if (!(page_range[base_last].second->has_capacity())) {
         base_last++; // Assuming that they will call after check if there are space left or not.
     }
     std::vector<int*> record_pointers(num_column);
