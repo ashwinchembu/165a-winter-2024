@@ -42,29 +42,29 @@ std::vector<Record> Query::select_version(int search_key, int search_key_index, 
     for(int i = 0; i < rids.size(); i++){ //go through each matching RID that was returned from index
       RID rid = rids[i];
       for(int j = 0; j < relative_version; j++){ //go through indirection to get to correct version
-        rid = table.page_directory.find(*(rid.pointers[0])); //go one step further in indirection
+        rid = table->page_directory.find(*(rid.pointers[0]))->second; //go one step further in indirection
       }
-      std::vector<int> record_columns(num_columns);
-      for(int j = 0; j < table.num_columns; j++){ //transfer columns from desired version into record object
+      std::vector<int> record_columns(table->num_columns);
+      for(int j = 0; j < table->num_columns; j++){ //transfer columns from desired version into record object
         if(projected_columns_index[j]){
           record_columns.push_back(*(rid.pointers[j + 4]));
         }
       }
-      records.push_back(Record(rids[i], search_key, record_columns)); //add a record with RID of base page, value of primary key, and contents of desired version
+      records.push_back(Record(rids[i].id, search_key, record_columns)); //add a record with RID of base page, value of primary key, and contents of desired version
     }
     return records;
 }
 
 bool Query::update(int primary_key, const std::vector<int>& columns) {
-    RID base_rid = table->index.locate(table.key, primary_key)[0]; //locate base RID of record to be updated
-    RID last_update = table.page_directory.find(*(base_rid.pointers[0])); //locate the previous update
-    RID update_rid = table.update(base_rid, columns); // insert update into the table
+    RID base_rid = table->index->locate(table->key, primary_key)[0]; //locate base RID of record to be updated
+    RID last_update = table->page_directory.find(*(base_rid.pointers[0]))->second; //locate the previous update
+    RID update_rid = table->update(base_rid, columns); // insert update into the table
     std::vector<int> old_columns;
-    for(int i = 0; i < num_columns; i++){ // fill old_columns with the contents of previous update
+    for(int i = 0; i < table->num_columns; i++){ // fill old_columns with the contents of previous update
       old_columns.push_back(*(last_update.pointers[i + 4]));
     }
     if(update_rid.id != 0){
-        table->index.update_index(update_rid, columns, old_columns); //update the index
+        table->index->update_index(update_rid, columns, old_columns); //update the index
     }
     return (update_rid.id != 0); //return true if successfully updated
 }
