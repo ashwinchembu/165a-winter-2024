@@ -15,7 +15,7 @@ public:
     const int SCHEMA_ENCODING_COLUMN = 3;
     RID ();
     RID (std::vector<int*> ptr, int i) : pointers(ptr), id(i) {};
-    virtual ~RID ();
+    // virtual ~RID ();
     std::vector<int*> pointers;
     int id;
     bool check_schema (int column_num);

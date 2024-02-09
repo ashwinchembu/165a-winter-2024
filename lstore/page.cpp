@@ -117,9 +117,7 @@ RID PageRange::update(RID rid, int rid_new, const std::vector<int> columns) {
 
     int offset = page_range[page_of_rid * num_column].first.id - rid.id;
     int schema_encoding = 0;
-    bool newpage;
     if (tail_last == base_last || !(page_range[tail_last].second->has_capacity())) {
-        newpage = true;
         tail_last++; // Assuming that they will call after check if there are space left or not.
          for (int i = 0; i < num_column; i++) {
         // buffer.push_back(new Page());
@@ -187,15 +185,16 @@ int* Page::write(int value) {
         // Page is full, add the data to new page
         // Return error here
     }
+    int* insert = nullptr;
     for (int location = 0; location < NUM_SLOTS; location++) {
         if (availability[location] == 0) {
             //insert on location
             int offset = location * sizeof(int); // Bytes from top of the page
-            int* insert = data + offset;
+            insert = data + offset;
             *insert = value;
-            return insert;
         }
     }
+    return insert;
 }
 
 /***

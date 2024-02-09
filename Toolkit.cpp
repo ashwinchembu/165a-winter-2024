@@ -3,8 +3,12 @@
 #include <algorithm>
 #include <iterator>
 #include <sstream>
+#include <random>
 
 namespace Toolkit {
+
+    std::random_device rd;
+    std::mt19937 g(rd());
 
 std::vector<int> sample(std::vector<int> data, int sz){
 	int dataSize = data.size();
@@ -13,7 +17,8 @@ std::vector<int> sample(std::vector<int> data, int sz){
 		return {};
 	}
 
-	std::random_shuffle(data.begin(),data.end());
+	std::shuffle(data.begin(),data.end(),g);
+	// std::random_shuffle(data.begin(),data.end());
 
 	std::vector<int> toReturn(sz);
 
@@ -23,7 +28,8 @@ std::vector<int> sample(std::vector<int> data, int sz){
 
 		if(dataIndex == dataSize){
 			checkForUniqueness = false;
-			std::random_shuffle(data.begin(),data.end());
+			std::shuffle(data.begin(),data.end(),g);
+			// std::random_shuffle(data.begin(),data.end());
 			dataIndex = 0;
 		}
 
@@ -33,7 +39,8 @@ std::vector<int> sample(std::vector<int> data, int sz){
 
 				if(dataIndex == dataSize){
 					checkForUniqueness = false;
-					std::random_shuffle(data.begin(),data.end());
+					std::shuffle(data.begin(),data.end(),g);
+					// std::random_shuffle(data.begin(),data.end());
 					dataIndex = 1;
 					break;
 				}

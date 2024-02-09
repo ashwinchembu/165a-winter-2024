@@ -110,7 +110,7 @@ void Index::drop_index(int column_number) {
 }
 
 void Index::insert_index(RID rid, std::vector<int>columns) {
-    for (int i = 0; i < indices.size(); i++) {
+    for (size_t i = 0; i < indices.size(); i++) {
         if (indices[i].size() > 0) {    //if there is a index for that column
             indices[i].insert({columns[i], rid});
         }
@@ -118,7 +118,7 @@ void Index::insert_index(RID rid, std::vector<int>columns) {
 }
 
 void Index::update_index(RID rid, std::vector<int>columns, std::vector<int>old_columns){
-    for (int i = 0; i< indices.size(); i++) {
+    for (size_t i = 0; i< indices.size(); i++) {
         if (indices[i].size() > 0) {	//if there is a index for that column
             int old_value = old_columns[i];
             auto range = indices[i].equal_range(old_value);

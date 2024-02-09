@@ -2,25 +2,25 @@ CXX=g++
 CXXFLAGS= -g -Wall -Werror
 
 # This can be multiple files
-TARGET=lstore/main
-TESTERS=m1_tester
+TARGET=__main__ #m1_tester
+# TESTERS=m1_tester
 DEPS=db index page query RID table
 
 _DEPS=$(addprefix lstore/,$(DEPS))
 
 DEPS_H=$(addsuffix .h,$(_DEPS))
-TESTERS_H=$(addsuffix .h,$(TESTERS))
+#TESTERS_H=$(addsuffix .h,$(TESTERS))
 
 DEPS_O=$(addsuffix .o,$(_DEPS))
 TARGET_O=$(addsuffix .o,$(TARGET))
-TESTERS_O=$(addsuffix .o,$(TESTERS))
+#TESTERS_O=$(addsuffix .o,$(TESTERS))
 
 
-$(TARGET) : $(TARGET_O) $(DEPS_O) $(TESTERS_O)
+$(TARGET) : $(TARGET_O) $(DEPS_O) Toolkit.o#$(TESTERS_O)
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
 # Assuming target will need everything
-$(filter %.o,$(TARGET_O)): %.o : %.cpp $(DEPS_H) $(TESTERS_H)
+$(filter %.o,$(TARGET_O)): %.o : %.cpp $(DEPS_H) #$(TESTERS_H)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # Base files
@@ -32,11 +32,9 @@ lstore/page.o : lstore/page.cpp lstore/page.h
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 lstore/RID.o : lstore/RID.cpp lstore/RID.h
 	$(CXX) $(CXXFLAGS) -c $< -o $@
-
-## Add deps once they are done
-lstore/query.o : lstore/query.cpp lstore/query.h
+lstore/query.o : lstore/query.cpp lstore/query.h lstore/page.h lstore/index.h lstore/table.h
 	$(CXX) $(CXXFLAGS) -c $< -o $@
-lstore/table.o : lstore/table.cpp lstore/table.h
+lstore/table.o : lstore/table.cpp lstore/table.h lstore/RID.h lstore/index.h lstore/page.h
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # Toolkit
@@ -44,8 +42,8 @@ Toolkit.o : Toolkit.cpp Toolkit.h
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # Assuming All testers need the same thing
-$(filter %.o,$(TESTERS_O)): %.o : %.cpp %.h lstore/query.h lstore/db.h lstore/table.h toolkit.h
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+#$(filter %.o,$(TESTERS_O)): %.o : %.cpp %.h lstore/query.h lstore/db.h lstore/table.h toolkit.h
+#	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	rm -f *.o lstore/*.o
+	rm *.o lstore/*.o

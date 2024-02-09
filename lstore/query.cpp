@@ -1,11 +1,11 @@
+#include <vector>
+#include <string>
+#include <optional>
+
 #include "table.h"
 #include "page.h"
 #include "index.h"
 #include "query.h"
-
-#include <vector>
-#include <string>
-#include <optional>
 
 Query::Query(Table* table) : table(table) {}
 
@@ -39,7 +39,7 @@ std::vector<Record> Query::select_version(int search_key, int search_key_index, 
     std::vector<Record> records;
     std::vector<RID> rids = table->index->locate(search_key_index, search_key); //this returns the RIDs of the base pages
 
-    for(int i = 0; i < rids.size(); i++){ //go through each matching RID that was returned from index
+    for(size_t i = 0; i < rids.size(); i++){ //go through each matching RID that was returned from index
       RID rid = rids[i];
       for(int j = 0; j < relative_version; j++){ //go through indirection to get to correct version
         rid = table->page_directory.find(*(rid.pointers[0]))->second; //go one step further in indirection
@@ -79,7 +79,7 @@ int Query::sum_version(int start_range, int end_range, int aggregate_column_inde
     int sum = 0;
     std::vector<RID> rids = table->index->locate_range(start_range, end_range, aggregate_column_index);
     int num_add = 0;
-    for (int i = 0; i < rids.size(); i++) { //for each of the rids, find the old value and sum
+    for (size_t i = 0; i < rids.size(); i++) { //for each of the rids, find the old value and sum
         if (rids[i].id != 0) {
             if (rids[i].check_schema(aggregate_column_index)) { // if this column is changed
                 int indirection =  *((rids[i]).pointers[0]); // the new indirection
@@ -114,7 +114,7 @@ bool Query::increment(int key, int column) {
         }
 
         int value = *(rids[0].pointers[4+column]);
-        *(rids[0].pointers[4+column])++; //increment the column in record
+        (*(rids[0].pointers[4+column]))++; //increment the column in record
 
         // void Index::update_index(RID rid, std::vector<int>columns, std::vector<int>old_columns){
         std::vector<int> columns;

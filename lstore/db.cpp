@@ -53,5 +53,5 @@ Table Database::get_table(std::string name){
   if(table == tables.end()){
     throw std::invalid_argument("No table with that name was located.");
   }
-  return *table;
+  return table->second;
 }

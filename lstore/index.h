@@ -10,7 +10,7 @@ class Table;
 class Index {
 private:
     /* data */
-    Table* table;
+    Table* table = nullptr;
     std::unordered_map<int, std::unordered_multimap<int, RID>> indices; //column, (value, RID)
 public:
     Index ();

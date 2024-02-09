@@ -44,7 +44,7 @@ RID Table::insert(const std::vector<int>& columns) {
 RID Table::update(RID rid, const std::vector<int>& columns) {
     num_update++;
     int rid_id = num_update * -1;
-    int i = 0;
+    size_t i = 0;
     for (; i < page_range.size(); i++) {
         if (page_range[i].page_range[0].first.id > rid.id) {
             break;

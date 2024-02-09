@@ -9,7 +9,7 @@
 #include "lstore/db.h"
 #include "lstore/query.h"
 #include "lstore/table.h"
-#include "__main__.h"
+//#include "__main__.h"
 
 Database db;
 
@@ -79,7 +79,9 @@ void testAggregation(){
 	for(int i = 0;i < 10000;i += 100){
 		int start_value = 906659671 + i;
 	    int end_value = start_value + 100;
-		int result = query.sum(start_value, end_value - 1, rand() % 5);
+		/// @TODO Check if result is correct or not
+		// int result = query.sum(start_value, end_value - 1, rand() % 5);
+		query.sum(start_value, end_value - 1, rand() % 5);
 	}
 
 	auto endTime = std::chrono::high_resolution_clock::now();
