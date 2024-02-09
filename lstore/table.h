@@ -35,10 +35,11 @@ class Table {
     RID update(RID rid, const std::vector<int>& columns);
     int merge();
 
+    int num_columns; //number of columns of actual data, excluding the metadata
+
     private:
     std::string name;
     int key; //primary key
-    int num_columns; //number of columns of actual data, excluding the metadata
     std::map<int, RID> page_directory; //<RID.id, RID>
     Index* index;
     int last_page_range = -1;

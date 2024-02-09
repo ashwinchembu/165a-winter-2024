@@ -69,12 +69,12 @@ bool Query::update(int primary_key, const std::vector<int>& columns) {
     return (update_rid.id != 0); //return true if successfully updated
 }
 
-std::optional<int> Query::sum(int start_range, int end_range, int aggregate_column_index) {
+int Query::sum(int start_range, int end_range, int aggregate_column_index) {
     // Return the sum if successful, std::nullopt otherwise
     return sum_version(start_range, end_range, aggregate_column_index, 0);
 }
 
-std::optional<int> Query::sum_version(int start_range, int end_range, int aggregate_column_index, int relative_version) {
+int Query::sum_version(int start_range, int end_range, int aggregate_column_index, int relative_version) {
     // Placeholder for sum_version logic
     int sum = 0;
     std::vector<RID> rids = table->index->locate_range(start_range, end_range, aggregate_column_index);
@@ -95,7 +95,7 @@ std::optional<int> Query::sum_version(int start_range, int end_range, int aggreg
         }
     }
     if (num_add == 0) {
-        return std::nullopt;
+        return -1;
     }
     return sum;
 }

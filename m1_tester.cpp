@@ -30,7 +30,7 @@ const int RECORD_COLS = 5;
 
 Database db;
 Table grades_table = db.create_table("Grades",5,0);
-Query query(grades_table);
+Query query(&grades_table);
 
 std::map<int,std::vector<int>> records;
 std::map<int,std::vector<int>> updatedRecords;
@@ -49,7 +49,7 @@ void test(){
 	testAggregation(-0);
 }
 
-static void testInsert(){
+void testInsert(){
 	srand(3562901);
 
 	for(int i = 0; i < NUMBER_OF_RECORDS; i++){
@@ -78,7 +78,7 @@ static void testInsert(){
 	printf("Insert finished\n");
 }
 
-static void testSelect(){
+void testSelect(){
 	for(auto& r : records){
 		int key = (int)(r.first);
 
@@ -113,7 +113,7 @@ static void testSelect(){
 	}
 }
 
-static void testUpdate(){
+void testUpdate(){
 	for(auto& r : records){
 		int key = (int)(r.first);
 
@@ -149,7 +149,7 @@ static void testUpdate(){
 	}
 }
 
-static void didUpdateWork(int versionRequested, int key){
+void didUpdateWork(int versionRequested, int key){
 	Record record = query.select_version(
 	        key, 0, projectedFields, versionRequested)[0];
 
@@ -192,7 +192,7 @@ static void didUpdateWork(int versionRequested, int key){
 	}
 }
 
-static void testAggregation(int tableVersion){
+void testAggregation(int tableVersion){
 	std::map<int, std::vector<int>>& testRecords
 	        = tableVersion < 0 ? records : updatedRecords;
 
