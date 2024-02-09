@@ -34,17 +34,7 @@ PageRange::PageRange (Record r) {
  *
  */
 bool PageRange::base_has_capacity () {
-    // Are there more space to expand base page
-    if (base_last < NUM_BASE_PAGES / num_column) {
-        return true;
-    }
-    // If not, how is the last pages doing.
-    for (int i = 0; i < num_column; i++) {
-        if ((*(page_range[base_last * num_column + i].second)).has_capacity == 0) {
-            return false;
-        }
-    }
-    return true;
+    return num_slot_left;
 }
 
 /***
@@ -85,8 +75,9 @@ RID PageRange::insert(Record r) {
     if (newpage){
         for (int i = 0; i < num_column; i++) {
         page_range[i].first = rid;
+        }
     }
-    }
+    num_slot_left--;
     return rid;
     // Collect pointers, and make RID class, return it.
 }
