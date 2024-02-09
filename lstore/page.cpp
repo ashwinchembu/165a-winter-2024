@@ -81,12 +81,13 @@ RID PageRange::insert(Record r) {
     for (int i = 3; i < num_column; i++) {
         record_pointers[i] = pages_target[i].write(r.columns[i - 3]);
     }
+    RID rid(record_pointers, r.rid);
     if (newpage){
         for (int i = 0; i < num_column; i++) {
         page_range[i].first = rid;
     }
     }
-    return RID(record_pointers, r.rid);
+    return rid;
     // Collect pointers, and make RID class, return it.
 }
 
