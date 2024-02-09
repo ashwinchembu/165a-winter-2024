@@ -4,7 +4,7 @@
 #include <ctime>
 #include <ratio>
 #include <vector>
-
+#include <iostream>
 
 #include "lstore/db.h"
 #include "lstore/query.h"
@@ -23,8 +23,8 @@ void testInsert(){
 	auto startTime = std::chrono::high_resolution_clock::now();
 
 	for(int i = 0;i < 10000;i++){
+		std::cout << i << "th record insert" << std::endl;
 		query.insert(std::vector<int>({906659671 + i, 93, 0, 0, 0}));
-
 		keys.push_back(906659671 + i);
 	}
 
@@ -105,10 +105,15 @@ void testDelete(){
 }
 
 int main(){
+	std::cout << "testInsert() starting" << std::endl;
 	testInsert();
+	std::cout << "testUpdate() starting" << std::endl;
 	testUpdate();
+	std::cout << "testSelect() starting" << std::endl;
 	testSelect();
+	std::cout << "testAggregation() starting" << std::endl;
 	testAggregation();
+	std::cout << "testDelete() starting" << std::endl;
 	testDelete();
 
 	return 0;

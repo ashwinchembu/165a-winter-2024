@@ -24,7 +24,9 @@ bool Query::deleteRecord(int primary_key) {
 bool Query::insert(const std::vector<int>& columns) {
     // Placeholder for insert logic
     // Return true if successful, false otherwise
+    std::cout << "insert into table" << std::endl;
     RID rid = table->insert(columns);
+    std::cout << "insert into index" << std::endl;
     table->index->insert_index(rid, columns);
     return rid.id;
 }
