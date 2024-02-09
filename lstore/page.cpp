@@ -29,18 +29,22 @@ PageRange::PageRange (Record r) {
 
 /***
  *
- * Return if any base page in the page range is full or not.
+ * Return if there are more space to insert record or not
  *
- * @return True if all pages has capacity left, False if not
+ * @return True if there are space for one more record left, False if not
  *
  */
 bool PageRange::base_has_capacity () {
-    return if pages in base_last
-    // for (std::vector<std::pair<RID, Page*>>::iterator itr = page_range.begin(); itr != page_range.end(); itr++) {
-    //     if ((*(((*itr).first).pointers[INDIRECTION_COLUMN])) > 0 && !(*((*itr).second).has_capacity())) {
-    //         return false;
-    //     }
-    // }
+    // Are there more space to expand base page
+    if (base_last < NUM_BASE_PAGES / num_column) {
+        return true;
+    }
+    // If not, how is the last pages doing.
+    for (int i = 0; i < num_column; i++) {
+        if ((*(page_range[base_last * num_column + i].second)).has_capacity == 0) {
+            return false;
+        }
+    }
     return true;
 }
 
