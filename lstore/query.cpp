@@ -68,6 +68,9 @@ std::optional<int> Query::sum_version(int start_range, int end_range, int aggreg
     // Placeholder for sum_version logic
     int sum = 0;
     std::vector<RID> rids = table->index->locate_range(start_range, end_range, aggregate_column_index);
+    if (rids.size() == 0) {
+        return std::nullopt;
+    }
     for (int i = 0; i < rids.size(); i++) { //for each of the rids, find the old value and sum
         if (rids[i].check_schema(aggregate_column_index)) { // if this column is changed
             int indirection =  *((rids[i]).pointers[0]); // the new indirection
