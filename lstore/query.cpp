@@ -24,7 +24,9 @@ bool Query::deleteRecord(int primary_key) {
 bool Query::insert(const std::vector<int>& columns) {
     // Placeholder for insert logic
     // Return true if successful, false otherwise
-    return false;
+    RID rid = table->insert(columns);
+    table->index->insert_index(rid, columns);
+    return rid.id;
 }
 
 std::vector<Record> Query::select(int search_key, int search_key_index, const std::vector<int>& projected_columns_index) {    
