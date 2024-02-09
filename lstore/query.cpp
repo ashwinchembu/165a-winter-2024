@@ -75,20 +75,24 @@ std::optional<int> Query::sum_version(int start_range, int end_range, int aggreg
     // Placeholder for sum_version logic
     int sum = 0;
     std::vector<RID> rids = table->index->locate_range(start_range, end_range, aggregate_column_index);
-    if (rids.size() == 0) {
-        return std::nullopt;
-    }
+    int num_add = 0;
     for (int i = 0; i < rids.size(); i++) { //for each of the rids, find the old value and sum
-        if (rids[i].check_schema(aggregate_column_index)) { // if this column is changed
-            int indirection =  *((rids[i]).pointers[0]); // the new indirection
-            for (int j = 1; j < relative_version; j++) {
-                indirection = *(table->page_directory.find(indirection)->second.pointers[0]); //get the next indirection
+        if (rids[i].id != 0) {
+            if (rids[i].check_schema(aggregate_column_index)) { // if this column is changed
+                int indirection =  *((rids[i]).pointers[0]); // the new indirection
+                for (int j = 1; j < relative_version; j++) {
+                    indirection = *(table->page_directory.find(indirection)->second.pointers[0]); //get the next indirection
+                }
+                RID old_rid = table->page_directory.find(indirection)->second;
+                sum += *((old_rid).pointers[3+aggregate_column_index]); // add the value for the old rid
+            } else { // value is not changed
+                sum += *((rids[i]).pointers[3+aggregate_column_index]); // add the value in the column, +3 for metadata columns
             }
-            RID old_rid = table->page_directory.find(indirection)->second;
-            sum += *((old_rid).pointers[3+aggregate_column_index]); // add the value for the old rid
-        } else { // value is not changed
-            sum += *((rids[i]).pointers[3+aggregate_column_index]); // add the value in the column, +3 for metadata columns
+            num_add++;
         }
+    }
+    if (num_add == 0) {
+        return std::nullopt;
     }
     return sum;
 }
@@ -97,10 +101,29 @@ bool Query::increment(int key, int column) {
     // Use select to find the record, then update to increment the column
     // Return true if successful, false otherwise
     std::vector<RID> rids = table->index->locate(table->key, key); //find key in primary key column
-    if (rids.size() == 0) {
+    if (rids.size() == 0) { // if none found
         return false;
     } else {
+        if (rids[0].id == 0) { // if record is deleted
+            return false;
+        }
+
+        int value = *(rids[0].pointers[3+column]);
         *(rids[0].pointers[3+column])++; //increment the column in record
+        
+        // void Index::update_index(RID rid, std::vector<int>columns, std::vector<int>old_columns){
+        std::vector<int> columns;
+        std::vector<int> old_columns;
+        for (int i = 0; i < table->num_columns; i++) {
+            if (i != (3+column)) {
+                columns.push_back(*(rids[0].pointers[i]));
+                old_columns.push_back(*(rids[0].pointers[i]));
+            } else {
+                columns.push_back(*(rids[0].pointers[i]));
+                old_columns.push_back(value);
+            }
+        }
+        table->index->update_index(rids[0], columns, old_columns);
         return true;
     }
 }
