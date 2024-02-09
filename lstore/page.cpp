@@ -68,7 +68,7 @@ RID PageRange::insert(int new_rid, std::vector<int> columns) {
         tail_last++;
         for (int i = 0; i < num_column; i++) {
         // buffer.push_back(new Page());
-            page_range.insert(page_range.begin() + base_last + 1, std::make_pair(RID(), new Page()))
+            page_range.insert(page_range.begin() + base_last + 1, std::make_pair(RID(), new Page()));
         }
     }
     std::vector<int*> record_pointers(num_column);
@@ -134,8 +134,7 @@ RID PageRange::update(RID rid, int rid_new, const std::vector<int> columns) {
     }
 
 
-
-    std::vector<*int> new_record(num_column);
+    std::vector<int*> new_record(num_column);
 
     new_record[0] = page_range[tail_last*num_column].second->write(base_record[0]); // Indirection column
     new_record[1] = page_range[tail_last*num_column+1].second->write(rid_new); // RID column
@@ -143,10 +142,10 @@ RID PageRange::update(RID rid, int rid_new, const std::vector<int> columns) {
     new_record[3] = page_range[tail_last*num_column+3].second->write(schema_encoding); // schema encoding
     for (int i = 4; i < num_column; i++) {
         if (std::isnan(columns[i - 4])) {
-            new_record[i] = pages_target[i].write(base_record[i]);
-        } else if () {
+            new_record[i] = page_range[tail_last*num_column+i].second->write(base_record[i]);
+        } else {
 
-            new_record[i] = pages_target[i].write(columns[i - 4]);
+            new_record[i] = page_range[tail_last*num_column+i].second->write(columns[i - 4]);
         }
     }
 
