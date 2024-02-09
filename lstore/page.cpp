@@ -1,6 +1,7 @@
 #include <vector>
 #include <iostream>
 #include <cstdlib>
+#include <cmath>
 #include "page.h"
 #include "table.h"
 
@@ -108,6 +109,20 @@ RID PageRange::update(RID rid, int rid_new, const std::vector<int> columns) {
     page_of_rid--;
     // We know the page where base record is stored
 
+    int offset = page_range[page_of_rid * num_column].first.id - rid.id;
+    int schema_encoding = 0;
+
+    for (int i = 0; i < num_column; i++) {
+        if (!(std::isnan(columns[i]))) {
+            schema_encoding = schema_encoding | 0b1 << (num_column - i - 1);
+        }
+    }
+
+    std::vector<*int> base_record;
+    for (int i = 0; i < num_column; i++) {
+        base_record.push_back((page_range[page_of_rid * num_column + i].second)->data + offset*sizeof(int));
+
+    }
 
 
 	// Write data into the end of tail record, with valid schema encoding
@@ -157,11 +172,7 @@ int* Page::write(int value) {
             int offset = location * sizeof(int); // Bytes from top of the page
             int* insert = data + offset;
             *insert = value;
-            if (insert != nullptr) {
-                return insert;
-            } else {
-                return nullptr;
-            }
+            return insert;
         }
     }
 }
