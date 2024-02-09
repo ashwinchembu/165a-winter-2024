@@ -8,7 +8,7 @@
 #include <utility>
 #include <vector>
 
-#include "m1_tester.h"
+//#include "m1_tester.h"
 #include "Toolkit.h"
 
 #include "lstore/db.h"
@@ -37,7 +37,9 @@ std::map<int,std::vector<int>> updatedRecords;
 
 std::vector<int>projectedFields{1,1,1,1,1};
 
-void test(){
+// To have main function
+//void test() {
+int main(){
 	testInsert();
 
 	testSelect();

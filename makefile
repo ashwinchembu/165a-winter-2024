@@ -17,7 +17,7 @@ TARGET_O=$(addsuffix .o,$(TARGET))
 
 
 $(TARGET) : $(TARGET_O) $(DEPS_O) Toolkit.o#$(TESTERS_O)
-	$(CXX) $(CXXFLAGS) $^ -o $@
+	$(CXX) $(CXXFLAGS) $^ -o $@.exe
 
 # Assuming target will need everything
 $(filter %.o,$(TARGET_O)): %.o : %.cpp $(DEPS_H) #$(TESTERS_H)

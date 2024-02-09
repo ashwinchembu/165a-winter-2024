@@ -32,13 +32,12 @@ private:
     /// @TODO Move this to config file
     const int PAGE_SIZE = 4096;
     const int NUM_SLOTS = 16384;
-    int num_slot_left = 16384; // Do we need this?
+    int num_slot_left = NUM_SLOTS;
     int base_last = 0;
     int tail_last = 0;
     int num_column = 0;
 public:
     PageRange (int new_rid, std::vector<int> columns);
-    virtual ~PageRange ();
     std::vector<std::pair<RID, Page*>> page_range;
     RID insert(int new_rid, std::vector<int> columns);
     RID update(RID rid, int rid_new, const std::vector<int> columns);
