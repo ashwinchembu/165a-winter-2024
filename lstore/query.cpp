@@ -42,13 +42,13 @@ std::vector<Record> Query::select_version(int search_key, int search_key_index, 
       for(int j = 0; j < relative_version; j++){ //go through indirection to get to correct version
         rid = table.page_directory.find(*(rid.pointers[0])); //go one step further in indirection
       }
-      std::vector<int> record_columns(num_columns);
-      for(int j = 0; j < table.num_columns; j++){ //transfer columns from desired version into record object
+      std::vector<int> record_columns(table->num_columns);
+      for(int j = 0; j < table->num_columns; j++){ //transfer columns from desired version into record object
         if(projected_columns_index[j]){
           record_columns.push_back(*(rid.pointers[j + 3]));
         }
       }
-      records.push_back(Record(rids[i], search_key, record_columns)); //add a record with RID of base page, value of primary key, and contents of desired version
+      records.push_back(Record(rids[i].id, search_key, record_columns)); //add a record with RID of base page, value of primary key, and contents of desired version
     }
     return records;
 }
@@ -92,8 +92,13 @@ std::optional<int> Query::sum_version(int start_range, int end_range, int aggreg
 }
 
 bool Query::increment(int key, int column) {
-    // Placeholder for increment logic
     // Use select to find the record, then update to increment the column
     // Return true if successful, false otherwise
-    return false;
+    std::vector<RID> rids = table->index->locate(table->key, key); //find key in primary key column
+    if (rids.size() == 0) {
+        return false;
+    } else {
+        *(rids[0].pointers[3+column])++; //increment the column in record
+        return true;
+    }
 }
