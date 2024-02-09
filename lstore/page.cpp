@@ -7,22 +7,24 @@
 PageRange::PageRange (Record r) {
     std::vector<Page*> buffer;
     for (int i = 0; i < NUM_PAGES; i++) {
-        buffer.push_back(new Page());
+        // buffer.push_back(new Page());
+        page_range.push_back(std::make_pair(RID(), new Page()));
     }
     num_column = r.columns.size();
     std::vector<int*> record_pointers(num_column + 3);
-    record_pointers[0] = (*(buffer[0])).write(r.rid); // RID column
-    record_pointers[1] = (*(buffer[1])).write(0); // Timestamp
-    record_pointers[2] = (*(buffer[2])).write(0); // schema encoding
+    record_pointers[0] = (*(page_range[0])).write(r.rid); // Indirection column
+    record_pointers[1] = (*(page_range[1])).write(0); // Timestamp
+    record_pointers[2] = (*(page_range[2])).write(0); // schema encoding
     // @TODO error or take action when there are more than 13 columns.
     for (int i = 0; i < num_column; i++) {
-        record_pointers[3 + i] = (*(buffer[3 + i])).write(r.columns[i]);
+        record_pointers[3 + i] = (*(page_range[3 + i])).write(r.columns[i]);
     }
     RID rid(record_pointers, r.rid);
     num_column = num_column + 3;
     for (int i = 0; i < num_column; i++) {
-        page_range.push_back(std::make_pair(rid, buffer[i]));
+        page_range[i].first = rid;
     }
+    base_last = 0;
 }
 
 /***
@@ -33,22 +35,48 @@ PageRange::PageRange (Record r) {
  *
  */
 bool PageRange::base_has_capacity () {
-    for (std::vector<std::pair<RID, Page*>>::iterator itr = page_range.begin(); itr != page_range.end(); itr++) {
-        if ((*(((*itr).first).pointers[INDIRECTION_COLUMN])) > 0 && !(*((*itr).second).has_capacity())) {
-            return false;
-        }
-    }
+    return if pages in base_last
+    // for (std::vector<std::pair<RID, Page*>>::iterator itr = page_range.begin(); itr != page_range.end(); itr++) {
+    //     if ((*(((*itr).first).pointers[INDIRECTION_COLUMN])) > 0 && !(*((*itr).second).has_capacity())) {
+    //         return false;
+    //     }
+    // }
     return true;
 }
 
-
-RID insert(Record r) {
+/***
+ *
+ * Insert a record at the end of base pages
+ *
+ * @param Record r Record to insert to..
+ * @return return RID of new record upon successful insertion.
+ *
+ */
+RID PageRange::insert(Record r) {
     // Add this record to base pages
     // Go through pages iteratively, and save data one by one.
-    // Correct pointers, and make RID class, return it.
+    if (!(page_range[base_last].second.has_capacity)) {
+        base_last++; // Assuming that they will call after check if there are space left or not.
+    }
+    std::vector<int*> record_pointers(num_column);
+    Page pages_target[num_column];
+
+    for (int i = 0; i < num_column; i++) {
+        pages_target[i] = *(page_range[i + base_last * num_column].second)
+    }
+    // Find page to write
+
+    record_pointers[0] = pages_target[0].write(r.rid); // RID column
+    record_pointers[1] = pages_target[1].write(0); // Timestamp
+    record_pointers[2] = pages_target[2].write(0); // schema encoding
+    for (int i = 3; i < num_column; i++) {
+        record_pointers[i] = pages_target[i].write(r.columns[i - 3]);
+    }
+    return RID(record_pointers, r.rid);
+    // Collect pointers, and make RID class, return it.
 }
 
-RID update(RID rid, int column, int new_value) {
+RID PageRange::update(RID rid, int column, int new_value) {
     // Look for page available
 	// Write data into the end of tail record, with valid schema encoding
 	// Create RID for this record

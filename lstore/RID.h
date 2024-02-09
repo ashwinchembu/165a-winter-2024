@@ -12,7 +12,7 @@ public:
     const int INDIRECTION_COLUMN = 0;
     const int TIMESTAMP_COLUMN = 1;
     const int SCHEMA_ENCODING_COLUMN = 2;
-    // RID ();
+    RID ();
     RID (std::vector<int*> ptr, int i) : pointers(ptr), id(i) {};
     virtual ~RID ();
     std::vector<int*> pointers;

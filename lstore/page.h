@@ -33,6 +33,7 @@ private:
     const int PAGE_SIZE = 4096;
     const int PAGE_RANGE_SIZE = 65536; // Do we need this?
     const int NUM_BASE_PAGES = PAGE_RANGE_SIZE / PAGE_SIZE;
+    int base_last = 0;
     int num_column = 0;
 public:
     PageRange (Record r);
