@@ -58,11 +58,11 @@ std::vector<Record> Query::select_version(int search_key, int search_key_index, 
 bool Query::update(int primary_key, const std::vector<int>& columns) {
     RID base_rid = table->index.locate(table.key, primary_key)[0]; //locate base RID of record to be updated
     RID last_update = table.page_directory.find(*(base_rid.pointers[0])); //locate the previous update
+    RID update_rid = table.update(base_rid, columns); // insert update into the table
     std::vector<int> old_columns;
     for(int i = 0; i < num_columns; i++){ // fill old_columns with the contents of previous update
-      old_columns.push_back(*(last_update.pointers[i+3]));
+      old_columns.push_back(*(last_update.pointers[i + 4]));
     }
-    RID update_rid = table.update(base_rid, columns); // insert update into the table
     if(update_rid.id != 0){
         table->index.update_index(update_rid, columns, old_columns); //update the index
     }
