@@ -8,14 +8,14 @@
 
 #include "lstore/db.h"
 #include "lstore/query.h"
-#include "table.h"
+#include "lstore/table.h"
 #include "__main__.h"
 
 Database db;
 
 Table grades_table = db.create_table("Grades",5,0);
 
-Query query = Query(grades_table);
+Query query = Query(&grades_table);
 
 std::vector<int>keys;
 
@@ -23,7 +23,7 @@ void testInsert(){
 	auto startTime = std::chrono::high_resolution_clock::now();
 
 	for(int i = 0;i < 10000;i++){
-		query.insert(std::vector{906659671 + i, 93, 0, 0, 0});
+		query.insert(std::vector<int>({906659671 + i, 93, 0, 0, 0}));
 
 		keys.push_back(906659671 + i);
 	}
@@ -31,7 +31,7 @@ void testInsert(){
 	auto endTime = std::chrono::high_resolution_clock::now();
 
 	printf("Inserting 10k records took: %.2f ms\n\n",
-			std::chrono::duration<double, std::milli>{endTime-startTime});
+			std::chrono::duration<double, std::milli>(endTime-startTime).count());
 }
 
 void testUpdate(){
@@ -55,7 +55,7 @@ void testUpdate(){
 	auto endTime = std::chrono::high_resolution_clock::now();
 
 	printf("Updating 10k records took: %.2f ms\n\n",
-			std::chrono::duration<double, std::milli>{endTime-startTime});
+			std::chrono::duration<double, std::milli>(endTime-startTime).count());
 
 }
 
@@ -70,7 +70,7 @@ void testSelect(){
 	auto endTime = std::chrono::high_resolution_clock::now();
 
 	printf("Selecting 10k records took: %.2f ms\n\n",
-					std::chrono::duration<double, std::milli>{endTime-startTime});
+					std::chrono::duration<double, std::milli>(endTime-startTime).count());
 }
 
 void testAggregation(){
@@ -83,8 +83,8 @@ void testAggregation(){
 	}
 
 	auto endTime = std::chrono::high_resolution_clock::now();
-	printf("Aggregate 10k of 100 record batch took %.2f ms\n\n", endTime - startTime);
-
+	printf("Aggregate 10k of 100 record batch took %.2f ms\n\n",
+					std::chrono::duration<double, std::milli>(endTime-startTime).count());
 }
 
 void testDelete(){
@@ -94,18 +94,20 @@ void testDelete(){
 		/*
 		 * Delete method is probably renamed, needs to be checked
 		 */
-		query.Delete(906659671 + i);
+		query.deleteRecord(906659671 + i);
 	}
 
 	auto endTime = std::chrono::high_resolution_clock::now();
-
-	printf("Deleting 10k records took:  %.2f ms\n\n", endTime - startTime);
+	printf("Deleting 10k records took:  %.2f ms\n\n",
+					std::chrono::duration<double, std::milli>(endTime-startTime).count());
 }
 
-void mainTest(){
+int main(){
 	testInsert();
 	testUpdate();
 	testSelect();
 	testAggregation();
 	testDelete();
+
+	return 0;
 }

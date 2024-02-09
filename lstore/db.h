@@ -4,6 +4,7 @@
 // This is for clang
 #include <string>
 #include <map>
+#include "table.h"
 
 class Database{
   public:
