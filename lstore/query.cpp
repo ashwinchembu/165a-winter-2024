@@ -60,9 +60,8 @@ bool Query::update(int primary_key, const std::vector<int>& columns) {
 }
 
 std::optional<int> Query::sum(int start_range, int end_range, int aggregate_column_index) {
-    // Placeholder for sum logic
     // Return the sum if successful, std::nullopt otherwise
-    return std::nullopt;
+    return sum_version(start_range, end_range, aggregate_column_index, 0);
 }
 
 std::optional<int> Query::sum_version(int start_range, int end_range, int aggregate_column_index, int relative_version) {
@@ -81,8 +80,7 @@ std::optional<int> Query::sum_version(int start_range, int end_range, int aggreg
             sum += *((rids[i]).pointers[3+aggregate_column_index]); // add the value in the column, +3 for metadata columns
         }
     }
-
-    return std::nullopt;
+    return sum;
 }
 
 bool Query::increment(int key, int column) {
