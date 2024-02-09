@@ -6,7 +6,7 @@
 #include "table.h"
 
 PageRange::PageRange (int new_rid, std::vector<int> columns) {
-    int num_column = columns.size();
+    num_column = columns.size();
     for (int i = 0; i < num_column + 4; i++) {
         // buffer.push_back(new Page());
         page_range.push_back(std::make_pair(RID(), new Page()));
@@ -76,9 +76,9 @@ RID PageRange::insert(int new_rid, std::vector<int> columns) {
     std::vector<int*> record_pointers(num_column);
     Page pages_target[num_column];
 
-    for (int i = 0; i < num_column; i++) {
-        pages_target[i] = *(page_range[i + base_last * num_column].second);
-    }
+    // for (int i = 0; i < num_column; i++) {
+    //     pages_target[i] = *(page_range[i + base_last * num_column].second);
+    // }
     // Find page to write
 
     for (int i = 0; i < num_column; i++) {
@@ -91,7 +91,7 @@ RID PageRange::insert(int new_rid, std::vector<int> columns) {
     record_pointers[2] = page_range[base_last*num_column+2].second->write(0); // Timestamp
     record_pointers[3] = page_range[base_last*num_column+3].second->write(0); // schema encoding
     for (int i = 4; i < num_column; i++) {
-        record_pointers[i] = pages_target[i].write(columns[i - 4]);
+        record_pointers[i] = page_range[base_last*num_column+i].second->write(columns[i - 4]);
     }
     RID rid(record_pointers, new_rid);
     if (newpage){
