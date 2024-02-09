@@ -28,18 +28,18 @@ class Record {
 
 class Table {
     public:
-    Table(std::string name_in, int key_in, int num_columns_in): name(name_in), key(key_in), num_columns(num_columns_in);
+    Table(std::string name_in, int key_in, int num_columns_in): name(name_in), key(key_in), num_columns(num_columns_in){};
     friend class Index;
 
-    RID insert();
-    RID update();
+    RID insert(Record record);
+    RID update(RID rid, int column, int new_value);
     int merge();
 
     private:
     std::string name;
     int key; //primary key
     int num_columns; //number of columns of actual data, excluding the metadata
-    // std::map<int, RID> page_directory; //<RID.id, RID>
+    std::map<int, RID> page_directory; //<RID.id, RID>
     Index* index;
     int last_page = -1;
     std::vector<PageRange> pages;

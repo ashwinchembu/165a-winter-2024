@@ -6,7 +6,7 @@
 
 PageRange::PageRange (Record r) {
     std::vector<Page*> buffer;
-    for (int i = 0; i < NUM_PAGES; i++) {
+    for (int i = 0; i < NUM_BASE_PAGES; i++) {
         // buffer.push_back(new Page());
         page_range.push_back(std::make_pair(RID(), new Page()));
     }
