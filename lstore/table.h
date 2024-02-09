@@ -39,8 +39,8 @@ class Table {
     int num_columns; //number of columns of actual data, excluding the metadata
     std::map<int, RID> page_directory; //<RID.id, RID>
     Index* index;
-    int last_page = -1;
-    std::vector<PageRange> pages;
+    int last_page_range = -1;
+    std::vector<PageRange> page_range;
     int num_update = 0;
     int num_insert = 0;
 };
