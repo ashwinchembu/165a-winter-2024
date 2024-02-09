@@ -4,3 +4,4 @@ lstore/__pycache__/*.pyc
 .DS_Store
 *.o
 lstore/*.o
+*.exe
