@@ -96,10 +96,17 @@ RID PageRange::insert(int new_rid, std::vector<int> columns) {
 RID PageRange::update(RID rid, int rid_new, const std::vector<int> columns) {
     // Look for page available
     // Fetch the base record
-    // Because the base record is monotonously increasing, we can use for loop and find like seed in hash
-    for (int i = 0; i < field_name; i++) {
-
+    // Because the base record is monotonically increasing, we can use for loop and find like seed in hash
+    int page_of_rid = 0;
+    for (; page_of_rid < field_name; page_of_rid++) {
+        if (page_range[page_of_rid * num_column].first.id > rid.id) {
+            break;
+        }
     }
+    page_of_rid--;
+    // We know the page where base record is stored
+
+
 
 	// Write data into the end of tail record, with valid schema encoding
 	// Create RID for this record
@@ -140,6 +147,7 @@ int* Page::write(int value) {
     num_rows++;
     if (!has_capacity()) {
         // Page is full, add the data to new page
+        // Return error here
     }
     for (int location = 0; location < NUM_SLOTS; location++) {
         if (availability[location] == 0) {
