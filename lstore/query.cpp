@@ -47,7 +47,7 @@ std::vector<Record> Query::select_version(int search_key, int search_key_index, 
       std::vector<int> record_columns(table->num_columns);
       for(int j = 0; j < table->num_columns; j++){ //transfer columns from desired version into record object
         if(projected_columns_index[j]){
-          record_columns.push_back(*(rid.pointers[j + 3]));
+          record_columns.push_back(*(rid.pointers[j + 4]));
         }
       }
       records.push_back(Record(rids[i].id, search_key, record_columns)); //add a record with RID of base page, value of primary key, and contents of desired version
@@ -84,9 +84,9 @@ std::optional<int> Query::sum_version(int start_range, int end_range, int aggreg
                     indirection = *(table->page_directory.find(indirection)->second.pointers[0]); //get the next indirection
                 }
                 RID old_rid = table->page_directory.find(indirection)->second;
-                sum += *((old_rid).pointers[3+aggregate_column_index]); // add the value for the old rid
+                sum += *((old_rid).pointers[4+aggregate_column_index]); // add the value for the old rid
             } else { // value is not changed
-                sum += *((rids[i]).pointers[3+aggregate_column_index]); // add the value in the column, +3 for metadata columns
+                sum += *((rids[i]).pointers[4+aggregate_column_index]); // add the value in the column, +4 for metadata columns
             }
             num_add++;
         }
@@ -108,14 +108,14 @@ bool Query::increment(int key, int column) {
             return false;
         }
 
-        int value = *(rids[0].pointers[3+column]);
-        *(rids[0].pointers[3+column])++; //increment the column in record
+        int value = *(rids[0].pointers[4+column]);
+        *(rids[0].pointers[4+column])++; //increment the column in record
         
         // void Index::update_index(RID rid, std::vector<int>columns, std::vector<int>old_columns){
         std::vector<int> columns;
         std::vector<int> old_columns;
         for (int i = 0; i < table->num_columns; i++) {
-            if (i != (3+column)) {
+            if (i != (4+column)) {
                 columns.push_back(*(rids[0].pointers[i]));
                 old_columns.push_back(*(rids[0].pointers[i]));
             } else {
