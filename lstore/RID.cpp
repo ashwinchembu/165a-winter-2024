@@ -22,7 +22,7 @@ bool RID::check_schema (int column_num) {
  *
  */
 int RID::column_with_one () {
-    int num_elements = pointers.size() - 3; //Number of metadata columns
+    int num_elements = pointers.size() - 4; //Number of metadata columns
     int schema_encoding = *(pointers[SCHEMA_ENCODING_COLUMN]);
     for (int i = 0; i < num_elements; i++) {
         if (0b1 & schema_encoding) {
