@@ -13,6 +13,7 @@ PageRange::PageRange (int new_rid, std::vector<int> columns) {
     }
     std::vector<int*> record_pointers(num_column + 4);
     record_pointers[0] = page_range[0].second->write(new_rid); // Indirection column
+    std::cout << *(page_range[0].second) << std::endl;
     std::cout << "expr" << std::endl;
     record_pointers[1] = page_range[1].second->write(new_rid); // RID column <====== Failing here
     record_pointers[2] = page_range[2].second->write(0); // Timestamp
@@ -193,8 +194,13 @@ int* Page::write(int value) {
             int offset = location * sizeof(int); // Bytes from top of the page
             insert = data + offset;
             *insert = value;
+            availability[location] = 1;
+            break;
         }
     }
+    // for (int i = 0; i < NUM_SLOTS; i++) {
+    //     std::cout << availability[i] << ",";
+    // }
     return insert;
 }
 
@@ -210,7 +216,7 @@ int* Page::write(int value) {
 std::ostream& operator<<(std::ostream& os, const Page& p)
 {
     for (int i = 0; i < p.NUM_SLOTS; i++) {
-        os << *(p.data + i*sizeof(int));
+        os << *(p.data + i*sizeof(int)) << " ";
     }
     return os;
 }
