@@ -1,4 +1,4 @@
-#include "table.h" 
+#include "table.h"
 #include "page.h"
 #include "index.h"
 #include "query.h"
@@ -22,15 +22,24 @@ bool Query::insert(const std::vector<int>& columns) {
 }
 
 std::vector<Record> Query::select(int search_key, int search_key_index, const std::vector<int>& projected_columns_index) {
-    std::vector<Record> records;
-    // Placeholder for select logic
-    // Populate records based on the search criteria
-    return records;
+  return select_version(search_key, search_key_index, projected_columns_index, 0);
 }
 
 std::vector<Record> Query::select_version(int search_key, int search_key_index, const std::vector<int>& projected_columns_index, int relative_version) {
     std::vector<Record> records;
-    // Placeholder for select_version logic
+    std::vector<RID> rids = table->index.locate(search_key_index, search_key); //this returns the RIDs of the base pages
+
+    for(int i = 0; i < rids.size(); i++){ //go through each matching RID that was returned from index
+      RID rid = rids[i];
+      for(int j = 0; j < relative_version; j++){ //go through indirection to get to correct version
+        rid = table->page_directory.find(*(rid.pointers[0])); //go one step further in indirection
+      }
+      std::vector<int> record_columns(num_columns);
+      for(int j = 0; j < table.num_columns; j++){ //transfer columns from desired version into record object
+          record_columns[j] = *(rid.pointers[j + 3]);
+      }
+      records.push_back(Record(rids[i], search_key, record_columns)); //add a record with RID of base page, value of primary key, and contents of desired version
+    }
     return records;
 }
 

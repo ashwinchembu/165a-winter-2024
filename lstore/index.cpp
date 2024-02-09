@@ -73,7 +73,7 @@ void Index::create_index(int column_number) {
         auto loc = this->table->page_directory.find(i);
         if (loc != this->table->page_directory.end()) { // if RID ID exist ie. not deleted
             RID rid = loc->second;
-            
+
             int value;
             int indirection_num = *(rid.pointers[0]);
             // int schema_num = *(rid.pointers[3]);
@@ -90,6 +90,8 @@ void Index::create_index(int column_number) {
     indices[column_number] = index;
     return;
 }
+
+
 
 /***
  *
@@ -118,7 +120,7 @@ void Index::drop_index(int column_number) {
  *
  */
 void Index::insert_index(RID rid, std::vector<int>columns) {
-    for (int i = 0; i< indices.size(); i++) {
+    for (int i = 0; i < indices.size(); i++) {
         if (indices[i].size() > 0) {    //if there is a index for that column
             indices[i].insert({columns[i], rid});
         }
