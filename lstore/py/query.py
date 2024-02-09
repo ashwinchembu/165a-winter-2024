@@ -1,6 +1,6 @@
-from lstore.table import Table, Record
-from lstore.index import Index
-from lstore.page import Page, PageSet
+from lstore.py.table import Table, Record
+from lstore.py.index import Index
+from lstore.py.page import Page, PageSet
 import sys
 
 class Query:

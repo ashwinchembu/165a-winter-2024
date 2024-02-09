@@ -1,5 +1,5 @@
-from lstore.db import Database
-from lstore.query import Query
+from lstore.py.db import Database
+from lstore.py.query import Query
 from lstore.transaction import Transaction
 from lstore.transaction_worker import TransactionWorker
 

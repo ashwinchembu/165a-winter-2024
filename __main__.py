@@ -1,5 +1,5 @@
-from lstore.db import Database
-from lstore.query import Query
+from lstore.py.db import Database
+from lstore.py.query import Query
 from time import process_time
 from random import choice, randrange
 
