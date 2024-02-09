@@ -19,11 +19,9 @@ const int SCHEMA_ENCODING_COLUMN = 2;
 class Record {
     public:
     Record(int rid_in, int key_in, std::vector<int> columns_in) : rid(rid_in), key(key_in), columns(columns_in) {};
-
-    private:
-        int rid;
-        int key;
-        std::vector<int> columns;
+    int rid;
+    int key;
+    std::vector<int> columns;
 };
 
 class Table {
@@ -42,8 +40,8 @@ class Table {
     int num_columns; //number of columns of actual data, excluding the metadata
     std::map<int, RID> page_directory; //<RID.id, RID>
     Index* index;
-    int last_page = -1;
-    std::vector<PageRange> pages;
+    int last_page_range = -1;
+    std::vector<PageRange> page_range;
     int num_update = 0;
     int num_insert = 0;
 };

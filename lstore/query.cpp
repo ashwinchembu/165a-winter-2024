@@ -27,17 +27,29 @@ bool Query::insert(const std::vector<int>& columns) {
     return false;
 }
 
-std::vector<Record> Query::select(int search_key, int search_key_index, const std::vector<int>& projected_columns_index) {
-    std::vector<Record> records;
-    
+std::vector<Record> Query::select(int search_key, int search_key_index, const std::vector<int>& projected_columns_index) {    
     // Placeholder for select logic
     // Populate records based on the search criteria
-    return records;
+      return select_version(search_key, search_key_index, projected_columns_index, 0);
 }
 
 std::vector<Record> Query::select_version(int search_key, int search_key_index, const std::vector<int>& projected_columns_index, int relative_version) {
     std::vector<Record> records;
-    // Placeholder for select_version logic
+    std::vector<RID> rids = table->index->locate(search_key_index, search_key); //this returns the RIDs of the base pages
+
+    for(int i = 0; i < rids.size(); i++){ //go through each matching RID that was returned from index
+      RID rid = rids[i];
+      for(int j = 0; j < relative_version; j++){ //go through indirection to get to correct version
+        rid = table->page_directory.find(*(rid.pointers[0])); //go one step further in indirection
+      }
+      std::vector<int> record_columns(num_columns);
+      for(int j = 0; j < table.num_columns; j++){ //transfer columns from desired version into record object
+        if(projected_columns_index[j]){
+          record_columns.push_back(*(rid.pointers[j + 3]));
+        }
+      }
+      records.push_back(Record(rids[i], search_key, record_columns)); //add a record with RID of base page, value of primary key, and contents of desired version
+    }
     return records;
 }
 
@@ -59,12 +71,12 @@ std::optional<int> Query::sum_version(int start_range, int end_range, int aggreg
     std::vector<RID> rids = table->index->locate_range(start_range, end_range, aggregate_column_index);
     for (int i = 0; i < rids.size(); i++) { //for each of the rids, find the old value and sum
         if (rids[i].check_schema(aggregate_column_index)) { // if this column is changed
-            int indirection = 0;
-            RID past_rid = rids[i];
-            for (int j = 0; j < relative_version; j++) {
-                indirection = *((past_rid).pointers[0]); //get the indirection column
-                RID past_rid = table->page_directory.find(indirection)->second;
+            int indirection =  *((rids[i]).pointers[0]); // the new indirection
+            for (int j = 1; j < relative_version; j++) {
+                indirection = *(table->page_directory.find(indirection)->second.pointers[0]); //get the next indirection
             }
+            RID old_rid = table->page_directory.find(indirection)->second;
+            sum += *((old_rid).pointers[3+aggregate_column_index]); // add the value for the old rid
         } else { // value is not changed
             sum += *((rids[i]).pointers[3+aggregate_column_index]); // add the value in the column, +3 for metadata columns
         }

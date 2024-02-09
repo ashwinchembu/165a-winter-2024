@@ -5,19 +5,18 @@
 #include "table.h"
 
 PageRange::PageRange (Record r) {
-    std::vector<Page*> buffer;
-    for (int i = 0; i < NUM_BASE_PAGES; i++) {
+    int num_column = r.columns.size();
+    for (int i = 0; i < num_column; i++) {
         // buffer.push_back(new Page());
         page_range.push_back(std::make_pair(RID(), new Page()));
     }
-    num_column = r.columns.size();
     std::vector<int*> record_pointers(num_column + 3);
-    record_pointers[0] = (*(page_range[0])).write(r.rid); // Indirection column
-    record_pointers[1] = (*(page_range[1])).write(0); // Timestamp
-    record_pointers[2] = (*(page_range[2])).write(0); // schema encoding
+    record_pointers[0] = page_range[0].second->write(r.rid); // Indirection column
+    record_pointers[1] = page_range[1].second->write(0); // Timestamp
+    record_pointers[2] = page_range[2].second->write(0); // schema encoding
     // @TODO error or take action when there are more than 13 columns.
     for (int i = 0; i < num_column; i++) {
-        record_pointers[3 + i] = (*(page_range[3 + i])).write(r.columns[i]);
+        record_pointers[3 + i] = (page_range[3 + i]).second->write(r.columns[i]);
     }
     RID rid(record_pointers, r.rid);
     num_column = num_column + 3;
@@ -35,17 +34,7 @@ PageRange::PageRange (Record r) {
  *
  */
 bool PageRange::base_has_capacity () {
-    // Are there more space to expand base page
-    if (base_last < NUM_BASE_PAGES / num_column) {
-        return true;
-    }
-    // If not, how is the last pages doing.
-    for (int i = 0; i < num_column; i++) {
-        if ((*(page_range[base_last * num_column + i].second)).has_capacity == 0) {
-            return false;
-        }
-    }
-    return true;
+    return num_slot_left;
 }
 
 /***
@@ -57,10 +46,16 @@ bool PageRange::base_has_capacity () {
  *
  */
 RID PageRange::insert(Record r) {
+    bool newpage = false;
     // Add this record to base pages
     // Go through pages iteratively, and save data one by one.
-    if (!(page_range[base_last].second.has_capacity)) {
+    if (!(page_range[base_last].second->has_capacity())) {
+        newpage = true;
         base_last++; // Assuming that they will call after check if there are space left or not.
+         for (int i = 0; i < num_column; i++) {
+        // buffer.push_back(new Page());
+        page_range.push_back(std::make_pair(RID(), new Page()));
+        }
     }
     std::vector<int*> record_pointers(num_column);
     Page pages_target[num_column];
@@ -76,7 +71,14 @@ RID PageRange::insert(Record r) {
     for (int i = 3; i < num_column; i++) {
         record_pointers[i] = pages_target[i].write(r.columns[i - 3]);
     }
-    return RID(record_pointers, r.rid);
+    RID rid(record_pointers, r.rid);
+    if (newpage){
+        for (int i = 0; i < num_column; i++) {
+        page_range[i].first = rid;
+        }
+    }
+    num_slot_left--;
+    return rid;
     // Collect pointers, and make RID class, return it.
 }
 
