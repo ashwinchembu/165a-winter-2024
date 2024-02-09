@@ -21,6 +21,7 @@ Table::Table(std::string name, int key, int num_columns): name(name), key(key), 
  *
  */
 RID Table::insert(Record record) {
+    num_insert++;
     if (pages.size() == 0 || pages.base_has_capacity()) {
         pages.pushback(PageRange(record)); // Make a base page with given record
         // return the RID for index or something
@@ -41,6 +42,7 @@ RID Table::insert(Record record) {
  *
  */
 RID Table::update(RID rid, int column, int new_value) {
+    num_update++;
     int i = 0;
     for (; i < pages.size(); i++) {
         if (pages[i].page_range[0].first.id > rid.id) {
