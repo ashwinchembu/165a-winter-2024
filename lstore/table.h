@@ -19,11 +19,9 @@ const int SCHEMA_ENCODING_COLUMN = 2;
 class Record {
     public:
     Record(int rid_in, int key_in, std::vector<int> columns_in) : rid(rid_in), key(key_in), columns(columns_in) {};
-
-    private:
-        int rid;
-        int key;
-        std::vector<int> columns;
+    int rid;
+    int key;
+    std::vector<int> columns;
 };
 
 class Table {
