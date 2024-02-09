@@ -10,16 +10,17 @@ PageRange::PageRange (int new_rid, std::vector<int> columns) {
         // buffer.push_back(new Page());
         page_range.push_back(std::make_pair(RID(), new Page()));
     }
-    std::vector<int*> record_pointers(num_column + 3);
+    std::vector<int*> record_pointers(num_column + 4);
     record_pointers[0] = page_range[0].second->write(new_rid); // Indirection column
-    record_pointers[1] = page_range[1].second->write(0); // Timestamp
-    record_pointers[2] = page_range[2].second->write(0); // schema encoding
+    record_pointers[1] = page_range[1].second->write(new_rid); // RID column
+    record_pointers[2] = page_range[2].second->write(0); // Timestamp
+    record_pointers[3] = page_range[3].second->write(0); // schema encoding
     // @TODO error or take action when there are more than 13 columns.
     for (int i = 0; i < num_column; i++) {
-        record_pointers[3 + i] = (page_range[3 + i]).second->write(columns[i]);
+        record_pointers[4 + i] = (page_range[4 + i]).second->write(columns[i]);
     }
     RID rid(record_pointers, new_rid);
-    num_column = num_column + 3;
+    num_column = num_column + 4;
     for (int i = 0; i < num_column; i++) {
         page_range[i].first = rid;
     }
@@ -76,11 +77,12 @@ RID PageRange::insert(int new_rid, std::vector<int> columns) {
     }
     // Find page to write
 
-    record_pointers[0] = pages_target[0].write(new_rid); // RID column
-    record_pointers[1] = pages_target[1].write(0); // Timestamp
-    record_pointers[2] = pages_target[2].write(0); // schema encoding
-    for (int i = 3; i < num_column; i++) {
-        record_pointers[i] = pages_target[i].write(columns[i - 3]);
+    record_pointers[0] = page_range[0].second->write(new_rid); // Indirection column
+    record_pointers[1] = page_range[1].second->write(new_rid); // RID column
+    record_pointers[2] = page_range[2].second->write(0); // Timestamp
+    record_pointers[3] = page_range[3].second->write(0); // schema encoding
+    for (int i = 4; i < num_column; i++) {
+        record_pointers[i] = pages_target[i].write(columns[i - 4]);
     }
     RID rid(record_pointers, new_rid);
     if (newpage){
@@ -133,7 +135,7 @@ Page::~Page() {
  *
  */
 bool Page::has_capacity() {
-    return(num_rows < SLOT_NUM);
+    return(num_rows < NUM_SLOTS);
 }
 
 /***

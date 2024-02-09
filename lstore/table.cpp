@@ -23,12 +23,12 @@ Table::Table(std::string name, int key, int num_columns): name(name), key(key), 
 RID Table::insert(const std::vector<int>& columns) {
     num_insert++;
     int rid_id = num_insert;
-    if (pages.size() == 0 || pages.base_has_capacity()) {
-        pages.pushback(PageRange(rid_id, columns)); // Make a base page with given record
+    if (page_range.size() == 0 || page_range[last_page_range].base_has_capacity()) {
+        page_range.push_back(PageRange(rid_id, columns)); // Make a base page with given record
         // return the RID for index or something
-        return pages.back().page_range[0].first;
+        return page_range.back().page_range[0].first;
     } else { // If there are base page already, just insert it normally.
-        return pages.back().insert(rid_id, columns);
+        return page_range.back().insert(rid_id, columns);
     }
 }
 
@@ -45,13 +45,13 @@ RID Table::update(RID rid, const std::vector<int>& columns) {
     num_update++;
     int rid_id = num_update * -1;
     int i = 0;
-    for (; i < pages.size(); i++) {
-        if (pages[i].page_range[0].first.id > rid.id) {
+    for (; i < page_range.size(); i++) {
+        if (page_range[i].page_range[0].first.id > rid.id) {
             break;
         }
     }
     i--;
-    return pages[i].update(rid, rid_id, columns);
+    return page_range[i].update(rid, rid_id, columns);
 }
 
 /***

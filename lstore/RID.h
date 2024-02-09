@@ -19,6 +19,13 @@ public:
     int id;
     bool check_schema (int column_num);
     int column_with_one ();
+    RID& operator=(const RID& other) {
+        if (this != &other) { // Protect against self-assignment
+            this->id = other.id;
+            this->pointers = other.pointers; // Shallow copy; consider deep copy for pointers if needed
+        }
+        return *this;
+    }
 };
 
 #endif
