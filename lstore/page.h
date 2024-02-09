@@ -34,6 +34,7 @@ private:
     const int NUM_SLOTS = 16384;
     int num_slot_left = 16384; // Do we need this?
     int base_last = 0;
+    int tail_last = 0;
     int num_column = 0;
 public:
     PageRange (int new_rid, std::vector<int> columns);

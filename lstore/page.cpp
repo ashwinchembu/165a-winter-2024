@@ -65,9 +65,10 @@ RID PageRange::insert(int new_rid, std::vector<int> columns) {
     if (!(page_range[base_last].second->has_capacity())) {
         newpage = true;
         base_last++; // Assuming that they will call after check if there are space left or not.
-         for (int i = 0; i < num_column; i++) {
+        tail_last++;
+        for (int i = 0; i < num_column; i++) {
         // buffer.push_back(new Page());
-        page_range.push_back(std::make_pair(RID(), new Page()));
+            page_range.insert(page_range.begin() + base_last + 1, std::make_pair(RID(), new Page()))
         }
     }
     std::vector<int*> record_pointers(num_column);
@@ -78,10 +79,15 @@ RID PageRange::insert(int new_rid, std::vector<int> columns) {
     }
     // Find page to write
 
-    record_pointers[0] = page_range[0].second->write(new_rid); // Indirection column
-    record_pointers[1] = page_range[1].second->write(new_rid); // RID column
-    record_pointers[2] = page_range[2].second->write(0); // Timestamp
-    record_pointers[3] = page_range[3].second->write(0); // schema encoding
+    for (int i = 0; i < num_column; i++) {
+        // buffer.push_back(new Page());
+        page_range.push_back(std::make_pair(RID(), new Page()));
+    }
+
+    record_pointers[0] = page_range[base_last*num_column].second->write(new_rid); // Indirection column
+    record_pointers[1] = page_range[base_last*num_column+1].second->write(new_rid); // RID column
+    record_pointers[2] = page_range[base_last*num_column+2].second->write(0); // Timestamp
+    record_pointers[3] = page_range[base_last*num_column+3].second->write(0); // schema encoding
     for (int i = 4; i < num_column; i++) {
         record_pointers[i] = pages_target[i].write(columns[i - 4]);
     }
@@ -111,27 +117,43 @@ RID PageRange::update(RID rid, int rid_new, const std::vector<int> columns) {
 
     int offset = page_range[page_of_rid * num_column].first.id - rid.id;
     int schema_encoding = 0;
-
-    for (int i = 0; i < num_column; i++) {
-        if (!(std::isnan(columns[i]))) {
-            schema_encoding = schema_encoding | 0b1 << (num_column - i - 1);
+    bool newpage;
+    if (tail_last == base_last || !(page_range[tail_last].second->has_capacity())) {
+        newpage = true;
+        tail_last++; // Assuming that they will call after check if there are space left or not.
+         for (int i = 0; i < num_column; i++) {
+        // buffer.push_back(new Page());
+        page_range.push_back(std::make_pair(RID(), new Page()));
         }
     }
 
-    std::vector<*int> base_record;
+    std::vector<int> base_record;
     for (int i = 0; i < num_column; i++) {
-        base_record.push_back((page_range[page_of_rid * num_column + i].second)->data + offset*sizeof(int));
+        base_record.push_back(*((page_range[page_of_rid * num_column + i].second)->data + offset*sizeof(int)));
 
     }
 
 
-	// Write data into the end of tail record, with valid schema encoding
-	// Create RID for this record
-    // By using the num_columns as offset, find base record with rid
-	// Put Indirection column of the base page into a variable
-	// Modify the indirection column of new update to saved indirection of base page
-	// Modify the indirection column of base page
-	// return RID of new update
+
+    std::vector<*int> new_record(num_column);
+
+    new_record[0] = page_range[tail_last*num_column].second->write(base_record[0]); // Indirection column
+    new_record[1] = page_range[tail_last*num_column+1].second->write(rid_new); // RID column
+    new_record[2] = page_range[tail_last*num_column+2].second->write(0); // Timestamp
+    new_record[3] = page_range[tail_last*num_column+3].second->write(schema_encoding); // schema encoding
+    for (int i = 4; i < num_column; i++) {
+        if (std::isnan(columns[i - 4])) {
+            new_record[i] = pages_target[i].write(base_record[i]);
+        } else if () {
+
+            new_record[i] = pages_target[i].write(columns[i - 4]);
+        }
+    }
+
+    *((page_range[page_of_rid * num_column + 1].second)->data + offset*sizeof(int)) = rid_new;
+    *((page_range[page_of_rid * num_column + 3].second)->data + offset*sizeof(int)) = (base_record[3] | schema_encoding);
+
+    return RID(new_record, rid_new);
 }
 
 Page::Page() {
