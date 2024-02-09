@@ -30,8 +30,8 @@ class Table {
     friend class Index;
     friend class Query;
 
-    RID insert(Record record);
-    RID update(RID rid, int column, int new_value);
+    RID insert(const std::vector<int>& columns);
+    RID update(RID rid, const std::vector<int>& columns);
     int merge();
 
     private:

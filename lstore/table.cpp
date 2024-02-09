@@ -17,17 +17,18 @@ Table::Table(std::string name, int key, int num_columns): name(name), key(key), 
  * Insert a record into appropriate base page.
  *
  * @param Record record A record to insert
- * @return RID of the new record upon successful insertion.
+ * @return const std::vector<int>& columns the values of the record
  *
  */
-RID Table::insert(Record record) {
+RID Table::insert(const std::vector<int>& columns) {
     num_insert++;
+    int rid_id = num_insert;
     if (pages.size() == 0 || pages.base_has_capacity()) {
-        pages.pushback(PageRange(record)); // Make a base page with given record
+        pages.pushback(PageRange(rid_id, columns)); // Make a base page with given record
         // return the RID for index or something
         return pages.back().page_range[0].first;
     } else { // If there are base page already, just insert it normally.
-        return pages.back().insert(record);
+        return pages.back().insert(rid_id, columns);
     }
 }
 
@@ -36,13 +37,13 @@ RID Table::insert(Record record) {
  * Given a RID to the original base page, column number, and new value, it will update by creating new entry on tail page.
  *
  * @param RID rid Rid that pointing to the base page.
- * @param int column Column to update
- * @param int new_value The value to update to
+ * @param std::vector<int>& columns the new values of the record
  * @return RID of the new row upon successful update
  *
  */
-RID Table::update(RID rid, int column, int new_value) {
+RID Table::update(RID rid, const std::vector<int>& columns) {
     num_update++;
+    int rid_id = num_update * -1;
     int i = 0;
     for (; i < pages.size(); i++) {
         if (pages[i].page_range[0].first.id > rid.id) {
@@ -50,7 +51,7 @@ RID Table::update(RID rid, int column, int new_value) {
         }
     }
     i--;
-    return pages[i].update(rid, column, new_value);
+    return pages[i].update(rid, rid_id, columns);
 }
 
 /***

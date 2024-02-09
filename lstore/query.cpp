@@ -40,7 +40,7 @@ std::vector<Record> Query::select_version(int search_key, int search_key_index, 
     for(int i = 0; i < rids.size(); i++){ //go through each matching RID that was returned from index
       RID rid = rids[i];
       for(int j = 0; j < relative_version; j++){ //go through indirection to get to correct version
-        rid = table->page_directory.find(*(rid.pointers[0])); //go one step further in indirection
+        rid = table.page_directory.find(*(rid.pointers[0])); //go one step further in indirection
       }
       std::vector<int> record_columns(num_columns);
       for(int j = 0; j < table.num_columns; j++){ //transfer columns from desired version into record object
@@ -54,9 +54,14 @@ std::vector<Record> Query::select_version(int search_key, int search_key_index, 
 }
 
 bool Query::update(int primary_key, const std::vector<int>& columns) {
-    // Placeholder for update logic
-    // Return true if successful, false otherwise
-    return false;
+    RID base_rid = table->index.locate(table.key, primary_key)[0]; //locate base RID of record to be updated
+    for(int i = 0; i < num_columns; i++){
+      RID update_rid = table->update(base_rid, , int new_value);
+      table->index.update_index(RID rid, std::vector<int>columns, std::vector<int>old_columns);
+    }
+    RID update_rid = table->update(base_rid, , int new_value);
+    table->index.update_index(RID rid, std::vector<int>columns, std::vector<int>old_columns);
+    return (update_rid.id != 0); //return true if successfully updated
 }
 
 std::optional<int> Query::sum(int start_range, int end_range, int aggregate_column_index) {
