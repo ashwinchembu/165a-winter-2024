@@ -30,6 +30,7 @@ class Table {
     public:
     Table(std::string name_in, int key_in, int num_columns_in): name(name_in), key(key_in), num_columns(num_columns_in){};
     friend class Index;
+    friend class Query;
 
     RID insert(Record record);
     RID update(RID rid, int column, int new_value);

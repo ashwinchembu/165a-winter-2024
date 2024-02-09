@@ -66,7 +66,7 @@ RID PageRange::insert(Record r) {
     Page pages_target[num_column];
 
     for (int i = 0; i < num_column; i++) {
-        pages_target[i] = *(page_range[i + base_last * num_column].second)
+        pages_target[i] = *(page_range[i + base_last * num_column].second);
     }
     // Find page to write
 
