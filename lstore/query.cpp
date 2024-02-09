@@ -36,7 +36,9 @@ std::vector<Record> Query::select_version(int search_key, int search_key_index, 
       }
       std::vector<int> record_columns(num_columns);
       for(int j = 0; j < table.num_columns; j++){ //transfer columns from desired version into record object
-          record_columns[j] = *(rid.pointers[j + 3]);
+        if(projected_columns_index[j]){
+          record_columns.push_back(*(rid.pointers[j + 3]));
+        }
       }
       records.push_back(Record(rids[i], search_key, record_columns)); //add a record with RID of base page, value of primary key, and contents of desired version
     }
