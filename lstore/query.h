@@ -6,7 +6,6 @@
 #include "index.h"
 #include <vector>
 #include <string>
-#include <optional>
 
 class Query {
 public:

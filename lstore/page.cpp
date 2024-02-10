@@ -32,7 +32,7 @@ PageRange::PageRange (int new_rid, std::vector<int> columns) {
 
 PageRange::~PageRange () {
     for (size_t i = 0; i < page_range.size(); i++) {
-        delete(page_range[i].second);
+        delete page_range[i].second;
     }
 }
 
@@ -70,9 +70,7 @@ RID PageRange::insert(int new_rid, std::vector<int> columns) {
     bool newpage = false;
     // Add this record to base pages
     // Go through pages iteratively, and save data one by one.
-    if (!(page_range[base_last*num_column].second->has_capacity())) { /// <======== failing here on 261th insert
-        std::cout << "Here?" << std::endl;
-        /// On 261th, destructor is being called.
+    if (!(page_range[base_last*num_column].second->has_capacity())) {
         tail_last++;
         newpage = true;
         base_last++; // Assuming that they will call after check if there are space left or not.
@@ -117,9 +115,9 @@ RID PageRange::update(RID rid, int rid_new, const std::vector<int> columns) {
     int schema_encoding = 0;
     if (tail_last == base_last || !(page_range[tail_last].second->has_capacity())) {
         tail_last++; // Assuming that they will call after check if there are space left or not.
-         for (int i = 0; i < num_column; i++) {
+        for (int i = 0; i < num_column; i++) {
         // buffer.push_back(new Page());
-        page_range.push_back(std::make_pair(RID(), new Page()));
+            page_range.push_back(std::make_pair(RID(), new Page()));
         }
     }
 
@@ -152,14 +150,14 @@ RID PageRange::update(RID rid, int rid_new, const std::vector<int> columns) {
 }
 
 Page::Page() {
-    data = (int*)malloc(PAGE_SIZE*4); //malloc takes number of bytes...?
+    data = new int[PAGE_SIZE]; //malloc takes number of bytes...?
     for (int i = 0; i < NUM_SLOTS; i++) {
         availability[i] = 0;
     }
 }
 
 Page::~Page() {
-    free(data);
+    delete data;
 }
 
 /***

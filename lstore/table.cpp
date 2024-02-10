@@ -8,8 +8,8 @@
 
 
 Table::Table(std::string name, int key, int num_columns): name(name), key(key), num_columns(num_columns) {
-    this->index = new Index(this);
-    index->setTable(this);
+    index = new Index(this);
+    //index->setTable(this);
 };
 
 /***
