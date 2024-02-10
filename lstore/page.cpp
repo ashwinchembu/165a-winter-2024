@@ -15,7 +15,7 @@ PageRange::PageRange (int new_rid, std::vector<int> columns) {
     record_pointers[0] = page_range[0].second->write(new_rid); // Indirection column
     std::cout << *(page_range[0].second) << std::endl;
     std::cout << "expr" << std::endl;
-    record_pointers[1] = page_range[1].second->write(new_rid); // RID column <====== Failing here
+    record_pointers[1] = page_range[1].second->write(new_rid); // RID column
     record_pointers[2] = page_range[2].second->write(0); // Timestamp
     record_pointers[3] = page_range[3].second->write(0); // schema encoding
     // @TODO error or take action when there are more than 13 columns.
@@ -64,7 +64,9 @@ RID PageRange::insert(int new_rid, std::vector<int> columns) {
     bool newpage = false;
     // Add this record to base pages
     // Go through pages iteratively, and save data one by one.
-    if (!(page_range[base_last].second->has_capacity())) {
+    std::cerr << base_last;
+    std::cout << *(page_range[0].second) << std::endl;
+    if (!(page_range[base_last].second->has_capacity())) { /// <======== failing here on 261th insert
         newpage = true;
         base_last++; // Assuming that they will call after check if there are space left or not.
         tail_last++;
@@ -74,18 +76,17 @@ RID PageRange::insert(int new_rid, std::vector<int> columns) {
         }
     }
     std::vector<int*> record_pointers(num_column);
-    Page pages_target[num_column];
+    // Page pages_target[num_column];
 
     // for (int i = 0; i < num_column; i++) {
     //     pages_target[i] = *(page_range[i + base_last * num_column].second);
     // }
     // Find page to write
 
-    for (int i = 0; i < num_column; i++) {
-        // buffer.push_back(new Page());
-        page_range.push_back(std::make_pair(RID(), new Page()));
-    }
-
+    // for (int i = 0; i < num_column; i++) {
+    //     // buffer.push_back(new Page());
+    //     page_range.push_back(std::make_pair(RID(), new Page()));
+    // }
     record_pointers[0] = page_range[base_last*num_column].second->write(new_rid); // Indirection column
     record_pointers[1] = page_range[base_last*num_column+1].second->write(new_rid); // RID column
     record_pointers[2] = page_range[base_last*num_column+2].second->write(0); // Timestamp

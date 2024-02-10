@@ -23,7 +23,7 @@ void testInsert(){
 	auto startTime = std::chrono::high_resolution_clock::now();
 
 	for(int i = 0;i < 10000;i++){
-		std::cout << i << "th record insert" << std::endl;
+		std::cout << i << "th record insert... ";
 		query.insert(std::vector<int>({906659671 + i, 93, 0, 0, 0}));
 		keys.push_back(906659671 + i);
 	}
