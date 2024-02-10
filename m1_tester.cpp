@@ -56,6 +56,8 @@ int _main(){
 	testAggregation(-2);
 	testAggregation(-1);
 	testAggregation(-0);
+
+	return 0;
 }
 
 void testInsert(){
@@ -173,9 +175,9 @@ void didUpdateWork(int versionRequested, int key){
 
 	int j = 0;
 	for(int col : dbRecordColumns){
-		if(col != versionRequested < 0 ?
+		if(col != (versionRequested < 0 ?
 				 recordColumns[j]
-				 : updatedRecordColumns[j]){
+				 : updatedRecordColumns[j])){
 
 			error = true;
 		}
@@ -184,7 +186,7 @@ void didUpdateWork(int versionRequested, int key){
 	}
 
 	if(error){
-		std::string& recordStrings[3]{
+		std::string recordStrings[3]{
 		        Toolkit::printArray(recordColumns),
 				Toolkit::printArray(updatedRecordColumns),
 				Toolkit::printArray(dbRecordColumns)
