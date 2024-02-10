@@ -33,9 +33,9 @@ private:
     std::string name;
     int key; //primary key
     std::map<int, RID> page_directory; //<RID.id, RID>
+    std::vector<PageRange*> page_range;
     Index* index = nullptr;
-    int last_page_range = -1;
-    std::vector<PageRange> page_range;
+    // int last_page_range = -1;
     int num_update = 0;
     int num_insert = 0;
 

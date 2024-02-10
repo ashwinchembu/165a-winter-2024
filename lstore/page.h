@@ -8,22 +8,18 @@
 #include "table.h"
 
 class Page {
-private:
-    /* data */
+public:
     /// @TODO Move this to config file
     constexpr static int PAGE_SIZE = 4096; // bytes
     constexpr static int NUM_SLOTS = PAGE_SIZE/sizeof(int); // bytes
     int num_rows = 0;
     int availability[NUM_SLOTS] = {0}; // 0 is empty, 1 is occupied, 2 is deleted.
-
-public:
     Page ();
     virtual ~Page ();
     bool has_capacity();
     int* write(int value);
     int* data = nullptr; // Data location(pointer)
     friend std::ostream& operator<<(std::ostream& os, const Page& p);
-
 };
 
 class PageRange {
@@ -38,6 +34,7 @@ private:
     int num_column = 0;
 public:
     PageRange (int new_rid, std::vector<int> columns);
+    ~PageRange();
     std::vector<std::pair<RID, Page*>> page_range;
     RID insert(int new_rid, std::vector<int> columns);
     RID update(RID rid, int rid_new, const std::vector<int> columns);

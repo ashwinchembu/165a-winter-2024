@@ -12,9 +12,9 @@
 #include "table.h"
 #include "RID.h"
 
-// Index::Index() : table(t) {
-//     create_index(table.key);
-// }
+Index::Index(Table* t) : table(t) {
+    create_index(table->key);
+}
 
 /***
  *
@@ -110,6 +110,7 @@ void Index::drop_index(int column_number) {
 }
 
 void Index::insert_index(RID rid, std::vector<int>columns) {
+            std::cout << indices.size() << std::endl;
     for (size_t i = 0; i < indices.size(); i++) {
         if (indices[i].size() > 0) {    //if there is a index for that column
             indices[i].insert({columns[i], rid});

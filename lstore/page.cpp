@@ -13,8 +13,7 @@ PageRange::PageRange (int new_rid, std::vector<int> columns) {
     }
     std::vector<int*> record_pointers(num_column + 4);
     record_pointers[0] = page_range[0].second->write(new_rid); // Indirection column
-    std::cout << *(page_range[0].second) << std::endl;
-    std::cout << "expr" << std::endl;
+    //std::cout << "expr" << std::endl;
     record_pointers[1] = page_range[1].second->write(new_rid); // RID column
     record_pointers[2] = page_range[2].second->write(0); // Timestamp
     record_pointers[3] = page_range[3].second->write(0); // schema encoding
@@ -28,6 +27,13 @@ PageRange::PageRange (int new_rid, std::vector<int> columns) {
         page_range[i].first = rid;
     }
     base_last = 0;
+    num_slot_left--;
+}
+
+PageRange::~PageRange () {
+    for (size_t i = 0; i < page_range.size(); i++) {
+        delete(page_range[i].second);
+    }
 }
 
 /***
@@ -38,7 +44,7 @@ PageRange::PageRange (int new_rid, std::vector<int> columns) {
  *
  */
 bool PageRange::base_has_capacity () {
-    return num_slot_left;
+    return num_slot_left > 0;
 }
 
 /***
@@ -64,40 +70,29 @@ RID PageRange::insert(int new_rid, std::vector<int> columns) {
     bool newpage = false;
     // Add this record to base pages
     // Go through pages iteratively, and save data one by one.
-    std::cerr << base_last;
-    std::cout << *(page_range[0].second) << std::endl;
-    if (!(page_range[base_last].second->has_capacity())) { /// <======== failing here on 261th insert
+    if (!(page_range[base_last*num_column].second->has_capacity())) { /// <======== failing here on 261th insert
+        std::cout << "Here?" << std::endl;
+        /// On 261th, destructor is being called.
+        tail_last++;
         newpage = true;
         base_last++; // Assuming that they will call after check if there are space left or not.
-        tail_last++;
         for (int i = 0; i < num_column; i++) {
-        // buffer.push_back(new Page());
-            page_range.insert(page_range.begin() + base_last + 1, std::make_pair(RID(), new Page()));
+            page_range.insert(page_range.begin() + base_last*num_column, std::make_pair(RID(), new Page()));
         }
     }
     std::vector<int*> record_pointers(num_column);
-    // Page pages_target[num_column];
 
-    // for (int i = 0; i < num_column; i++) {
-    //     pages_target[i] = *(page_range[i + base_last * num_column].second);
-    // }
-    // Find page to write
-
-    // for (int i = 0; i < num_column; i++) {
-    //     // buffer.push_back(new Page());
-    //     page_range.push_back(std::make_pair(RID(), new Page()));
-    // }
     record_pointers[0] = page_range[base_last*num_column].second->write(new_rid); // Indirection column
-    record_pointers[1] = page_range[base_last*num_column+1].second->write(new_rid); // RID column
-    record_pointers[2] = page_range[base_last*num_column+2].second->write(0); // Timestamp
-    record_pointers[3] = page_range[base_last*num_column+3].second->write(0); // schema encoding
+    record_pointers[1] = page_range[base_last*num_column + 1].second->write(new_rid); // RID column
+    record_pointers[2] = page_range[base_last*num_column + 2].second->write(0); // Timestamp
+    record_pointers[3] = page_range[base_last*num_column + 3].second->write(0); // schema encoding
     for (int i = 4; i < num_column; i++) {
         record_pointers[i] = page_range[base_last*num_column+i].second->write(columns[i - 4]);
     }
     RID rid(record_pointers, new_rid);
     if (newpage){
         for (int i = 0; i < num_column; i++) {
-        page_range[i].first = rid;
+        page_range[base_last*num_column + i].first = rid;
         }
     }
     num_slot_left--;
@@ -157,7 +152,10 @@ RID PageRange::update(RID rid, int rid_new, const std::vector<int> columns) {
 }
 
 Page::Page() {
-    data = (int*)malloc(PAGE_SIZE); //malloc takes number of bytes
+    data = (int*)malloc(PAGE_SIZE*4); //malloc takes number of bytes...?
+    for (int i = 0; i < NUM_SLOTS; i++) {
+        availability[i] = 0;
+    }
 }
 
 Page::~Page() {
@@ -184,10 +182,10 @@ bool Page::has_capacity() {
  */
 int* Page::write(int value) {
     num_rows++;
-    if (!has_capacity()) {
-        // Page is full, add the data to new page
-        // Return error here
-    }
+    // if (!has_capacity()) {
+    //     // Page is full, add the data to new page
+    //     // Return error here
+    // }
     int* insert = nullptr;
     for (int location = 0; location < NUM_SLOTS; location++) {
         if (availability[location] == 0) {
@@ -199,9 +197,6 @@ int* Page::write(int value) {
             break;
         }
     }
-    // for (int i = 0; i < NUM_SLOTS; i++) {
-    //     std::cout << availability[i] << ",";
-    // }
     return insert;
 }
 

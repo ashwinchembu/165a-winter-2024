@@ -13,7 +13,7 @@ private:
     Table* table = nullptr;
     std::unordered_map<int, std::unordered_multimap<int, RID>> indices; //column, (value, RID)
 public:
-    Index () {};
+    Index (Table* t);
     virtual ~Index () {};
     std::vector<RID> locate(int column_number, int value);
     std::vector<RID> locate_range(int begin, int end, int column_number);
