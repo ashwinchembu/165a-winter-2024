@@ -33,8 +33,12 @@ std::vector<RID> Index::locate (int column_number, int value) {
       throw std::invalid_argument("No index for that column was located.");
     }
     auto range = (*index).second.equal_range(value); //check for all matching records in the index
+    if (range.first == range.second) {
+        std::cout << "Value not found" << std::endl;
+    }
     for(auto iter = range.first; iter != range.second; iter++){
         matching_records.push_back(iter->second);
+        std::cout << iter->second.id << std::endl;
     }
     return matching_records;
 }
