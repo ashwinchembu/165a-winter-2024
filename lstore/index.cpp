@@ -12,10 +12,6 @@
 #include "table.h"
 #include "RID.h"
 
-Index::Index(Table* t) : table(t) {
-    create_index(table->key);
-}
-
 /***
  *
  * returns the location of all records with the given value in the indexed column
@@ -29,16 +25,20 @@ Index::Index(Table* t) : table(t) {
 std::vector<RID> Index::locate (int column_number, int value) {
     std::vector<RID> matching_records; //holds the records that match the value
     auto index = indices.find(column_number); //find index for specified column
+
+    // auto it = (index->second).begin();
+    // while (it != (index->second).end()) {
+    //     std::cout << "meow.first: " << it->first << std::endl;
+    //     std::cout << "meow.second.id: " << it->second.id << std::endl;
+    //     it++;
+    // }
+
     if(index == indices.end()){
       throw std::invalid_argument("No index for that column was located.");
     }
     auto range = (*index).second.equal_range(value); //check for all matching records in the index
-    if (range.first == range.second) {
-        std::cout << "Value not found" << std::endl;
-    }
     for(auto iter = range.first; iter != range.second; iter++){
         matching_records.push_back(iter->second);
-        std::cout << iter->second.id << std::endl;
     }
     return matching_records;
 }
@@ -73,7 +73,7 @@ std::vector<RID> Index::locate_range(int begin, int end, int column_number) {
  */
 void Index::create_index(int column_number) {
     std::unordered_multimap<int, RID> index;
-    for (int i = 0; i < this->table->num_insert; i++) {
+    for (int i = 1; i <= this->table->num_insert; i++) {
         auto loc = this->table->page_directory.find(i);
         if (loc != this->table->page_directory.end()) { // if RID ID exist ie. not deleted
             RID rid = loc->second;
@@ -87,7 +87,8 @@ void Index::create_index(int column_number) {
             } else {
                 value = *(rid.pointers[column_number]);
             }
-
+            std::cout << "value: " << value << std::endl;
+            std::cout << "Rid id: " << rid.id << std::endl;
             index.insert({value, rid});
         }
     }
@@ -114,9 +115,15 @@ void Index::drop_index(int column_number) {
 }
 
 void Index::insert_index(RID rid, std::vector<int>columns) {
-    for (size_t i = 0; i < indices.size(); i++) {
-        if (indices[i].size() > 0) {    //if there is a index for that column
-            indices[i].insert({columns[i], rid});
+    // for (size_t i = 0; i < indices.size(); i++) {
+    //     if (indices[i].size() >= 0) {    //Insert only if the index for column exist
+    //         indices[i].insert({columns[i], rid});
+    //     }
+    // }
+    for (size_t i = 0; i < columns.size(); i++) {
+        auto itr = indices.find(i);
+        if (itr != indices.end()) {
+            itr->second.insert({columns[i], rid});
         }
     }
 }
@@ -135,4 +142,9 @@ void Index::update_index(RID rid, std::vector<int>columns, std::vector<int>old_c
             indices[i].insert({columns[i], rid});
         }
     }
+}
+
+void Index::setTable(Table* t){
+    this->table = t;
+    create_index(table->key);
 }

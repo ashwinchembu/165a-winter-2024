@@ -6,7 +6,7 @@
 #include "query.h"
 #include "../Toolkit.h"
 
-Query::Query(Table* table) : table(table) {}
+Query::Query(Table* _table) : table(_table) {}
 
 bool Query::deleteRecord(int primary_key) {
     // Placeholder for delete logic
@@ -23,9 +23,9 @@ bool Query::deleteRecord(int primary_key) {
 bool Query::insert(const std::vector<int>& columns) {
     // Placeholder for insert logic
     // Return true if successful, false otherwise
-    std::cout << "insert into table... ";
+    //std::cout << "insert into table... ";
     RID rid = table->insert(columns);
-    std::cout << "insert into index..." << std::endl;
+    //std::cout << "insert into index..." << std::endl;
     table->index->insert_index(rid, columns);
     return rid.id;
 }
@@ -58,9 +58,9 @@ std::vector<Record> Query::select_version(int search_key, int search_key_index, 
 
 bool Query::update(int primary_key, const std::vector<int>& columns) {
     RID base_rid = table->index->locate(table->key, primary_key)[0]; //locate base RID of record to be updated
-    std::cout << "expr" << std::endl;
     RID last_update = table->page_directory.find(*(base_rid.pointers[0]))->second; //locate the previous update
     RID update_rid = table->update(base_rid, columns); // insert update into the table
+    std::cout << "expr" << std::endl;
     std::vector<int> old_columns;
     for(int i = 0; i < table->num_columns; i++){ // fill old_columns with the contents of previous update
       old_columns.push_back(*(last_update.pointers[i + 4]));

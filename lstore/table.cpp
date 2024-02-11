@@ -7,9 +7,9 @@
 #include "table.h"
 
 
-Table::Table(std::string name, int key, int num_columns): name(name), key(key), num_columns(num_columns) {
-    index = new Index(this);
-    //index->setTable(this);
+Table::Table(std::string name, int num_columns, int key): name(name), key(key), num_columns(num_columns) {
+    index = new Index();
+    index->setTable(this);
 };
 
 /***
@@ -23,13 +23,16 @@ Table::Table(std::string name, int key, int num_columns): name(name), key(key), 
 RID Table::insert(const std::vector<int>& columns) {
     num_insert++;
     int rid_id = num_insert;
+    RID record;
     if (page_range.size() == 0 || !(page_range.back()->base_has_capacity())) {
         page_range.push_back(new PageRange(rid_id, columns)); // Make a base page with given record
         // return the RID for index or something
-        return page_range.back()->page_range[0].first;
+        record = page_range.back()->page_range[0].first;
     } else { // If there are base page already, just insert it normally.
-        return page_range.back()->insert(rid_id, columns);
+        record = page_range.back()->insert(rid_id, columns);
     }
+    page_directory.insert({rid_id, record});
+    return record;
 }
 
 /***

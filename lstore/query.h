@@ -9,7 +9,7 @@
 
 class Query {
 public:
-    explicit Query(Table* table);
+    explicit Query(Table* _table);
     bool deleteRecord(int primary_key);
     bool insert(const std::vector<int>& columns);
     std::vector<Record> select(int search_key, int search_key_index, const std::vector<int>& projected_columns_index);

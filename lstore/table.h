@@ -40,7 +40,7 @@ private:
     int num_insert = 0;
 
 public:
-    Table(std::string name_in, int key_in, int num_columns_in);
+    Table(std::string name_in, int num_columns_in, int key_in);
     friend class Index;
     friend class Query;
 

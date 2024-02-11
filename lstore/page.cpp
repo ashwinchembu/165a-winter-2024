@@ -110,16 +110,16 @@ RID PageRange::update(RID rid, int rid_new, const std::vector<int> columns) {
     }
     page_of_rid--;
     // We know the page where base record is stored
-
     int offset = page_range[page_of_rid * num_column].first.id - rid.id;
     int schema_encoding = 0;
-    if (tail_last == base_last || !(page_range[tail_last].second->has_capacity())) {
+    if (tail_last == base_last || !(page_range[tail_last * num_column].second->has_capacity())) {
         tail_last++; // Assuming that they will call after check if there are space left or not.
         for (int i = 0; i < num_column; i++) {
         // buffer.push_back(new Page());
             page_range.push_back(std::make_pair(RID(), new Page()));
         }
     }
+    std::cout << "expr" << std::endl;
 
     std::vector<int> base_record;
     for (int i = 0; i < num_column; i++) {
