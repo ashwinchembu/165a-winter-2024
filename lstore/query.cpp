@@ -48,7 +48,7 @@ std::vector<Record> Query::select_version(int search_key, int search_key_index, 
       std::vector<int> record_columns(table->num_columns);
       for(int j = 0; j < table->num_columns; j++){ //transfer columns from desired version into record object
         if(projected_columns_index[j]){
-          record_columns.push_back(*(rid.pointers[j + 4]));
+          record_columns[j] = *(rid.pointers[j + 4]);
         }
       }
       records.push_back(Record(rids[i].id, search_key, record_columns)); //add a record with RID of base page, value of primary key, and contents of desired version
@@ -60,7 +60,6 @@ bool Query::update(int primary_key, const std::vector<int>& columns) {
     RID base_rid = table->index->locate(table->key, primary_key)[0]; //locate base RID of record to be updated
     RID last_update = table->page_directory.find(*(base_rid.pointers[0]))->second; //locate the previous update
     RID update_rid = table->update(base_rid, columns); // insert update into the table
-    std::cout << "expr" << std::endl;
     std::vector<int> old_columns;
     for(int i = 0; i < table->num_columns; i++){ // fill old_columns with the contents of previous update
       old_columns.push_back(*(last_update.pointers[i + 4]));
@@ -79,12 +78,12 @@ int Query::sum(int start_range, int end_range, int aggregate_column_index) {
 int Query::sum_version(int start_range, int end_range, int aggregate_column_index, int relative_version) {
     // Placeholder for sum_version logic
     int sum = 0;
-    std::vector<RID> rids = table->index->locate_range(start_range, end_range, aggregate_column_index);
+    std::vector<RID> rids = table->index->locate_range(start_range, end_range, table->key);
     int num_add = 0;
     for (size_t i = 0; i < rids.size(); i++) { //for each of the rids, find the old value and sum
-        if (rids[i].id != 0) {
+        if (rids[i].id != 0) { //If RID is valid i.e. not deleted
             if (rids[i].check_schema(aggregate_column_index)) { // if this column is changed
-                int indirection =  *((rids[i]).pointers[0]); // the new indirection
+                int indirection = *((rids[i]).pointers[0]); // the new indirection
                 for (int j = 1; j < relative_version; j++) {
                     indirection = *(table->page_directory.find(indirection)->second.pointers[0]); //get the next indirection
                 }

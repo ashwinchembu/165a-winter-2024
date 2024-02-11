@@ -25,21 +25,15 @@
 std::vector<RID> Index::locate (int column_number, int value) {
     std::vector<RID> matching_records; //holds the records that match the value
     auto index = indices.find(column_number); //find index for specified column
-
-    // auto it = (index->second).begin();
-    // while (it != (index->second).end()) {
-    //     std::cout << "meow.first: " << it->first << std::endl;
-    //     std::cout << "meow.second.id: " << it->second.id << std::endl;
-    //     it++;
-    // }
-
     if(index == indices.end()){
-      throw std::invalid_argument("No index for that column was located.");
+      create_index(column_number);
+      index = indices.find(column_number);
     }
     auto range = (*index).second.equal_range(value); //check for all matching records in the index
     for(auto iter = range.first; iter != range.second; iter++){
         matching_records.push_back(iter->second);
     }
+
     return matching_records;
 }
 
@@ -55,10 +49,10 @@ std::vector<RID> Index::locate (int column_number, int value) {
  *
  */
 std::vector<RID> Index::locate_range(int begin, int end, int column_number) {
-    std::vector<RID> matching_records; //holds the records that match a value in the range
+    // std::vector<RID> matching_records; //holds the records that match a value in the range
     std::vector<RID> all_matching_records; //holds the matching records from the whole range
-    for (int i = begin; i < end; i++) {
-      matching_records = locate(column_number, i); //locate for each value in the range
+    for (int i = begin; i <= end; i++) {
+      std::vector<RID> matching_records = locate(column_number, i); //locate for each value in the range
       all_matching_records.insert(all_matching_records.end(), matching_records.begin(), matching_records.end());
     }
     return all_matching_records;
@@ -73,26 +67,24 @@ std::vector<RID> Index::locate_range(int begin, int end, int column_number) {
  */
 void Index::create_index(int column_number) {
     std::unordered_multimap<int, RID> index;
-    for (int i = 1; i <= this->table->num_insert; i++) {
-        auto loc = this->table->page_directory.find(i);
-        if (loc != this->table->page_directory.end()) { // if RID ID exist ie. not deleted
+    for (int i = 1; i <= table->num_insert; i++) {
+        auto loc = table->page_directory.find(i); // Find RID for every rows
+        if (loc != table->page_directory.end()) { // if RID ID exist ie. not deleted
             RID rid = loc->second;
 
             int value;
             int indirection_num = *(rid.pointers[0]);
             // int schema_num = *(rid.pointers[3]);
-            if (rid.check_schema(column_number)) {
-                RID update_rid = this->table->page_directory.find(indirection_num)->second;
-                value = *(update_rid.pointers[column_number]);
+            if (rid.check_schema(column_number)) { // If the column of the record at loc is updated
+                RID update_rid = table->page_directory.find(indirection_num)->second;
+                value = *(update_rid.pointers[column_number + 4]);
             } else {
-                value = *(rid.pointers[column_number]);
+                value = *(rid.pointers[column_number + 4]);
             }
-            std::cout << "value: " << value << std::endl;
-            std::cout << "Rid id: " << rid.id << std::endl;
             index.insert({value, rid});
         }
     }
-    indices[column_number] = index;
+    indices.insert({column_number,index});
     return;
 }
 

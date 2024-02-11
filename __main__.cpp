@@ -38,18 +38,19 @@ void _testUpdate(){
 	srand(time(0));
 
 	std::vector<std::vector<int>> update_cols{
-		std::vector<int>{0,0,0,0,0},
-		std::vector<int>{0,rand()%100,0,0,0},
-		std::vector<int>{0,0,rand()%100,0,0},
-		std::vector<int>{0,0,0,rand()%100,0},
-		std::vector<int>{0,0,0,0,rand()%100},
+		std::vector<int>{-9,-9,-9,-9,-9},
+		std::vector<int>{-9,rand()%100,-9,-9,-9},
+		std::vector<int>{-9,-9,rand()%100,-9,-9},
+		std::vector<int>{-9,-9,-9,rand()%100,-9},
+		std::vector<int>{-9,-9,-9,-9,rand()%100},
 	};
 
 	auto startTime = std::chrono::high_resolution_clock::now();
 
 	for(int i = 0;i<10000;i++){
+		// std::cout << i << "th record update... ";
 		_query.update(_keys[rand()%_keys.size()],
-				update_cols[rand()%_keys.size()]);
+				update_cols[rand()%update_cols.size()]);
 	}
 
 	auto endTime = std::chrono::high_resolution_clock::now();
@@ -80,9 +81,11 @@ void _testAggregation(){
 	for(int i = 0;i < 10000;i += 100){
 		int start_value = 906659671 + i;
 	    int end_value = start_value + 100;
+		//std::cout << "Aggregate " << i << " to " << i + 99 << "th records" << std::endl;
 		/// @TODO Check if result is correct or not
-		// int result = query.sum(start_value, end_value - 1, rand() % 5);
 		_query.sum(start_value, end_value - 1, rand() % 5);
+		// int result = _query.sum(start_value, end_value - 1, 1);
+		//std::cout << result << std::endl;
 	}
 
 	auto endTime = std::chrono::high_resolution_clock::now();

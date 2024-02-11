@@ -98,19 +98,19 @@ RID PageRange::insert(int new_rid, std::vector<int> columns) {
     // Collect pointers, and make RID class, return it.
 }
 
-RID PageRange::update(RID rid, int rid_new, const std::vector<int> columns) {
+RID PageRange::update(RID rid, int rid_new, const std::vector<int>& columns) {
     // Look for page available
     // Fetch the base record
     // Because the base record is monotonically increasing, we can use for loop and find like seed in hash
     int page_of_rid = 0;
-    for (; page_of_rid < base_last; page_of_rid++) {
+    for (; page_of_rid <= base_last; page_of_rid++) {
         if (page_range[page_of_rid * num_column].first.id > rid.id) {
             break;
         }
     }
     page_of_rid--;
     // We know the page where base record is stored
-    int offset = page_range[page_of_rid * num_column].first.id - rid.id;
+    int offset = rid.id - page_range[page_of_rid * num_column].first.id;
     int schema_encoding = 0;
     if (tail_last == base_last || !(page_range[tail_last * num_column].second->has_capacity())) {
         tail_last++; // Assuming that they will call after check if there are space left or not.
@@ -119,29 +119,27 @@ RID PageRange::update(RID rid, int rid_new, const std::vector<int> columns) {
             page_range.push_back(std::make_pair(RID(), new Page()));
         }
     }
-    std::cout << "expr" << std::endl;
 
-    std::vector<int> base_record;
+    std::vector<int> base_record(num_column);
     for (int i = 0; i < num_column; i++) {
-        base_record.push_back(*((page_range[page_of_rid * num_column + i].second)->data + offset*sizeof(int)));
-
+        base_record[i] = (*((page_range[page_of_rid * num_column + i].second)->data + offset*sizeof(int)));
     }
-
 
     std::vector<int*> new_record(num_column);
 
     new_record[0] = page_range[tail_last*num_column].second->write(base_record[0]); // Indirection column
     new_record[1] = page_range[tail_last*num_column+1].second->write(rid_new); // RID column
     new_record[2] = page_range[tail_last*num_column+2].second->write(0); // Timestamp
-    new_record[3] = page_range[tail_last*num_column+3].second->write(schema_encoding); // schema encoding
     for (int i = 4; i < num_column; i++) {
-        if (std::isnan(columns[i - 4])) {
+        if (std::isnan(columns[i - 4]) || columns[i-4] == -9) { // Temporarily treat -9 as None.
+        // if (std::isnan(columns[i - 4])) {
             new_record[i] = page_range[tail_last*num_column+i].second->write(base_record[i]);
         } else {
-
+            schema_encoding = schema_encoding | (0b1 << (num_column - i - 1));
             new_record[i] = page_range[tail_last*num_column+i].second->write(columns[i - 4]);
         }
     }
+    new_record[3] = page_range[tail_last*num_column+3].second->write(schema_encoding); // schema encoding
 
     *((page_range[page_of_rid * num_column + 1].second)->data + offset*sizeof(int)) = rid_new;
     *((page_range[page_of_rid * num_column + 3].second)->data + offset*sizeof(int)) = (base_record[3] | schema_encoding);
@@ -151,6 +149,7 @@ RID PageRange::update(RID rid, int rid_new, const std::vector<int> columns) {
 
 Page::Page() {
     data = new int[PAGE_SIZE]; //malloc takes number of bytes...?
+    // data = (int*)malloc(PAGE_SIZE*4);
     for (int i = 0; i < NUM_SLOTS; i++) {
         availability[i] = 0;
     }
@@ -158,6 +157,7 @@ Page::Page() {
 
 Page::~Page() {
     delete data;
+    // free(data);
 }
 
 /***
