@@ -37,6 +37,8 @@ std::vector<Record> Query::select(int search_key, int search_key_index, const st
 }
 
 std::vector<Record> Query::select_version(int search_key, int search_key_index, const std::vector<int>& projected_columns_index, int relative_version) {
+    relative_version = relative_version * (-1);
+
     std::vector<Record> records;
     std::vector<RID> rids = table->index->locate(search_key_index, search_key); //this returns the RIDs of the base pages
 
@@ -77,6 +79,7 @@ int Query::sum(int start_range, int end_range, int aggregate_column_index) {
 
 int Query::sum_version(int start_range, int end_range, int aggregate_column_index, int relative_version) {
     // Placeholder for sum_version logic
+    relative_version = relative_version * (-1);
     int sum = 0;
     std::vector<RID> rids = table->index->locate_range(start_range, end_range, table->key);
     int num_add = 0;

@@ -46,7 +46,7 @@ std::vector<int>projectedFields{1,1,1,1,1};
 
 // To have main function
 //void test() {
-int _main(){
+int main(){
 	testInsert();
 
 	testSelect();
@@ -190,7 +190,7 @@ void didUpdateWork(int versionRequested, int key){
 		        Toolkit::printArray(recordColumns),
 				Toolkit::printArray(updatedRecordColumns),
 				Toolkit::printArray(dbRecordColumns)
-	};
+		};
 
 	printf("update error on %s and %s : %s, correct:, %s\n",
 			recordStrings[0].c_str(),
