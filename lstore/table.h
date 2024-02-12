@@ -20,6 +20,7 @@ const int SCHEMA_ENCODING_COLUMN = 3;
 class Record {
 public:
     Record(int rid_in, int key_in, std::vector<int> columns_in) : rid(rid_in), key(key_in), columns(columns_in) {};
+    ~Record(){}
     int rid;
     int key;
     std::vector<int> columns;
@@ -29,7 +30,7 @@ class Index;
 class PageRange;
 
 class Table {
-private:
+public:
     std::string name;
     int key; //primary key
     std::map<int, RID> page_directory; //<RID.id, RID>
@@ -39,7 +40,7 @@ private:
     int num_update = 0;
     int num_insert = 0;
 
-public:
+
     Table(std::string name_in, int num_columns_in, int key_in);
     friend class Index;
     friend class Query;

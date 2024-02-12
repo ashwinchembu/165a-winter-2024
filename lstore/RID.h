@@ -14,6 +14,7 @@ public:
     const int TIMESTAMP_COLUMN = 2;
     const int SCHEMA_ENCODING_COLUMN = 3;
     RID () {};
+    ~RID(){}
     RID (std::vector<int*> ptr, int i) : pointers(ptr), id(i) {};
     std::vector<int*> pointers;
     int id;

@@ -5,6 +5,71 @@
 #include "index.h"
 #include "query.h"
 #include "../Toolkit.h"
+#include "../DllConfig.h"
+
+COMPILER_SYMBOL int* Query_constructor(int* table){
+	return (int*)new Query((Table*)table);
+}
+
+COMPILER_SYMBOL void Query_destructor(int* table){
+	delete (int*)((Table*)table);
+}
+
+COMPILER_SYMBOL bool Query_deleteRecord(int* obj, int primary_key){
+	return ((Query*)obj)->deleteRecord(primary_key);
+}
+
+COMPILER_SYMBOL bool Query_insert(int* obj, int* columns){
+	std::vector<int>* cols = (std::vector<int>*)columns;
+
+	return ((Query*)obj)->insert(*cols);
+}
+
+COMPILER_SYMBOL int* Query_select(int* obj,int search_key,
+		int search_key_index, int* projected_columns_index){
+	Query* ref = (Query*)obj;
+
+	std::vector<int>*projected_cols = (std::vector<int>*)projected_columns_index;
+
+	std::vector<Record> ret = ref->select(search_key,search_key_index,*projected_cols);
+
+	return (int*) (new std::vector<Record>(ret));
+}
+
+COMPILER_SYMBOL int* Query_select_version(int* obj,int search_key, int search_key_index,
+		int* projected_columns_index, int relative_version){
+
+	std::vector<int>* proj_columns = (std::vector<int>*)projected_columns_index;
+	Query* ref = (Query*)obj;
+
+	std::vector<Record> ret = ref->select_version(search_key,search_key_index,*proj_columns,relative_version);
+
+	return (int*)(new std::vector<Record>(ret));
+}
+
+COMPILER_SYMBOL bool Query_update(int* obj,int primary_key, int* columns){
+	std::vector<int>* cols = (std::vector<int>*)columns;
+
+	return ((Query*)obj)->update(primary_key,*cols);
+}
+
+COMPILER_SYMBOL int Query_sum(int* obj,int start_range, int end_range, int aggregate_column_index){
+	return ((Query*)obj)->sum(start_range,end_range,aggregate_column_index);
+}
+
+COMPILER_SYMBOL int Query_sum_version(int* obj,int start_range, int end_range,
+		int aggregate_column_index, int relative_version){
+
+	return ((Query*)obj)->sum_version(start_range,end_range,aggregate_column_index,relative_version);
+}
+
+COMPILER_SYMBOL bool Query_increment(int* obj,int key, int column){
+	return  ((Query*)obj)->increment(key,column);
+}
+
+COMPILER_SYMBOL int* Query_table(int* obj){
+	return (int*)(&(((Query*)obj)->table));
+}
 
 Query::Query(Table* _table) : table(_table) {}
 

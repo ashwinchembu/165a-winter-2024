@@ -19,7 +19,6 @@ public:
     int sum_version(int start_range, int end_range, int aggregate_column_index, int relative_version);
     bool increment(int key, int column);
 
-private:
     Table* table;
 };
 

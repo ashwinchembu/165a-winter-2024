@@ -11,6 +11,63 @@
 #include "index.h"
 #include "table.h"
 #include "RID.h"
+#include <iostream>
+
+#include "../DllConfig.h"
+
+COMPILER_SYMBOL int* Index_table(int* IndexObj){
+	return (int*) ((((Index*)IndexObj))->table);
+}
+
+COMPILER_SYMBOL int* Index_indices(int* IndexObj){
+	return (int*)(&(((Index*)IndexObj))->indices);
+}
+
+COMPILER_SYMBOL int* Index_constructor(){
+	return (int*)(new Index());
+}
+
+COMPILER_SYMBOL void Index_destructor(int* IndexObj){
+	delete ((Index*)IndexObj);
+}
+
+COMPILER_SYMBOL int* Index_locate(int* IndexObj, int column_number, int value){
+	return (int*)(new std::vector<RID>(
+			((Index*)IndexObj)->locate(column_number,value)));
+}
+
+COMPILER_SYMBOL int* Index_locate_range(
+		int* IndexObj,int begin, int end, int column_number){
+
+	return (int*)(new std::vector<RID>(
+			((Index*)IndexObj)->locate_range(begin,end,column_number)));
+}
+
+COMPILER_SYMBOL void Index_create_index(int* IndexObj, int column_number){
+	((Index*)IndexObj)->create_index(column_number);
+}
+
+COMPILER_SYMBOL void Index_drop_index(int* IndexObj,int column_number){
+	((Index*)IndexObj)->drop_index(column_number);
+}
+
+COMPILER_SYMBOL void Index_setTable(int* IndexObj, int* TableObj){
+	((Index*)IndexObj)->setTable(((Table*)TableObj));
+}
+
+COMPILER_SYMBOL void Index_insert_index(int* IndexObj, int* rid, int* columns){
+	((Index*)IndexObj)->insert_index(*((RID*)rid),*((std::vector<int>*)columns));
+}
+
+COMPILER_SYMBOL void Index_update_index(int* IndexObj, int* rid, int* columns, int* old_columns){
+	((Index*)IndexObj)->update_index(*((RID*)rid),*((std::vector<int>*)columns),
+			*((std::vector<int>*)old_columns));
+}
+
+COMPILER_SYMBOL void Index_print_data(int* IndexObj){
+	((Index*)IndexObj)->printData();
+}
+
 
 /***
  *
@@ -139,4 +196,15 @@ void Index::update_index(RID rid, std::vector<int>columns, std::vector<int>old_c
 void Index::setTable(Table* t){
     this->table = t;
     create_index(table->key);
+}
+
+void Index::printData(){
+	for(auto& e: indices){
+		printf("---Column %d:---\n\n",e.first);
+		printf("%d\n\n",e.second.size());
+//		for(auto& j : e.second){
+//			printf("ID: %d -- %s\n",
+//					j.first,((std::string)(j.second)).c_str());
+//		}
+	}
 }
