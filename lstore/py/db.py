@@ -1,4 +1,29 @@
-from lstore.py.table import Table
+from table import Table
+from ctypes import *
+
+DB=CDLL(r'../../mac.so')
+
+Database_constructor = DB.Database_constructor
+Database_constructor.restype = POINTER(c_int)
+
+Database_destructor=DB.Database_destructor
+Database_destructor.argtypes = [POINTER(c_int)]
+
+Database_create_table=DB.Database_create_table
+Database_create_table.restype = POINTER(c_int)
+Database_create_table.argtypes = [POINTER(c_int),POINTER(c_char),c_int,c_int]
+
+
+Database_drop_table =DB.Database_drop_table
+Database_drop_table.argtypes = [POINTER(c_int),POINTER(c_char)]
+
+Database_get_table=DB.Database_get_table
+Database_get_table.restype = POINTER(c_int)
+Database_get_table.argtypes = [POINTER(c_int),POINTER(c_char)]
+
+Database_tables=DB.Database_tables
+Database_tables.restype = POINTER(c_int)
+Database_tables.argtypes = [POINTER(c_int)]
 
 class Database():
 
