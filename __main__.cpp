@@ -9,7 +9,8 @@
 #include "lstore/db.h"
 #include "lstore/query.h"
 #include "lstore/table.h"
-//#include "__main__.h"
+
+#include "__main__.h"
 
 Database _db;
 
@@ -108,17 +109,16 @@ void _testDelete(){
 					std::chrono::duration<double, std::milli>(endTime-startTime).count());
 }
 
-int main(){
-	std::cout << "testInsert() starting" << std::endl;
-	_testInsert();
-	std::cout << "testUpdate() starting" << std::endl;
-	_testUpdate();
-	std::cout << "testSelect() starting" << std::endl;
-	_testSelect();
-	std::cout << "testAggregation() starting" << std::endl;
-	_testAggregation();
-	std::cout << "testDelete() starting" << std::endl;
-	_testDelete();
-
-	return 0;
+void test(){
+    std::cout << "testInsert() starting" << std::endl;
+    _testInsert();
+    std::cout << "testUpdate() starting" << std::endl;
+    _testUpdate();
+    std::cout << "testSelect() starting" << std::endl;
+    _testSelect();
+    std::cout << "testAggregation() starting" << std::endl;
+    _testAggregation();
+    std::cout << "testDelete() starting" << std::endl;
+    _testDelete();
 }
+

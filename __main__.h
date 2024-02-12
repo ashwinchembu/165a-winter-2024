@@ -6,4 +6,6 @@
  * in case modification is needed.
  */
 
+void test();
+
 #endif

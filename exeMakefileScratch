@@ -1,0 +1,27 @@
+CC = g++
+CXXFLAGS=-g -Wall -std=c++11
+
+default: dbProj
+
+dbProj: __main__.o lstore/db.o lstore/index.o lstore/page.o lstore/query.o lstore/RID.o lstore/table.o Toolkit.o
+	$(CC) $(CXXFLAGS) -o dbProj lstore/db.o lstore/index.o lstore/page.o lstore/query.o lstore/RID.o lstore/table.o Toolkit.o
+	
+__main__.o: lstore/db.h lstore/query.h lstore/table.h __main__.h
+
+lstore/db.o: lstore/table.h lstore/db.h __main__.h
+
+lstore/index.o: lstore/index.h lstore/table.h lstore/RID.h DllConfig.h
+
+lstore/page.o: lstore/page.h lstore/table.h
+
+lstore/query.o: lstore/table.h lstore/page.h lstore/index.h lstore/query.h Toolkit.h
+
+lstore/RID.o: lstore/RID.h
+
+lstore/table.o: lstore/RID.h lstore/index.h lstore/page.h lstore/table.h
+
+
+clean:
+	rm ./*.o ./__main__ ./dbProj ./lstore/*.o
+	
+
