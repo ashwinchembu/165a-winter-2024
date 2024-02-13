@@ -219,9 +219,9 @@ RID Table::update(RID rid, const std::vector<int>& columns) {
         }
     }
     i--;
+		RID new_rid = (page_range[i].get())->update(rid, rid_id, columns);
 		auto iter = page_directory.find(rid.id);
 		*(iter->second.pointers[0]) = rid_id;
-		RID new_rid = (page_range[i].get())->update(rid, rid_id, columns);
 		std::cout << "new_rid is pointing to " << *(new_rid.pointers[0]) << '\n';
 		page_directory.insert({rid_id, new_rid});
     return new_rid;
