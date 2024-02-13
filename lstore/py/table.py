@@ -15,9 +15,10 @@ class Record:
         self.columns = columns
         
     def __str__(self):
+        ret = [] 
         for i in self.columns:
-            print(str(i))
-        return 0
+            ret.append(i)
+        return ret
 
 
 class Table:
