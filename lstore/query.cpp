@@ -158,7 +158,7 @@ int Query::sum_version(int start_range, int end_range, int aggregate_column_inde
                 int indirection = *((rids[i]).pointers[0]); // the new indirection
                 for (int j = 1; j <= relative_version; j++) {
                     indirection = *(table->page_directory.find(indirection)->second.pointers[0]); //get the next indirection
-										if(indirection.id > 0){
+										if(indirection > 0){
 											break;
 										}
 								}
