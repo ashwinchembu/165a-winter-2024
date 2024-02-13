@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include "table.h"
 #include "db.h"
+#include <cstdio>
 
 #include "../DllConfig.h"
 
