@@ -13,6 +13,9 @@ class Record:
         self.rid = rid
         self.key = key
         self.columns = columns
+        
+    def __str__(self):
+        return (self.columns)
 
 
 class Table:
