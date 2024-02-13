@@ -2,95 +2,7 @@ from table import Table, Record
 from index import Index
 from page import Page, PageSet
 import sys
-from ctypes import *
-
-
-
-
-DB=CDLL(r'../../mac.so')
-
-
-
-
-
-Query_constructor=DB.Query_constructor
-Query_constructor.restype = POINTER(c_int)
-Query_constructor.argtypes = [POINTER(c_int)]
-
-Query_destructor=DB.Query_destructor
-Query_destructor.argtypes = [POINTER(c_int)]
-
-Query_deleteRecord=DB.Query_deleteRecord
-Query_deleteRecord.restype = c_bool
-Query_deleteRecord.argtypes = [POINTER(c_int),c_int]
-
-Query_insert=DB.Query_insert
-Query_insert.restype = c_bool
-Query_insert.argtypes = [POINTER(c_int),POINTER(c_int)]
-
-Query_select=DB.Query_select
-Query_select.restype = POINTER(c_int)
-Query_select.argtypes = [POINTER(c_int),c_int,c_int,POINTER(c_int)]
-
-Query_select_version=DB.Query_select_version
-Query_select_version.restype = POINTER(c_int)
-Query_select_version.argtypes = [POINTER(c_int),c_int,c_int,POINTER(c_int),c_int]
-
-Query_update=DB.Query_update
-Query_update.restype = c_bool
-Query_update.argtypes = [POINTER(c_int),c_int,POINTER(c_int)]
-
-Query_sum=DB.Query_sum
-Query_sum.restype = c_int
-Query_sum.argtypes = [POINTER(c_int),c_int,c_int,c_int]
-
-Query_sum_version=DB.Query_sum_version
-Query_sum_version.restype = c_int
-Query_sum_version.argtypes = [POINTER(c_int),c_int,c_int,c_int,c_int]
-
-Query_increment=DB.Query_increment
-Query_increment.restype = bool
-Query_increment.argtypes = [POINTER(c_int),c_int,c_int]
-
-Query_table=DB.Query_table
-Query_table.restype =POINTER(c_int)
-Query_table.argtypes = [POINTER(c_int)]
-
-
-
-
-
-add_to_buffer_vector=DB.add_to_buffer_vector
-add_to_buffer_vector.argtypes = [c_int]
-
-get_buffer_vector=DB.get_buffer_vector
-get_buffer_vector.restype = POINTER(c_int)
-
-get_from_buffer_vector=DB.get_from_buffer_vector
-get_from_buffer_vector.restype = c_int
-get_from_buffer_vector.argtypes = [c_int]
-
-erase_buffer_vector=DB.erase_buffer_vector
-
-
-
-
-
-clearRecordBuffer=DB.clearRecordBuffer
-
-numberOfRecordsInBuffer=DB.numberOfRecordsInBuffer
-numberOfRecordsInBuffer.restype = c_int
-
-getRecordBufferElement=DB.getRecordBufferElement
-getRecordBufferElement.restype =  c_int
-getRecordBufferElement.argtypes = [c_int]
-
-fillRecordBuffer=DB.fillRecordBuffer
-fillRecordBuffer.argtypes = [POINTER(c_int)]
-
-getRecordSize = DB.getRecordSize
-getRecordSize.restype =  c_int
-
+from DBWrapper import *
 
 class Query:
     """
@@ -123,7 +35,7 @@ class Query:
         erase_buffer_vector()
         
         for i in columns:
-            add_to_buffer_vector(i)
+            add_to_buffer_vector(c_intOrZero(i))
         
         return Query_insert(self.selfPtr,get_buffer_vector())
     
@@ -152,7 +64,7 @@ class Query:
     # Assume that select will never be called on a key that doesn't exist
     """
     def select(self, search_key, search_key_index, projected_columns_index):
-        return select_version(search_key, search_key_index, projected_columns_index,0)
+        return self.select_version(search_key, search_key_index, projected_columns_index,0)
 
 
     """
@@ -169,7 +81,7 @@ class Query:
         erase_buffer_vector();
         
         for i in projected_columns_index:
-            add_to_buffer_vector(i)
+            add_to_buffer_vector(c_int(i))
             
     
         recordsPtr = Query_select_version(self.selfPtr,search_key,
@@ -177,8 +89,10 @@ class Query:
         
         clearRecordBuffer()
         fillRecordBuffer(recordsPtr)
+        
+        numRecords = numberOfRecordsInBuffer()
 
-        if numberOfRecordsInBuffer() == 0:
+        if numRecords == 0:
             return False
         
         recordSize = getRecordSize()
@@ -210,9 +124,8 @@ class Query:
         erase_buffer_vector()
         
         for i in columns:
-            add_to_buffer_vector(i)
-            
-            
+            add_to_buffer_vector(c_intOrZero(i))
+
         return Query_update(self.selfPtr,primary_key,get_buffer_vector())
 
     
