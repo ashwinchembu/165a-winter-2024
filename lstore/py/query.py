@@ -1,6 +1,6 @@
-from table import Table, Record
-from index import Index
-from page import Page, PageSet
+from .table import Table, Record
+from .index import Index
+from .page import Page, PageSet
 import sys
 from DBWrapper import *
 
