@@ -53,7 +53,7 @@ COMPILER_SYMBOL void fillRecordBuffer(int* obj){
 
 	recordBuffer = std::vector<int>(sizeOfRecords * records->size());
 
-	for(int i = 0; i < records->size(); i++){
+	for(size_t i = 0; i < records->size(); i++){
 
 		for(int j = 0; j < sizeOfRecords;j++){
 

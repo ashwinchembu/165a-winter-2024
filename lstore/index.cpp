@@ -30,7 +30,7 @@ COMPILER_SYMBOL void fillRidBuffer(int* obj){
 
 	std::vector<RID>* rids = (std::vector<RID>*)obj;
 
-	for(int i = 0; i< rids->size();i++){
+	for(size_t i = 0; i< rids->size();i++){
 		ridBuffer.push_back((*rids)[i].id);
 	}
 
