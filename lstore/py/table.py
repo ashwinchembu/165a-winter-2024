@@ -13,6 +13,12 @@ class Record:
         self.rid = rid
         self.key = key
         self.columns = columns
+        
+    def __str__(self):
+        ret = ""
+        for i in self.columns:
+            ret += (str(i) + " ")
+        return ret
 
 
 class Table:
