@@ -109,17 +109,19 @@ std::vector<Record> Query::select_version(int search_key, int search_key_index, 
 
     for(size_t i = 0; i < rids.size(); i++){ //go through each matching RID that was returned from index
       RID rid = rids[i];
-      for(int j = 0; j < relative_version; j++){ //go through indirection to get to correct version
-        rid = table->page_directory.find(*(rid.pointers[0]))->second; //go one step further in indirection
-      }
-      std::vector<int> record_columns(table->num_columns);
-      for(int j = 0; j < table->num_columns; j++){ //transfer columns from desired version into record object
-        if(projected_columns_index[j]){
-          record_columns[j] = *(rid.pointers[j + 4]);
-        }
-      }
-      records.push_back(Record(rids[i].id, search_key, record_columns)); //add a record with RID of base page, value of primary key, and contents of desired version
-    }
+			if(rid.id != 0){
+      	for(int j = 0; j <= relative_version; j++){ //go through indirection to get to correct version
+        	rid = table->page_directory.find(*(rid.pointers[0]))->second; //go one step further in indirection
+      	}
+      	std::vector<int> record_columns(table->num_columns);
+      	for(int j = 0; j < table->num_columns; j++){ //transfer columns from desired version into record object
+        	if(projected_columns_index[j]){
+          	record_columns[j] = *(rid.pointers[j + 4]);
+        	}
+      	}
+      	records.push_back(Record(rids[i].id, search_key, record_columns)); //add a record with RID of base page, value of primary key, and contents of desired version
+			}
+		}
     return records;
 }
 
