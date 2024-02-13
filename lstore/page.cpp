@@ -217,6 +217,7 @@ RID PageRange::update(RID rid, int rid_new, const std::vector<int>& columns) {
         // buffer.push_back(new Page());
             page_range.push_back(std::make_pair(RID(), new Page()));
         }
+std::cout << "Making new tail pages" << std::endl;
     }
 
     std::vector<int> base_record(num_column);
