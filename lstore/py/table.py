@@ -17,7 +17,7 @@ class Record:
     def __str__(self):
         ret = ""
         for i in self.columns:
-            ret += (i + " ")
+            ret += (str(i) + " ")
         return ret
 
 
