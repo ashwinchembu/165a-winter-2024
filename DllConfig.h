@@ -3,9 +3,9 @@
 
 #define COMPILER_SYMBOL extern "C"
 
-//#if defined(_WIN32) || defined(_WIN64)
-//#undef COMPILER_SYMBOL
-//#define COMPILER_SYMBOL extern "C" __declspec(dllexport)
-//#endif
+#if defined(_WIN32) || defined(_WIN64)
+#undef COMPILER_SYMBOL
+#define COMPILER_SYMBOL extern "C" __declspec(dllexport)
+#endif
 
 #endif

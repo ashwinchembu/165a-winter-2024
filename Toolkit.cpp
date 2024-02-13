@@ -5,6 +5,13 @@
 #include <sstream>
 #include <random>
 
+#include "DllConfig.h"
+#include <limits>
+
+COMPILER_SYMBOL int cpp_min_signed_int(){
+	return std::numeric_limits<int>::min();
+}
+
 namespace Toolkit {
 
     std::random_device rd;

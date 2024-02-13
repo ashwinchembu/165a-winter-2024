@@ -1,10 +1,19 @@
 from ctypes import *
+import platform
+import sys
 
-DB=CDLL(r'./mac.so')
+thePlatform=platform.system()
 
-"""
- # Functions from db.cpp
-"""
+if thePlatform == "Darwin":
+    DB = CDLL(r'./bin/osx/libmylibrary.dylib')
+if thePlatform == "Linux":
+    DB = CDLL(r'./bin/linux/libmylibrary.so')
+elif thePlatform == "Windows":
+    #DB will be the windoows version
+    pass
+
+# Functions from db.cpp
+
 
 add_to_buffer_vector=DB.add_to_buffer_vector
 add_to_buffer_vector.argtypes = [c_int]
@@ -40,9 +49,9 @@ Database_tables=DB.Database_tables
 Database_tables.restype = POINTER(c_int)
 Database_tables.argtypes = [POINTER(c_int)]
 
-"""
- # Functions from index.cpp
-"""
+
+# Functions from index.cpp
+
 
 clearRidBuffer = DB.clearRidBuffer
 
@@ -97,9 +106,9 @@ Index_update_index.argtypes = [POINTER(c_int),POINTER(c_int),POINTER(c_int),POIN
 Index_print_data = DB.Index_print_data
 Index_print_data.argtypes = [POINTER(c_int)]
 
-"""
- # Functions from page.cpp
-"""
+
+# Functions from page.cpp
+
 
 Page_PAGE_SIZE=DB.Page_PAGE_SIZE;
 Page_PAGE_SIZE.restype = c_int
@@ -186,9 +195,9 @@ PageRange_base_has_capacity_for = DB.PageRange_base_has_capacity_for
 PageRange_base_has_capacity_for.restype = c_bool
 PageRange_base_has_capacity_for.argtypes = [POINTER(c_int),c_int]
 
-"""
- # Functions from query.cpp
-"""
+
+# Functions from query.cpp
+
 
 Query_constructor=DB.Query_constructor
 Query_constructor.restype = POINTER(c_int)
@@ -233,9 +242,9 @@ Query_table=DB.Query_table
 Query_table.restype =POINTER(c_int)
 Query_table.argtypes = [POINTER(c_int)]
 
-"""
- # Functions from table.cpp
-"""
+
+# Functions from table.cpp
+
 
 Record_constructor=DB.Record_constructor
 Record_constructor.restype = POINTER(c_int)
@@ -323,8 +332,16 @@ fillRecordBuffer.argtypes = [POINTER(c_int)]
 getRecordSize = DB.getRecordSize
 getRecordSize.restype =  c_int
 
+#Toolkit.cpp
+
+cpp_min_signed_int = DB.cpp_min_signed_int
+cpp_min_signed_int.restype = c_int
+
 def c_intOrZero(number):
     return c_int(number) if isinstance(number, int) else c_int(0)
+
+def c_intOrUnreasonable(number):
+    return c_int(number) if isinstance(number, int) else c_int(cpp_min_signed_int())
 
     
         

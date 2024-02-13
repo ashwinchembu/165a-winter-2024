@@ -1,31 +1,47 @@
-# Makefile for generating a shared library (C++)
+# Makefile for generating a shared library (.so)
 
-# Compiler and flags
-CXX = g++
-CXXFLAGS =-std=c++11 -Wall -fPIC
-LDFLAGS = -shared
+# Compiler
+CC := g++
 
 # Source files
-SRC = __main__.cpp Toolkit.cpp lstore/db.cpp lstore/index.cpp lstore/page.cpp lstore/query.cpp lstore/RID.cpp lstore/table.cpp
-HEADERS = __main__.h DllConfig.h Toolkit.h lstore/db.h lstore/index.h lstore/page.h lstore/query.h lstore/RID.h lstore/table.h
+SRC := __main__.cpp Toolkit.cpp lstore/db.cpp lstore/index.cpp lstore/page.cpp lstore/query.cpp lstore/RID.cpp lstore/table.cpp
 
-# Object files
-OBJ = $(SRC:.cpp=.o)
+# Header files
+INC := -I.
 
-# Target library
-LIBRARY = mac.so
+# Output directory based on operating system
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S), Linux)
+    OUTDIR := bin/linux
+    OS_FLAGS := -DLINUX
+    LIB_EXT := so
+else ifeq ($(UNAME_S), Darwin)
+    OUTDIR := bin/osx
+    OS_FLAGS := -DOSX
+    LIB_EXT := dylib
+else
+    $(error Unsupported operating system)
+endif
 
-# Main target
+# Output library name
+LIBNAME := mylibrary
+
+# Flags
+CFLAGS := -Wall -shared -fPIC -std=c++11
+
+# Combine flags
+CFLAGS += $(OS_FLAGS)
+
+# Full path to output library
+LIBRARY := $(OUTDIR)/lib$(LIBNAME).$(LIB_EXT)
+
 all: $(LIBRARY)
 
-# Compile source files into object files
-%.o: %.cpp $(HEADERS)
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+$(LIBRARY): $(SRC)
+	mkdir -p $(OUTDIR)
+	$(CC) $(CFLAGS) $(INC) -o $(LIBRARY) $(SRC)
 
-# Link object files into the shared library
-$(LIBRARY): $(OBJ)
-	$(CXX) $(LDFLAGS) $(OBJ) -o $@
-
-# Clean up intermediate files
 clean:
-	rm -f ./*.o ./*.so ./lstore/*.o /lstore/*.so ./*.exe
+	rm -rf bin
+
+.PHONY: all clean

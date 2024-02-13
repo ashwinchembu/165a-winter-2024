@@ -69,10 +69,10 @@ for key in records:
         if column != records[key][j]:
             error = True
     if error:
-        print('update error on', records[key], 'and', updated_columns, ': [', record, '] , correct:', records[key])
+        print('update error on', records[key], 'and', updated_columns, ':', record, ', correct:', records[key])
     else:
         pass
-        #print('update on', original, 'and', updated_columns, ':', record)
+        # print('update on', original, 'and', updated_columns, ':', record)
 
     #check version -2 for record
     record = query.select_version(key, 0, [1, 1, 1, 1, 1], -2)[0]
@@ -81,10 +81,10 @@ for key in records:
         if column != records[key][j]:
             error = True
     if error:
-        print('???update error on', records[key], 'and', updated_columns, ':', record, ', correct:', records[key])
+        print('update error on', records[key], 'and', updated_columns, ':', record, ', correct:', records[key])
     else:
         pass
-        #print('update on', original, 'and', updated_columns, ':', record)
+        # print('update on', original, 'and', updated_columns, ':', record)
     
     #check version 0 for record
     record = query.select_version(key, 0, [1, 1, 1, 1, 1], 0)[0]
@@ -93,7 +93,7 @@ for key in records:
         if column != updated_records[key][j]:
             error = True
     if error:
-        print('?update error on', records[key], 'and', updated_columns, ':', record, ', correct:', updated_records[key])
+        print('update error on', records[key], 'and', updated_columns, ':', record, ', correct:', updated_records[key])
 
 keys = sorted(list(records.keys()))
 # aggregate on every column 
