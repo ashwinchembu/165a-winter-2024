@@ -109,10 +109,11 @@ std::vector<Record> Query::select_version(int search_key, int search_key_index, 
     for(size_t i = 0; i < rids.size(); i++){ //go through each matching RID that was returned from index
       RID rid = rids[i];
 			if(rid.id != 0){
-				std::cout << "base rid id: " << rid.id << '\n';
       	for(int j = 0; j <= relative_version; j++){ //go through indirection to get to correct version
         	rid = table->page_directory.find(*(rid.pointers[0]))->second; //go one step further in indirection
-					std::cout << "desired version id" << rid.id << '\n';
+					if(rid.id > 0){
+						break;
+					}
 				}
 
       	std::vector<int> record_columns(table->num_columns);
