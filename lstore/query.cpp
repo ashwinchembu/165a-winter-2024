@@ -105,8 +105,9 @@ std::vector<Record> Query::select_version(int search_key, int search_key_index, 
     relative_version = relative_version * (-1);
 
     std::vector<Record> records;
+					std::cout << "still works before index locate" << '\n';
     std::vector<RID> rids = table->index->locate(search_key_index, search_key); //this returns the RIDs of the base pages
-
+std::cout << "still works after index locate" << '\n';
     for(size_t i = 0; i < rids.size(); i++){ //go through each matching RID that was returned from index
       RID rid = rids[i];
 			if(rid.id != 0){
@@ -136,9 +137,7 @@ bool Query::update(int primary_key, const std::vector<int>& columns) {
       old_columns.push_back(*(last_update.pointers[i + 4]));
     }
     if(update_rid.id != 0){
-			std::cout << "still works before index" << '\n';
         table->index->update_index(update_rid, columns, old_columns); //update the index
-				std::cout << "still works after index" << '\n';
     }
     return (update_rid.id != 0); //return true if successfully updated
 }
