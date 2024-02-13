@@ -230,6 +230,9 @@ RID PageRange::update(RID rid, int rid_new, const std::vector<int>& columns) {
     new_record[1] = page_range[tail_last*num_column+1].second->write(rid_new); // RID column
     new_record[2] = page_range[tail_last*num_column+2].second->write(0); // Timestamp
     for (int i = 4; i < num_column; i++) {
+
+std::cout << columns[i - 4] << std::endl;
+
         if (std::isnan(columns[i - 4]) || columns[i-4] == -9) { // Temporarily treat -9 as None.
         // if (std::isnan(columns[i - 4])) {
             new_record[i] = page_range[tail_last*num_column+i].second->write(base_record[i]);
