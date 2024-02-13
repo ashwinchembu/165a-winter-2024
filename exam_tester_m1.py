@@ -45,7 +45,7 @@ for key in records:
         if column != records[key][i]:
             error = True
     if error:
-        print('select error on', key, ':', record[key], ', correct:', records[key])
+        print('select error on', key, ':', record[key][0], ', correct:', records[key])
     else:
         pass
         # print('select on', key, ':', record)
