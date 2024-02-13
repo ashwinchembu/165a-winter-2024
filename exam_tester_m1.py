@@ -47,8 +47,8 @@ for key in records:
     if error:
         print('select error on', key, ':', record, ', correct:', records[key])
     else:
-        pass
-        # print('select on', key, ':', record)
+        #pass
+        print('select on', key, ':', record)
 
 updated_records = {}
 for key in records:
