@@ -134,6 +134,7 @@ bool Query::update(int primary_key, const std::vector<int>& columns) {
 		std::cout << "previous update: " << last_update.id << '\n';
     RID update_rid = table->update(base_rid, columns); // insert update into the table
 			std::cout << "new update: " << update_rid.id << '\n';
+			std::cout << "base rid now points to: " << *(base_rid.pointers[0]) << '\n';
     std::vector<int> old_columns;
     for(int i = 0; i < table->num_columns; i++){ // fill old_columns with the contents of previous update
       old_columns.push_back(*(last_update.pointers[i + 4]));
