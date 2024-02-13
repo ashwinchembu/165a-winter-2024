@@ -1,4 +1,4 @@
-from index import Index
+from .index import Index
 from time import time
 from DBWrapper import *
 
