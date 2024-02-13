@@ -48,8 +48,6 @@ Index_print_data = DB.Index_print_data
 Index_print_data.argtypes = [POINTER(c_int)]
 
 
-
-
 clearRidBuffer = DB.clearRidBuffer
 
 ridBufferSize = DB.ridBufferSize
@@ -77,7 +75,7 @@ class Index:
     """
 
     def locate(self, column, value):
-        ridsPtr = Index_locate(column,value)
+        ridsPtr = Index_locate(self.selfPtr, column,value)
         
         fillRidBuffer(ridsPtr)
         

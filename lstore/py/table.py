@@ -57,6 +57,10 @@ Table_constructor=DB.Table_constructor
 Table_constructor.restype = POINTER(c_int)
 Table_constructor.argtypes = [POINTER(c_char),c_int,c_int]
 
+Table_destructor = DB.Table_destructor
+Table_destructor.argtypes = [POINTER(c_int)]
+
+
 Table_insert=DB.Table_insert
 Table_insert.restype =POINTER(c_int)
 Table_insert.argtypes = [POINTER(c_int),POINTER(c_int)]
@@ -98,13 +102,6 @@ class Record:
         self.rid = rid
         self.key = key
         self.columns = columns
-        
-        erase_buffer_vector()
-        
-        for i in columns:
-            add_to_buffer_vector(i)
-            
-        self.selfPtr=Record_constructor(rid,key,get_buffer_vector())
 
 
 class Table:
@@ -124,8 +121,23 @@ class Table:
         
         self.selfPtr=Table_constructor(name.encode(),num_columns,key)
         
+    
+    def __init__(self, tablePtr, name, num_columns, key):
+        self.name = name
+        self.key = key
+        self.num_columns = num_columns
+        self.page_directory = {}
+        self.index = Index(self)
+        self.last_page = -1
+        
+        self.selfPtr = tablePtr
+    
+    
 
     def __merge(self):
         print("merge is happening")
         pass
+    
+    def destroyPointer(self):
+        Table_destructor(self.selfPtr)
  

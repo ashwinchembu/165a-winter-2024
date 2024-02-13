@@ -192,7 +192,7 @@ class Query:
             
             columns=[]
              
-            for j in range(2,recordSize)
+            for j in range(2,recordSize):
                 columns.append(getRecordBufferElement(offset + j))
                 
             

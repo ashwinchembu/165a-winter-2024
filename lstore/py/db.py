@@ -25,6 +25,8 @@ Database_tables=DB.Database_tables
 Database_tables.restype = POINTER(c_int)
 Database_tables.argtypes = [POINTER(c_int)]
 
+
+
 class Database():
 
     def __init__(self):
@@ -46,8 +48,12 @@ class Database():
     :param key: int             #Index of table key in columns
     """
     def create_table(self, name, num_columns, key_index):
-        table = Table(name, num_columns, key_index)
-        self.tables[name] = table
+        # table = Table(name, num_columns, key_index)
+        
+        tablePtr = Database_create_table(self.selfPtr,name.encode(),num_columns,key_index)
+        
+        self.tables[name] = Table(tablePtr,name,num_columns,key_index)
+
         return table
 
     
@@ -56,6 +62,9 @@ class Database():
     """
     def drop_table(self, name):
         Database_drop_table(self.selfPtr, name.encode())
+        
+        self.tables[name].destroyPointer()
+        
         del self.tables[name]
     
 
