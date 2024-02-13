@@ -175,6 +175,7 @@ int Query::sum_version(int start_range, int end_range, int aggregate_column_inde
     if (num_add == 0) {
         return -1;
     }
+		std::cout << "sum is " << sum << '\n';
     return sum;
 }
 
