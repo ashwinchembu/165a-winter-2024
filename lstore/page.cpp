@@ -209,7 +209,6 @@ RID PageRange::update(RID rid, int rid_new, const std::vector<int>& columns) {
     }
     page_of_rid--;
 std::cout << base_last << std::endl;
-std::cout << page_of_rid << std::endl;
     // We know the page where base record is stored
     int offset = rid.id - page_range[page_of_rid * num_column].first.id;
     int schema_encoding = 0;
@@ -221,7 +220,7 @@ std::cout << page_of_rid << std::endl;
         }
 std::cout << "Making new tail pages" << std::endl;
     }
-
+std::cout << tail_last << std::endl;
     std::vector<int> base_record(num_column);
     for (int i = 0; i < num_column; i++) {
         base_record[i] = (*((page_range[page_of_rid * num_column + i].second)->data + offset*sizeof(int)));
