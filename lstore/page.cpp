@@ -1,4 +1,4 @@
-#include <vector>
+.##include <vector>
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
@@ -208,10 +208,11 @@ RID PageRange::update(RID rid, int rid_new, const std::vector<int>& columns) {
         }
     }
     page_of_rid--;
+std::cout << base_last << std::endl;
+std::cout << page_of_rid << std::endl;
     // We know the page where base record is stored
     int offset = rid.id - page_range[page_of_rid * num_column].first.id;
     int schema_encoding = 0;
-std::cout << "Base indirection column is " << (*((page_range[page_of_rid * num_column].second)->data + offset*sizeof(int))) << std::endl;
     if (tail_last == base_last || !(page_range[tail_last * num_column].second->has_capacity())) {
         tail_last++; // Assuming that they will call after check if there are space left or not.
         for (int i = 0; i < num_column; i++) {
