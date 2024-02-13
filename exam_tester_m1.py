@@ -45,7 +45,7 @@ for key in records:
         if column != records[key][i]:
             error = True
     if error:
-        print('select error on', key, ':', record[key][0], ', correct:', records[key])
+        print('select error on', key, ':', record, ', correct:', records[key])
     else:
         pass
         # print('select on', key, ':', record)
@@ -69,7 +69,7 @@ for key in records:
         if column != records[key][j]:
             error = True
     if error:
-        print('update error on', records[key], 'and', updated_columns, ':', record, ', correct:', records[key])
+        print('update error on', records[key], 'and', updated_columns, ':', record[key], ', correct:', records[key])
     else:
         pass
         # print('update on', original, 'and', updated_columns, ':', record)
