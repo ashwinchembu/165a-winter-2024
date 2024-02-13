@@ -15,7 +15,7 @@ class Record:
         self.columns = columns
         
     def __str__(self):
-        return (self.columns)
+        print(self.columns)
 
 
 class Table:
