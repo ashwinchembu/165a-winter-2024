@@ -112,8 +112,8 @@ std::vector<Record> Query::select_version(int search_key, int search_key_index, 
 			if(rid.id != 0){
       	for(int j = 0; j <= relative_version; j++){ //go through indirection to get to correct version
         	rid = table->page_directory.find(*(rid.pointers[0]))->second; //go one step further in indirection
+				}
 					std::cout << rid.id << '\n';
-      	}
       	std::vector<int> record_columns(table->num_columns);
       	for(int j = 0; j < table->num_columns; j++){ //transfer columns from desired version into record object
         	if(projected_columns_index[j]){
