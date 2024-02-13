@@ -71,7 +71,7 @@ for key in records:
     if error:
         print('update error on', records[key], 'and', updated_columns, ': [', record, '] , correct:', records[key])
     else:
-        #pass
+        pass
         #print('update on', original, 'and', updated_columns, ':', record)
 
     #check version -2 for record
@@ -83,7 +83,7 @@ for key in records:
     if error:
         print('???update error on', records[key], 'and', updated_columns, ':', record, ', correct:', records[key])
     else:
-        #pass
+        pass
         #print('update on', original, 'and', updated_columns, ':', record)
     
     #check version 0 for record
