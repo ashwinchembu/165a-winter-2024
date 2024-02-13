@@ -35,7 +35,7 @@ class Query:
         erase_buffer_vector()
         
         for i in columns:
-            add_to_buffer_vector(c_intOrZero(i))
+            add_to_buffer_vector(c_intOrUnreasonable(i))
         
         return Query_insert(self.selfPtr,get_buffer_vector())
     
@@ -124,7 +124,7 @@ class Query:
         erase_buffer_vector()
         
         for i in columns:
-            add_to_buffer_vector(c_intOrZero(i))
+            add_to_buffer_vector(c_intOrUnreasonable(i))
 
         return Query_update(self.selfPtr,primary_key,get_buffer_vector())
 
