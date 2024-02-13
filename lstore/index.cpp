@@ -15,6 +15,36 @@
 
 #include "../DllConfig.h"
 
+std::vector<int>ridBuffer;
+
+COMPILER_SYMBOL void clearRidBuffer(){
+	ridBuffer.clear();
+}
+
+COMPILER_SYMBOL int ridBufferSize(){
+	return ridBuffer.size();
+}
+
+COMPILER_SYMBOL void fillRidBuffer(int* obj){
+	ridBuffer.clear();
+
+	std::vector<RID>* rids = (std::vector<RID>*)obj;
+
+	for(int i = 0; i< rids->size();i++){
+		ridBuffer.push_back((*rids)[i].id);
+	}
+
+	delete rids;
+}
+
+COMPILER_SYMBOL int getRidFromBuffer(int i){
+	return ridBuffer[i];
+}
+
+
+
+
+
 COMPILER_SYMBOL int* Index_table(int* IndexObj){
 	return (int*) ((((Index*)IndexObj))->table);
 }

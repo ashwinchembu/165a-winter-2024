@@ -8,6 +8,7 @@
 #include "index.h"
 #include "page.h"
 #include "RID.h"
+#include <memory>
 
 const int INDIRECTION_COLUMN = 0;
 const int RID_COLUMN = 1;
@@ -34,7 +35,9 @@ public:
     std::string name;
     int key; //primary key
     std::map<int, RID> page_directory; //<RID.id, RID>
-    std::vector<PageRange*> page_range;
+//
+
+    std::vector<std::shared_ptr<PageRange>> page_range;
     Index* index = nullptr;
     // int last_page_range = -1;
     int num_update = 0;
@@ -42,6 +45,7 @@ public:
 
 
     Table(std::string name_in, int num_columns_in, int key_in);
+
     friend class Index;
     friend class Query;
 

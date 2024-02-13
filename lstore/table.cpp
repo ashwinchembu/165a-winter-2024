@@ -7,6 +7,7 @@
 #include <cstring>
 #include "table.h"
 #include <cstdio>
+#include <memory>
 
 #include "../DllConfig.h"
 
@@ -92,6 +93,10 @@ COMPILER_SYMBOL int* Record_columns(int* obj){
 	Record* ref = (Record*)obj;
 
 	return (int*)(&(ref->columns));
+}
+
+COMPILER_SYMBOL void Table_destructor(int* obj){
+	delete ((Table*)obj);
 }
 
 COMPILER_SYMBOL char* Table_name(int* obj){
@@ -180,11 +185,15 @@ RID Table::insert(const std::vector<int>& columns) {
     int rid_id = num_insert;
     RID record;
     if (page_range.size() == 0 || !(page_range.back()->base_has_capacity())) {
-        page_range.push_back(new PageRange(rid_id, columns)); // Make a base page with given record
+
+    	std::shared_ptr<PageRange>newPageRange{new PageRange(rid_id, columns)};
+
+        page_range.push_back(newPageRange); // Make a base page with given record
         // return the RID for index or something
-        record = page_range.back()->page_range[0].first;
+
+        record = (page_range.back().get())->page_range[0].first;
     } else { // If there are base page already, just insert it normally.
-        record = page_range.back()->insert(rid_id, columns);
+        record = (page_range.back().get())->insert(rid_id, columns);
     }
     page_directory.insert({rid_id, record});
     return record;
@@ -204,12 +213,14 @@ RID Table::update(RID rid, const std::vector<int>& columns) {
     int rid_id = num_update * -1;
     size_t i = 0;
     for (; i < page_range.size(); i++) {
-        if (page_range[i]->page_range[0].first.id > rid.id) {
+
+        if ((page_range[i].get())->page_range[0].first.id > rid.id) {
             break;
         }
     }
     i--;
-    return page_range[i]->update(rid, rid_id, columns);
+
+    return (page_range[i].get())->update(rid, rid_id, columns);
 }
 
 /***
