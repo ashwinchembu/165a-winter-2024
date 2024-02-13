@@ -178,7 +178,7 @@ class Query:
         clearRecordBuffer()
         fillRecordBuffer(recordsPtr)
 
-        if(numberOfRecordsInBuffer() == 0)
+        if numberOfRecordsInBuffer() == 0:
             return False
         
         recordSize = getRecordSize()

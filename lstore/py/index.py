@@ -49,6 +49,21 @@ Index_print_data.argtypes = [POINTER(c_int)]
 
 
 
+
+clearRidBuffer = DB.clearRidBuffer
+
+ridBufferSize = DB.ridBufferSize
+ridBufferSize.restype = c_int
+
+fillRidBuffer = DB.fillRidBuffer
+fillRidBuffer.argtypes = [POINTER(c_int)]
+
+getRidFromBuffer = DB.getRidFromBuffer
+getRidFromBuffer.restype = c_int
+getRidFromBuffer.argtypes = [c_int]
+    
+    
+
 class Index:
 
     def __init__(self, table):
@@ -62,7 +77,19 @@ class Index:
     """
 
     def locate(self, column, value):
-        pass
+        ridsPtr = Index_locate(column,value)
+        
+        fillRidBuffer(ridsPtr)
+        
+        numberOfRids = ridBufferSize()
+        
+        returnRids=[]
+        
+        for i in range(0,numberOfRids):
+            returnRids.append(getRidFromBuffer(i))
+        
+
+        return returnRids
         
         
         # Locate specific value on specific column using the mechanism in index array.
@@ -74,8 +101,19 @@ class Index:
     """
 
     def locate_range(self, begin, end, column):
-        # Same thing but range
-        pass
+        ridsPtr = Index_locate_range(self.selfPtr,begin,end,column)
+        
+        fillRidBuffer(ridsPtr)
+        
+        numberOfRids = ridBufferSize()
+        
+        returnRids=[]
+        
+        for i in range(0,numberOfRids):
+            returnRids.append(getRidFromBuffer(i))
+        
+
+        return returnRids
 
     """
     # optional: Create index on specific column
