@@ -163,7 +163,7 @@ int Query::sum_version(int start_range, int end_range, int aggregate_column_inde
 										}
 								}
                 RID old_rid = table->page_directory.find(indirection)->second;
-								std::cout << "add the value from " << old_rid << '\n';
+								std::cout << "add the value from " << old_rid.id << '\n';
                 sum += *((old_rid).pointers[4+aggregate_column_index]); // add the value for the old rid
 								std::cout << "add " << *((old_rid).pointers[4+aggregate_column_index]) << " to the sum.\n";
             } else { // value is not changed
