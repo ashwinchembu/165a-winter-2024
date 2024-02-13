@@ -1,5 +1,7 @@
 from lstore.py.db import Database
 from lstore.py.query import Query
+from copy import copy
+
 
 from random import choice, randint, sample, seed
 
@@ -59,7 +61,7 @@ for key in records:
         value = randint(0, 20)
         updated_columns[i] = value
         # copy record to check
-        original = records[key].copy()
+        original = copy(records[key])
         # update our test directory
         records[key][i] = value
         query.update(key, *updated_columns)
