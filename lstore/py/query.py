@@ -178,7 +178,7 @@ class Query:
         clearRecordBuffer()
         fillRecordBuffer(recordsPtr)
 
-        if numberOfRecordsInBuffer() == 0:
+        if(numberOfRecordsInBuffer() == 0)
             return False
         
         recordSize = getRecordSize()
@@ -192,7 +192,7 @@ class Query:
             
             columns=[]
              
-            for j in range(2,recordSize):
+            for j in range(2,recordSize)
                 columns.append(getRecordBufferElement(offset + j))
                 
             

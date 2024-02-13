@@ -114,8 +114,6 @@ class Page:
         
         self.selfPtr = Page_constructor()
         
-        
-    
 
     def has_capacity(self):
         return Page_has_capacity(self.selfPtr);

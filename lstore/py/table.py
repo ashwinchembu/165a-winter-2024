@@ -105,8 +105,6 @@ class Record:
             add_to_buffer_vector(i)
             
         self.selfPtr=Record_constructor(rid,key,get_buffer_vector())
-        
-        erase_buffer_vector()
 
 
 class Table:
@@ -122,6 +120,8 @@ class Table:
         self.page_directory = {}
         self.index = Index(self)
         self.last_page = -1
+        
+        
         self.selfPtr=Table_constructor(name.encode(),num_columns,key)
         
 

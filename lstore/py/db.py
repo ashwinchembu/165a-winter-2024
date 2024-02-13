@@ -29,7 +29,8 @@ class Database():
 
     def __init__(self):
         self.tables = {}
-        pass
+        self.selfPtr = Database_constructor()
+
 
     # Not required for milestone1
     def open(self, path):
@@ -54,6 +55,7 @@ class Database():
     # Deletes the specified table
     """
     def drop_table(self, name):
+        Database_drop_table(self.selfPtr, name.encode())
         del self.tables[name]
     
 
