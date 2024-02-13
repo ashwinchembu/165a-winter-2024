@@ -208,7 +208,6 @@ RID PageRange::update(RID rid, int rid_new, const std::vector<int>& columns) {
         }
     }
     page_of_rid--;
-std::cout << base_last << std::endl;
     // We know the page where base record is stored
     int offset = rid.id - page_range[page_of_rid * num_column].first.id;
     int schema_encoding = 0;
@@ -218,9 +217,8 @@ std::cout << base_last << std::endl;
         // buffer.push_back(new Page());
             page_range.push_back(std::make_pair(RID(), new Page()));
         }
-std::cout << "Making new tail pages" << std::endl;
     }
-std::cout << tail_last << std::endl;
+
     std::vector<int> base_record(num_column);
     for (int i = 0; i < num_column; i++) {
         base_record[i] = (*((page_range[page_of_rid * num_column + i].second)->data + offset*sizeof(int)));
@@ -229,8 +227,6 @@ std::cout << tail_last << std::endl;
     std::vector<int*> new_record(num_column);
 
     new_record[0] = page_range[tail_last*num_column].second->write(base_record[0]); // Indirection column
-		std::cout << "base rid was pointing to " << base_record[0] << '\n';
-		std::cout << "new rid is pointing to " << *(new_record[0]) << '\n'; 
     new_record[1] = page_range[tail_last*num_column+1].second->write(rid_new); // RID column
     new_record[2] = page_range[tail_last*num_column+2].second->write(0); // Timestamp
     for (int i = 4; i < num_column; i++) {
