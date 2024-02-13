@@ -239,7 +239,7 @@ RID PageRange::update(RID rid, int rid_new, const std::vector<int>& columns) {
         }
     }
     new_record[3] = page_range[tail_last*num_column+3].second->write(schema_encoding); // schema encoding
-    *((page_range[page_of_rid * num_column + 1].second)->data + offset*sizeof(int)) = rid_new;
+    *((page_range[page_of_rid * num_column].second)->data + offset*sizeof(int)) = rid_new;
     *((page_range[page_of_rid * num_column + 3].second)->data + offset*sizeof(int)) = (base_record[3] | schema_encoding);
 
     return RID(new_record, rid_new);
