@@ -1,13 +1,17 @@
 from ctypes import *
 import platform
 import sys
+import os
 
 thePlatform=platform.system()
+
+current_directory = os.getcwd()
+full_path = os.path.join(current_directory, 'bin/linux/libmylibrary.so')
 
 if thePlatform == "Darwin":
     DB = CDLL(r'./bin/osx/libmylibrary.dylib')
 if thePlatform == "Linux":
-    DB = CDLL(r'./bin/linux/libmylibrary.so')
+    DB = CDLL(full_path)
 elif thePlatform == "Windows":
     #DB will be the windoows version
     pass
