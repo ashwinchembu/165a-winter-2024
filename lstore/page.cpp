@@ -212,7 +212,6 @@ RID PageRange::update(RID rid, int rid_new, const std::vector<int>& columns) {
     bool new_tail = false;
     int offset = rid.id - page_range[page_of_rid * num_column].first.id;
     int latest_rid = (*((page_range[page_of_rid * num_column].second)->data + offset*sizeof(int)));
-    std::cout << "latest_rid" << latest_rid << std::endl;
     if (tail_last == base_last || !(page_range[tail_last * num_column].second->has_capacity())) {
         tail_last++; // Assuming that they will call after check if there are space left or not.
         for (int i = 0; i < num_column; i++) {
@@ -244,7 +243,6 @@ RID PageRange::update(RID rid, int rid_new, const std::vector<int>& columns) {
     std::vector<int> latest_record(num_column);
     for (int i = 0; i < num_column; i++) {
         latest_record[i] = (*((page_range[latest_page * num_column + i].second)->data + latest_offset*sizeof(int)));
-        std::cout << latest_record[i] << std::endl;
     }
 
     int schema_encoding = 0;
