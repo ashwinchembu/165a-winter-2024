@@ -10,12 +10,12 @@ query = Query(grades_table)
 keys = []
 
 insert_time_0 = process_time()
-for i in range(0, 1000000):
+for i in range(0, 10000):
     query.insert(906659671 + i, 93, 0, 0, 0)
     keys.append(906659671 + i)
 insert_time_1 = process_time()
 
-print("Inserting 1M records took:  \t\t\t", insert_time_1 - insert_time_0)
+print("Inserting 10K records took:  \t\t\t", insert_time_1 - insert_time_0)
 
 # Measuring update Performance
 update_cols = [
