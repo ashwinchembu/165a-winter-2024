@@ -246,6 +246,8 @@ RID PageRange::update(RID rid, int rid_new, const std::vector<int>& columns) {
         std::cout << latest_record[i] << " ";
     }
     std::cout << std::endl;
+    std::cout << "latest_page " << latest_page << std::endl;
+    std::cout << "latest_offset " << latest_offset << std::endl;
 
     int schema_encoding = 0;
     std::vector<int*> new_record(num_column);
