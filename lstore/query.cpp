@@ -149,12 +149,12 @@ int Query::sum(int start_range, int end_range, int aggregate_column_index) {
 int Query::sum_version(int start_range, int end_range, int aggregate_column_index, int relative_version) {
     // Placeholder for sum_version logic
     relative_version = relative_version * (-1);
-    int sum = 0;
+    unsigned long int sum = 0;
     std::vector<RID> rids = table->index->locate_range(start_range, end_range, table->key);
     int num_add = 0;
     for (size_t i = 0; i < rids.size(); i++) { //for each of the rids, find the old value and sum
         if (rids[i].id != 0) { //If RID is valid i.e. not deleted
-   // if this column is changed
+          //  if (rids[i].check_schema(aggregate_column_index)) { // if this column is changed
                 int indirection = *((rids[i]).pointers[0]); // the new indirection
 							//	std::cout << "version 0: " << *((table->page_directory.find(indirection)->second).pointers[4+aggregate_column_index]) << '\n';
                 for (int j = 1; j <= relative_version; j++) {
@@ -166,7 +166,9 @@ int Query::sum_version(int start_range, int end_range, int aggregate_column_inde
 								}
                 RID old_rid = table->page_directory.find(indirection)->second;
                 sum += *((old_rid).pointers[4+aggregate_column_index]); // add the value for the old rid
-
+          //  } else { // value is not changed
+          //      sum += *((rids[i]).pointers[4+aggregate_column_index]); // add the value in the column, +4 for metadata columns
+          //  }
             num_add++;
         }
     }
