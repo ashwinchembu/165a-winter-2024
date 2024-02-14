@@ -210,6 +210,7 @@ RID Table::insert(const std::vector<int>& columns) {
  */
 RID Table::update(RID rid, const std::vector<int>& columns) {
     num_update++;
+		std::cout << "update number " << num_update << " successful\n";
     int rid_id = num_update * -1;
     size_t i = 0;
     for (; i < page_range.size(); i++) {
