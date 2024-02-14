@@ -27,7 +27,7 @@ public:
     /* data */
     /// @TODO Move this to config file
     const int PAGE_SIZE = 2048;
-    const int LOGICAL_PAGE = 32;
+    const int LOGICAL_PAGE = 4;
     const int NUM_SLOTS = 2048*LOGICAL_PAGE;
     int num_slot_left = NUM_SLOTS;
     int base_last = 0;
