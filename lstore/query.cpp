@@ -139,7 +139,7 @@ bool Query::update(int primary_key, const std::vector<int>& columns) {
 			new_columns.push_back(*(update_rid.pointers[i + 4]));
     }
     if(update_rid.id != 0){
-        table->index->update_index(update_rid, new_columns, old_columns); //update the index
+        table->index->update_index(base_rid, new_columns, old_columns); //update the index
     }
     return (update_rid.id != 0); //return true if successfully updated
 }
