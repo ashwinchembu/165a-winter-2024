@@ -91,7 +91,7 @@ bool Query::insert(const std::vector<int>& columns) {
     //std::cout << "insert into table... ";
     RID rid = table->insert(columns);
     //std::cout << "insert into index..." << std::endl;
-    //table->index->insert_index(rid, columns);
+    table->index->insert_index(rid, columns);
     return rid.id;
 }
 
