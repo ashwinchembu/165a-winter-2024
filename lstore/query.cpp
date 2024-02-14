@@ -137,7 +137,7 @@ bool Query::update(int primary_key, const std::vector<int>& columns) {
       old_columns.push_back(*(last_update.pointers[i + 4]));
 			std::cout << "old: " << (*(last_update.pointers[i + 4])) << '\n';
 			new_columns.push_back(*(update_rid.pointers[i + 4]));
-			std::cout << "new: " << (*(update_rid.pointers[i + 4])) << '\n';
+			std::cout << "new: " << columns[i] << '\n';
     }
     if(update_rid.id != 0){
         table->index->update_index(update_rid, new_columns, old_columns); //update the index
