@@ -105,8 +105,10 @@ std::vector<Record> Query::select_version(int search_key, int search_key_index, 
     relative_version = relative_version * (-1);
 
     std::vector<Record> records;
+		std::cout << "5\n";
     std::vector<RID> rids = table->index->locate(search_key_index, search_key); //this returns the RIDs of the base pages
-    for(size_t i = 0; i < rids.size(); i++){ //go through each matching RID that was returned from index
+		std::cout << "6\n";
+		for(size_t i = 0; i < rids.size(); i++){ //go through each matching RID that was returned from index
       RID rid = rids[i];
 			if(rid.id != 0){
       	for(int j = 0; j <= relative_version; j++){ //go through indirection to get to correct version
