@@ -227,7 +227,7 @@ RID PageRange::update(RID rid, int rid_new, const std::vector<int>& columns) {
                 break;
             }
         }
-        latest_page = latest_page - 1 - new_tail;
+        latest_page = latest_page - 1 - (new_tail || (latest_page == tail_last));
     }
     int latest_offset = (page_range[latest_page * num_column].first.id - latest_rid);
     std::vector<int> latest_record(num_column);
