@@ -35,6 +35,11 @@ CFLAGS += $(OS_FLAGS)
 # Full path to output library
 LIBRARY := $(abspath $(OUTDIR))/lib$(LIBNAME).$(LIB_EXT)
 
+# Set macOS specific flags for hardened runtime
+ifeq ($(UNAME_S), Darwin)
+    CFLAGS += -Wl,-undefined,dynamic_lookup
+endif
+
 all: $(LIBRARY)
 
 $(LIBRARY): $(SRC)
@@ -45,4 +50,5 @@ clean:
 	rm -rf bin
 
 .PHONY: all clean
+
 
