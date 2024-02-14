@@ -212,6 +212,7 @@ RID PageRange::update(RID rid, int rid_new, const std::vector<int>& columns) {
     bool new_tail = false;
     int offset = rid.id - page_range[page_of_rid * num_column].first.id;
     int latest_rid = (*((page_range[page_of_rid * num_column].second)->data + offset*sizeof(int)));
+    std::cout << "latest_rid" << latest_rid << std::endl;
     if (tail_last == base_last || !(page_range[tail_last * num_column].second->has_capacity())) {
         tail_last++; // Assuming that they will call after check if there are space left or not.
         for (int i = 0; i < num_column; i++) {
@@ -247,7 +248,7 @@ RID PageRange::update(RID rid, int rid_new, const std::vector<int>& columns) {
     new_record[1] = page_range[tail_last*num_column+1].second->write(rid_new); // RID column
     new_record[2] = page_range[tail_last*num_column+2].second->write(0); // Timestamp
     for (int i = 4; i < num_column; i++) {
-        if (std::isnan(columns[i - 4]) || columns[i-4] < -2147480000) { // Wrapper changes None to smallest integer possible
+        if (std::isnan(columns[i - 4]) || columns[i-4] < -2147480000 || columns[i-4] == 0) { // Wrapper changes None to smallest integer possible
             new_record[i] = page_range[tail_last*num_column+i].second->write(latest_record[i]);
         } else {
             schema_encoding = schema_encoding | (0b1 << (num_column - i - 1));
