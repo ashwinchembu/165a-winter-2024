@@ -212,7 +212,7 @@ RID PageRange::update(RID rid, int rid_new, const std::vector<int>& columns) {
     int offset = rid.id - page_range[page_of_rid * num_column].first.id;
     int latest_rid = (*((page_range[page_of_rid * num_column].second)->data + offset*sizeof(int)));
     int latest_page = base_last;
-
+std::cout << "0\n";
     if (tail_last == base_last || !(page_range[tail_last * num_column].second->has_capacity())) {
         tail_last++; // Assuming that they will call after check if there are space left or not.
         for (int i = 0; i < num_column; i++) {
@@ -220,7 +220,7 @@ RID PageRange::update(RID rid, int rid_new, const std::vector<int>& columns) {
             page_range.push_back(std::make_pair(RID(), new Page()));
         }
     }
-
+std::cout << "1\n";
     if (latest_rid < 0) { // Are there any updates we should be aware of?
         for (; latest_page <= tail_last; latest_page++) { //Look for the page row
             if (page_range[latest_page * num_column].first.id < latest_rid) {
@@ -230,7 +230,7 @@ RID PageRange::update(RID rid, int rid_new, const std::vector<int>& columns) {
         latest_page--;
     }
     int latest_offset = (-1) * (page_range[latest_page * num_column].first.id - latest_rid);
-
+std::cout << "2\n";
     std::vector<int> latest_record(num_column);
     for (int i = 0; i < num_column; i++) {
         latest_record[i] = (*((page_range[latest_page * num_column + i].second)->data + latest_offset*sizeof(int)));
@@ -238,7 +238,7 @@ RID PageRange::update(RID rid, int rid_new, const std::vector<int>& columns) {
 
     int schema_encoding = 0;
     std::vector<int*> new_record(num_column);
-
+std::cout << "3\n";
     new_record[0] = page_range[tail_last*num_column].second->write(latest_record[0]); // Indirection column
     new_record[1] = page_range[tail_last*num_column+1].second->write(rid_new); // RID column
     new_record[2] = page_range[tail_last*num_column+2].second->write(0); // Timestamp
@@ -253,7 +253,7 @@ RID PageRange::update(RID rid, int rid_new, const std::vector<int>& columns) {
     new_record[3] = page_range[tail_last*num_column+3].second->write(schema_encoding); // schema encoding
     *((page_range[page_of_rid * num_column].second)->data + offset*sizeof(int)) = rid_new;
     *((page_range[page_of_rid * num_column + 3].second)->data + offset*sizeof(int)) = (*((page_range[page_of_rid * num_column + 3].second)->data + offset*sizeof(int)) | schema_encoding);
-
+std::cout << "4\n";
     return RID(new_record, rid_new);
 }
 
