@@ -223,14 +223,13 @@ RID PageRange::update(RID rid, int rid_new, const std::vector<int>& columns) {
     int latest_page = base_last + 1;
     if (latest_rid < 0) { // Are there any updates we should be aware of?
         for (; latest_page <= tail_last; latest_page++) { //Look for the page row
-            if (latest_page == tail_last) {
+            if (new_tail || latest_page == tail_last) {
                 break;
-            }
-            if (page_range[latest_page * num_column].first.id < latest_rid) {
+            } else if (page_range[latest_page * num_column].first.id < latest_rid) {
                 break;
             }
         }
-        latest_page = latest_page - 1;
+        latest_page--;
     }
     int latest_offset = (page_range[latest_page * num_column].first.id - latest_rid);
     std::vector<int> latest_record(num_column);
