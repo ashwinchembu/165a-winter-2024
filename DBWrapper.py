@@ -227,11 +227,11 @@ Query_update.restype = c_bool
 Query_update.argtypes = [POINTER(c_int),c_int,POINTER(c_int)]
 
 Query_sum=DB.Query_sum
-Query_sum.restype = c_int
+Query_sum.restype = c_ulong
 Query_sum.argtypes = [POINTER(c_int),c_int,c_int,c_int]
 
 Query_sum_version=DB.Query_sum_version
-Query_sum_version.restype = c_int
+Query_sum_version.restype = c_ulong
 Query_sum_version.argtypes = [POINTER(c_int),c_int,c_int,c_int,c_int]
 
 Query_increment=DB.Query_increment
