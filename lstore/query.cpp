@@ -141,7 +141,7 @@ bool Query::update(int primary_key, const std::vector<int>& columns) {
     return (update_rid.id != 0); //return true if successfully updated
 }
 
-int Query::sum(int start_range, int end_range, int aggregate_column_index) {
+unsigned long int Query::sum(int start_range, int end_range, int aggregate_column_index) {
     // Return the sum if successful, std::nullopt otherwise
     return sum_version(start_range, end_range, aggregate_column_index, 0);
 }
@@ -175,7 +175,6 @@ unsigned long int Query::sum_version(int start_range, int end_range, int aggrega
     if (num_add == 0) {
         return -1;
     }
-		std::cout << "sum is " << sum << '\n';
     return sum;
 }
 
