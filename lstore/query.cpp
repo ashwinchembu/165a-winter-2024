@@ -132,11 +132,13 @@ bool Query::update(int primary_key, const std::vector<int>& columns) {
     RID last_update = table->page_directory.find(*(base_rid.pointers[0]))->second; //locate the previous update
     RID update_rid = table->update(base_rid, columns); // insert update into the table
     std::vector<int> old_columns;
+		std::vector<int> new_columns;
     for(int i = 0; i < table->num_columns; i++){ // fill old_columns with the contents of previous update
       old_columns.push_back(*(last_update.pointers[i + 4]));
+			old_columns.push_back(*(update_rid.pointers[i + 4]));
     }
     if(update_rid.id != 0){
-        table->index->update_index(update_rid, columns, old_columns); //update the index
+        table->index->update_index(update_rid, new_columns, old_columns); //update the index
     }
     return (update_rid.id != 0); //return true if successfully updated
 }

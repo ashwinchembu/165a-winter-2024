@@ -223,6 +223,7 @@ void Index::update_index(RID rid, std::vector<int>columns, std::vector<int>old_c
     }
 }
 
+
 void Index::setTable(Table* t){
     this->table = t;
     create_index(table->key);
