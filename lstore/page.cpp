@@ -240,6 +240,7 @@ RID PageRange::update(RID rid, int rid_new, const std::vector<int>& columns) {
     std::vector<int> latest_record(num_column);
     for (int i = 0; i < num_column; i++) {
         latest_record[i] = (*((page_range[latest_page * num_column + i].second)->data + latest_offset*sizeof(int)));
+        std::cout << latest_record[i] << std::endl;
     }
 
     int schema_encoding = 0;
@@ -248,7 +249,6 @@ RID PageRange::update(RID rid, int rid_new, const std::vector<int>& columns) {
     new_record[1] = page_range[tail_last*num_column+1].second->write(rid_new); // RID column
     new_record[2] = page_range[tail_last*num_column+2].second->write(0); // Timestamp
     for (int i = 4; i < num_column; i++) {
-        std::cout << columns[i - 4] << std::endl;
         if (std::isnan(columns[i - 4]) || columns[i-4] < -2147480000) { // Wrapper changes None to smallest integer possible
             new_record[i] = page_range[tail_last*num_column+i].second->write(latest_record[i]);
         } else {
