@@ -209,7 +209,6 @@ RID Table::insert(const std::vector<int>& columns) {
  *
  */
 RID Table::update(RID rid, const std::vector<int>& columns) {
-	std::cout << "expr" << std::endl;
     num_update++;
     int rid_id = num_update * -1;
     size_t i = 0;

@@ -128,6 +128,7 @@ std::vector<Record> Query::select_version(int search_key, int search_key_index, 
 }
 
 bool Query::update(int primary_key, const std::vector<int>& columns) {
+    std::cout << "expr" << std::endl;
     RID base_rid = table->index->locate(table->key, primary_key)[0]; //locate base RID of record to be updated
     RID last_update = table->page_directory.find(*(base_rid.pointers[0]))->second; //locate the previous update
     RID update_rid = table->update(base_rid, columns); // insert update into the table
