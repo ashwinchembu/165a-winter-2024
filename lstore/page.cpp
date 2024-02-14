@@ -239,7 +239,7 @@ RID PageRange::update(RID rid, int rid_new, const std::vector<int>& columns) {
         while (latest_rid != (*((page_range[latest_page * num_column + 1].second)->data + latest_offset*sizeof(int)))) {
             latest_offset++;
         }
-        std::cout << "hhh" << latest_rid != (*((page_range[latest_page * num_column + 1].second)->data + latest_offset*sizeof(int))) << std::endl;
+        std::cout << "hhh" << (*((page_range[latest_page * num_column + 1].second)->data + latest_offset*sizeof(int))) << std::endl;
     }
     std::vector<int> latest_record(num_column);
     for (int i = 0; i < num_column; i++) {
