@@ -230,7 +230,6 @@ RID PageRange::update(RID rid, int rid_new, const std::vector<int>& columns) {
                 break;
             }
         }
-        std::cout << latest << std::endl;
         latest_page--;
     }
     int latest_offset = 0;
@@ -239,9 +238,6 @@ RID PageRange::update(RID rid, int rid_new, const std::vector<int>& columns) {
     } else {
         while (latest_offset < NUM_SLOTS && latest_rid != (*((page_range[latest_page * num_column + 1].second)->data + latest_offset*sizeof(int)))) {
             latest_offset++;
-            std::cout << "latest_offset " << latest_offset << std::endl;
-            std::cout << "First rid in the latest page " << page_range[latest_page * num_column].first.id << std::endl;
-            std::cout << "latest_rid " << latest_rid << std::endl;
         }
     }
     std::vector<int> latest_record(num_column);
