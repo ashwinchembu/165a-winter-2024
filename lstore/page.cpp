@@ -222,7 +222,6 @@ RID PageRange::update(RID rid, int rid_new, const std::vector<int>& columns) {
     }
     int latest_page = page_of_rid;
     if (latest_rid < 0) { // Are there any updates we should be aware of?
-        std::cout << "expr" << std::endl;
         int latest_page = base_last + 1;
         for (; latest_page <= tail_last; latest_page++) { //Look for the page row
             if (new_tail || latest_page == tail_last) {
@@ -236,8 +235,9 @@ RID PageRange::update(RID rid, int rid_new, const std::vector<int>& columns) {
     }
     std::cout << "latest page " << latest_page << '\n';
     std::cout << "last tail " << tail_last << '\n';
-    std::cout << "Page range id" << page_range[latest_page * num_column].first.id << std::endl;
+    std::cout << "Page range id " << page_range[latest_page * num_column].first.id << std::endl;
     int latest_offset = (page_range[latest_page * num_column].first.id - latest_rid);
+    std::cout << "offset " << latest_offset << std::endl;
     std::vector<int> latest_record(num_column);
     for (int i = 0; i < num_column; i++) {
         latest_record[i] = (*((page_range[latest_page * num_column + i].second)->data + latest_offset*sizeof(int)));
