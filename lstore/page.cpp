@@ -230,17 +230,12 @@ RID PageRange::update(RID rid, int rid_new, const std::vector<int>& columns) {
                 break;
             }
         }
-        std::cout << "latest page " << latest_page << '\n';
         latest_page--;
     }
-    std::cout << "latest page " << latest_page << '\n';
-    std::cout << "last tail " << tail_last << '\n';
-    std::cout << "Page range id " << page_range[latest_page * num_column].first.id << std::endl;
     int latest_offset = (page_range[latest_page * num_column].first.id - latest_rid);
     if (latest_rid > 0) {
         latest_offset = latest_offset * (-1);
     }
-    std::cout << "offset " << latest_offset << std::endl;
     std::vector<int> latest_record(num_column);
     for (int i = 0; i < num_column; i++) {
         latest_record[i] = (*((page_range[latest_page * num_column + i].second)->data + latest_offset*sizeof(int)));
