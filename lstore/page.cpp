@@ -212,7 +212,6 @@ RID PageRange::update(RID rid, int rid_new, const std::vector<int>& columns) {
     bool new_tail = false;
     int offset = rid.id - page_range[page_of_rid * num_column].first.id;
     int latest_rid = (*((page_range[page_of_rid * num_column].second)->data + offset*sizeof(int)));
-    int latest_page = base_last;
     if (tail_last == base_last || !(page_range[tail_last * num_column].second->has_capacity())) {
         tail_last++; // Assuming that they will call after check if there are space left or not.
         for (int i = 0; i < num_column; i++) {
@@ -221,6 +220,7 @@ RID PageRange::update(RID rid, int rid_new, const std::vector<int>& columns) {
         }
         new_tail = true;
     }
+    int latest_page = base_last + 1;
     if (latest_rid < 0) { // Are there any updates we should be aware of?
         for (; latest_page <= tail_last; latest_page++) { //Look for the page row
             if (page_range[latest_page * num_column].first.id < latest_rid) {
