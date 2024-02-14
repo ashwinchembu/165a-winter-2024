@@ -37,7 +37,7 @@ LIBRARY := $(OUTDIR)/lib$(LIBNAME).$(LIB_EXT)
 
 all: $(LIBRARY)
 
-$(LIBRARY): $(SRC)
+$(LIBRARY): $(SRC) lstore/page.h
 	mkdir -p $(OUTDIR)
 	$(CC) $(CFLAGS) $(INC) -o $(LIBRARY) $(SRC)
 
