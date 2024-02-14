@@ -154,28 +154,21 @@ unsigned long int Query::sum_version(int start_range, int end_range, int aggrega
     int num_add = 0;
     for (size_t i = 0; i < rids.size(); i++) { //for each of the rids, find the old value and sum
         if (rids[i].id != 0) { //If RID is valid i.e. not deleted
-          //  if (rids[i].check_schema(aggregate_column_index)) { // if this column is changed
                 int indirection = *((rids[i]).pointers[0]); // the new indirection
-							//	std::cout << "version 0: " << *((table->page_directory.find(indirection)->second).pointers[4+aggregate_column_index]) << '\n';
                 for (int j = 1; j <= relative_version; j++) {
                     indirection = *(table->page_directory.find(indirection)->second.pointers[0]); //get the next indirection
-									//	std::cout << "version " << j*(-1) << ": " << *((table->page_directory.find(indirection)->second).pointers[4+aggregate_column_index]) << '\n';
 										if(indirection > 0){
 											break;
 										}
 								}
                 RID old_rid = table->page_directory.find(indirection)->second;
                 sum += *((old_rid).pointers[4+aggregate_column_index]); // add the value for the old rid
-          //  } else { // value is not changed
-          //      sum += *((rids[i]).pointers[4+aggregate_column_index]); // add the value in the column, +4 for metadata columns
-          //  }
             num_add++;
         }
     }
     if (num_add == 0) {
         return -1;
     }
-		std::cout << "sum is: " << sum << '\n';
     return sum;
 }
 
