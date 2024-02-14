@@ -218,11 +218,7 @@ void Index::update_index(RID rid, std::vector<int>columns, std::vector<int>old_c
                     break;
                 }
             }
-						if(columns[i] < -2147480000){
-								indices[i].insert({old_value, rid});
-						} else{
-								indices[i].insert({columns[i], rid});
-						}
+            indices[i].insert({columns[i], rid});
         }
     }
 }
