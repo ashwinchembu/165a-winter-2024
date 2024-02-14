@@ -146,7 +146,7 @@ int Query::sum(int start_range, int end_range, int aggregate_column_index) {
     return sum_version(start_range, end_range, aggregate_column_index, 0);
 }
 
-int Query::sum_version(int start_range, int end_range, int aggregate_column_index, int relative_version) {
+unsigned long int Query::sum_version(int start_range, int end_range, int aggregate_column_index, int relative_version) {
     // Placeholder for sum_version logic
     relative_version = relative_version * (-1);
     unsigned long int sum = 0;
