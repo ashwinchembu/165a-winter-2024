@@ -46,7 +46,7 @@ std::vector<int>projectedFields{1,1,1,1,1};
 
 // To have main function
 //void test() {
-int main(){
+int _m1Tester(){
 	testInsert();
 
 	testSelect();

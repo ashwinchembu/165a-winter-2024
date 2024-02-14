@@ -1,7 +1,8 @@
-from lstore.py.table import Table, Record
-from lstore.py.index import Index
-from lstore.py.page import Page, PageSet
+from .table import Table, Record
+from .index import Index
+from .page import Page, PageSet
 import sys
+from DBWrapper import *
 
 class Query:
     """
@@ -12,7 +13,7 @@ class Query:
     """
     def __init__(self, table):
         self.table = table
-        pass
+        self.selfPtr = Query_constructor(table.selfPtr)
 
     
     """
@@ -22,7 +23,7 @@ class Query:
     # Return False if record doesn't exist or is locked due to 2PL
     """
     def delete(self, primary_key):
-        pass
+        return Query_deleteRecord(self.selfPtr, primary_key);
     
     
     """
@@ -31,15 +32,23 @@ class Query:
     # Returns False if insert fails for whatever reason
     """
     def insert(self, *columns):
-        if self.table.last_page == -1 or self.table.page_directory[self.table.last_page].has_capacity() == False:
-            self.table.page_directory[self.table.last_page+1] = PageSet(self.table.num_columns)
-            self.table.last_page += 1
-        # print(self.table.page_directory)
-        # print(self.table.page_directory[0])
-        for i in range(len(columns)):
-            print("page: ", i)
-            (self.table.page_directory[self.table.last_page]).pages[i].write(columns[i])
-            #print(self.table.page_directory[self.table.last_page].pages[i])
+        erase_buffer_vector()
+        
+        for i in columns:
+            add_to_buffer_vector(c_intOrUnreasonable(i))
+        
+        return Query_insert(self.selfPtr,get_buffer_vector())
+    
+        
+        # if self.table.last_page == -1 or self.table.page_directory[self.table.last_page].has_capacity() == False:
+        #     self.table.page_directory[self.table.last_page+1] = PageSet(self.table.num_columns)
+        #     self.table.last_page += 1
+        # # print(self.table.page_directory)
+        # # print(self.table.page_directory[0])
+        # for i in range(len(columns)):
+        #     print("page: ", i)
+        #     (self.table.page_directory[self.table.last_page]).pages[i].write(columns[i])
+        #     #print(self.table.page_directory[self.table.last_page].pages[i])
         
             
         
@@ -55,27 +64,9 @@ class Query:
     # Assume that select will never be called on a key that doesn't exist
     """
     def select(self, search_key, search_key_index, projected_columns_index):
-        ret = []
-        #each pageset
-        for pageset in self.table.page_directory:
-            #each page(col)
-            col = search_key_index
-            key_page = self.table.page_directory[pageset].pages[col]
-            for row in range(len(key_page.data)):
-                if search_key == key_page.data[row]:
-                    record_col = []
-                    for ret_col in range(len(projected_columns_index)):
-                        if projected_columns_index[ret_col] == 1:
-                            #to_append_record = Record((ret_col, found_row), key_page[found_row], )
-                            record_col.append(self.table.page_directory[pageset].pages[ret_col].data[row])
-                            #ret.append(self.table.page_directory[pageset].pages[ret_col].data[found_row])
-                            
-                    ret.append(Record((pageset, row), search_key, record_col))
-        return ret
-            
-            
+        return self.select_version(search_key, search_key_index, projected_columns_index,0)
 
-    
+
     """
     # Read matching record with specified search key
     # :param search_key: the value you want to search based on
@@ -87,8 +78,42 @@ class Query:
     # Assume that select will never be called on a key that doesn't exist
     """
     def select_version(self, search_key, search_key_index, projected_columns_index, relative_version):
-        pass
+        erase_buffer_vector();
+        
+        for i in projected_columns_index:
+            add_to_buffer_vector(c_int(i))
+            
+    
+        recordsPtr = Query_select_version(self.selfPtr,search_key,
+                search_key_index,get_buffer_vector(),relative_version)
+        
+        clearRecordBuffer()
+        fillRecordBuffer(recordsPtr)
+        
+        numRecords = numberOfRecordsInBuffer()
 
+        if numRecords == 0:
+            return False
+        
+        recordSize = getRecordSize()
+        
+        returnRecords=[]
+        
+        for i in range(numRecords):
+            offset = i * recordSize
+            rid = getRecordBufferElement(offset)
+            key  = getRecordBufferElement(offset + 1)
+            
+            columns=[]
+             
+            for j in range(2,recordSize):
+                columns.append(getRecordBufferElement(offset + j))
+                
+            
+            nextRecord = Record(rid,key,columns)
+            returnRecords.append(nextRecord)
+        
+        return returnRecords;
     
     """
     # Update a record with specified key and columns
@@ -96,7 +121,12 @@ class Query:
     # Returns False if no records exist with given key or if the target record cannot be accessed due to 2PL locking
     """
     def update(self, primary_key, *columns):
-        pass
+        erase_buffer_vector()
+        
+        for i in columns:
+            add_to_buffer_vector(c_intOrUnreasonable(i))
+
+        return Query_update(self.selfPtr,primary_key,get_buffer_vector())
 
     
     """
@@ -108,7 +138,7 @@ class Query:
     # Returns False if no record exists in the given range
     """
     def sum(self, start_range, end_range, aggregate_column_index):
-        pass
+        return Query_sum(self.selfPtr,start_range,end_range,aggregate_column_index)
 
     
     """
@@ -121,7 +151,8 @@ class Query:
     # Returns False if no record exists in the given range
     """
     def sum_version(self, start_range, end_range, aggregate_column_index, relative_version):
-        pass
+        return Query_sum_version(self.selfPtr,start_range,
+                end_range,aggregate_column_index,relative_version)
 
     
     """
@@ -133,10 +164,11 @@ class Query:
     # Returns False if no record matches key or if target record is locked by 2PL.
     """
     def increment(self, key, column):
-        r = self.select(key, self.table.key, [1] * self.table.num_columns)[0]
-        if r is not False:
-            updated_columns = [None] * self.table.num_columns
-            updated_columns[column] = r[column] + 1
-            u = self.update(key, *updated_columns)
-            return u
-        return False
+        return Query_increment(self.selfPtr,key,column)
+        # r = self.select(key, self.table.key, [1] * self.table.num_columns)[0]
+        # if r is not False:
+        #     updated_columns = [None] * self.table.num_columns
+        #     updated_columns[column] = r[column] + 1
+        #     u = self.update(key, *updated_columns)
+        #     return u
+        # return False

@@ -3,6 +3,65 @@
 #include <stdexcept>
 #include "table.h"
 #include "db.h"
+#include <cstdio>
+
+#include "../DllConfig.h"
+
+
+std::vector<int>bufferVector;
+
+COMPILER_SYMBOL void add_to_buffer_vector(int element){
+	bufferVector.push_back(element);
+}
+
+COMPILER_SYMBOL int* get_buffer_vector(){
+	return(int*)(&(bufferVector));
+}
+
+COMPILER_SYMBOL int get_from_buffer_vector(int i){
+	return bufferVector[i];
+}
+
+COMPILER_SYMBOL void erase_buffer_vector(){
+	bufferVector.clear();
+}
+
+/*
+ * was having compiler issues with one of my makefiles
+ * so I chucked the main here for now
+ */
+int main(){}
+
+COMPILER_SYMBOL int* Database_constructor(){
+	return (int*)(new Database());
+}
+
+COMPILER_SYMBOL void Database_destructor(int* obj){
+	delete ((Database*)obj);
+}
+
+COMPILER_SYMBOL int* Database_create_table(int*obj,char* name,int num_columns, int key_index){
+	Database* self = ((Database*)obj);
+	Table* ret = new Table(self->create_table({name},num_columns,key_index));
+
+	return (int*)ret;
+}
+
+COMPILER_SYMBOL void Database_drop_table(int* obj, char* name){
+	((Database*)(obj))->drop_table({name});
+}
+
+COMPILER_SYMBOL int* Database_get_table(int* obj,char* name){
+	Database* self = ((Database*)obj);
+	Table* ret = new Table(self->get_table({name}));
+
+	return (int*)ret;
+}
+
+COMPILER_SYMBOL int* Database_tables(int* obj){
+	Database* self = ((Database*)obj);
+	return(int*)(&(self->tables));
+}
 
 /***
  *

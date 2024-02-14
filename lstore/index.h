@@ -8,11 +8,11 @@
 class Table;
 
 class Index {
-private:
+public:
     /* data */
     Table* table = nullptr;
-    std::unordered_map<int, std::unordered_multimap<int, RID>> indices; //column, (value, RID)
-public:
+    std::unordered_map<int, std::unordered_multimap<int, RID> > indices; //column, (value, RID)
+
     Index (){};
     virtual ~Index () {};
     std::vector<RID> locate(int column_number, int value);
@@ -23,6 +23,8 @@ public:
     //each index is a map, each element in the map corresponds to a key and a vector of rids
     void insert_index(RID rid, std::vector<int>columns);
     void update_index(RID rid, std::vector<int>columns, std::vector<int>old_columns);
+
+    void printData();
 };
 
 #endif

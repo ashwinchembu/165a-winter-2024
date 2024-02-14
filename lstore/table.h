@@ -8,6 +8,7 @@
 #include "index.h"
 #include "page.h"
 #include "RID.h"
+#include <memory>
 
 const int INDIRECTION_COLUMN = 0;
 const int RID_COLUMN = 1;
@@ -20,6 +21,7 @@ const int SCHEMA_ENCODING_COLUMN = 3;
 class Record {
 public:
     Record(int rid_in, int key_in, std::vector<int> columns_in) : rid(rid_in), key(key_in), columns(columns_in) {};
+    ~Record(){}
     int rid;
     int key;
     std::vector<int> columns;
@@ -29,18 +31,21 @@ class Index;
 class PageRange;
 
 class Table {
-private:
+public:
     std::string name;
     int key; //primary key
     std::map<int, RID> page_directory; //<RID.id, RID>
-    std::vector<PageRange*> page_range;
+//
+
+    std::vector<std::shared_ptr<PageRange>> page_range;
     Index* index = nullptr;
     // int last_page_range = -1;
     int num_update = 0;
     int num_insert = 0;
 
-public:
+
     Table(std::string name_in, int num_columns_in, int key_in);
+
     friend class Index;
     friend class Query;
 

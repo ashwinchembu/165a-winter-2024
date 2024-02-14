@@ -1,5 +1,5 @@
-from lstore.py.table import Table, Record
-from lstore.py.index import Index
+from table import Table, Record
+from index import Index
 
 class TransactionWorker:
 

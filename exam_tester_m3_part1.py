@@ -1,7 +1,7 @@
 from lstore.py.db import Database
 from lstore.py.query import Query
-from lstore.transaction import Transaction
-from lstore.transaction_worker import TransactionWorker
+from lstore.py.transaction import Transaction
+from lstore.py.transaction_worker import TransactionWorker
 
 from random import choice, randint, sample, seed
 

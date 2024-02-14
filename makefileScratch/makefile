@@ -33,7 +33,12 @@ CFLAGS := -Wall -shared -fPIC -std=c++11
 CFLAGS += $(OS_FLAGS)
 
 # Full path to output library
-LIBRARY := $(OUTDIR)/lib$(LIBNAME).$(LIB_EXT)
+LIBRARY := $(abspath $(OUTDIR))/lib$(LIBNAME).$(LIB_EXT)
+
+# Set macOS specific flags for hardened runtime
+ifeq ($(UNAME_S), Darwin)
+    CFLAGS += -Wl,-undefined,dynamic_lookup
+endif
 
 all: $(LIBRARY)
 
@@ -45,3 +50,5 @@ clean:
 	rm -rf bin
 
 .PHONY: all clean
+
+

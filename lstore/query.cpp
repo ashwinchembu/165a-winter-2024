@@ -5,6 +5,71 @@
 #include "index.h"
 #include "query.h"
 #include "../Toolkit.h"
+#include "../DllConfig.h"
+
+COMPILER_SYMBOL int* Query_constructor(int* table){
+	return (int*)new Query((Table*)table);
+}
+
+COMPILER_SYMBOL void Query_destructor(int* table){
+	delete (int*)((Table*)table);
+}
+
+COMPILER_SYMBOL bool Query_deleteRecord(int* obj, int primary_key){
+	return ((Query*)obj)->deleteRecord(primary_key);
+}
+
+COMPILER_SYMBOL bool Query_insert(int* obj, int* columns){
+	std::vector<int>* cols = (std::vector<int>*)columns;
+
+	return ((Query*)obj)->insert(*cols);
+}
+
+COMPILER_SYMBOL int* Query_select(int* obj,int search_key,
+		int search_key_index, int* projected_columns_index){
+	Query* ref = (Query*)obj;
+
+	std::vector<int>*projected_cols = (std::vector<int>*)projected_columns_index;
+
+	std::vector<Record> ret = ref->select(search_key,search_key_index,*projected_cols);
+
+	return (int*) (new std::vector<Record>(ret));
+}
+
+COMPILER_SYMBOL int* Query_select_version(int* obj,int search_key, int search_key_index,
+		int* projected_columns_index, int relative_version){
+
+	std::vector<int>* proj_columns = (std::vector<int>*)projected_columns_index;
+	Query* ref = (Query*)obj;
+
+	std::vector<Record> ret = ref->select_version(search_key,search_key_index,*proj_columns,relative_version);
+
+	return (int*)(new std::vector<Record>(ret));
+}
+
+COMPILER_SYMBOL bool Query_update(int* obj,int primary_key, int* columns){
+	std::vector<int>* cols = (std::vector<int>*)columns;
+
+	return ((Query*)obj)->update(primary_key,*cols);
+}
+
+COMPILER_SYMBOL unsigned long int Query_sum(int* obj,int start_range, int end_range, int aggregate_column_index){
+	return ((Query*)obj)->sum(start_range,end_range,aggregate_column_index);
+}
+
+COMPILER_SYMBOL unsigned long int Query_sum_version(int* obj,int start_range, int end_range,
+		int aggregate_column_index, int relative_version){
+
+	return ((Query*)obj)->sum_version(start_range,end_range,aggregate_column_index,relative_version);
+}
+
+COMPILER_SYMBOL bool Query_increment(int* obj,int key, int column){
+	return  ((Query*)obj)->increment(key,column);
+}
+
+COMPILER_SYMBOL int* Query_table(int* obj){
+	return (int*)(&(((Query*)obj)->table));
+}
 
 Query::Query(Table* _table) : table(_table) {}
 
@@ -41,22 +106,24 @@ std::vector<Record> Query::select_version(int search_key, int search_key_index, 
 
     std::vector<Record> records;
     std::vector<RID> rids = table->index->locate(search_key_index, search_key); //this returns the RIDs of the base pages
-
     for(size_t i = 0; i < rids.size(); i++){ //go through each matching RID that was returned from index
       RID rid = rids[i];
-      if(rid.id != 0){
-        for(int j = 0; j < relative_version; j++){ //go through indirection to get to correct version
-          rid = table->page_directory.find(*(rid.pointers[0]))->second; //go one step further in indirection
-        }
-        std::vector<int> record_columns(table->num_columns);
-        for(int j = 0; j < table->num_columns; j++){ //transfer columns from desired version into record object
-          if(projected_columns_index[j]){
-            record_columns[j] = *(rid.pointers[j + 4]);
-          }
-        }
-        records.push_back(Record(rids[i].id, search_key, record_columns)); //add a record with RID of base page, value of primary key, and contents of desired version
-      }
-    }
+			if(rid.id != 0){
+      	for(int j = 0; j <= relative_version; j++){ //go through indirection to get to correct version
+        	rid = table->page_directory.find(*(rid.pointers[0]))->second; //go one step further in indirection
+					if(rid.id > 0){
+						break;
+					}
+				}
+      	std::vector<int> record_columns(table->num_columns);
+      	for(int j = 0; j < table->num_columns; j++){ //transfer columns from desired version into record object
+        	if(projected_columns_index[j]){
+          	record_columns[j] = *(rid.pointers[j + 4]);
+        	}
+      	}
+      	records.push_back(Record(rids[i].id, search_key, record_columns)); //add a record with RID of base page, value of primary key, and contents of desired version
+			}
+		}
     return records;
 }
 
@@ -74,29 +141,28 @@ bool Query::update(int primary_key, const std::vector<int>& columns) {
     return (update_rid.id != 0); //return true if successfully updated
 }
 
-int Query::sum(int start_range, int end_range, int aggregate_column_index) {
+unsigned long int Query::sum(int start_range, int end_range, int aggregate_column_index) {
     // Return the sum if successful, std::nullopt otherwise
     return sum_version(start_range, end_range, aggregate_column_index, 0);
 }
 
-int Query::sum_version(int start_range, int end_range, int aggregate_column_index, int relative_version) {
+unsigned long int Query::sum_version(int start_range, int end_range, int aggregate_column_index, int relative_version) {
     // Placeholder for sum_version logic
     relative_version = relative_version * (-1);
-    int sum = 0;
+    unsigned long int sum = 0;
     std::vector<RID> rids = table->index->locate_range(start_range, end_range, table->key);
     int num_add = 0;
     for (size_t i = 0; i < rids.size(); i++) { //for each of the rids, find the old value and sum
         if (rids[i].id != 0) { //If RID is valid i.e. not deleted
-            if (rids[i].check_schema(aggregate_column_index)) { // if this column is changed
                 int indirection = *((rids[i]).pointers[0]); // the new indirection
-                for (int j = 1; j < relative_version; j++) {
+                for (int j = 1; j <= relative_version; j++) {
                     indirection = *(table->page_directory.find(indirection)->second.pointers[0]); //get the next indirection
-                }
+										if(indirection > 0){
+											break;
+										}
+								}
                 RID old_rid = table->page_directory.find(indirection)->second;
                 sum += *((old_rid).pointers[4+aggregate_column_index]); // add the value for the old rid
-            } else { // value is not changed
-                sum += *((rids[i]).pointers[4+aggregate_column_index]); // add the value in the column, +4 for metadata columns
-            }
             num_add++;
         }
     }
