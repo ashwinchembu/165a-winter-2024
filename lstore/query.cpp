@@ -156,16 +156,14 @@ int Query::sum_version(int start_range, int end_range, int aggregate_column_inde
         if (rids[i].id != 0) { //If RID is valid i.e. not deleted
             if (rids[i].check_schema(aggregate_column_index)) { // if this column is changed
                 int indirection = *((rids[i]).pointers[0]); // the new indirection
-                for (int j = 1; j <= relative_version; j++) {
+                for (int j = 1; j <= relative_version + 1; j++) {
                     indirection = *(table->page_directory.find(indirection)->second.pointers[0]); //get the next indirection
 										if(indirection > 0){
 											break;
 										}
 								}
                 RID old_rid = table->page_directory.find(indirection)->second;
-								std::cout << "add the value from " << old_rid.id << '\n';
                 sum += *((old_rid).pointers[4+aggregate_column_index]); // add the value for the old rid
-								std::cout << "add " << *((old_rid).pointers[4+aggregate_column_index]) << " to the sum.\n";
             } else { // value is not changed
                 sum += *((rids[i]).pointers[4+aggregate_column_index]); // add the value in the column, +4 for metadata columns
             }
