@@ -218,9 +218,7 @@ void Index::update_index(RID rid, std::vector<int>columns, std::vector<int>old_c
                     break;
                 }
             }
-						std::cout << "3\n";
             indices[i].insert({columns[i], rid});
-						std::cout << "4\n";
         }
     }
 }
