@@ -345,7 +345,7 @@ def c_intOrZero(number):
     return c_int(number) if isinstance(number, int) else c_int(0)
 
 def c_intOrUnreasonable(number):
-    return c_int(number) if isinstance(number, int) else c_int(cpp_min_signed_int())
+    return c_int(number) if isinstance(number, int) else c_int(cpp_min_signed_int() + 1000)
 
     
         
