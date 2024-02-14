@@ -220,8 +220,9 @@ RID PageRange::update(RID rid, int rid_new, const std::vector<int>& columns) {
         }
         new_tail = true;
     }
-    int latest_page = base_last + 1;
+    int latest_page = page_of_rid;
     if (latest_rid < 0) { // Are there any updates we should be aware of?
+        int latest_page = base_last + 1;
         for (; latest_page <= tail_last; latest_page++) { //Look for the page row
             if (new_tail || latest_page == tail_last) {
                 break;
