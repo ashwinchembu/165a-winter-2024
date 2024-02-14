@@ -201,7 +201,6 @@ RID PageRange::update(RID rid, int rid_new, const std::vector<int>& columns) {
     // Look for page available
     // Fetch the base record
     // Because the base record is monotonically increasing, we can use for loop and find like seed in hash
-    std::cout << "expr" << std::endl;
     int page_of_rid = 0;
     for (; page_of_rid <= base_last; page_of_rid++) {
         if (page_range[page_of_rid * num_column].first.id > rid.id) {
