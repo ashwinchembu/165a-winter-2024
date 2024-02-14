@@ -53,11 +53,11 @@ COMPILER_SYMBOL bool Query_update(int* obj,int primary_key, int* columns){
 	return ((Query*)obj)->update(primary_key,*cols);
 }
 
-COMPILER_SYMBOL int Query_sum(int* obj,int start_range, int end_range, int aggregate_column_index){
+COMPILER_SYMBOL unsigned long int Query_sum(int* obj,int start_range, int end_range, int aggregate_column_index){
 	return ((Query*)obj)->sum(start_range,end_range,aggregate_column_index);
 }
 
-COMPILER_SYMBOL int Query_sum_version(int* obj,int start_range, int end_range,
+COMPILER_SYMBOL unsigned long int Query_sum_version(int* obj,int start_range, int end_range,
 		int aggregate_column_index, int relative_version){
 
 	return ((Query*)obj)->sum_version(start_range,end_range,aggregate_column_index,relative_version);
