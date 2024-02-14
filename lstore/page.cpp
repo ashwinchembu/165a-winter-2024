@@ -210,7 +210,7 @@ RID PageRange::update(RID rid, int rid_new, const std::vector<int>& columns) {
     page_of_rid--;
     // We know the page where base record is stored
     int offset = rid.id - page_range[page_of_rid * num_column].first.id;
-    int latest_rid = (*((page_range[page_of_rid * num_column + i].second)->data + offset*sizeof(int)));
+    int latest_rid = (*((page_range[page_of_rid * num_column].second)->data + offset*sizeof(int)));
     int latest_page = base_last;
 
     if (tail_last == base_last || !(page_range[tail_last * num_column].second->has_capacity())) {
