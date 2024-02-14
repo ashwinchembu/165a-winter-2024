@@ -219,12 +219,15 @@ RID Table::update(RID rid, const std::vector<int>& columns) {
         }
     }
     i--;
-				std::cout << "1\n";
+
 		RID new_rid = (page_range[i].get())->update(rid, rid_id, columns);
+		std::cout << "1\n";
 		auto iter = page_directory.find(rid.id);
+		std::cout << "2\n";
 		*(iter->second.pointers[0]) = rid_id;
-				std::cout << "2\n";
+				std::cout << "3\n";
 		page_directory.insert({rid_id, new_rid});
+		std::cout << "4\n";
     return new_rid;
 }
 
