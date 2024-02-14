@@ -35,7 +35,10 @@ CFLAGS += $(OS_FLAGS)
 # Full path to output library
 LIBRARY := $(OUTDIR)/lib$(LIBNAME).$(LIB_EXT)
 
-all: $(LIBRARY)
+all: pre-build $(LIBRARY)
+
+pre-build:
+	@$(MAKE) clean
 
 $(LIBRARY): $(SRC) lstore/page.h
 	mkdir -p $(OUTDIR)
@@ -44,4 +47,4 @@ $(LIBRARY): $(SRC) lstore/page.h
 clean:
 	rm -rf bin
 
-.PHONY: all clean
+.PHONY: all pre-build clean
