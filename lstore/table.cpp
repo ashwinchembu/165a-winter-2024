@@ -210,7 +210,6 @@ RID Table::insert(const std::vector<int>& columns) {
  */
 RID Table::update(RID rid, const std::vector<int>& columns) {
     num_update++;
-		std::cout << "update number " << num_update << " successful\n";
     int rid_id = num_update * -1;
     size_t i = 0;
     for (; i < page_range.size(); i++) {
@@ -221,9 +220,11 @@ RID Table::update(RID rid, const std::vector<int>& columns) {
     }
     i--;
 		RID new_rid = (page_range[i].get())->update(rid, rid_id, columns);
+		std::cout << "page range success";
 		auto iter = page_directory.find(rid.id);
 		*(iter->second.pointers[0]) = rid_id;
 		page_directory.insert({rid_id, new_rid});
+		std::cout << "update number " << num_update << " successful\n";
     return new_rid;
 }
 
