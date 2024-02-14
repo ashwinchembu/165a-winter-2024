@@ -18,8 +18,8 @@ query = Query(grades_table)
 # dictionary for records to test the database: test directory
 records = {}
 
-number_of_records = 1000
-number_of_aggregates = 100
+number_of_records = 1000000
+number_of_aggregates = 10
 seed(3562901)
 
 for i in range(0, number_of_records):
