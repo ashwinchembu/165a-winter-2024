@@ -235,12 +235,12 @@ RID PageRange::update(RID rid, int rid_new, const std::vector<int>& columns) {
     int latest_offset = 0;
     if (latest_rid > 0) {
         latest_offset = (latest_rid - page_range[latest_page * num_column].first.id);
-        std::cout << "First rid in the base page " << page_range[latest_page * num_column].first.id << std::endl;
-        std::cout << latest_rid << std::endl;
     } else {
-        while (latest_rid != (*((page_range[latest_page * num_column + 1].second)->data + latest_offset*sizeof(int)))) {
+        while (latest_offset < NUM_SLOTS || latest_rid != (*((page_range[latest_page * num_column + 1].second)->data + latest_offset*sizeof(int)))) {
             latest_offset++;
         }
+        std::cout << "First rid in the base page " << page_range[latest_page * num_column].first.id << std::endl;
+        std::cout << latest_rid << std::endl;
     }
     std::vector<int> latest_record(num_column);
     for (int i = 0; i < num_column; i++) {
