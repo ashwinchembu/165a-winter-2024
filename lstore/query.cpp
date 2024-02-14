@@ -156,8 +156,10 @@ int Query::sum_version(int start_range, int end_range, int aggregate_column_inde
         if (rids[i].id != 0) { //If RID is valid i.e. not deleted
             if (rids[i].check_schema(aggregate_column_index)) { // if this column is changed
                 int indirection = *((rids[i]).pointers[0]); // the new indirection
-                for (int j = 1; j < relative_version; j++) {
+								std::cout << "version 0: " << *((table->page_directory.find(indirection)->second).pointers[4+aggregate_column_index]) << '\n';
+                for (int j = 1; j <= relative_version; j++) {
                     indirection = *(table->page_directory.find(indirection)->second.pointers[0]); //get the next indirection
+										std::cout << "version " << j*(-1) << ": " << *((table->page_directory.find(indirection)->second).pointers[4+aggregate_column_index]) << '\n';
 										if(indirection > 0){
 											break;
 										}
