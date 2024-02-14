@@ -235,7 +235,7 @@ RID PageRange::update(RID rid, int rid_new, const std::vector<int>& columns) {
     int latest_offset = 0;
     if (latest_rid > 0) {
         latest_offset = (latest_rid - page_range[latest_page * num_column].first.id);
-        std::cout << "offset in the base page" << page_range[latest_page * num_column].first.id << std::endl;
+        std::cout << "offset in the base page " << page_range[latest_page * num_column].first.id << std::endl;
     } else {
         while (latest_rid != (*((page_range[latest_page * num_column + 1].second)->data + latest_offset*sizeof(int)))) {
             latest_offset++;
@@ -247,7 +247,6 @@ RID PageRange::update(RID rid, int rid_new, const std::vector<int>& columns) {
         std::cout << latest_record[i] << " ";
     }
     std::cout << std::endl;
-    std::cout << "latest_page " << latest_page << std::endl;
     std::cout << "latest_offset " << latest_offset << std::endl;
 
     int schema_encoding = 0;
