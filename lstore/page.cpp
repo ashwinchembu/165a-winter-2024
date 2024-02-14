@@ -222,6 +222,7 @@ RID PageRange::update(RID rid, int rid_new, const std::vector<int>& columns) {
     }
     int latest_page = page_of_rid;
     if (latest_rid < 0) { // Are there any updates we should be aware of?
+        std::cout << "expr" << std::endl;
         int latest_page = base_last + 1;
         for (; latest_page <= tail_last; latest_page++) { //Look for the page row
             if (new_tail || latest_page == tail_last) {
@@ -253,9 +254,7 @@ RID PageRange::update(RID rid, int rid_new, const std::vector<int>& columns) {
             schema_encoding = schema_encoding | (0b1 << (num_column - i - 1));
             new_record[i] = page_range[tail_last*num_column+i].second->write(columns[i - 4]);
         }
-        std::cout << latest_record[i] << " ";
     }
-    std::cout << std::endl;
     new_record[3] = page_range[tail_last*num_column+3].second->write(schema_encoding); // schema encoding
     *((page_range[page_of_rid * num_column].second)->data + offset*sizeof(int)) = rid_new;
     *((page_range[page_of_rid * num_column + 3].second)->data + offset*sizeof(int)) = (*((page_range[page_of_rid * num_column + 3].second)->data + offset*sizeof(int)) | schema_encoding);
