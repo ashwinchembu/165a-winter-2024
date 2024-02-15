@@ -1,4 +1,13 @@
 # -165a-winter-2024.
+
+# TODO
+Page.cpp: Replace availability array with number of slots being used.
+General: Change most of parameters to const reference.
+General: Delete redundant variable and function calls.
+General: Make documentation up-to-date.
+General: Create exceptions on unexpected parameters or return value.
+
+# Current file system
 ├── config<br />
 ├── DBWrapper.py<br />
 ├── DllConfig.h<br />
