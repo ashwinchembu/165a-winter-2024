@@ -33,8 +33,6 @@ COMPILER_SYMBOL void fillRidBuffer(int* obj){
 	for(size_t i = 0; i< rids->size();i++){
 		ridBuffer.push_back((*rids)[i].id);
 	}
-
-	delete rids;
 }
 
 COMPILER_SYMBOL int getRidFromBuffer(int i){
