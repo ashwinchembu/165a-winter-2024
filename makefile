@@ -27,7 +27,7 @@ endif
 LIBNAME := mylibrary
 
 # Flags
-CFLAGS := -Wall -shared -fPIC -std=c++11
+CFLAGS := -O3 -Wall -shared -fPIC -std=c++11 
 
 # Combine flags
 CFLAGS += $(OS_FLAGS)
