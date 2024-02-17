@@ -34,7 +34,7 @@ public:
     int tail_last = 0;
     int num_column = 0;
 
-    PageRange (int new_rid, std::vector<int> columns);
+    PageRange (const int& new_rid, const std::vector<int>& columns);
     ~PageRange();
     std::vector<std::pair<RID, Page*> > page_range;
     RID insert(const int& new_rid, const std::vector<int>& columns);

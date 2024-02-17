@@ -67,7 +67,7 @@ COMPILER_SYMBOL int PageRange_num_column(int* obj){
 	return ((PageRange*)obj)->num_column;
 }
 
-COMPILER_SYMBOL int* PageRange_constructor(int new_rid, int* columns){
+COMPILER_SYMBOL int* PageRange_constructor(const int& new_rid, int* columns){
 	std::vector<int>* cols = (std::vector<int>*)columns;
 	return (int*)(new PageRange(new_rid,*cols));
 }
@@ -82,13 +82,13 @@ COMPILER_SYMBOL int* PageRange_page_range(int* obj){
 	return (int*)(&(ref->page_range));
 }
 
-COMPILER_SYMBOL int* PageRange_insert(int* obj, int new_rid,int*columns){
+COMPILER_SYMBOL int* PageRange_insert(int* obj, const int& new_rid,int*columns){
 	PageRange* ref = (PageRange*)obj;
 	std::vector<int>* cols = (std::vector<int>*)columns;
 	return (int*)(new RID(ref->insert(new_rid,*cols)));
 }
 
-COMPILER_SYMBOL int* PageRange_update(int* obj,int* rid, int rid_new,int*columns){
+COMPILER_SYMBOL int* PageRange_update(int* obj,int* rid, const int& rid_new,int*columns){
 	PageRange* ref = (PageRange*)obj;
 	std::vector<int>* cols = (std::vector<int>*)columns;
 	RID* r = (RID*)rid;
@@ -100,11 +100,11 @@ COMPILER_SYMBOL bool PageRange_base_has_capacity(int* obj){
 	return ((PageRange*)obj)->base_has_capacity();
 }
 
-COMPILER_SYMBOL bool PageRange_base_has_capacity_for(int* obj,int size){
+COMPILER_SYMBOL bool PageRange_base_has_capacity_for(int* obj, const int& size){
 	return ((PageRange*)obj)->base_has_capacity_for(size);
 }
 
-PageRange::PageRange (int new_rid, std::vector<int> columns) {
+PageRange::PageRange (const int& new_rid, const std::vector<int>& columns) {
     num_column = columns.size();
     for (int i = 0; i < num_column + 4; i++) {
         // buffer.push_back(new Page());
