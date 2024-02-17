@@ -47,7 +47,7 @@ COMPILER_SYMBOL int* Query_select_version(int* obj, const int& search_key, const
 	return (int*)(new std::vector<Record>(ret));
 }
 
-COMPILER_SYMBOL bool Query_update(int* obj, const int& primary_key, int* columns){
+COMPILER_SYMBOL bool Query_update(int* obj, const int primary_key, int* columns){
 	std::vector<int>* cols = (std::vector<int>*)columns;
 
 	return ((Query*)obj)->update(primary_key,*cols);
