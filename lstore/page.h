@@ -16,7 +16,7 @@ public:
     int availability[NUM_SLOTS] = {0}; // 0 is empty, 1 is occupied, 2 is deleted.
     Page ();
     virtual ~Page ();
-    const bool has_capacity();
+    const bool has_capacity() const;
     int* write(const int& value);
     int* data = nullptr; // Data location(pointer)
     friend std::ostream& operator<<(std::ostream& os, const Page& p);
@@ -37,10 +37,10 @@ public:
     PageRange (int new_rid, std::vector<int> columns);
     ~PageRange();
     std::vector<std::pair<RID, Page*> > page_range;
-    RID insert(int new_rid, std::vector<int> columns);
-    RID update(RID rid, int rid_new, const std::vector<int>& columns);
-    bool base_has_capacity ();
-    bool base_has_capacity_for (int size);
+    RID insert(const int& new_rid, const std::vector<int>& columns);
+    RID update(const RID& rid, const int& rid_new, const std::vector<int>& columns);
+    bool base_has_capacity () const;
+    bool base_has_capacity_for (const int& size) const;
 };
 
 #endif

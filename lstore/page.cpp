@@ -142,7 +142,7 @@ PageRange::~PageRange () {
  * @return True if there are space for one more record left, False if not
  *
  */
-bool PageRange::base_has_capacity () {
+bool PageRange::base_has_capacity () const {
     return num_slot_left > 0;
 }
 
@@ -153,7 +153,7 @@ bool PageRange::base_has_capacity () {
  * @return True if there are space for one more record left, False if not
  *
  */
-bool PageRange::base_has_capacity_for (int size) {
+bool PageRange::base_has_capacity_for (const int& size) const {
     return num_slot_left >= size;
 }
 
@@ -165,7 +165,7 @@ bool PageRange::base_has_capacity_for (int size) {
  * @return return RID of new record upon successful insertion.
  *
  */
-RID PageRange::insert(int new_rid, std::vector<int> columns) {
+RID PageRange::insert(const int& new_rid, const std::vector<int>& columns) {
     bool newpage = false;
     // Add this record to base pages
     // Go through pages iteratively, and save data one by one.
@@ -197,7 +197,7 @@ RID PageRange::insert(int new_rid, std::vector<int> columns) {
     // Collect pointers, and make RID class, return it.
 }
 
-RID PageRange::update(RID rid, int rid_new, const std::vector<int>& columns) {
+RID PageRange::update(const RID& rid, const int& rid_new, const std::vector<int>& columns) {
     // Look for page available
     // Fetch the base record
     // Because the base record is monotonically increasing, we can use for loop and find like seed in hash
@@ -290,7 +290,7 @@ Page::~Page() {
  * @return True if page has capacity left, False if not
  *
  */
-const bool Page::has_capacity() {
+const bool Page::has_capacity() const {
     return(num_rows < NUM_SLOTS);
 }
 
