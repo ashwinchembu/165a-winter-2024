@@ -304,19 +304,20 @@ const bool Page::has_capacity() const {
 int* Page::write(const int& value) {
     int* insert = nullptr;
     /// TODO switch to simple num_rows
-    // for (int location = 0; location < NUM_SLOTS; location++) {
-    //     if (availability[location] == 0) {
-    //         //insert on location
-    //         int offset = location * sizeof(int); // Bytes from top of the page
-    //         insert = data + offset;
-    //         *insert = value;
-    //         availability[location] = 1;
-    //         break;
-    //     }
-    // }
-    insert = data + num_rows *sizeof(int);
-    *insert = value;
     num_rows++;
+    for (int location = 0; location < NUM_SLOTS; location++) {
+        if (availability[location] == 0) {
+            //insert on location
+            int offset = location * sizeof(int); // Bytes from top of the page
+            insert = data + offset;
+            *insert = value;
+            availability[location] = 1;
+            break;
+        }
+    }
+    // insert = data + num_rows *sizeof(int);
+    // *insert = value;
+    // num_rows++;
     return insert;
 }
 
