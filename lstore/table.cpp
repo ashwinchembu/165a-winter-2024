@@ -72,7 +72,7 @@ COMPILER_SYMBOL void fillRecordBuffer(int* obj){
 
 
 
-COMPILER_SYMBOL int* Record_constructor(const int& rid_in, const int& key_in, int* columns_in){
+COMPILER_SYMBOL int* Record_constructor(const int rid_in, const int key_in, int* columns_in){
 	std::vector<int>* cols = (std::vector<int>*)columns_in;
 	return (int*)(new Record(rid_in,key_in,*cols));
 }
@@ -136,7 +136,7 @@ COMPILER_SYMBOL int Table_num_insert(int* obj){
 	return ((Table*)obj)->num_insert;
 }
 
-COMPILER_SYMBOL int* Table_constructor(char* name_in, const int& num_columns_in, const int& key_in){
+COMPILER_SYMBOL int* Table_constructor(char* name_in, const int num_columns_in, const int key_in){
 	return (int*)new Table({name_in},num_columns_in,key_in);
 }
 

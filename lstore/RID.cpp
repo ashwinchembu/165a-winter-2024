@@ -17,7 +17,7 @@ COMPILER_SYMBOL int RID_SCHEMA_ENCODING_COLUMN(int* obj){
 	return ((RID*)obj)->SCHEMA_ENCODING_COLUMN;
 }
 
-COMPILER_SYMBOL int* RID_constructor(int* ptrs, const int& i){
+COMPILER_SYMBOL int* RID_constructor(int* ptrs, const int i){
 	std::vector<int*>* ptr = (std::vector<int*>*)ptrs;
 
 	return (int*)(new RID(*ptr,i));
@@ -36,7 +36,7 @@ COMPILER_SYMBOL int RID_id(int* obj){
 	return ((RID*)obj)->id;
 }
 
-COMPILER_SYMBOL bool RID_check_schema(int* obj, const int& column_num){
+COMPILER_SYMBOL bool RID_check_schema(int* obj, const int column_num){
 	return ((RID*)obj)->check_schema(column_num);
 }
 

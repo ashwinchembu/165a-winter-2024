@@ -15,7 +15,7 @@ COMPILER_SYMBOL void Query_destructor(int* table){
 	delete (int*)((Table*)table);
 }
 
-COMPILER_SYMBOL bool Query_deleteRecord(int* obj, const int& primary_key){
+COMPILER_SYMBOL bool Query_deleteRecord(int* obj, const int primary_key){
 	return ((Query*)obj)->deleteRecord(primary_key);
 }
 
@@ -26,7 +26,7 @@ COMPILER_SYMBOL bool Query_insert(int* obj, int* columns){
 }
 
 COMPILER_SYMBOL int* Query_select(int* obj, const int search_key,
-		const int search_key_index, int* projected_columns_index){
+		int search_key_index, int* projected_columns_index){
 	Query* ref = (Query*)obj;
 
 	std::vector<int>*projected_cols = (std::vector<int>*)projected_columns_index;
@@ -37,7 +37,7 @@ COMPILER_SYMBOL int* Query_select(int* obj, const int search_key,
 }
 
 COMPILER_SYMBOL int* Query_select_version(int* obj, const int search_key, const int search_key_index,
-		int* projected_columns_index, const int& relative_version){
+		int* projected_columns_index, const int relative_version){
 
 	std::vector<int>* proj_columns = (std::vector<int>*)projected_columns_index;
 	Query* ref = (Query*)obj;
@@ -53,16 +53,17 @@ COMPILER_SYMBOL bool Query_update(int* obj, const int primary_key, int* columns)
 	return ((Query*)obj)->update(primary_key,*cols);
 }
 
-COMPILER_SYMBOL unsigned long int Query_sum(int* obj, const int& start_range, const int& end_range, const int& aggregate_column_index){
+COMPILER_SYMBOL unsigned long int Query_sum(int* obj, const int start_range, const int end_range, const int aggregate_column_index){
 	return ((Query*)obj)->sum(start_range,end_range,aggregate_column_index);
 }
 
-COMPILER_SYMBOL unsigned long int Query_sum_version(int* obj, const int& start_range, const int& end_range, const int& aggregate_column_index, const int& relative_version){
+COMPILER_SYMBOL unsigned long int Query_sum_version(int* obj, const int start_range,  const int end_range,
+		int aggregate_column_index, int relative_version){
 
 	return ((Query*)obj)->sum_version(start_range,end_range,aggregate_column_index,relative_version);
 }
 
-COMPILER_SYMBOL bool Query_increment(int* obj, const int& key, const int& column){
+COMPILER_SYMBOL bool Query_increment(int* obj, const int key, const int column){
 	return  ((Query*)obj)->increment(key,column);
 }
 
