@@ -17,7 +17,7 @@ COMPILER_SYMBOL int RID_SCHEMA_ENCODING_COLUMN(int* obj){
 	return ((RID*)obj)->SCHEMA_ENCODING_COLUMN;
 }
 
-COMPILER_SYMBOL int* RID_constructor(int* ptrs, int i){
+COMPILER_SYMBOL int* RID_constructor(int* ptrs, const int& i){
 	std::vector<int*>* ptr = (std::vector<int*>*)ptrs;
 
 	return (int*)(new RID(*ptr,i));
@@ -36,7 +36,7 @@ COMPILER_SYMBOL int RID_id(int* obj){
 	return ((RID*)obj)->id;
 }
 
-COMPILER_SYMBOL bool RID_check_schema(int* obj,int column_num){
+COMPILER_SYMBOL bool RID_check_schema(int* obj, const int& column_num){
 	return ((RID*)obj)->check_schema(column_num);
 }
 
@@ -55,9 +55,9 @@ COMPILER_SYMBOL int RID_column_with_one(int* obj){
  * @return Return 1 if schema encoding is 1, and return 0 if schema encoding is 0.
  *
  */
-bool RID::check_schema (int column_num) {
+const bool RID::check_schema (const int& column_num) const {
     int schema_encoding = *(pointers[SCHEMA_ENCODING_COLUMN]);
-    int bin = 0b1 & (schema_encoding >> (column_num - 1));
+    const int bin = 0b1 & (schema_encoding >> (column_num - 1));
     return bin;
 }
 
@@ -68,7 +68,7 @@ bool RID::check_schema (int column_num) {
  * @return Return column number, excluding metadata columns if 1 is found within the range. Otherwise return -1.
  *
  */
-int RID::column_with_one () {
+const int RID::column_with_one () const {
     int num_elements = pointers.size() - 4; //Number of metadata columns
     int schema_encoding = *(pointers[SCHEMA_ENCODING_COLUMN]);
     for (int i = 0; i < num_elements; i++) {

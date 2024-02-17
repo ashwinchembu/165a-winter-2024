@@ -18,8 +18,8 @@ public:
     RID (std::vector<int*> ptr, int i) : pointers(ptr), id(i) {};
     std::vector<int*> pointers;
     int id;
-    bool check_schema (int column_num);
-    int column_with_one ();
+    const bool check_schema (const int& column_num) const;
+    const int column_with_one () const;
     RID& operator=(const RID& other) {
         if (this != &other) { // Protect against self-assignment
             this->id = other.id;
