@@ -18,9 +18,9 @@ COMPILER_SYMBOL int Page_num_rows(int* obj){
 	return  ((Page*)obj)->num_rows;
 }
 
-COMPILER_SYMBOL int* Page_availability(int* obj){
-	return  ((Page*)obj)->availability;
-}
+// COMPILER_SYMBOL int* Page_availability(int* obj){
+// 	return  ((Page*)obj)->availability;
+// }
 
 COMPILER_SYMBOL int* Page_constructor(){
 	return (int*)(new Page());
@@ -273,9 +273,9 @@ RID PageRange::update(const RID& rid, const int& rid_new, const std::vector<int>
 Page::Page() {
     data = new int[PAGE_SIZE]; //malloc takes number of bytes...?
     // data = (int*)malloc(PAGE_SIZE*4);
-    for (int i = 0; i < NUM_SLOTS; i++) {
-        availability[i] = 0;
-    }
+    // for (int i = 0; i < NUM_SLOTS; i++) {
+    //     availability[i] = 0;
+    // }
 }
 
 Page::~Page() {

@@ -13,7 +13,7 @@ public:
     constexpr static int PAGE_SIZE = 4096; // bytes
     constexpr static int NUM_SLOTS = PAGE_SIZE/sizeof(int); // bytes
     int num_rows = 0;
-    int availability[NUM_SLOTS] = {0}; // 0 is empty, 1 is occupied, 2 is deleted.
+    // int availability[NUM_SLOTS] = {0}; // 0 is empty, 1 is occupied, 2 is deleted.
     Page ();
     virtual ~Page ();
     const bool has_capacity() const;
