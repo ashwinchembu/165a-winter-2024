@@ -54,6 +54,10 @@ profiling: $(SRC) $(DEPS)
 
 optimized: $(SRC) $(DEPS)
 	mkdir -p $(OUTDIR)
+	$(CC) $(CFLAGS) $(INC) -o $(LIBRARY) $(SRC) $(OPTIMIZATION)
+
+_profiled: $(SRC) $(DEPS)
+	mkdir -p $(OUTDIR)
 	$(CC) $(CFLAGS) $(INC) -o $(LIBRARY) $(SRC) $(OPTIMIZATION) -fprofile-use -fprofile-correction
 
 clean:
