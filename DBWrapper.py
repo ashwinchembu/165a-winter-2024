@@ -127,8 +127,8 @@ Page_num_rows.restype = c_int
 Page_num_rows.argtypes = [POINTER(c_int)]
 
 # Page_availability = DB.Page_availability
-Page_availability.restype = POINTER(c_int)
-Page_availability.argtypes = [POINTER(c_int)]
+# Page_availability.restype = POINTER(c_int)
+# Page_availability.argtypes = [POINTER(c_int)]
 
 Page_constructor = DB.Page_constructor
 Page_constructor.restype = POINTER(c_int)
