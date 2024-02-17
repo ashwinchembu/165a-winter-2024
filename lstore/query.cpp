@@ -71,9 +71,8 @@ COMPILER_SYMBOL int* Query_table(int* obj){
 	return (int*)(&(((Query*)obj)->table));
 }
 
-Query::Query(Table* _table) : table(_table) {}
 
-bool Query::deleteRecord(int primary_key) {
+bool Query::deleteRecord(const int& primary_key) {
     // Placeholder for delete logic
     // Return true if successful, false otherwise
     // RID rid = table->page_directory.find(primary_key)->second;
@@ -95,14 +94,14 @@ bool Query::insert(const std::vector<int>& columns) {
     return rid.id;
 }
 
-std::vector<Record> Query::select(int search_key, int search_key_index, const std::vector<int>& projected_columns_index) {
+std::vector<Record> Query::select(const int& search_key, const int& search_key_index, const std::vector<int>& projected_columns_index) {
     // Placeholder for select logic
     // Populate records based on the search criteria
       return select_version(search_key, search_key_index, projected_columns_index, 0);
 }
 
-std::vector<Record> Query::select_version(int search_key, int search_key_index, const std::vector<int>& projected_columns_index, int relative_version) {
-    relative_version = relative_version * (-1);
+std::vector<Record> Query::select_version(const int& search_key, const int& search_key_index, const std::vector<int>& projected_columns_index, const int& _relative_version) {
+    const int relative_version = _relative_version * (-1);
 
     std::vector<Record> records;
     std::vector<RID> rids = table->index->locate(search_key_index, search_key); //this returns the RIDs of the base pages
@@ -127,7 +126,7 @@ std::vector<Record> Query::select_version(int search_key, int search_key_index, 
     return records;
 }
 
-bool Query::update(int primary_key, const std::vector<int>& columns) {
+bool Query::update(const int& primary_key, const std::vector<int>& columns) {
 		RID base_rid = table->index->locate(table->key, primary_key)[0]; //locate base RID of record to be updated
 	  RID last_update = table->page_directory.find(*(base_rid.pointers[0]))->second; //locate the previous update
 		RID update_rid = table->update(base_rid, columns); // insert update into the table
@@ -143,14 +142,14 @@ bool Query::update(int primary_key, const std::vector<int>& columns) {
     return (update_rid.id != 0); //return true if successfully updated
 }
 
-unsigned long int Query::sum(int start_range, int end_range, int aggregate_column_index) {
+unsigned long int Query::sum(const int& start_range, const int& end_range, const int& aggregate_column_index) {
     // Return the sum if successful, std::nullopt otherwise
     return sum_version(start_range, end_range, aggregate_column_index, 0);
 }
 
-unsigned long int Query::sum_version(int start_range, int end_range, int aggregate_column_index, int relative_version) {
+unsigned long int Query::sum_version(const int& start_range, const int& end_range, const int& aggregate_column_index, const int& _relative_version) {
     // Placeholder for sum_version logic
-    relative_version = relative_version * (-1);
+    const int relative_version = _relative_version * (-1);
     unsigned long int sum = 0;
     std::vector<RID> rids = table->index->locate_range(start_range, end_range, table->key);
     int num_add = 0;
@@ -174,35 +173,31 @@ unsigned long int Query::sum_version(int start_range, int end_range, int aggrega
     return sum;
 }
 
-bool Query::increment(int key, int column) {
+bool Query::increment(const int& key, const int& column) {
     // Placeholder for increment logic
     // Use select to find the record, then update to increment the column
     // Return true if successful, false otherwise
 
     std::vector<RID> rids = table->index->locate(table->key, key); //find key in primary key column
-    if (rids.size() == 0) { // if none found
+    if (rids.size() == 0 || rids[0].id == 0) { // if none found or deleted
         return false;
-    } else {
-        if (rids[0].id == 0) { // if record is deleted
-            return false;
-        }
-
-        int value = *(rids[0].pointers[4+column]);
-        (*(rids[0].pointers[4+column]))++; //increment the column in record
-
-        // void Index::update_index(RID rid, std::vector<int>columns, std::vector<int>old_columns){
-        std::vector<int> columns;
-        std::vector<int> old_columns;
-        for (int i = 0; i < table->num_columns; i++) {
-            if (i != (4+column)) {
-                columns.push_back(*(rids[0].pointers[i]));
-                old_columns.push_back(*(rids[0].pointers[i]));
-            } else {
-                columns.push_back(*(rids[0].pointers[i]));
-                old_columns.push_back(value);
-            }
-        }
-        table->index->update_index(rids[0], columns, old_columns);
-        return true;
     }
+
+    int value = *(rids[0].pointers[4+column]);
+    (*(rids[0].pointers[4+column]))++; //increment the column in record
+
+    // void Index::update_index(RID rid, std::vector<int>columns, std::vector<int>old_columns){
+    std::vector<int> columns;
+    std::vector<int> old_columns;
+    for (int i = 0; i < table->num_columns; i++) {
+        if (i != (4+column)) {
+            columns.push_back(*(rids[0].pointers[i]));
+            old_columns.push_back(*(rids[0].pointers[i]));
+        } else {
+            columns.push_back(*(rids[0].pointers[i]));
+            old_columns.push_back(value);
+        }
+    }
+    table->index->update_index(rids[0], columns, old_columns);
+    return true;
 }

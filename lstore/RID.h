@@ -23,7 +23,7 @@ public:
     RID& operator=(const RID& other) {
         if (this != &other) { // Protect against self-assignment
             this->id = other.id;
-            this->pointers = other.pointers; // Shallow copy; consider deep copy for pointers if needed
+            this->pointers = other.pointers; // Shallow copy
         }
         return *this;
     }
