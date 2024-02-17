@@ -28,7 +28,7 @@ endif
 
 # Output library name
 LIBNAME := mylibrary
-OPTIMIZATION := -Ofast -flto -march=native -fopenmp -D_GLIBCXX_PARALLEL
+OPTIMIZATION := -Ofast -flto=auto -march=native -fopenmp -D_GLIBCXX_PARALLEL -pipe
 
 # Flags
 CFLAGS := -Wall -shared -fPIC -std=c++11
@@ -47,6 +47,14 @@ all: $(LIBRARY) #pre-build
 $(LIBRARY): $(SRC) $(DEPS)
 	mkdir -p $(OUTDIR)
 	$(CC) $(CFLAGS) $(INC) -o $(LIBRARY) $(SRC) $(OPTIMIZATION)
+
+profiling: $(SRC) $(DEPS)
+	mkdir -p $(OUTDIR)
+	$(CC) $(CFLAGS) $(INC) -o $(LIBRARY) $(SRC) $(OPTIMIZATION) -fprofile-generate
+
+profiled: $(SRC) $(DEPS)
+	mkdir -p $(OUTDIR)
+	$(CC) $(CFLAGS) $(INC) -o $(LIBRARY) $(SRC) $(OPTIMIZATION) -fprofile-use -fprofile-correction
 
 clean:
 	rm -rf bin
