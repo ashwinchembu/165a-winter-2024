@@ -28,7 +28,7 @@ endif
 
 # Output library name
 LIBNAME := mylibrary
-OPTIMIZATION := -Ofast -flto=auto -march=native -fopenmp -D_GLIBCXX_PARALLEL -pipe -frename-registers -fsplit-wide-types-early
+OPTIMIZATION := -Ofast -flto=auto -march=native -fopenmp -D_GLIBCXX_PARALLEL -pipe -frename-registers
 
 # Flags
 CFLAGS := -Wall -shared -fPIC -std=c++11
