@@ -25,11 +25,6 @@ class Page:
     def has_capacity(self):
         return Page_has_capacity(self.selfPtr)
         
-        # if (self.num_records * 28) < 4096:
-        #     return True
-        # else:
-        #     return False
-
     def write(self, value):
         return Page_write(self.selfPtr,value)
         

@@ -38,20 +38,6 @@ class Query:
             add_to_buffer_vector(c_intOrUnreasonable(i))
         
         return Query_insert(self.selfPtr,get_buffer_vector())
-    
-        
-        # if self.table.last_page == -1 or self.table.page_directory[self.table.last_page].has_capacity() == False:
-        #     self.table.page_directory[self.table.last_page+1] = PageSet(self.table.num_columns)
-        #     self.table.last_page += 1
-        # # print(self.table.page_directory)
-        # # print(self.table.page_directory[0])
-        # for i in range(len(columns)):
-        #     print("page: ", i)
-        #     (self.table.page_directory[self.table.last_page]).pages[i].write(columns[i])
-        #     #print(self.table.page_directory[self.table.last_page].pages[i])
-        
-            
-        
 
     
     """
@@ -165,10 +151,3 @@ class Query:
     """
     def increment(self, key, column):
         return Query_increment(self.selfPtr,key,column)
-        # r = self.select(key, self.table.key, [1] * self.table.num_columns)[0]
-        # if r is not False:
-        #     updated_columns = [None] * self.table.num_columns
-        #     updated_columns[column] = r[column] + 1
-        #     u = self.update(key, *updated_columns)
-        #     return u
-        # return False

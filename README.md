@@ -1,15 +1,12 @@
 # -165a-winter-2024.
 
 # TODO
-Page.cpp: Replace availability array with number of slots being used.
-
-General: Change most of parameters to const reference.
-
-General: Delete redundant variable and function calls.
-
-General: Make documentation up-to-date.
-
-General: Create exceptions on unexpected parameters or return value.
+[]Page.cpp: Replace availability array with number of slots being used.
+[]General: Change most of parameters to const reference.
+[]Compiler: Find the optimal flags.
+[]General: Delete redundant variable and function calls.
+[]General: Make documentation up-to-date.
+[]General: Create exceptions on unexpected parameters or return value.
 
 # Current file system
 ├── config<br />
@@ -23,6 +20,15 @@ General: Create exceptions on unexpected parameters or return value.
 ├── __\_\_init\_\___.py<br />
 ├── LICENSE<br />
 ├── lstore<br />
+│   ├── py<br />
+│   │   ├── __\_\_init\_\___.py<br />
+│   │   ├── db.py<br />
+│   │   ├── index.py<br />
+│   │   ├── page.py<br />
+│   │   ├── query.py<br />
+│   │   ├── table.py<br />
+│   │   ├── transaction.py<br />
+│   │   └── transaction_worker.py<br />
 │   ├── db.cpp<br />
 │   ├── db.h<br />
 │   ├── index.cpp<br />
@@ -46,7 +52,6 @@ General: Create exceptions on unexpected parameters or return value.
 ├── m3_tester_part_1.py<br />
 ├── m3_tester_part_2.py<br />
 ├── __\_\_main\_\___.cpp<br />
-├── __\_\_main\_\___.exe<br />
 ├── __\_\_main\_\___.h<br />
 ├── __\_\_main\_\___.py<br />
 ├── makefile<br />

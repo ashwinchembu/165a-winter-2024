@@ -6,6 +6,9 @@ CC := g++
 # Source files
 SRC := __main__.cpp Toolkit.cpp lstore/db.cpp lstore/index.cpp lstore/page.cpp lstore/query.cpp lstore/RID.cpp lstore/table.cpp
 
+# Dependencies
+DEPS := lstore/db.h lstore/index.h lstore/page.h lstore/query.h lstore/RID.h lstore/table.h
+
 # Header files
 INC := -I.
 
@@ -25,12 +28,14 @@ endif
 
 # Output library name
 LIBNAME := mylibrary
+OPTIMIZATION := -Ofast -flto -march=native
 
 # Flags
 CFLAGS := -Wall -shared -fPIC -std=c++11
 
 # Combine flags
 CFLAGS += $(OS_FLAGS)
+CFLAGES += $(OPTIMIZATION)
 
 # Full path to output library
 LIBRARY := $(abspath $(OUTDIR))/lib$(LIBNAME).$(LIB_EXT)
@@ -50,5 +55,3 @@ clean:
 	rm -rf bin
 
 .PHONY: all clean
-
-
