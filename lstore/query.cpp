@@ -25,8 +25,8 @@ COMPILER_SYMBOL bool Query_insert(int* obj, int* columns){
 	return ((Query*)obj)->insert(*cols);
 }
 
-COMPILER_SYMBOL int* Query_select(int* obj, const int& search_key,
-		const int& search_key_index, int* projected_columns_index){
+COMPILER_SYMBOL int* Query_select(int* obj, const int search_key,
+		const int search_key_index, int* projected_columns_index){
 	Query* ref = (Query*)obj;
 
 	std::vector<int>*projected_cols = (std::vector<int>*)projected_columns_index;
@@ -36,7 +36,7 @@ COMPILER_SYMBOL int* Query_select(int* obj, const int& search_key,
 	return (int*) (new std::vector<Record>(ret));
 }
 
-COMPILER_SYMBOL int* Query_select_version(int* obj, const int& search_key, const int& search_key_index,
+COMPILER_SYMBOL int* Query_select_version(int* obj, const int search_key, const int search_key_index,
 		int* projected_columns_index, const int& relative_version){
 
 	std::vector<int>* proj_columns = (std::vector<int>*)projected_columns_index;
