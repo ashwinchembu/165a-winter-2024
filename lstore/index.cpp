@@ -35,7 +35,7 @@ COMPILER_SYMBOL void fillRidBuffer(int* obj){
 	}
 }
 
-COMPILER_SYMBOL int getRidFromBuffer(int i){
+COMPILER_SYMBOL int getRidFromBuffer(const int i){
 	return ridBuffer[i];
 }
 
@@ -59,23 +59,23 @@ COMPILER_SYMBOL void Index_destructor(int* IndexObj){
 	delete ((Index*)IndexObj);
 }
 
-COMPILER_SYMBOL int* Index_locate(int* IndexObj, int column_number, int value){
+COMPILER_SYMBOL int* Index_locate(int* IndexObj, const int column_number, const int value){
 	return (int*)(new std::vector<RID>(
 			((Index*)IndexObj)->locate(column_number,value)));
 }
 
 COMPILER_SYMBOL int* Index_locate_range(
-		int* IndexObj,int begin, int end, int column_number){
+		int* IndexObj, const int begin, const int end, const int column_number){
 
 	return (int*)(new std::vector<RID>(
 			((Index*)IndexObj)->locate_range(begin,end,column_number)));
 }
 
-COMPILER_SYMBOL void Index_create_index(int* IndexObj, int column_number){
+COMPILER_SYMBOL void Index_create_index(int* IndexObj, const int column_number){
 	((Index*)IndexObj)->create_index(column_number);
 }
 
-COMPILER_SYMBOL void Index_drop_index(int* IndexObj,int column_number){
+COMPILER_SYMBOL void Index_drop_index(int* IndexObj, const int column_number){
 	((Index*)IndexObj)->drop_index(column_number);
 }
 
