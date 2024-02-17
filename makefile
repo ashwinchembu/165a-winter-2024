@@ -35,7 +35,6 @@ CFLAGS := -Wall -shared -fPIC -std=c++11
 
 # Combine flags
 CFLAGS += $(OS_FLAGS)
-CFLAGES += $(OPTIMIZATION)
 
 # Full path to output library
 LIBRARY := $(OUTDIR)/lib$(LIBNAME).$(LIB_EXT)
@@ -47,7 +46,7 @@ all: $(LIBRARY) #pre-build
 
 $(LIBRARY): $(SRC) $(DEPS)
 	mkdir -p $(OUTDIR)
-	$(CC) $(CFLAGS) $(INC) -o $(LIBRARY) $(SRC)
+	$(CC) $(CFLAGS) $(INC) -o $(LIBRARY) $(SRC) $(OPTIMIZATION)
 
 clean:
 	rm -rf bin
