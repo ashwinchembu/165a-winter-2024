@@ -28,7 +28,7 @@ endif
 
 # Output library name
 LIBNAME := mylibrary
-OPTIMIZATION := -Ofast -flto=auto -march=native -fopenmp -D_GLIBCXX_PARALLEL -pipe
+OPTIMIZATION := -Ofast -flto=auto -march=native -fopenmp -D_GLIBCXX_PARALLEL -pipe -frename-registers -fsplit-wide-types-early
 
 # Flags
 CFLAGS := -Wall -shared -fPIC -std=c++11
@@ -46,15 +46,15 @@ all: $(LIBRARY) #pre-build
 
 $(LIBRARY): $(SRC) $(DEPS)
 	mkdir -p $(OUTDIR)
-	$(CC) $(CFLAGS) $(INC) -o $(LIBRARY) $(SRC) $(OPTIMIZATION)
+	$(CC) $(CFLAGS) $(INC) -o $(LIBRARY) $(SRC)
 
 profiling: $(SRC) $(DEPS)
 	mkdir -p $(OUTDIR)
-	$(CC) $(CFLAGS) $(INC) -o $(LIBRARY) $(SRC) $(OPTIMIZATION) -fprofile-generate -fprofile-dir="/home/gut/165a-winter-2024/bin"
+	$(CC) $(CFLAGS) $(INC) -o $(LIBRARY) $(SRC) $(OPTIMIZATION) -fprofile-generate -fprofile-partial-training
 
-profiled: $(SRC) $(DEPS)
+optimized: $(SRC) $(DEPS)
 	mkdir -p $(OUTDIR)
-	$(CC) $(CFLAGS) $(INC) -o $(LIBRARY) $(SRC) $(OPTIMIZATION) -fprofile-use -fprofile-correction -fprofile-dir="/home/gut/165a-winter-2024/bin"
+	$(CC) $(CFLAGS) $(INC) -o $(LIBRARY) $(SRC) $(OPTIMIZATION) -fprofile-use -fprofile-correction
 
 clean:
 	rm -rf bin
