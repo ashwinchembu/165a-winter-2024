@@ -28,7 +28,7 @@ endif
 
 # Output library name
 LIBNAME := mylibrary
-OPTIMIZATION := -O3 -flto -march=native
+OPTIMIZATION := -Ofast -flto -march=native
 
 # Flags
 CFLAGS := -Wall -shared -fPIC -std=c++11
