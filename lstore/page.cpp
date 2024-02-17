@@ -290,7 +290,7 @@ Page::~Page() {
  * @return True if page has capacity left, False if not
  *
  */
-bool Page::has_capacity() {
+const bool Page::has_capacity() {
     return(num_rows < NUM_SLOTS);
 }
 
@@ -301,13 +301,10 @@ bool Page::has_capacity() {
  * @param int value Value to write into
  *
  */
-int* Page::write(int value) {
+int* Page::write(const int& value) {
     num_rows++;
-    // if (!has_capacity()) {
-    //     // Page is full, add the data to new page
-    //     // Return error here
-    // }
     int* insert = nullptr;
+    /// TODO switch to simple num_rows
     for (int location = 0; location < NUM_SLOTS; location++) {
         if (availability[location] == 0) {
             //insert on location

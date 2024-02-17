@@ -16,8 +16,8 @@ public:
     int availability[NUM_SLOTS] = {0}; // 0 is empty, 1 is occupied, 2 is deleted.
     Page ();
     virtual ~Page ();
-    bool has_capacity();
-    int* write(int value);
+    const bool has_capacity();
+    int* write(const int& value);
     int* data = nullptr; // Data location(pointer)
     friend std::ostream& operator<<(std::ostream& os, const Page& p);
 };
@@ -27,8 +27,8 @@ public:
     /* data */
     /// @TODO Move this to config file
     const int PAGE_SIZE = 4096;
-    const int LOGICAL_PAGE = 16;
-    const int NUM_SLOTS = 2048*LOGICAL_PAGE;
+    const int LOGICAL_PAGE = 8;
+    const int NUM_SLOTS = 4096*LOGICAL_PAGE;
     int num_slot_left = NUM_SLOTS;
     int base_last = 0;
     int tail_last = 0;

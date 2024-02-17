@@ -28,7 +28,17 @@ endif
 
 # Output library name
 LIBNAME := mylibrary
-OPTIMIZATION := -Ofast -flto=auto -march=native -fopenmp -D_GLIBCXX_PARALLEL -pipe -frename-registers
+OPTIMIZATION := -Ofast -flto=auto -march=native -fopenmp -D_GLIBCXX_PARALLEL -pipe -frename-registers -funroll-loops
+# Ofast = optimize most aggressively
+# flto = optimization for linkers
+# march = use machine(architecture) specific instructions
+# fopenmp and D_GLIBCXX_PARALLEL = Use multi thread implementation of many c++ library functions
+# pipe = Compile faster
+# frename-registers = Avoid false dependencies on scheduled code
+# funroll-loops = Unroll loops that number of iteration can be determined on compiler time.
+
+
+
 
 # Flags
 CFLAGS := -Wall -shared -fPIC -std=c++11
