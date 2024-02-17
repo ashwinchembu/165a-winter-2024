@@ -36,29 +36,29 @@ COMPILER_SYMBOL int* Database_constructor(){
 	return (int*)(new Database());
 }
 
-COMPILER_SYMBOL void Database_destructor(int* obj){
+COMPILER_SYMBOL void Database_destructor(const int* obj){
 	delete ((Database*)obj);
 }
 
-COMPILER_SYMBOL int* Database_create_table(int*obj,char* name,int num_columns, int key_index){
+COMPILER_SYMBOL int* Database_create_table(const int* obj, const char* name, const int& num_columns, const int& key_index){
 	Database* self = ((Database*)obj);
 	Table* ret = new Table(self->create_table({name},num_columns,key_index));
 
 	return (int*)ret;
 }
 
-COMPILER_SYMBOL void Database_drop_table(int* obj, char* name){
+COMPILER_SYMBOL void Database_drop_table(const int* obj, const char* name){
 	((Database*)(obj))->drop_table({name});
 }
 
-COMPILER_SYMBOL int* Database_get_table(int* obj,char* name){
+COMPILER_SYMBOL int* Database_get_table(const int* obj, const char* name){
 	Database* self = ((Database*)obj);
 	Table* ret = new Table(self->get_table({name}));
 
 	return (int*)ret;
 }
 
-COMPILER_SYMBOL int* Database_tables(int* obj){
+COMPILER_SYMBOL int* Database_tables(const int* obj){
 	Database* self = ((Database*)obj);
 	return(int*)(&(self->tables));
 }
@@ -74,7 +74,7 @@ COMPILER_SYMBOL int* Database_tables(int* obj){
  * @return Table Return the newly created table
  *
  */
-Table Database::create_table(std::string name, int num_columns, int key_index){
+Table Database::create_table(const std::string& name, const int& num_columns, const int& key_index){
   Table table(name, num_columns, key_index);
   auto insert = tables.insert(std::make_pair(name, table));
   if (insert.second == false) {
@@ -90,7 +90,7 @@ Table Database::create_table(std::string name, int num_columns, int key_index){
  * @param string name The name of the table to delete
  *
  */
-void Database::drop_table(std::string name){
+void Database::drop_table(const std::string& name){
   if(tables.find(name) == tables.end()){
     throw std::invalid_argument("No table with that name was located. The table was not dropped.");
   }
@@ -107,7 +107,7 @@ void Database::drop_table(std::string name){
  * @return Table Return the specified table
  *
  */
-Table Database::get_table(std::string name){
+Table Database::get_table(const std::string& name){
   std::map<std::string, Table>::iterator table = tables.find(name);
   if(table == tables.end()){
     throw std::invalid_argument("No table with that name was located.");
