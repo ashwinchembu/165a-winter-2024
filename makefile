@@ -50,11 +50,11 @@ $(LIBRARY): $(SRC) $(DEPS)
 
 profiling: $(SRC) $(DEPS)
 	mkdir -p $(OUTDIR)
-	$(CC) $(CFLAGS) $(INC) -o $(LIBRARY) $(SRC) $(OPTIMIZATION) -fprofile-generate -fprofile-dir="/bin"
+	$(CC) $(CFLAGS) $(INC) -o $(LIBRARY) $(SRC) $(OPTIMIZATION) -fprofile-generate -fprofile-dir="/home/gut/165a-winter-2024/bin"
 
 profiled: $(SRC) $(DEPS)
 	mkdir -p $(OUTDIR)
-	$(CC) $(CFLAGS) $(INC) -o $(LIBRARY) $(SRC) $(OPTIMIZATION) -fprofile-use -fprofile-correction -fprofile-dir="/bin"
+	$(CC) $(CFLAGS) $(INC) -o $(LIBRARY) $(SRC) $(OPTIMIZATION) -fprofile-use -fprofile-correction -fprofile-dir="/home/gut/165a-winter-2024/bin"
 
 clean:
 	rm -rf bin
