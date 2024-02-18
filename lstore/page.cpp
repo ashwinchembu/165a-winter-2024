@@ -239,10 +239,12 @@ RID PageRange::update(const RID& rid, const int& rid_new, const std::vector<int>
     } else {
         int* end = ((page_range[latest_page * num_column + 1].second)->data + PAGE_SIZE*sizeof(int));
         int* itr = 	__gnu_parallel::find(((page_range[latest_page * num_column + 1].second)->data), end, latest_rid);
-        latest_offset = PAGE_SIZE*sizeof(int) - ((end - itr) / sizeof(int));
-        // while (latest_offset < NUM_SLOTS && latest_rid != (*((page_range[latest_page * num_column + 1].second)->data + latest_offset*sizeof(int)))) {
-        //     latest_offset++;
-        // }
+        int _latest_offset = PAGE_SIZE*sizeof(int) - ((end - itr) / sizeof(int));
+        while (latest_offset < NUM_SLOTS && latest_rid != (*((page_range[latest_page * num_column + 1].second)->data + latest_offset*sizeof(int)))) {
+            latest_offset++;
+        }
+        std::cout << latest_offset << std::endl;
+        std::cout << _latest_offset << std::endl;
     }
     std::vector<int> latest_record(num_column);
     for (int i = 0; i < num_column; i++) {
