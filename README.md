@@ -20,6 +20,5 @@ Use ```make```
 Use ```make optimized```
 
 ## Compiler optimization and profile guided optimizations
-Use ```make profiling```
-Run a python file. This run will be slower because gcc gathers information about our program.
+Use ```make profiling``` then run a python file. This run will be slower because gcc gathers information about our program. Use one that is a good representation of general use of the database.
 Then use ```make _profiled```
