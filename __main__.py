@@ -26,10 +26,12 @@ update_cols = [
     [None, None, None, None, randrange(0, 100)],
 ]
 
-update_time_0 = process_time()
+# update_time_0 = process_time()
+update_time_0 = time.time()
 for i in range(0, 10000):
     query.update(choice(keys), *(choice(update_cols)))
-update_time_1 = process_time()
+# update_time_1 = process_time()
+update_time_1 = time.time()
 print("Updating 10k records took:  \t\t\t", update_time_1 - update_time_0)
 
 # Measuring Select Performance
