@@ -236,14 +236,14 @@ RID PageRange::update(const RID& rid, const int& rid_new, const std::vector<int>
     if (latest_rid > 0) {
         latest_offset = (latest_rid - page_range[latest_page * num_column].first.id);
     } else {
-        int* end = ((page_range[latest_page * num_column + 1].second)->data + PAGE_SIZE*sizeof(int));
-        int* itr = std::find(((page_range[latest_page * num_column + 1].second)->data), end, latest_rid);
-        int _latest_offset = (end - itr) / sizeof(int);
+        // int* end = ((page_range[latest_page * num_column + 1].second)->data + PAGE_SIZE*sizeof(int));
+        // int* itr = std::find(((page_range[latest_page * num_column + 1].second)->data), end, latest_rid);
+        // int _latest_offset = (end - itr) / sizeof(int);
         while (latest_offset < NUM_SLOTS && latest_rid != (*((page_range[latest_page * num_column + 1].second)->data + latest_offset*sizeof(int)))) {
             latest_offset++;
         }
         std::cout << latest_offset << std::endl;
-        std::cout << _latest_offset << std::endl;
+        // std::cout << _latest_offset << std::endl;
     }
     std::vector<int> latest_record(num_column);
     for (int i = 0; i < num_column; i++) {
