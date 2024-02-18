@@ -242,6 +242,10 @@ RID PageRange::update(const RID& rid, const int& rid_new, const std::vector<int>
             latest_offset++;
         }
     }
+    std::vector<int> latest_record(num_column);
+    for (int i = 0; i < num_column; i++) {
+        latest_record[i] = (*((page_range[latest_page * num_column + i].second)->data + latest_offset*sizeof(int)));
+    }
     // int* test = ((page_range[latest_page * num_column].second)->data + latest_offset*sizeof(int));
     int schema_encoding = 0;
     std::vector<int*> new_record(num_column);
