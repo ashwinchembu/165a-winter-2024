@@ -5,62 +5,24 @@
 - [x]General: Change most of parameters to const reference.
 - [ ]Compiler: Find the optimal flags.
 - [ ]Compiler: Look into buildin functions and attributes. e.g. (alloc_size, hot, __builtin_prefetch)
+- [ ]General: Use multi threaded algorithm if possible. https://gcc.gnu.org/onlinedocs/libstdc++/manual/parallel_mode_using.html
 - [ ]General: Delete redundant variable and function calls.
 - [ ]General: Make documentation up-to-date.
 - [ ]General: Create exceptions on unexpected parameters or return value.
 - [ ]Index: Explore alternative for unordered multimap
 - [ ]General: Config
+- [ ]General: Windows support
 
-# Current file system
-├── config<br />
-├── DBWrapper.py<br />
-├── DllConfig.h<br />
-├── exam_tester_m1.py<br />
-├── exam_tester_m2_part1.py<br />
-├── exam_tester_m2_part2.py<br />
-├── exam_tester_m3_part1.py<br />
-├── exam_tester_m3_part2.py<br />
-├── __\_\_init\_\___.py<br />
-├── LICENSE<br />
-├── lstore<br />
-│   ├── py<br />
-│   │   ├── __\_\_init\_\___.py<br />
-│   │   ├── db.py<br />
-│   │   ├── index.py<br />
-│   │   ├── page.py<br />
-│   │   ├── query.py<br />
-│   │   ├── table.py<br />
-│   │   ├── transaction.py<br />
-│   │   └── transaction_worker.py<br />
-│   ├── db.cpp<br />
-│   ├── db.h<br />
-│   ├── index.cpp<br />
-│   ├── index.h<br />
-│   ├── __\_\_init\_\___.py<br />
-│   ├── page.cpp<br />
-│   ├── page.h<br />
-│   ├── query.cpp<br />
-│   ├── query.h<br />
-│   ├── RID.cpp<br />
-│   ├── RID.h<br />
-│   ├── sample.py<br />
-│   ├── table.cpp<br />
-│   └── table.h<br />
-├── m1_tester.cpp<br />
-├── m1_tester.exe<br />
-├── m1_tester.h<br />
-├── m1_tester.py<br />
-├── m2_tester_part1.py<br />
-├── m2_tester_part2.py<br />
-├── m3_tester_part_1.py<br />
-├── m3_tester_part_2.py<br />
-├── __\_\_main\_\___.cpp<br />
-├── __\_\_main\_\___.h<br />
-├── __\_\_main\_\___.py<br />
-├── makefile<br />
-├── makefileScratch<br />
-│   └── makefile<br />
-├── README.md<br />
-├── Toolkit.cpp<br />
-└── Toolkit.h<br />
+For milestone 3, we can use OpenMP for multithreading.
+https://learn.microsoft.com/en-us/cpp/parallel/openmp/reference/openmp-directives?view=msvc-170
 
+# Makefile usage
+## No compiler optimization
+Use ```make```
+
+## Compiler optimization
+Use ```make optimized```
+
+## Compiler optimization and profile guided optimizations
+Use ```make profiling``` then run a python file. This run will be slower because gcc gathers information about our program. Use one that is a good representation of general use of the database.
+Then use ```make _profiled```
