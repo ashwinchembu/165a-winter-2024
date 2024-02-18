@@ -59,13 +59,8 @@ COMPILER_SYMBOL void Index_destructor(int* IndexObj){
 	delete ((Index*)IndexObj);
 }
 
-<<<<<<< Updated upstream
 COMPILER_SYMBOL int* Index_locate(int* IndexObj, const int column_number, const int value){
-	return (int*)(new std::vector<RID>(
-=======
-COMPILER_SYMBOL int* Index_locate(int* IndexObj, int column_number, int value){
 	return (int*)(new std::vector<int>(
->>>>>>> Stashed changes
 			((Index*)IndexObj)->locate(column_number,value)));
 }
 

@@ -106,7 +106,7 @@ std::vector<Record> Query::select_version(const int& search_key, const int& sear
     std::vector<Record> records;
     std::vector<int> rids = table->index->locate(search_key_index, search_key); //this returns the RIDs of the base pages
 		for(size_t i = 0; i < rids.size(); i++){ //go through each matching RID that was returned from index
-      int rid = table->page_directory.find(rids[i]);
+      RID rid = table->page_directory.find(rids[i])->second;
 			if(rid.id != 0){
       	for(int j = 0; j <= relative_version; j++){ //go through indirection to get to correct version
         	rid = table->page_directory.find(*(rid.pointers[0]))->second; //go one step further in indirection
@@ -127,7 +127,7 @@ std::vector<Record> Query::select_version(const int& search_key, const int& sear
 }
 
 bool Query::update(const int& primary_key, const std::vector<int>& columns) {
-		RID base_rid = table->page_directory.find(table->index->locate(table->key, primary_key)[0]); //locate base RID of record to be updated
+		RID base_rid = table->page_directory.find(table->index->locate(table->key, primary_key)[0])->second; //locate base RID of record to be updated
 	  RID last_update = table->page_directory.find(*(base_rid.pointers[0]))->second; //locate the previous update
 		RID update_rid = table->update(base_rid, columns); // insert update into the table
     std::vector<int> old_columns;
@@ -154,7 +154,7 @@ unsigned long int Query::sum_version(const int& start_range, const int& end_rang
     std::vector<int> rids = table->index->locate_range(start_range, end_range, table->key);
     int num_add = 0;
     for (size_t i = 0; i < rids.size(); i++) { //for each of the rids, find the old value and sum
-				RID rid = table->page_directory.find(rids[i]);
+				RID rid = table->page_directory.find(rids[i])->second;
         if (rid.id != 0) { //If RID is valid i.e. not deleted
                 int indirection = *(rid.pointers[0]); // the new indirection
                 for (int j = 1; j <= relative_version; j++) {
@@ -180,7 +180,7 @@ bool Query::increment(const int& key, const int& column) {
     // Return true if successful, false otherwise
 
     std::vector<int> rids = table->index->locate(table->key, key); //find key in primary key column
-		RID rid = table->page_directory.find(rids[0]);
+		RID rid = table->page_directory.find(rids[0])->second;
     if (rids.size() == 0 || rid.id == 0) { // if none found or deleted
         return false;
     }
