@@ -107,7 +107,7 @@ COMPILER_SYMBOL void Index_print_data(int* IndexObj){
  * @return Return one or more RIDs
  *
  */
-std::vector<RID> Index::locate (int column_number, int value) {
+std::vector<RID> Index::locate (const int& column_number, const int& value) {
     std::vector<RID> matching_records; //holds the records that match the value
     auto index = indices.find(column_number); //find index for specified column
     if(index == indices.end()){
@@ -133,7 +133,7 @@ std::vector<RID> Index::locate (int column_number, int value) {
  * @return Return one or more RIDs
  *
  */
-std::vector<RID> Index::locate_range(int begin, int end, int column_number) {
+std::vector<RID> Index::locate_range(const int& begin, const int& end, const int& column_number) {
     // std::vector<RID> matching_records; //holds the records that match a value in the range
     std::vector<RID> all_matching_records; //holds the matching records from the whole range
     for (int i = begin; i <= end; i++) {
@@ -150,7 +150,7 @@ std::vector<RID> Index::locate_range(int begin, int end, int column_number) {
  * @param int column_number Which column to create index on
  *
  */
-void Index::create_index(int column_number) {
+void Index::create_index(const int& column_number) {
     std::unordered_multimap<int, RID> index;
     for (int i = 1; i <= table->num_insert; i++) {
         auto loc = table->page_directory.find(i); // Find RID for every rows
@@ -182,7 +182,7 @@ void Index::create_index(int column_number) {
  * @param int column_number Which column to delete index of
  *
  */
-void Index::drop_index(int column_number) {
+void Index::drop_index(const int& column_number) {
   auto index = indices.find(column_number);
   if(index == indices.end()){
     throw std::invalid_argument("No index for that column was located. The index was not dropped.");
@@ -191,7 +191,7 @@ void Index::drop_index(int column_number) {
   return;
 }
 
-void Index::insert_index(RID rid, std::vector<int>columns) {
+void Index::insert_index(RID& rid, std::vector<int>& columns) {
     // for (size_t i = 0; i < indices.size(); i++) {
     //     if (indices[i].size() >= 0) {    //Insert only if the index for column exist
     //         indices[i].insert({columns[i], rid});
@@ -205,7 +205,7 @@ void Index::insert_index(RID rid, std::vector<int>columns) {
     }
 }
 
-void Index::update_index(RID rid, std::vector<int>columns, std::vector<int>old_columns){
+void Index::update_index(RID& rid, std::vector<int>& columns, std::vector<int>& old_columns){
     for (size_t i = 0; i< indices.size(); i++) {
         if (indices[i].size() > 0) {	//if there is a index for that column
             int old_value = old_columns[i];
