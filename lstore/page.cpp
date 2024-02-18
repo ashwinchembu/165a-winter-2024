@@ -243,8 +243,8 @@ RID PageRange::update(const RID& rid, const int& rid_new, const std::vector<int>
         while (latest_offset < NUM_SLOTS && latest_rid != (*((page_range[latest_page * num_column + 1].second)->data + latest_offset*sizeof(int)))) {
             latest_offset++;
         }
-        std::cout << latest_offset << std::endl;
-        std::cout << _latest_offset << std::endl;
+        std::cout << (*((page_range[latest_page * num_column + 1].second)->data + latest_offset*sizeof(int))) << std::endl;
+        std::cout << *itr << std::endl;
     }
     std::vector<int> latest_record(num_column);
     for (int i = 0; i < num_column; i++) {
