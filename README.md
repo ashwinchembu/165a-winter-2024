@@ -5,6 +5,7 @@
 - [x]General: Change most of parameters to const reference.
 - [ ]Compiler: Find the optimal flags.
 - [ ]Compiler: Look into buildin functions and attributes. e.g. (alloc_size, hot, __builtin_prefetch)
+- [ ]General: Use multi threaded algorithm if possible. https://gcc.gnu.org/onlinedocs/libstdc++/manual/parallel_mode_using.html
 - [ ]General: Delete redundant variable and function calls.
 - [ ]General: Make documentation up-to-date.
 - [ ]General: Create exceptions on unexpected parameters or return value.
