@@ -242,21 +242,24 @@ RID PageRange::update(const RID& rid, const int& rid_new, const std::vector<int>
             latest_offset++;
         }
     }
-    std::vector<int> latest_record(num_column);
-    for (int i = 0; i < num_column; i++) {
-        latest_record[i] = (*((page_range[latest_page * num_column + i].second)->data + latest_offset*sizeof(int)));
-    }
-    // int* test = ((page_range[latest_page * num_column].second)->data + latest_offset*sizeof(int));
+    // std::vector<int> latest_record(num_column);
+    // for (int i = 0; i < num_column; i++) {
+    //     latest_record[i] = (*((page_range[latest_page * num_column + i].second)->data + latest_offset*sizeof(int)));
+    // }
+    int* test = ((page_range[latest_page * num_column].second)->data + latest_offset*sizeof(int));
     int schema_encoding = 0;
     std::vector<int*> new_record(num_column);
-    // new_record[0] = page_range[tail_last*num_column].second->write(*test); // Indirection column
-    new_record[0] = page_range[tail_last*num_column].second->write(latest_record[0]);
+    new_record[0] = page_range[tail_last*num_column].second->write(*test); // Indirection column
+    // new_record[0] = page_range[tail_last*num_column].second->write(latest_record[0]);
     new_record[1] = page_range[tail_last*num_column+1].second->write(rid_new); // RID column
     new_record[2] = page_range[tail_last*num_column+2].second->write(0); // Timestamp
     for (int i = 4; i < num_column; i++) {
         if (std::isnan(columns[i - 4]) || columns[i-4] < -2147480000) { // Wrapper changes None to smallest integer possible
-            // new_record[i] = page_range[tail_last*num_column+i].second->write(*(test + i * sizeof(page_range[0])));
-            new_record[i] = page_range[tail_last*num_column+i].second->write(*((page_range[latest_page * num_column + i].second)->data + latest_offset*sizeof(int)));
+            new_record[i] = page_range[tail_last*num_column+i].second->write(*(test + i * sizeof(page_range[0])));
+            std::cout << sizeof(page_range[0]) << std::endl;
+            std::cout << sizeof(page_range[0].first) << std::endl;
+            std::cout << sizeof(page_range[0].second) << std::endl;
+            // new_record[i] = page_range[tail_last*num_column+i].second->write(*((page_range[latest_page * num_column + i].second)->data + latest_offset*sizeof(int)));
         } else {
             schema_encoding = schema_encoding | (0b1 << (num_column - i - 1));
             new_record[i] = page_range[tail_last*num_column+i].second->write(columns[i - 4]);
