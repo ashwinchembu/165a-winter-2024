@@ -1,8 +1,8 @@
 # -165a-winter-2024.
 
 # TODO
-[]Page.cpp: Replace availability array with number of slots being used.
-[]General: Change most of parameters to const reference.
+[x]Page.cpp: Replace availability array with number of slots being used.
+[x]General: Change most of parameters to const reference.
 []Compiler: Find the optimal flags.
 []Compiler: Look into buildin functions and attributes. e.g. (alloc_size, hot, __builtin_prefetch)
 []General: Delete redundant variable and function calls.
