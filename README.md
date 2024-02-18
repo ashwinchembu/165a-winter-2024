@@ -9,6 +9,7 @@
 - [ ]General: Make documentation up-to-date.
 - [ ]General: Create exceptions on unexpected parameters or return value.
 - [ ]Index: Explore alternative for unordered multimap
+- [ ]General: Config
 
 # Current file system
 ├── config<br />
