@@ -1,6 +1,6 @@
 from lstore.py.db import Database
 from lstore.py.query import Query
-from time import process_time
+from time import *
 from random import choice, randrange
 
 # Student Id and 4 grades
