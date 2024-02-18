@@ -13,6 +13,9 @@
 - [ ]General: Config
 - [ ]General: Windows support
 
+For milestone 3, we can use OpenMP for multithreading.
+https://learn.microsoft.com/en-us/cpp/parallel/openmp/reference/openmp-directives?view=msvc-170
+
 # Makefile usage
 ## No compiler optimization
 Use ```make```
