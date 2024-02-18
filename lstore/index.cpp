@@ -155,7 +155,7 @@ void Index::create_index(const int& column_number) {
     for (int i = 1; i <= table->num_insert; i++) {
         auto loc = table->page_directory.find(i); // Find RID for every rows
         if (loc != table->page_directory.end()) { // if RID ID exist ie. not deleted
-            RID rid = table->page_directory.find(loc->second)->second;
+            RID rid = table->page_directory.find(loc->second.id)->second;
 
             int value;
             int indirection_num = *(rid.pointers[0]);
