@@ -191,7 +191,7 @@ void Index::drop_index(const int& column_number) {
   return;
 }
 
-void Index::insert_index(RID& rid, std::vector<int>& columns) {
+void Index::insert_index(RID& rid, std::vector<int> columns) {
     // for (size_t i = 0; i < indices.size(); i++) {
     //     if (indices[i].size() >= 0) {    //Insert only if the index for column exist
     //         indices[i].insert({columns[i], rid});
@@ -205,7 +205,7 @@ void Index::insert_index(RID& rid, std::vector<int>& columns) {
     }
 }
 
-void Index::update_index(RID& rid, std::vector<int>& columns, std::vector<int>& old_columns){
+void Index::update_index(RID& rid, std::vector<int> columns, std::vector<int> old_columns){
     for (size_t i = 0; i< indices.size(); i++) {
         if (indices[i].size() > 0) {	//if there is a index for that column
             int old_value = old_columns[i];
@@ -230,7 +230,7 @@ void Index::setTable(Table* t){
 void Index::printData(){
 	for(auto& e: indices){
 		printf("---Column %d:---\n\n",e.first);
-		printf("%lu\n\n",e.second.size());
+		printf("%llu\n\n", e.second.size());
 //		for(auto& j : e.second){
 //			printf("ID: %d -- %s\n",
 //					j.first,((std::string)(j.second)).c_str());
