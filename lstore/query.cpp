@@ -120,7 +120,7 @@ std::vector<Record> Query::select_version(const int& search_key, const int& sear
           	record_columns[j] = *(rid.pointers[j + 4]);
         	}
       	}
-      	records.push_back(Record(rids[i].id, search_key, record_columns)); //add a record with RID of base page, value of primary key, and contents of desired version
+      	records.push_back(Record(rids[i], search_key, record_columns)); //add a record with RID of base page, value of primary key, and contents of desired version
 			}
 		}
     return records;
