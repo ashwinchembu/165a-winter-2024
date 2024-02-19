@@ -40,7 +40,6 @@ public:
     RID insert(const int& new_rid, const std::vector<int>& columns);
     RID update(const RID& rid, const int& rid_new, const std::vector<int>& columns);
     bool base_has_capacity () const;
-    bool base_has_capacity_for (const int& size) const;
 };
 
 #endif
