@@ -195,10 +195,6 @@ PageRange_base_has_capacity = DB.PageRange_base_has_capacity
 PageRange_base_has_capacity.restype = c_bool
 PageRange_base_has_capacity.argtypes = [POINTER(c_int)]
 
-PageRange_base_has_capacity_for = DB.PageRange_base_has_capacity_for
-PageRange_base_has_capacity_for.restype = c_bool
-PageRange_base_has_capacity_for.argtypes = [POINTER(c_int),c_int]
-
 
 # Functions from query.cpp
 

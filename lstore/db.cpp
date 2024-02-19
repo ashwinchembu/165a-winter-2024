@@ -63,6 +63,10 @@ COMPILER_SYMBOL int* Database_tables(int* obj){
 	return(int*)(&(self->tables));
 }
 
+
+void open(const std::string& path) {};
+void close() {};
+
 /***
  *
  * Creates a new table

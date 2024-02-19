@@ -9,8 +9,8 @@
 class Database{
   public:
     Database(){};
-    //void open(path); for next Milestone
-    //void close(); for next Milestone
+    void open(const std::string& path);
+    void close();
     Table create_table(const std::string& name, const int& num_columns, const int& key_index);
     void drop_table(const std::string& name);
     Table get_table(const std::string& name);
