@@ -9,7 +9,6 @@
 - [ ]General: Delete redundant variable and function calls.
 - [ ]General: Make documentation up-to-date.
 - [ ]General: Create exceptions on unexpected parameters or return value.
-- [ ]Index: Explore alternative for unordered multimap
 - [ ]General: Config
 - [ ]General: Windows support
 
