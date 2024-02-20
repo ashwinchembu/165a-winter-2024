@@ -158,6 +158,13 @@ RID PageRange::insert(const int& new_rid, const std::vector<int>& columns) {
         base_last++; // Assuming that they will call after check if there are space left or not.
         for (int i = 0; i < num_column; i++) {
             page_range.insert(page_range.begin() + base_last*num_column, std::make_pair(RID(), new Page()));
+            /// @TODO Bufferpool::load()
+            /// @TODO Bufferpool::pin(new_rid, i)
+        }
+    } else {
+        for (int i = 0; i < num_column; i++) {
+            /// @TODO Bufferpool::load()
+            /// @TODO Bufferpool::pin(new_rid, i)
         }
     }
 
@@ -165,13 +172,18 @@ RID PageRange::insert(const int& new_rid, const std::vector<int>& columns) {
     // Metadata columns
     std::vector<int*> record_pointers(num_column);
     record_pointers[0] = page_range[base_last*num_column].second->write(new_rid); // Indirection column
+    /// @TODO Bufferpool::unpin(new_rid, 0)
     record_pointers[1] = page_range[base_last*num_column + 1].second->write(new_rid); // RID column
+    /// @TODO Bufferpool::unpin(new_rid, 1)
     record_pointers[2] = page_range[base_last*num_column + 2].second->write(0); // Timestamp
+    /// @TODO Bufferpool::unpin(new_rid, 2)
     record_pointers[3] = page_range[base_last*num_column + 3].second->write(0); // schema encoding
+    /// @TODO Bufferpool::unpin(new_rid, 3)
 
     // Inserting data columns
     for (int i = 4; i < num_column; i++) {
         record_pointers[i] = page_range[base_last*num_column+i].second->write(columns[i - 4]);
+        /// @TODO Bufferpool::unpin(new_rid, i)
     }
 
     // Creation of the new RID
@@ -214,6 +226,9 @@ RID PageRange::update(const RID& rid, const int& rid_new, const std::vector<int>
     // Find offset for the base record
     int offset = rid.id - page_range[page_of_rid * num_column].first.id;
     // Get the latest update of the record. Accessing the indirection column.
+
+    /// @TODO Bufferpool::load();
+    /// @TODO Bufferpool::pin(page_range[page_of_rid * num_column].first, 0);
     int latest_rid = (*((page_range[page_of_rid * num_column].second)->data + offset*sizeof(int)));
 
     // Create new tail pages if there are no space left or tail page does not exist.
@@ -222,6 +237,9 @@ RID PageRange::update(const RID& rid, const int& rid_new, const std::vector<int>
     if (!(page_range[tail_last * num_column].second->has_capacity()) || tail_last == base_last) {
         tail_last++;
         for (int i = 0; i < num_column; i++) {
+            /// @TODO Bufferpool::load()
+            /// @TODO Bufferpool::pin(rid_new, i)
+            /// Use rid_new to pin.
             page_range.push_back(std::make_pair(RID(), new Page()));
         }
         new_tail = true;
@@ -242,9 +260,13 @@ RID PageRange::update(const RID& rid, const int& rid_new, const std::vector<int>
         latest_page--; // Logical page number of the latest update
 
         // Find the offset for the latest record. Linear search.
+
+        /// @TODO Bufferpool::load();
+        /// @TODO Bufferpool::pin(page_range[latest_page * num_column].first, 1);
         while (latest_offset < NUM_SLOTS && latest_rid != (*((page_range[latest_page * num_column + 1].second)->data + latest_offset*sizeof(int)))) {
             latest_offset++;
         }
+        /// @TODO Bufferpool::unpin(page_range[latest_page * num_column].first, 1);
         // Multi thread version
         // int* end = ((page_range[latest_page * num_column + 1].second)->data + PAGE_SIZE*sizeof(int));
         // int* itr = 	__gnu_parallel::find(((page_range[latest_page * num_column + 1].second)->data), end, latest_rid);
@@ -258,28 +280,46 @@ RID PageRange::update(const RID& rid, const int& rid_new, const std::vector<int>
     std::vector<int*> new_record(num_column);
 
     // Writing metadata to page
+    /// @TODO Bufferpool::load();
+    /// @TODO Bufferpool::pin(page_range[latest_page * num_column].first, 0);
     new_record[0] = page_range[tail_last*num_column].second->write(*((page_range[latest_page * num_column].second)->data + latest_offset*sizeof(int))); // Indirection column
+    /// @TODO Bufferpool::unpin(page_range[latest_page * num_column].first, 0);
+    /// @TODO Bufferpool::unpin(rid_new, 0);
+
     new_record[1] = page_range[tail_last*num_column+1].second->write(rid_new); // RID column
+    /// @TODO Bufferpool::unpin(rid_new, 1);
+
     new_record[2] = page_range[tail_last*num_column+2].second->write(0); // Timestamp
+    /// @TODO Bufferpool::unpin(rid_new, 2);
 
     // Writing data to page and also update schema encoding if necessary.
     for (int i = 4; i < num_column; i++) {
         if (std::isnan(columns[i - 4]) || columns[i-4] < -2147480000) { // Wrapper changes None to smallest integer possible
             // If there are no update, we write the value from latest update
+            /// @TODO Bufferpool::load();
+            /// @TODO Bufferpool::pin(page_range[latest_page * num_column].first, i);
             new_record[i] = page_range[tail_last*num_column+i].second->write(*((page_range[latest_page * num_column + i].second)->data + latest_offset*sizeof(int)));
+            /// @TODO Bufferpool::unpin(page_range[latest_page * num_column].first, i);
         } else {
             // If there are update, we write the new value and update the schema encoding.
             new_record[i] = page_range[tail_last*num_column+i].second->write(columns[i - 4]);
             schema_encoding = schema_encoding | (0b1 << (num_column - i - 1));
         }
+        /// @TODO Bufferpool::unpin(rid_new, i);
     }
 
     // Write the schema encoding of where updated
     new_record[3] = page_range[tail_last*num_column+3].second->write(schema_encoding); // schema encoding
+    /// @TODO Bufferpool::unpin(rid_new, 3);
 
     // Updating indirection column and schema encoding column for the base page
     *((page_range[page_of_rid * num_column].second)->data + offset*sizeof(int)) = rid_new;
+    /// @TODO Bufferpool::unpin(page_range[page_of_rid * num_column].first, 0);
+
+    /// @TODO Bufferpool::load();
+    /// @TODO Bufferpool::pin(page_range[page_of_rid * num_column].first, 3);
     *((page_range[page_of_rid * num_column + 3].second)->data + offset*sizeof(int)) = (*((page_range[page_of_rid * num_column + 3].second)->data + offset*sizeof(int)) | schema_encoding);
+    /// @TODO Bufferpool::unpin(page_range[page_of_rid * num_column].first, 3);
     RID new_rid(new_record, rid_new);
 
     // Setting the new RID to be representation of the page if the page was newly created
