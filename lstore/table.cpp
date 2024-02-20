@@ -178,6 +178,7 @@ Table::Table(const std::string& name, const int& num_columns, const int& key): n
  *
  * @param Record record A record to insert
  * @return const std::vector<int>& columns the values of the record
+ * TODO Adopt to the change in RID
  *
  */
 RID Table::insert(const std::vector<int>& columns) {
@@ -206,6 +207,7 @@ RID Table::insert(const std::vector<int>& columns) {
  * @param RID rid Rid that pointing to the base page.
  * @param std::vector<int>& columns the new values of the record
  * @return RID of the new row upon successful update
+ * TODO Adopt to the change in RID
  *
  */
 RID Table::update(const RID& rid, const std::vector<int>& columns) {

@@ -150,6 +150,7 @@ std::vector<int> Index::locate_range(const int& begin, const int& end, const int
  * @param int column_number Which column to create index on
  *
  */
+/// @TODO Adopt to the change in RID
 void Index::create_index(const int& column_number) {
     std::unordered_multimap<int, int> index;
     for (int i = 1; i <= table->num_insert; i++) {
