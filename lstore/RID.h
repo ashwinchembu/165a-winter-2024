@@ -19,17 +19,11 @@ public:
     // const int NUM_METADATA_COLUMNS = 6;
     RID () {};
     ~RID(){}
-    RID (std::vector<int*> ptr, int i) : pointers(ptr), id(i) {};
+    RID (int i) : id(i) {};
+    RID (int i, int k, int j, int l, std::string s) : id(i), first_rid_page_range(k), first_rid_page(j), offset(l), table_name(s) {};
     int id;
     const bool check_schema (const int& column_num) const;
     const int column_with_one () const;
-    RID& operator=(const RID& other) {
-        if (this != &other) { // Protect against self-assignment
-            this->id = other.id;
-            this->pointers = other.pointers; // Shallow copy
-        }
-        return *this;
-    }
     int first_rid_page_range = 0;
     int first_rid_page = 0;
     int offset = 0;

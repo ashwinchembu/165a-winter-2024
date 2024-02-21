@@ -12,8 +12,9 @@
 #include "table.h"
 #include "RID.h"
 #include <iostream>
-
 #include "../DllConfig.h"
+#include "config.h"
+#include "bufferpool.h"
 
 std::vector<int>ridBuffer;
 
@@ -159,21 +160,19 @@ void Index::create_index(const int& column_number) {
             RID rid = table->page_directory.find(loc->second.id)->second;
 
             int value;
-            int indirection_num = *(rid.pointers[0]);
-            // int schema_num = *(rid.pointers[3]);
+						int indirection_num = buffer_pool.get(rid, INDIRECTION_COLUMN);
             if (rid.check_schema(column_number)) { // If the column of the record at loc is updated
                 RID update_rid = table->page_directory.find(indirection_num)->second;
-                value = *(update_rid.pointers[column_number + 4]);
+								value = buffer_pool.get(update_rid, column_number + NUM_METADATA_COLUMNS);
             } else {
-                value = *(rid.pointers[column_number + 4]);
+                value = buffer_pool.get(rid, column_number + NUM_METADATA_COLUMNS);
             }
             index.insert({value, rid.id});
         }
     }
-    indices.insert({column_number,index});
+    indices.insert({column_number, index});
     return;
 }
-
 
 
 /***
@@ -193,11 +192,6 @@ void Index::drop_index(const int& column_number) {
 }
 
 void Index::insert_index(int& rid, std::vector<int> columns) {
-    // for (size_t i = 0; i < indices.size(); i++) {
-    //     if (indices[i].size() >= 0) {    //Insert only if the index for column exist
-    //         indices[i].insert({columns[i], rid});
-    //     }
-    // }
     for (size_t i = 0; i < columns.size(); i++) {
         auto itr = indices.find(i);
         if (itr != indices.end()) {

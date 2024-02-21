@@ -15,7 +15,7 @@ public:
     std::vector<std::vector<int>> pin_dirty_age; // Can we conbine? E.g. Using most significant bit for dirty or not. Next 5 bits for pin, rest of 26 bits for age?
     int get (const RID& rid, const int& column); // given a rid and column, returns the value in that location
     void set (const RID& rid, const int& column); // given a rid and column, changes the value in that location
-    int* load ();
+    int load ();
     void evict ();
     void evict_all ();
     void pin (const int& rid, const int& page_num);

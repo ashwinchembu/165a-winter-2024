@@ -8,6 +8,7 @@
 #include "table.h"
 #include <cstdio>
 #include <memory>
+#include "bufferpool.h"
 
 #include "../DllConfig.h"
 
@@ -244,10 +245,30 @@ int Table::merge() {
 	page directory is updated to point to the new pages
 	*/
 
+	BufferPool* mergeBufferPool = new BufferPool();
+	std::vector<Page> newBasePage;
+	std::vector<Page> tailPages;
 	//load copy of all base pages in each page range
-	for (int i = 0; i < page_range.size(); i++) {
-		for (int j = 1; j < page_range[i]->page_range.size(); j++) {
-			//PageRange newPageRange = new PageRange(*(page_range[i]));
+	for (int i = 0; i < this->page_range.size(); i++) {
+		std::shared_ptr<PageRange> PR = this->page_range[i]; 
+		for (int j = PR->page_range.size(); j > 0; j--) { 
+			int ridID = PR->page_range[j].first.id;
+			if (ridID < 0) { // if the page in PageRange is a tail page
+				//make copy of tail page
+				if (mergeBufferPool->get(ridID, TPS) < ) {
+
+				}
+				tailPages.push_back(*(PR->page_range[j].second));
+			} else {
+				//make copy of base page
+				newBasePage.push_back(*(PR->page_range[j].second));
+			}
+		}
+		// iterate backwards over tail page
+		for (int slot = PR->page_range[j].second->NUM_SLOTS; slot > 0; slot--) {
+					// if (;;) {
+						
+					// }
 		}
 	}
 

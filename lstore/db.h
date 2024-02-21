@@ -17,7 +17,6 @@ class Database{
     Table get_table(const std::string& name);
 
     std::map<std::string, Table> tables;
-    Bufferpool buffer_pool;
 };
 
 #endif

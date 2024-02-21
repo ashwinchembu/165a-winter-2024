@@ -4,34 +4,37 @@
 #include "bufferpool.h"
 
 
-BufferPool::BufferPool () {
-    // I don't think we need to initialize with anything additional.
-}
+BufferPool::BufferPool ();
 
 BufferPool::~BufferPool () {
-    // Make sure everything is evicted?
     evict_all();
 }
 
-int* BufferPool::get() {
-    // Get a page using some sort of identifier.
-    // Check if it is in the buffer pool or not.
-    // If not, call load and return the pointer.
-    return nullptr;
+int BufferPool::get (const RID& rid, const int& column) {
+    // Given desired RID and desired column
+    // Check if it is already in the buffer pool or not.
+    // If not, call load to retrieve from disk and return the value
+    // Update all ages
 }
 
-int* BufferPool::load (){
-    // Called by get.
-    // There should be a option to not actually read file from storage, which we use it when we make a new file and write things in.
+void BufferPool::set (const RID& rid, const int& column){
+    // Given desired RID and desired column
+    // Check if it is already in the buffer pool or not.
+    // If not, call load to retrieve from disk and return the value
+    // Update all ages
+}
+
+void BufferPool::load (){
+    // Called by get
+    // There should be an option to not actually read file from storage, which we use it when we make a new file and write things in.
     // Check the availability of the pool. There should be some identifier.
     // Find the file, get the specific part and load into a memory. For now, I'm thinking about saving per table.
-    // If it is saved per page range, we need to find a way to get the specific page.
-    return nullptr;
+    // If bufferpool is full, call evict
 }
 
 void BufferPool::evict (){
     // Called by load with which area to have a file evicted.
-    // Evict a page that has no pin. Write on disk if it is dirty.
+    // Evict a page using LRU that has no pin. Write back to disk if it is dirty.
 }
 
 void BufferPool::evict_all (){
