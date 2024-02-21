@@ -126,9 +126,9 @@ Page_num_rows = DB.Page_num_rows
 Page_num_rows.restype = c_int
 Page_num_rows.argtypes = [POINTER(c_int)]
 
-Page_availability = DB.Page_availability
-Page_availability.restype = POINTER(c_int)
-Page_availability.argtypes = [POINTER(c_int)]
+# Page_availability = DB.Page_availability
+# Page_availability.restype = POINTER(c_int)
+# Page_availability.argtypes = [POINTER(c_int)]
 
 Page_constructor = DB.Page_constructor
 Page_constructor.restype = POINTER(c_int)
@@ -194,10 +194,6 @@ PageRange_update.argtypes = [POINTER(c_int),POINTER(c_int),c_int,POINTER(c_int)]
 PageRange_base_has_capacity = DB.PageRange_base_has_capacity
 PageRange_base_has_capacity.restype = c_bool
 PageRange_base_has_capacity.argtypes = [POINTER(c_int)]
-
-PageRange_base_has_capacity_for = DB.PageRange_base_has_capacity_for
-PageRange_base_has_capacity_for.restype = c_bool
-PageRange_base_has_capacity_for.argtypes = [POINTER(c_int),c_int]
 
 
 # Functions from query.cpp

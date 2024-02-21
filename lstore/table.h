@@ -44,13 +44,13 @@ public:
     int num_insert = 0;
 
 
-    Table(std::string name_in, int num_columns_in, int key_in);
+    Table(const std::string& name, const int& num_columns, const int& key);
 
     friend class Index;
     friend class Query;
 
     RID insert(const std::vector<int>& columns);
-    RID update(RID rid, const std::vector<int>& columns);
+    RID update(const RID& rid, const std::vector<int>& columns);
     int merge();
 
     int num_columns; //number of columns of actual data, excluding the metadata

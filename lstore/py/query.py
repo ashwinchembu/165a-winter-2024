@@ -23,7 +23,7 @@ class Query:
     # Return False if record doesn't exist or is locked due to 2PL
     """
     def delete(self, primary_key):
-        return Query_deleteRecord(self.selfPtr, primary_key);
+        return Query_deleteRecord(self.selfPtr, primary_key)
     
     
     """
@@ -38,20 +38,6 @@ class Query:
             add_to_buffer_vector(c_intOrUnreasonable(i))
         
         return Query_insert(self.selfPtr,get_buffer_vector())
-    
-        
-        # if self.table.last_page == -1 or self.table.page_directory[self.table.last_page].has_capacity() == False:
-        #     self.table.page_directory[self.table.last_page+1] = PageSet(self.table.num_columns)
-        #     self.table.last_page += 1
-        # # print(self.table.page_directory)
-        # # print(self.table.page_directory[0])
-        # for i in range(len(columns)):
-        #     print("page: ", i)
-        #     (self.table.page_directory[self.table.last_page]).pages[i].write(columns[i])
-        #     #print(self.table.page_directory[self.table.last_page].pages[i])
-        
-            
-        
 
     
     """
@@ -78,7 +64,7 @@ class Query:
     # Assume that select will never be called on a key that doesn't exist
     """
     def select_version(self, search_key, search_key_index, projected_columns_index, relative_version):
-        erase_buffer_vector();
+        erase_buffer_vector()
         
         for i in projected_columns_index:
             add_to_buffer_vector(c_int(i))
@@ -113,7 +99,7 @@ class Query:
             nextRecord = Record(rid,key,columns)
             returnRecords.append(nextRecord)
         
-        return returnRecords;
+        return returnRecords
     
     """
     # Update a record with specified key and columns
@@ -165,10 +151,3 @@ class Query:
     """
     def increment(self, key, column):
         return Query_increment(self.selfPtr,key,column)
-        # r = self.select(key, self.table.key, [1] * self.table.num_columns)[0]
-        # if r is not False:
-        #     updated_columns = [None] * self.table.num_columns
-        #     updated_columns[column] = r[column] + 1
-        #     u = self.update(key, *updated_columns)
-        #     return u
-        # return False

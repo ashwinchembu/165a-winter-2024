@@ -36,7 +36,7 @@ COMPILER_SYMBOL int numberOfRecordsInBuffer(){
 	return recordBuffer.size() / sizeOfRecords;
 }
 
-COMPILER_SYMBOL int getRecordBufferElement(int i){
+COMPILER_SYMBOL int getRecordBufferElement(const int i){
 	return recordBuffer[i];
 }
 
@@ -72,7 +72,7 @@ COMPILER_SYMBOL void fillRecordBuffer(int* obj){
 
 
 
-COMPILER_SYMBOL int* Record_constructor(int rid_in, int key_in, int* columns_in){
+COMPILER_SYMBOL int* Record_constructor(const int rid_in, const int key_in, int* columns_in){
 	std::vector<int>* cols = (std::vector<int>*)columns_in;
 	return (int*)(new Record(rid_in,key_in,*cols));
 }
@@ -136,7 +136,7 @@ COMPILER_SYMBOL int Table_num_insert(int* obj){
 	return ((Table*)obj)->num_insert;
 }
 
-COMPILER_SYMBOL int* Table_constructor(char* name_in,int num_columns_in, int key_in){
+COMPILER_SYMBOL int* Table_constructor(char* name_in, const int num_columns_in, const int key_in){
 	return (int*)new Table({name_in},num_columns_in,key_in);
 }
 
@@ -167,7 +167,7 @@ COMPILER_SYMBOL int Table_num_columns(int* obj){
 	return ((Table*)obj)->num_columns;
 }
 
-Table::Table(std::string name, int num_columns, int key): name(name), key(key), num_columns(num_columns) {
+Table::Table(const std::string& name, const int& num_columns, const int& key): name(name), key(key), num_columns(num_columns) {
     index = new Index();
     index->setTable(this);
 };
@@ -178,6 +178,7 @@ Table::Table(std::string name, int num_columns, int key): name(name), key(key), 
  *
  * @param Record record A record to insert
  * @return const std::vector<int>& columns the values of the record
+ * TODO Adopt to the change in RID
  *
  */
 RID Table::insert(const std::vector<int>& columns) {
@@ -206,11 +207,12 @@ RID Table::insert(const std::vector<int>& columns) {
  * @param RID rid Rid that pointing to the base page.
  * @param std::vector<int>& columns the new values of the record
  * @return RID of the new row upon successful update
+ * TODO Adopt to the change in RID
  *
  */
-RID Table::update(RID rid, const std::vector<int>& columns) {
+RID Table::update(const RID& rid, const std::vector<int>& columns) {
     num_update++;
-    int rid_id = num_update * -1;
+    const int rid_id = num_update * -1;
     size_t i = 0;
     for (; i < page_range.size(); i++) {
 
@@ -220,8 +222,7 @@ RID Table::update(RID rid, const std::vector<int>& columns) {
     }
     i--;
 		RID new_rid = (page_range[i].get())->update(rid, rid_id, columns);
-	//	auto iter = page_directory.find(rid.id);
-		//*(iter->second.pointers[0]) = rid_id;
+		//change the 
 		page_directory.insert({rid_id, new_rid});
     return new_rid;
 }
@@ -234,5 +235,21 @@ RID Table::update(RID rid, const std::vector<int>& columns) {
  *
  */
 int Table::merge() {
+	/*
+	updating at page range level
+
+	load the a copy of all base pages of the selected range into memory
+	iterate over tail page and get most up to date for record for every record -> consolidated base page
+		read it until TPS < tail ID
+	page directory is updated to point to the new pages
+	*/
+
+	//load copy of all base pages in each page range
+	for (int i = 0; i < page_range.size(); i++) {
+		for (int j = 1; j < page_range[i]->page_range.size(); j++) {
+			//PageRange newPageRange = new PageRange(*(page_range[i]));
+		}
+	}
+
     return -1;
 }

@@ -28,16 +28,14 @@ COMPILER_SYMBOL int ridBufferSize(){
 COMPILER_SYMBOL void fillRidBuffer(int* obj){
 	ridBuffer.clear();
 
-	std::vector<RID>* rids = (std::vector<RID>*)obj;
+	std::vector<int>* rids = (std::vector<int>*)obj;
 
 	for(size_t i = 0; i< rids->size();i++){
-		ridBuffer.push_back((*rids)[i].id);
+		ridBuffer.push_back((*rids)[i]);
 	}
-
-	delete rids;
 }
 
-COMPILER_SYMBOL int getRidFromBuffer(int i){
+COMPILER_SYMBOL int getRidFromBuffer(const int i){
 	return ridBuffer[i];
 }
 
@@ -61,23 +59,23 @@ COMPILER_SYMBOL void Index_destructor(int* IndexObj){
 	delete ((Index*)IndexObj);
 }
 
-COMPILER_SYMBOL int* Index_locate(int* IndexObj, int column_number, int value){
-	return (int*)(new std::vector<RID>(
+COMPILER_SYMBOL int* Index_locate(int* IndexObj, const int column_number, const int value){
+	return (int*)(new std::vector<int>(
 			((Index*)IndexObj)->locate(column_number,value)));
 }
 
 COMPILER_SYMBOL int* Index_locate_range(
-		int* IndexObj,int begin, int end, int column_number){
+		int* IndexObj, const int begin, const int end, const int column_number){
 
-	return (int*)(new std::vector<RID>(
+	return (int*)(new std::vector<int>(
 			((Index*)IndexObj)->locate_range(begin,end,column_number)));
 }
 
-COMPILER_SYMBOL void Index_create_index(int* IndexObj, int column_number){
+COMPILER_SYMBOL void Index_create_index(int* IndexObj, const int column_number){
 	((Index*)IndexObj)->create_index(column_number);
 }
 
-COMPILER_SYMBOL void Index_drop_index(int* IndexObj,int column_number){
+COMPILER_SYMBOL void Index_drop_index(int* IndexObj, const int column_number){
 	((Index*)IndexObj)->drop_index(column_number);
 }
 
@@ -86,11 +84,11 @@ COMPILER_SYMBOL void Index_setTable(int* IndexObj, int* TableObj){
 }
 
 COMPILER_SYMBOL void Index_insert_index(int* IndexObj, int* rid, int* columns){
-	((Index*)IndexObj)->insert_index(*((RID*)rid),*((std::vector<int>*)columns));
+	((Index*)IndexObj)->insert_index(*((int*)rid),*((std::vector<int>*)columns));
 }
 
 COMPILER_SYMBOL void Index_update_index(int* IndexObj, int* rid, int* columns, int* old_columns){
-	((Index*)IndexObj)->update_index(*((RID*)rid),*((std::vector<int>*)columns),
+	((Index*)IndexObj)->update_index(*((int*)rid),*((std::vector<int>*)columns),
 			*((std::vector<int>*)old_columns));
 }
 
@@ -109,8 +107,8 @@ COMPILER_SYMBOL void Index_print_data(int* IndexObj){
  * @return Return one or more RIDs
  *
  */
-std::vector<RID> Index::locate (int column_number, int value) {
-    std::vector<RID> matching_records; //holds the records that match the value
+std::vector<int> Index::locate (const int& column_number, const int& value) {
+    std::vector<int> matching_records; //holds the records that match the value
     auto index = indices.find(column_number); //find index for specified column
     if(index == indices.end()){
       create_index(column_number);
@@ -135,11 +133,11 @@ std::vector<RID> Index::locate (int column_number, int value) {
  * @return Return one or more RIDs
  *
  */
-std::vector<RID> Index::locate_range(int begin, int end, int column_number) {
-    // std::vector<RID> matching_records; //holds the records that match a value in the range
-    std::vector<RID> all_matching_records; //holds the matching records from the whole range
+std::vector<int> Index::locate_range(const int& begin, const int& end, const int& column_number) {
+    // std::vector<int> matching_records; //holds the records that match a value in the range
+    std::vector<int> all_matching_records; //holds the matching records from the whole range
     for (int i = begin; i <= end; i++) {
-      std::vector<RID> matching_records = locate(column_number, i); //locate for each value in the range
+      std::vector<int> matching_records = locate(column_number, i); //locate for each value in the range
       all_matching_records.insert(all_matching_records.end(), matching_records.begin(), matching_records.end());
     }
     return all_matching_records;
@@ -152,12 +150,13 @@ std::vector<RID> Index::locate_range(int begin, int end, int column_number) {
  * @param int column_number Which column to create index on
  *
  */
-void Index::create_index(int column_number) {
-    std::unordered_multimap<int, RID> index;
+/// @TODO Adopt to the change in RID
+void Index::create_index(const int& column_number) {
+    std::unordered_multimap<int, int> index;
     for (int i = 1; i <= table->num_insert; i++) {
         auto loc = table->page_directory.find(i); // Find RID for every rows
         if (loc != table->page_directory.end()) { // if RID ID exist ie. not deleted
-            RID rid = loc->second;
+            RID rid = table->page_directory.find(loc->second.id)->second;
 
             int value;
             int indirection_num = *(rid.pointers[0]);
@@ -168,7 +167,7 @@ void Index::create_index(int column_number) {
             } else {
                 value = *(rid.pointers[column_number + 4]);
             }
-            index.insert({value, rid});
+            index.insert({value, rid.id});
         }
     }
     indices.insert({column_number,index});
@@ -184,7 +183,7 @@ void Index::create_index(int column_number) {
  * @param int column_number Which column to delete index of
  *
  */
-void Index::drop_index(int column_number) {
+void Index::drop_index(const int& column_number) {
   auto index = indices.find(column_number);
   if(index == indices.end()){
     throw std::invalid_argument("No index for that column was located. The index was not dropped.");
@@ -193,7 +192,7 @@ void Index::drop_index(int column_number) {
   return;
 }
 
-void Index::insert_index(RID rid, std::vector<int>columns) {
+void Index::insert_index(int& rid, std::vector<int> columns) {
     // for (size_t i = 0; i < indices.size(); i++) {
     //     if (indices[i].size() >= 0) {    //Insert only if the index for column exist
     //         indices[i].insert({columns[i], rid});
@@ -207,13 +206,13 @@ void Index::insert_index(RID rid, std::vector<int>columns) {
     }
 }
 
-void Index::update_index(RID rid, std::vector<int>columns, std::vector<int>old_columns){
+void Index::update_index(int& rid, std::vector<int> columns, std::vector<int> old_columns){
     for (size_t i = 0; i< indices.size(); i++) {
         if (indices[i].size() > 0) {	//if there is a index for that column
             int old_value = old_columns[i];
             auto range = indices[i].equal_range(old_value);
             for(auto itr = range.first; itr != range.second; itr++){
-                if (itr->second.id == rid.id) {
+                if (itr->second == rid) {
                     indices[i].erase(itr);
                     break;
                 }
@@ -232,7 +231,7 @@ void Index::setTable(Table* t){
 void Index::printData(){
 	for(auto& e: indices){
 		printf("---Column %d:---\n\n",e.first);
-		printf("%lu\n\n",e.second.size());
+		printf("%lu\n\n", e.second.size());
 //		for(auto& j : e.second){
 //			printf("ID: %d -- %s\n",
 //					j.first,((std::string)(j.second)).c_str());
