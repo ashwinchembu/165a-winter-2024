@@ -5,6 +5,7 @@
 
 
 BufferPool::BufferPool () {
+  buffer = std::vector<Frame>(BUFFER_POOL_SIZE);
   for(int i = 0; i < BUFFER_POOL_SIZE; i++){ //each frame is initialized with an age
     buffer[i].age = i;
   }
@@ -15,12 +16,12 @@ BufferPool::~BufferPool () {
 }
 
 int BufferPool::get (const RID& rid, const int& column) {
-    bool found = FALSE;
+    bool found = false;
     int index_of_found = -1;
 
     for(int i = 0; i < BUFFER_POOL_SIZE; i++){ //scan through bufferpool to find desired page
       if(buffer[i].valid && rid.first_rid_page == buffer[i].first_rid_page && column == buffer[i].column){ //if it is valid and the value that we want
-        found = TRUE;
+        found = true;
         index_of_found = i;
         break;
       }
@@ -41,7 +42,7 @@ void BufferPool::set (const RID& rid, const int& column, int value){ //return th
     //set dirty bit 1
 }
 
-int BufferPool::load (){ //return the index of where you placed it
+int BufferPool::load (const RID& rid, const int& column){ //return the index of where you placed it
     // Called by get
     // There should be an option to not actually read file from storage, which we use it when we make a new file and write things in.
     // Check the availability of the pool. There should be some identifier.
@@ -54,6 +55,7 @@ int BufferPool::load (){ //return the index of where you placed it
 void BufferPool::insert_new_page() {
 
 };
+
 int BufferPool::evict (){ //return the index of evicted
     // Called by load with which area to have a file evicted.
     // Evict a page using LRU that has no pin. Write back to disk if it is dirty.
@@ -73,6 +75,6 @@ void BufferPool::unpin (const int& rid, const int& page_num) {
     // Unpin a page
 }
 
-Frame::Frame ();
+Frame::Frame () {}
 
-virtual Frame::~Frame ();
+Frame::~Frame () {}

@@ -3,14 +3,15 @@
 # TODO
 - [x]Page.cpp: Replace availability array with number of slots being used.
 - [x]General: Change most of parameters to const reference.
+- [x]General: Config
 - [ ]Compiler: Find the optimal flags.
 - [ ]Compiler: Look into buildin functions and attributes. e.g. (alloc_size, hot, __builtin_prefetch)
 - [ ]General: Use multi threaded algorithm if possible. https://gcc.gnu.org/onlinedocs/libstdc++/manual/parallel_mode_using.html
 - [ ]General: Delete redundant variable and function calls.
 - [ ]General: Make documentation up-to-date.
 - [ ]General: Create exceptions on unexpected parameters or return value.
-- [ ]General: Config
 - [ ]General: Windows support
+- [ ]General: Use Array over Vector
 
 For milestone 3, we can use OpenMP for multithreading.
 https://learn.microsoft.com/en-us/cpp/parallel/openmp/reference/openmp-directives?view=msvc-170

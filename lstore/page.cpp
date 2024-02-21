@@ -101,7 +101,7 @@ COMPILER_SYMBOL bool PageRange_base_has_capacity(int* obj){
 	return ((PageRange*)obj)->base_has_capacity();
 }
 
-PageRange::PageRange (const int& new_rid, const std::vector<int>& columns) {
+PageRange::PageRange (RID& new_rid, const std::vector<int>& columns) {
     new_rid.offset = 0;
     num_column = columns.size();
     for (int i = 0; i < num_column + NUM_METADATA_COLUMNS; i++) {
@@ -181,8 +181,8 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
     // Metadata columns
     page_range[base_last*num_column + INDIRECTION_COLUMN].second->write(new_rid.id); // Indirection column
     /// @TODO Bufferpool::unpin(new_rid, 0)
-    page_range[base_last*num_column + RID_COLUMN].second->write(new_rid); // RID column
-    new_rid.first_rid_page = *(page_range[base_last*num_column + RID_COLUMN].second);
+    page_range[base_last*num_column + RID_COLUMN].second->write(new_rid.id); // RID column
+    new_rid.first_rid_page = *((page_range[base_last*num_column + RID_COLUMN].second)->data);
     /// @TODO Bufferpool::unpin(new_rid, 1)
     page_range[base_last*num_column + TIMESTAMP_COLUMN].second->write(0); // Timestamp
     /// @TODO Bufferpool::unpin(new_rid, 2)
@@ -221,7 +221,7 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
  * @return return RID of updated record upon successful insertion.
  *
  */
-RID PageRange::update(const RID& rid, const int& rid_new, const std::vector<int>& columns) {
+int PageRange::update(const RID& rid, RID& rid_new, const std::vector<int>& columns) {
     // Look for page available
     // Because the base record is monotonically increasing, we can use for loop and find the base page we need
     int page_of_rid = 0;
@@ -296,7 +296,7 @@ RID PageRange::update(const RID& rid, const int& rid_new, const std::vector<int>
     /// @TODO Bufferpool::unpin(rid_new, 0);
 
     page_range[tail_last*num_column+RID_COLUMN].second->write(rid_new.id); // RID column
-    rid_new.first_rid_page = *(page_range[tail_last*num_column+RID_COLUMN].second);
+    rid_new.first_rid_page = *(page_range[tail_last*num_column+RID_COLUMN].second->data);
     /// @TODO Bufferpool::unpin(rid_new, 1);
 
     page_range[tail_last*num_column+TIMESTAMP_COLUMN].second->write(0); // Timestamp
@@ -325,7 +325,7 @@ RID PageRange::update(const RID& rid, const int& rid_new, const std::vector<int>
     /// @TODO Bufferpool::unpin(rid_new, 3);
 
     // Updating indirection column and schema encoding column for the base page
-    *((page_range[page_of_rid * num_column].second)->data + offset*sizeof(int)) = rid_new;
+    *((page_range[page_of_rid * num_column].second)->data + offset*sizeof(int)) = rid_new.id;
     /// @TODO Bufferpool::unpin(page_range[page_of_rid * num_column].first, 0);
 
     /// @TODO Bufferpool::load();
@@ -336,7 +336,7 @@ RID PageRange::update(const RID& rid, const int& rid_new, const std::vector<int>
     // Setting the new RID to be representation of the page if the page was newly created
     if (new_tail) {
         for (int i = 0; i < num_column; i++) {
-            page_range[tail_last*num_column + i].first = new_rid;
+            page_range[tail_last*num_column + i].first = rid_new;
         }
     }
     return 0;

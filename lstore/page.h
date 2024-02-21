@@ -11,8 +11,7 @@
 class Page {
 public:
     /// @TODO Move this to config file
-    constexpr static int PAGE_SIZE = 4096; // bytes
-    constexpr static int NUM_SLOTS = PAGE_SIZE/sizeof(int); // bytes
+    const int NUM_SLOTS = PAGE_SIZE/sizeof(int); // bytes
     int num_rows = 0;
     // int availability[NUM_SLOTS] = {0}; // 0 is empty, 1 is occupied, 2 is deleted.
     Page ();
@@ -38,7 +37,7 @@ public:
     PageRange (RID& new_rid, const std::vector<int>& columns);
     PageRange(const PageRange& other);
     ~PageRange();
-    std::vector<std::pair<RID, Page*> > page_range;
+    std::vector<std::pair<RID, Page*>> page_range;
     int insert(RID& new_rid, const std::vector<int>& columns);
     int update(const RID& rid, RID& rid_new, const std::vector<int>& columns);
     bool base_has_capacity () const;
