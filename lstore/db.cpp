@@ -70,7 +70,6 @@ void Database::open(const std::string& path) {
 };
 
 void Database::close() {
-
 };
 
 /***
