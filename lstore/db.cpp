@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include "table.h"
 #include "db.h"
+#include "bufferpool.h"
 #include <cstdio>
 
 #include "../DllConfig.h"
@@ -64,8 +65,12 @@ COMPILER_SYMBOL int* Database_tables(int* obj){
 }
 
 
-void open(const std::string& path) {};
-void close() {};
+void Database::open(const std::string& path) {
+};
+
+void Database::close() {
+
+};
 
 /***
  *

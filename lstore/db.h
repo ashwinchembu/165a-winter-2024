@@ -5,6 +5,7 @@
 #include <string>
 #include <map>
 #include "table.h"
+#include "bufferpool.h"
 
 class Database{
   public:
@@ -16,6 +17,7 @@ class Database{
     Table get_table(const std::string& name);
 
     std::map<std::string, Table> tables;
+    Bufferpool buffer_pool;
 };
 
 #endif
