@@ -160,12 +160,12 @@ void Index::create_index(const int& column_number) {
             RID rid = table->page_directory.find(loc->second.id)->second;
 
             int value;
-						int indirection_num = bufferpool.get(rid, INDIRECTION_COLUMN);
+						int indirection_num = buffer_pool.get(rid, INDIRECTION_COLUMN);
             if (rid.check_schema(column_number)) { // If the column of the record at loc is updated
                 RID update_rid = table->page_directory.find(indirection_num)->second;
-								value = bufferpool.get(update_rid, column_number + NUM_METADATA_COLUMNS);
+								value = buffer_pool.get(update_rid, column_number + NUM_METADATA_COLUMNS);
             } else {
-                value = bufferpool.get(rid, column_number + NUM_METADATA_COLUMNS);
+                value = buffer_pool.get(rid, column_number + NUM_METADATA_COLUMNS);
             }
             index.insert({value, rid.id});
         }

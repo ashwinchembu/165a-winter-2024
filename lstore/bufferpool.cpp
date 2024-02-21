@@ -4,12 +4,9 @@
 #include "bufferpool.h"
 
 
-BufferPool::BufferPool () {
-    // I don't think we need to initialize with anything additional.
-}
+BufferPool::BufferPool ();
 
 BufferPool::~BufferPool () {
-    // Make sure everything is evicted?
     evict_all();
 }
 
