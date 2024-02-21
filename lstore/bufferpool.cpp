@@ -4,7 +4,9 @@
 #include "bufferpool.h"
 
 
-BufferPool::BufferPool ();
+BufferPool::BufferPool () {
+//  initialize ages;
+};
 
 BufferPool::~BufferPool () {
     evict_all();

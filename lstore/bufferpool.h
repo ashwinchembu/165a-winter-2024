@@ -4,15 +4,13 @@
 #include <vector>
 #include <string>
 #include "page.h"
+#include <unordered_map>
 
 class BufferPool {
 public:
     BufferPool ();
     virtual ~BufferPool ();
-    const int column = 1;
-    const int row = 1;
-    std::vector<std::vector<Page*>> buffer;
-    std::vector<std::vector<int>> pin_dirty_age; // Can we conbine? E.g. Using most significant bit for dirty or not. Next 5 bits for pin, rest of 26 bits for age?
+    std::vector<Frame> buffer(BUFFER_POOL_SIZE);
     int get (const RID& rid, const int& column); // given a rid and column, returns the value in that location
     void set (const RID& rid, const int& column); // given a rid and column, changes the value in that location
     int load ();
@@ -22,6 +20,15 @@ public:
     void unpin (const int& rid, const int& page_num);
 };
 
+class Frame {
+public:
+    Frame ();
+    virtual ~Frame ();
+    std::vector<Page*> pages;
+    bool pin = 0;
+    bool dirty = 0;
+    int age;
+};
 extern BufferPool buffer_pool;
 
 #endif
