@@ -12,8 +12,8 @@
 #include "table.h"
 #include "RID.h"
 #include <iostream>
-
 #include "../DllConfig.h"
+#include "config.h"
 
 std::vector<int>ridBuffer;
 
