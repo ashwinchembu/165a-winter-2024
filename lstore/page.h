@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include "RID.h"
 #include "table.h"
+#include "config.h"
 
 class Page {
 public:
@@ -26,8 +27,8 @@ class PageRange {
 public:
     /* data */
     /// @TODO Move this to config file
-    const int PAGE_SIZE = 4096;
-    const int LOGICAL_PAGE = 8;
+    // const int PAGE_SIZE = 4096;
+    // const int LOGICAL_PAGE = 8;
     const int NUM_SLOTS = 4096*LOGICAL_PAGE;
     int num_slot_left = NUM_SLOTS;
     int base_last = 0;
