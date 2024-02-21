@@ -8,6 +8,7 @@
 #include "table.h"
 #include <cstdio>
 #include <memory>
+#include "bufferpool.h"
 
 #include "../DllConfig.h"
 
@@ -178,23 +179,25 @@ Table::Table(const std::string& name, const int& num_columns, const int& key): n
  *
  * @param Record record A record to insert
  * @return const std::vector<int>& columns the values of the record
- * TODO Adopt to the change in RID
  *
  */
 RID Table::insert(const std::vector<int>& columns) {
     num_insert++;
     int rid_id = num_insert;
     RID record;
+	record.table_name = name;
+	record.id = rid_id;
     if (page_range.size() == 0 || !(page_range.back()->base_has_capacity())) {
 
-    	std::shared_ptr<PageRange>newPageRange{new PageRange(rid_id, columns)};
+    	std::shared_ptr<PageRange>newPageRange{new PageRange(record, columns)};
 
         page_range.push_back(newPageRange); // Make a base page with given record
         // return the RID for index or something
 
         record = (page_range.back().get())->page_range[0].first;
     } else { // If there are base page already, just insert it normally.
-        record = (page_range.back().get())->insert(rid_id, columns);
+        (page_range.back().get())->insert(record, columns);
+		record.first_rid_page_range = (page_range.back().get())->page_range[0].first.id;
     }
     page_directory.insert({rid_id, record});
     return record;
@@ -207,7 +210,6 @@ RID Table::insert(const std::vector<int>& columns) {
  * @param RID rid Rid that pointing to the base page.
  * @param std::vector<int>& columns the new values of the record
  * @return RID of the new row upon successful update
- * TODO Adopt to the change in RID
  *
  */
 RID Table::update(const RID& rid, const std::vector<int>& columns) {
@@ -215,14 +217,18 @@ RID Table::update(const RID& rid, const std::vector<int>& columns) {
     const int rid_id = num_update * -1;
     size_t i = 0;
     for (; i < page_range.size(); i++) {
-
         if ((page_range[i].get())->page_range[0].first.id > rid.id) {
             break;
         }
     }
     i--;
-		RID new_rid = (page_range[i].get())->update(rid, rid_id, columns);
-		page_directory.insert({rid_id, new_rid});
+    RID new_rid(rid_id);
+	new_rid.first_rid_page_range = (page_range[i].get())->page_range[0].first.id;
+
+	(page_range[i].get())->update(rid, new_rid, columns);
+	// int err = (page_range[i].get())->update(rid, rid_id, columns);
+	page_directory.insert({rid_id, new_rid});
+	new_rid.table_name = name;
     return new_rid;
 }
 
@@ -234,5 +240,41 @@ RID Table::update(const RID& rid, const std::vector<int>& columns) {
  *
  */
 int Table::merge() {
+	/*
+	updating at page range level
+
+	load the a copy of all base pages of the selected range into memory
+	iterate over tail page and get most up to date for record for every record -> consolidated base page
+		read it until TPS < tail ID
+	page directory is updated to point to the new pages
+	*/
+
+	BufferPool* mergeBufferPool = new BufferPool();
+	std::vector<Page> newBasePage;
+	std::vector<Page> tailPages;
+	//load copy of all base pages in each page range
+	for (int i = 0; i < this->page_range.size(); i++) {
+		std::shared_ptr<PageRange> PR = this->page_range[i]; 
+		for (int j = PR->page_range.size(); j > 0; j--) { 
+			int ridID = PR->page_range[j].first.id;
+			if (ridID < 0) { // if the page in PageRange is a tail page
+				//make copy of tail page
+				if (mergeBufferPool->get(ridID, TPS) < ) {
+
+				}
+				tailPages.push_back(*(PR->page_range[j].second));
+			} else {
+				//make copy of base page
+				newBasePage.push_back(*(PR->page_range[j].second));
+			}
+		}
+		// iterate backwards over tail page
+		for (int slot = PR->page_range[j].second->NUM_SLOTS; slot > 0; slot--) {
+					// if (;;) {
+						
+					// }
+		}
+	}
+
     return -1;
 }

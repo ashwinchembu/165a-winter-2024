@@ -18,7 +18,7 @@ public:
     Page ();
     virtual ~Page ();
     const bool has_capacity() const;
-    int* write(const int& value);
+    int write(const int& value);
     int* data = nullptr; // Data location(pointer)
     friend std::ostream& operator<<(std::ostream& os, const Page& p);
 };
@@ -35,11 +35,12 @@ public:
     int tail_last = 0;
     int num_column = 0;
 
-    PageRange (const int& new_rid, const std::vector<int>& columns);
+    PageRange (RID& new_rid, const std::vector<int>& columns);
+    PageRange(const PageRange& other);
     ~PageRange();
     std::vector<std::pair<RID, Page*> > page_range;
-    RID insert(const int& new_rid, const std::vector<int>& columns);
-    RID update(const RID& rid, const int& rid_new, const std::vector<int>& columns);
+    int insert(RID& new_rid, const std::vector<int>& columns);
+    int update(const RID& rid, RID& rid_new, const std::vector<int>& columns);
     bool base_has_capacity () const;
 };
 
