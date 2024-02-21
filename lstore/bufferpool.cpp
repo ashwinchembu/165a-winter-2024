@@ -4,7 +4,11 @@
 #include "bufferpool.h"
 
 
-BufferPool::BufferPool ();
+BufferPool::BufferPool () {
+  for(int i = 0; i < BUFFER_POOL_SIZE; i++){ //each frame is initialized with an age
+    buffer[i].age = i;
+  }
+}
 
 BufferPool::~BufferPool () {
     evict_all();
@@ -12,12 +16,15 @@ BufferPool::~BufferPool () {
 
 int BufferPool::get (const RID& rid, const int& column) {
     // Given desired RID and desired column
+    for(int i = 0; i < BUFFER_POOL_SIZE; i++){
+      if(rid.id == buffer[i].rid)
+    }
     // Check if it is already in the buffer pool or not.
     // If not, call load to retrieve from disk and return the value
     // Update all ages
 }
 
-void BufferPool::set (const RID& rid, const int& column){
+void BufferPool::set (const RID& rid, const int& column, int value){
     // Given desired RID and desired column
     // Check if it is already in the buffer pool or not.
     // If not, call load to retrieve from disk and return the value
@@ -30,6 +37,7 @@ void BufferPool::load (){
     // Check the availability of the pool. There should be some identifier.
     // Find the file, get the specific part and load into a memory. For now, I'm thinking about saving per table.
     // If bufferpool is full, call evict
+    // Set the valid bit of the frame to 1;
 }
 
 void BufferPool::evict (){
@@ -50,3 +58,7 @@ void BufferPool::pin (const int& rid, const int& page_num) {
 void BufferPool::unpin (const int& rid, const int& page_num) {
     // Unpin a page
 }
+
+Frame::Frame ();
+
+virtual Frame::~Frame ();
