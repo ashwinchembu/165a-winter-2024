@@ -1,9 +1,9 @@
 #ifndef BUFFERPOOL_H
 #define BUFFERPOOL_H
 
-#include <vector>
 #include <string>
 #include "page.h"
+#include <vector>
 
 class BufferPool {
 public:
@@ -24,8 +24,8 @@ public:
     Frame ();
     virtual ~Frame ();
     Page* page = nullptr;
+    int rid_id = -1;
     int column = -1;
-    int rid = -1;
     bool valid = 0;
     bool pin = 0;
     bool dirty = 0;

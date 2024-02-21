@@ -5,7 +5,7 @@
 
 
 BufferPool::BufferPool () {
-  for(int i = 0; i < BUFFER_POOL_SIZE; i++){ //each frame is initialized with an age
+  for(auto iter; int i = 0; i < BUFFER_POOL_SIZE; i++){ //each frame is initialized with an age
     buffer[i].age = i;
   }
 }
@@ -15,9 +15,8 @@ BufferPool::~BufferPool () {
 }
 
 int BufferPool::get (const RID& rid, const int& column) {
-    // Given desired RID and desired column
-    for(int i = 0; i < BUFFER_POOL_SIZE; i++){
-      if(rid.id == buffer[i].rid)
+    for(int i = 0; i < BUFFER_POOL_SIZE; i++){ //scan through bufferpool
+      if(buffer[i].valid && rid.id == buffer[i].rid && column == buffer[i].column) //if it is valid and the value that we want
     }
     // Check if it is already in the buffer pool or not.
     // If not, call load to retrieve from disk and return the value
