@@ -4,7 +4,6 @@
 #include <vector>
 #include <string>
 #include "page.h"
-#include <unordered_map>
 
 class BufferPool {
 public:
@@ -13,7 +12,7 @@ public:
     std::vector<Frame> buffer(BUFFER_POOL_SIZE);
     int get (const RID& rid, const int& column); // given a rid and column, returns the value in that location
     void set (const RID& rid, const int& column, int value); // given a rid and column, changes the value in that location
-    int load ();
+    int load (const RID& rid, const int& column);
     void evict ();
     void evict_all ();
     void pin (const int& rid, const int& page_num);
@@ -24,10 +23,13 @@ class Frame {
 public:
     Frame ();
     virtual ~Frame ();
-    Page* page;
+    Page* page = nullptr;
+    int column = -1;
+    int rid = -1;
+    bool valid = 0;
     bool pin = 0;
     bool dirty = 0;
-    int age;
+    int age = -1;
 };
 
 extern BufferPool buffer_pool;
