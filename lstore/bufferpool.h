@@ -12,7 +12,7 @@ public:
     virtual ~BufferPool ();
     std::vector<Frame> buffer(BUFFER_POOL_SIZE);
     int get (const RID& rid, const int& column); // given a rid and column, returns the value in that location
-    void set (const RID& rid, const int& column); // given a rid and column, changes the value in that location
+    void set (const RID& rid, const int& column, int value); // given a rid and column, changes the value in that location
     int load ();
     void evict ();
     void evict_all ();

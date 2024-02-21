@@ -19,7 +19,7 @@ int BufferPool::get (const RID& rid, const int& column) {
     // Update all ages
 }
 
-void BufferPool::set (const RID& rid, const int& column){
+void BufferPool::set (const RID& rid, const int& column, int value){
     // Given desired RID and desired column
     // Check if it is already in the buffer pool or not.
     // If not, call load to retrieve from disk and return the value
