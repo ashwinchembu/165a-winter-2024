@@ -18,7 +18,7 @@ int BufferPool::get (const RID& rid, const int& column) {
     bool found = FALSE;
     int index_of_found = -1;
 
-    for(int i = 0; i < BUFFER_POOL_SIZE; i++){ //scan through bufferpool
+    for(int i = 0; i < BUFFER_POOL_SIZE; i++){ //scan through bufferpool to find desired page
       if(buffer[i].valid && rid.first_rid_page == buffer[i].first_rid_page && column == buffer[i].column){ //if it is valid and the value that we want
         found = TRUE;
         index_of_found = i;
@@ -30,7 +30,7 @@ int BufferPool::get (const RID& rid, const int& column) {
     }
     int age_of_found = buffer[index_of_found].age;
     // Update all ages
-    return *(buffer[index_of_found].page->data + rid.offset);
+    return *(buffer[index_of_found].page->data + rid.offset); //return the value we want
 }
 
 void BufferPool::set (const RID& rid, const int& column, int value){ //return the index of where you placed it
@@ -38,6 +38,7 @@ void BufferPool::set (const RID& rid, const int& column, int value){ //return th
     // Check if it is already in the buffer pool or not.
     // If not, call load to retrieve from disk and return the value
     // Update all ages
+    //set dirty bit 1
 }
 
 int BufferPool::load (){ //return the index of where you placed it
@@ -47,6 +48,7 @@ int BufferPool::load (){ //return the index of where you placed it
     // Find the file, get the specific part and load into a memory. For now, I'm thinking about saving per table.
     // If bufferpool is full, call evict
     // Set the valid bit of the frame to 1;
+    // Set the dirty bit of the frame to 0;
 }
 
 void BufferPool::insert_new_page() {
