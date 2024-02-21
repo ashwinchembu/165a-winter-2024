@@ -13,6 +13,7 @@ public:
     int get (const RID& rid, const int& column); // given a rid and column, returns the value in that location
     void set (const RID& rid, const int& column, int value); // given a rid and column, changes the value in that location
     int load (const RID& rid, const int& column);
+    void insert_new_page();
     void evict ();
     void evict_all ();
     void pin (const int& rid, const int& page_num);
@@ -24,11 +25,11 @@ public:
     Frame ();
     virtual ~Frame ();
     Page* page = nullptr;
-    int rid_id = -1;
+    int first_rid_page = -1; //first rid in the page
     int column = -1;
-    bool valid = 0;
-    bool pin = 0;
-    bool dirty = 0;
+    bool valid = FALSE;
+    bool pin = FALSE;
+    bool dirty = FALSE;
     int age = -1;
 };
 
