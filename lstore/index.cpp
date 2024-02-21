@@ -14,6 +14,7 @@
 #include <iostream>
 #include "../DllConfig.h"
 #include "config.h"
+#include "bufferpool.h"
 
 std::vector<int>ridBuffer;
 
@@ -159,6 +160,7 @@ void Index::create_index(const int& column_number) {
             RID rid = table->page_directory.find(loc->second.id)->second;
 
             int value;
+						int indirection_num =
             int indirection_num = *(rid.pointers[0]);
             // int schema_num = *(rid.pointers[3]);
             if (rid.check_schema(column_number)) { // If the column of the record at loc is updated
