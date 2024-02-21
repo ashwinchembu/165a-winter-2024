@@ -24,11 +24,12 @@ class Frame {
 public:
     Frame ();
     virtual ~Frame ();
-    std::vector<Page*> pages;
+    Page* page;
     bool pin = 0;
     bool dirty = 0;
     int age;
 };
+
 extern BufferPool buffer_pool;
 
 #endif

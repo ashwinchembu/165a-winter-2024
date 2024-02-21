@@ -6,7 +6,7 @@
 
 BufferPool::BufferPool () {
 //  initialize ages;
-};
+}
 
 BufferPool::~BufferPool () {
     evict_all();
@@ -52,3 +52,7 @@ void BufferPool::pin (const int& rid, const int& page_num) {
 void BufferPool::unpin (const int& rid, const int& page_num) {
     // Unpin a page
 }
+
+Frame::Frame ();
+
+virtual Frame::~Frame ();
