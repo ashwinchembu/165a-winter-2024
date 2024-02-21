@@ -6,6 +6,7 @@
 #include "query.h"
 #include "../Toolkit.h"
 #include "../DllConfig.h"
+#include "config.h"
 
 COMPILER_SYMBOL int* Query_constructor(int* table){
 	return (int*)new Query((Table*)table);

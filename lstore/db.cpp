@@ -5,7 +5,7 @@
 #include "db.h"
 #include "bufferpool.h"
 #include <cstdio>
-
+#include "config.h"
 #include "../DllConfig.h"
 
 

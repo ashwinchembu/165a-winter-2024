@@ -103,19 +103,21 @@ COMPILER_SYMBOL bool PageRange_base_has_capacity(int* obj){
 
 PageRange::PageRange (const int& new_rid, const std::vector<int>& columns) {
     num_column = columns.size();
-    for (int i = 0; i < num_column + 4; i++) {
+    for (int i = 0; i < num_column + NUM_METADATA_COLUMNS; i++) {
         page_range.push_back(std::make_pair(RID(), new Page()));
     }
-    std::vector<int*> record_pointers(num_column + 4);
-    record_pointers[0] = page_range[0].second->write(new_rid); // Indirection column
-    record_pointers[1] = page_range[1].second->write(new_rid); // RID column
-    record_pointers[2] = page_range[2].second->write(0); // Timestamp
-    record_pointers[3] = page_range[3].second->write(0); // schema encoding
+    std::vector<int*> record_pointers(num_column + NUM_METADATA_COLUMNS);
+    record_pointers[INDIRECTION_COLUMN] = page_range[INDIRECTION_COLUMN].second->write(new_rid); // Indirection column
+    record_pointers[RID_COLUMN] = page_range[RID_COLUMN].second->write(new_rid); // RID column
+    record_pointers[TIMESTAMP_COLUMN] = page_range[TIMESTAMP_COLUMN].second->write(0); // Timestamp
+    record_pointers[SCHEMA_ENCODING_COLUMN] = page_range[SCHEMA_ENCODING_COLUMN].second->write(0); // schema encoding
+    // TODO Add columns for 2 more columns
+
     for (int i = 0; i < num_column; i++) {
-        record_pointers[4 + i] = (page_range[4 + i]).second->write(columns[i]);
+        record_pointers[NUM_METADATA_COLUMNS + i] = (page_range[NUM_METADATA_COLUMNS + i]).second->write(columns[i]);
     }
     RID rid(record_pointers, new_rid);
-    num_column = num_column + 4;
+    num_column = num_column + NUM_METADATA_COLUMNS;
     for (int i = 0; i < num_column; i++) {
         page_range[i].first = rid;
     }
@@ -171,18 +173,18 @@ RID PageRange::insert(const int& new_rid, const std::vector<int>& columns) {
     // Start inserting new record
     // Metadata columns
     std::vector<int*> record_pointers(num_column);
-    record_pointers[0] = page_range[base_last*num_column].second->write(new_rid); // Indirection column
+    record_pointers[INDIRECTION_COLUMN] = page_range[base_last*num_column + INDIRECTION_COLUMN].second->write(new_rid); // Indirection column
     /// @TODO Bufferpool::unpin(new_rid, 0)
-    record_pointers[1] = page_range[base_last*num_column + 1].second->write(new_rid); // RID column
+    record_pointers[RID_COLUMN] = page_range[base_last*num_column + RID_COLUMN].second->write(new_rid); // RID column
     /// @TODO Bufferpool::unpin(new_rid, 1)
-    record_pointers[2] = page_range[base_last*num_column + 2].second->write(0); // Timestamp
+    record_pointers[TIMESTAMP_COLUMN] = page_range[base_last*num_column + TIMESTAMP_COLUMN].second->write(0); // Timestamp
     /// @TODO Bufferpool::unpin(new_rid, 2)
-    record_pointers[3] = page_range[base_last*num_column + 3].second->write(0); // schema encoding
+    record_pointers[SCHEMA_ENCODING_COLUMN] = page_range[base_last*num_column + SCHEMA_ENCODING_COLUMN].second->write(0); // schema encoding
     /// @TODO Bufferpool::unpin(new_rid, 3)
-
+// TODO Add columns for 2 more columns
     // Inserting data columns
-    for (int i = 4; i < num_column; i++) {
-        record_pointers[i] = page_range[base_last*num_column+i].second->write(columns[i - 4]);
+    for (int i = NUM_METADATA_COLUMNS; i < num_column; i++) {
+        record_pointers[i] = page_range[base_last*num_column+i].second->write(columns[i - NUM_METADATA_COLUMNS]);
         /// @TODO Bufferpool::unpin(new_rid, i)
     }
 
@@ -263,7 +265,7 @@ RID PageRange::update(const RID& rid, const int& rid_new, const std::vector<int>
 
         /// @TODO Bufferpool::load();
         /// @TODO Bufferpool::pin(page_range[latest_page * num_column].first, 1);
-        while (latest_offset < NUM_SLOTS && latest_rid != (*((page_range[latest_page * num_column + 1].second)->data + latest_offset*sizeof(int)))) {
+        while (latest_offset < NUM_SLOTS && latest_rid != (*((page_range[latest_page * num_column + RID_COLUMN].second)->data + latest_offset*sizeof(int)))) {
             latest_offset++;
         }
         /// @TODO Bufferpool::unpin(page_range[latest_page * num_column].first, 1);
@@ -282,19 +284,20 @@ RID PageRange::update(const RID& rid, const int& rid_new, const std::vector<int>
     // Writing metadata to page
     /// @TODO Bufferpool::load();
     /// @TODO Bufferpool::pin(page_range[latest_page * num_column].first, 0);
-    new_record[0] = page_range[tail_last*num_column].second->write(*((page_range[latest_page * num_column].second)->data + latest_offset*sizeof(int))); // Indirection column
+    new_record[INDIRECTION_COLUMN] = page_range[tail_last*num_column].second->write(*((page_range[latest_page * num_column + INDIRECTION_COLUMN].second)->data + latest_offset*sizeof(int))); // Indirection column
     /// @TODO Bufferpool::unpin(page_range[latest_page * num_column].first, 0);
     /// @TODO Bufferpool::unpin(rid_new, 0);
 
-    new_record[1] = page_range[tail_last*num_column+1].second->write(rid_new); // RID column
+    new_record[RID_COLUMN] = page_range[tail_last*num_column+RID_COLUMN].second->write(rid_new); // RID column
     /// @TODO Bufferpool::unpin(rid_new, 1);
 
-    new_record[2] = page_range[tail_last*num_column+2].second->write(0); // Timestamp
+    new_record[TIMESTAMP_COLUMN] = page_range[tail_last*num_column+TIMESTAMP_COLUMN].second->write(0); // Timestamp
     /// @TODO Bufferpool::unpin(rid_new, 2);
+// TODO Add columns for 2 more columns
 
     // Writing data to page and also update schema encoding if necessary.
-    for (int i = 4; i < num_column; i++) {
-        if (std::isnan(columns[i - 4]) || columns[i-4] < -2147480000) { // Wrapper changes None to smallest integer possible
+    for (int i = NUM_METADATA_COLUMNS; i < num_column; i++) {
+        if (std::isnan(columns[i - NUM_METADATA_COLUMNS]) || columns[i-NUM_METADATA_COLUMNS] < -2147480000) { // Wrapper changes None to smallest integer possible
             // If there are no update, we write the value from latest update
             /// @TODO Bufferpool::load();
             /// @TODO Bufferpool::pin(page_range[latest_page * num_column].first, i);
@@ -302,14 +305,14 @@ RID PageRange::update(const RID& rid, const int& rid_new, const std::vector<int>
             /// @TODO Bufferpool::unpin(page_range[latest_page * num_column].first, i);
         } else {
             // If there are update, we write the new value and update the schema encoding.
-            new_record[i] = page_range[tail_last*num_column+i].second->write(columns[i - 4]);
+            new_record[i] = page_range[tail_last*num_column+i].second->write(columns[i - NUM_METADATA_COLUMNS]);
             schema_encoding = schema_encoding | (0b1 << (num_column - i - 1));
         }
         /// @TODO Bufferpool::unpin(rid_new, i);
     }
 
     // Write the schema encoding of where updated
-    new_record[3] = page_range[tail_last*num_column+3].second->write(schema_encoding); // schema encoding
+    new_record[SCHEMA_ENCODING_COLUMN] = page_range[tail_last*num_column+SCHEMA_ENCODING_COLUMN].second->write(schema_encoding); // schema encoding
     /// @TODO Bufferpool::unpin(rid_new, 3);
 
     // Updating indirection column and schema encoding column for the base page
@@ -318,7 +321,7 @@ RID PageRange::update(const RID& rid, const int& rid_new, const std::vector<int>
 
     /// @TODO Bufferpool::load();
     /// @TODO Bufferpool::pin(page_range[page_of_rid * num_column].first, 3);
-    *((page_range[page_of_rid * num_column + 3].second)->data + offset*sizeof(int)) = (*((page_range[page_of_rid * num_column + 3].second)->data + offset*sizeof(int)) | schema_encoding);
+    *((page_range[page_of_rid * num_column + SCHEMA_ENCODING_COLUMN].second)->data + offset*sizeof(int)) = (*((page_range[page_of_rid * num_column + SCHEMA_ENCODING_COLUMN].second)->data + offset*sizeof(int)) | schema_encoding);
     /// @TODO Bufferpool::unpin(page_range[page_of_rid * num_column].first, 3);
     RID new_rid(new_record, rid_new);
 

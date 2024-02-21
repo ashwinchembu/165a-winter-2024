@@ -2,6 +2,7 @@
 #define BUFFERPOOL_H
 
 #include <vector>
+#include <string>
 #include "page.h"
 
 class BufferPool {
@@ -11,7 +12,7 @@ public:
     const int column = 1;
     const int row = 1;
     std::vector<std::vector<Page*>> buffer;
-    std::vector<std::vector<int>> pin_dirty_age; // Can we conbine? E.g. 0 is all clean, 1 is pin, 2 is dirty, 4-16 is age?
+    std::vector<std::vector<int>> pin_dirty_age; // Can we conbine? E.g. Using most significant bit for dirty or not. Next 5 bits for pin, rest of 26 bits for age?
     int* get ();
     int* load ();
     void evict ();
