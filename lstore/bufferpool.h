@@ -9,17 +9,27 @@ class BufferPool {
 public:
     BufferPool ();
     virtual ~BufferPool ();
-    const int column = 1;
-    const int row = 1;
-    std::vector<std::vector<Page*>> buffer;
-    std::vector<std::vector<int>> pin_dirty_age; // Can we conbine? E.g. Using most significant bit for dirty or not. Next 5 bits for pin, rest of 26 bits for age?
+    std::vector<Frame> buffer(BUFFER_POOL_SIZE);
     int get (const RID& rid, const int& column); // given a rid and column, returns the value in that location
-    void set (const RID& rid, const int& column); // given a rid and column, changes the value in that location
-    int load ();
+    void set (const RID& rid, const int& column, int value); // given a rid and column, changes the value in that location
+    int load (const RID& rid, const int& column);
     void evict ();
     void evict_all ();
     void pin (const int& rid, const int& page_num);
     void unpin (const int& rid, const int& page_num);
+};
+
+class Frame {
+public:
+    Frame ();
+    virtual ~Frame ();
+    Page* page = nullptr;
+    int column = -1;
+    int rid = -1;
+    bool valid = 0;
+    bool pin = 0;
+    bool dirty = 0;
+    int age = -1;
 };
 
 extern BufferPool buffer_pool;

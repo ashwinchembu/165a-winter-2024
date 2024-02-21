@@ -127,6 +127,10 @@ PageRange::PageRange (const int& new_rid, const std::vector<int>& columns) {
     num_slot_left--;
 }
 
+PageRange::PageRange(const PageRange& other) {
+    this->page_range = other.page_range;
+}
+
 PageRange::~PageRange () {
     for (size_t i = 0; i < page_range.size(); i++) {
         delete page_range[i].second;

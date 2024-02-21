@@ -9,4 +9,4 @@ const int TPS = 5;
 const int NUM_METADATA_COLUMNS = 6;
 const int PAGE_SIZE = 4096;
 const int LOGICAL_PAGE = 8;
-const int BUFFER_POOL_SIZE = 16;
+const int BUFFER_POOL_SIZE = 64;

@@ -36,6 +36,7 @@ public:
     int num_column = 0;
 
     PageRange (RID& new_rid, const std::vector<int>& columns);
+    PageRange(const PageRange& other);
     ~PageRange();
     std::vector<std::pair<RID, Page*> > page_range;
     int insert(RID& new_rid, const std::vector<int>& columns);

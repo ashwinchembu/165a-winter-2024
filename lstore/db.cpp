@@ -70,6 +70,7 @@ void Database::open(const std::string& path) {
 };
 
 void Database::close() {
+	buffer_pool.evict_all();
 };
 
 /***
