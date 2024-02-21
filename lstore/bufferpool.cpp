@@ -2,6 +2,8 @@
 #include "page.h"
 #include "config.h"
 #include "bufferpool.h"
+#include <cstring>
+#include <cmath>
 
 
 BufferPool::BufferPool () {
@@ -42,14 +44,72 @@ void BufferPool::set (const RID& rid, const int& column, int value){ //return th
     //set dirty bit 1
 }
 
-int BufferPool::load (const RID& rid, const int& column){ //return the index of where you placed it
-    // Called by get
-    // There should be an option to not actually read file from storage, which we use it when we make a new file and write things in.
-    // Check the availability of the pool. There should be some identifier.
-    // Find the file, get the specific part and load into a memory. For now, I'm thinking about saving per table.
-    // If bufferpool is full, call evict
-    // Set the valid bit of the frame to 1;
-    // Set the dirty bit of the frame to 0;
+
+// Called by get
+   // There should be an option to not actually read file from storage, which we use it when we make a new file and write things in.
+   // Check the availability of the pool. There should be some identifier.
+   // Find the file, get the specific part and load into a memory. For now, I'm thinking about saving per table.
+   // If bufferpool is full, call evict
+   // Set the valid bit of the frame to 1;
+   // Set the dirty bit of the frame to 0;
+void BufferPool::load (const RID& rid, const int& column){ //return the index of where you placed it
+	dbMetadataIn.seekg(std::ios::beg);
+
+	std::string tableName = rid.table_name;
+
+	int numberOfFiles;
+	dbMetadataIn.read((char*)&numberOfFiles,sizeof(int));
+
+	for(int i = 0; i<numberOfFiles;i++){
+		std::string filename(std::to_string(i));
+		filename+=".dat";
+
+		std::ifstream ifs(filename, std::ofstream::out | std::ofstream::binary);
+
+		char nameBuf[257];
+		ifs.read((char*)&nameBuf,257);
+
+		if(strcmp(tableName.c_str(),nameBuf)){
+			double firstBaseId;
+			double firstTailId;
+			ifs.read((char*)&firstBaseId,sizeof(double));
+			ifs.read((char*)&firstTailId,sizeof(double));
+
+			int numCols;
+			int numEntries;
+			ifs.seekg(NUMBER_OF_COLUMNS_OFFSET,std::ifstream::beg);
+			ifs.read((char*)&numCols,sizeof(int));
+			ifs.read((char*)&numEntries,sizeof(int));
+
+
+			if((rid.id > 0 && std::isnan(firstBaseId))
+				|| (rid.id < 0 && std::isnan(firstTailId))){
+				i += numCols - 1;
+			}
+
+			if((rid.id > 0 && rid.id >= firstBaseId)
+					|| (rid.id < 0 && rid.id <= firstTailId)){
+
+				Frame frame;
+
+				Page* p = new Page();
+
+				for(int i = 0; i < numEntries;i++){
+					int nextEntry;
+					ifs.read((char*)&nextEntry,sizeof(int));
+					p->write(nextEntry);
+				}
+
+				frame.page = p;
+
+				buffer.push_back(frame);
+
+				break;
+			}
+
+			i += numCols - 1;
+		}
+	}
 }
 
 void BufferPool::insert_new_page() {
