@@ -73,9 +73,7 @@ COMPILER_SYMBOL int* Query_table(int* obj){
 
 
 bool Query::deleteRecord(const int& primary_key) {
-    // Placeholder for delete logic
     // Return true if successful, false otherwise
-    // RID rid = table->page_directory.find(primary_key)->second;
     if (table->page_directory.find(primary_key)->second.id == 0) {
         return false;
     } else {
@@ -85,11 +83,8 @@ bool Query::deleteRecord(const int& primary_key) {
 }
 
 bool Query::insert(const std::vector<int>& columns) {
-    // Placeholder for insert logic
     // Return true if successful, false otherwise
-    //std::cout << "insert into table... ";
     RID rid = table->insert(columns);
-    //std::cout << "insert into index..." << std::endl;
     table->index->insert_index(rid.id, columns);
     return rid.id;
 }
@@ -100,6 +95,8 @@ std::vector<Record> Query::select(const int& search_key, const int& search_key_i
       return select_version(search_key, search_key_index, projected_columns_index, 0);
 }
 
+
+/// @TODO Adopt to the change in RID
 std::vector<Record> Query::select_version(const int& search_key, const int& search_key_index, const std::vector<int>& projected_columns_index, const int& _relative_version) {
     const int relative_version = _relative_version * (-1);
 
@@ -126,6 +123,7 @@ std::vector<Record> Query::select_version(const int& search_key, const int& sear
     return records;
 }
 
+/// @TODO Adopt to the change in RID
 bool Query::update(const int& primary_key, const std::vector<int>& columns) {
     RID base_rid = table->page_directory.find(table->index->locate(table->key, primary_key)[0])->second; //locate base RID of record to be updated
     RID last_update = table->page_directory.find(*(base_rid.pointers[0]))->second; //locate the previous update
@@ -147,6 +145,7 @@ unsigned long int Query::sum(const int& start_range, const int& end_range, const
     return sum_version(start_range, end_range, aggregate_column_index, 0);
 }
 
+/// @TODO Adopt to the change in RID
 unsigned long int Query::sum_version(const int& start_range, const int& end_range, const int& aggregate_column_index, const int& _relative_version) {
     // Placeholder for sum_version logic
     const int relative_version = _relative_version * (-1);
@@ -174,6 +173,7 @@ unsigned long int Query::sum_version(const int& start_range, const int& end_rang
     return sum;
 }
 
+/// @TODO Adopt to the change in RID
 bool Query::increment(const int& key, const int& column) {
     // Placeholder for increment logic
     // Use select to find the record, then update to increment the column

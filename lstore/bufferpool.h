@@ -1,3 +1,6 @@
+#ifndef BUFFERPOOL_H
+#define BUFFERPOOL_H
+
 #include <vector>
 #include "page.h"
 
@@ -16,3 +19,7 @@ public:
     void pin (const int& rid, const int& page_num);
     void unpin (const int& rid, const int& page_num);
 };
+
+extern BufferPool buffer_pool;
+
+#endif

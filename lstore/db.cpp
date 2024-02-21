@@ -65,6 +65,7 @@ COMPILER_SYMBOL int* Database_tables(int* obj){
 }
 
 
+
 void Database::open(const std::string& path) {
 };
 
