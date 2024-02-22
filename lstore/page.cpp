@@ -3,6 +3,8 @@
 #include <cstdlib>
 #include <cmath>
 // #include <parallel/algorithm>
+#include "bufferpool.h"
+#include "config.h"
 #include "page.h"
 #include "table.h"
 #include "../DllConfig.h"
@@ -104,25 +106,22 @@ COMPILER_SYMBOL bool PageRange_base_has_capacity(int* obj){
 PageRange::PageRange (RID& new_rid, const std::vector<int>& columns) {
     new_rid.offset = 0;
     num_column = columns.size();
-    for (int i = 0; i < num_column + NUM_METADATA_COLUMNS; i++) {
-        page_range.push_back(std::make_pair(RID(), new Page()));
-    }
+
     new_rid.first_rid_page_range = new_rid.id;
     new_rid.first_rid_page = new_rid.id;
-    page_range[INDIRECTION_COLUMN].second->write(new_rid.id); // Indirection column
-    page_range[RID_COLUMN].second->write(new_rid.id); // RID column
-    page_range[TIMESTAMP_COLUMN].second->write(0); // Timestamp
-    page_range[SCHEMA_ENCODING_COLUMN].second->write(0); // schema encoding
-    page_range[BASE_RID_COLUMN].second->write(new_rid.id);
-    page_range[TPS].second->write(0);
+    // Update using
+    buffer_pool.insert_new_page(new_rid, INDIRECTION_COLUMN, new_rid.id);
+    buffer_pool.insert_new_page(new_rid, RID_COLUMN, new_rid.id);
+    buffer_pool.insert_new_page(new_rid, TIMESTAMP_COLUMN, 0);
+    buffer_pool.insert_new_page(new_rid, SCHEMA_ENCODING_COLUMN, 0);
+    new_rid.schema_encoding = 0;
+    buffer_pool.insert_new_page(new_rid, BASE_RID_COLUMN, new_rid.id);
+    buffer_pool.insert_new_page(new_rid, TPS, 0);
     for (int i = 0; i < num_column; i++) {
-        page_range[NUM_METADATA_COLUMNS + i].second->write(columns[i]);
+        buffer_pool.insert_new_page(new_rid, NUM_METADATA_COLUMNS + i, columns[i]);
     }
 
     num_column = num_column + NUM_METADATA_COLUMNS;
-    for (int i = 0; i < num_column; i++) {
-        page_range[i].first = new_rid;
-    }
     base_last = 0;
     num_slot_left--;
 }
@@ -187,6 +186,7 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
     page_range[base_last*num_column + TIMESTAMP_COLUMN].second->write(0); // Timestamp
     /// @TODO Bufferpool::unpin(new_rid, 2)
     page_range[base_last*num_column + SCHEMA_ENCODING_COLUMN].second->write(0); // schema encoding
+    new_rid.schema_encoding = 0;
     /// @TODO Bufferpool::unpin(new_rid, 3)
     page_range[base_last*num_column + BASE_RID_COLUMN].second->write(new_rid.id);
     page_range[base_last*num_column + TPS].second->write(0);
@@ -221,7 +221,7 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
  * @return return RID of updated record upon successful insertion.
  *
  */
-int PageRange::update(const RID& rid, RID& rid_new, const std::vector<int>& columns) {
+int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns) {
     // Look for page available
     // Because the base record is monotonically increasing, we can use for loop and find the base page we need
     int page_of_rid = 0;
@@ -322,6 +322,7 @@ int PageRange::update(const RID& rid, RID& rid_new, const std::vector<int>& colu
 
     // Write the schema encoding of where updated
     page_range[tail_last*num_column+SCHEMA_ENCODING_COLUMN].second->write(schema_encoding); // schema encoding
+    rid_new.schema_encoding = schema_encoding;
     /// @TODO Bufferpool::unpin(rid_new, 3);
 
     // Updating indirection column and schema encoding column for the base page
@@ -330,7 +331,8 @@ int PageRange::update(const RID& rid, RID& rid_new, const std::vector<int>& colu
 
     /// @TODO Bufferpool::load();
     /// @TODO Bufferpool::pin(page_range[page_of_rid * num_column].first, 3);
-    *((page_range[page_of_rid * num_column + SCHEMA_ENCODING_COLUMN].second)->data + offset*sizeof(int)) = (*((page_range[page_of_rid * num_column + SCHEMA_ENCODING_COLUMN].second)->data + offset*sizeof(int)) | schema_encoding);
+    rid.schema_encoding = (*((page_range[page_of_rid * num_column + SCHEMA_ENCODING_COLUMN].second)->data + offset*sizeof(int)) | schema_encoding);
+    *((page_range[page_of_rid * num_column + SCHEMA_ENCODING_COLUMN].second)->data + offset*sizeof(int)) = rid.schema_encoding;
     /// @TODO Bufferpool::unpin(page_range[page_of_rid * num_column].first, 3);
 
     // Setting the new RID to be representation of the page if the page was newly created

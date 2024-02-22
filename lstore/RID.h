@@ -23,10 +23,11 @@ public:
     RID (int i, int k, int j, int l, std::string s) : id(i), first_rid_page_range(k), first_rid_page(j), offset(l), table_name(s) {};
     int id;
     const bool check_schema (const int& column_num) const;
-    const int column_with_one () const;
+    // const int column_with_one () const;
     int first_rid_page_range = 0;
     int first_rid_page = 0;
     int offset = 0;
+    int schema_encoding = 0;
     std::string table_name = "";
 };
 

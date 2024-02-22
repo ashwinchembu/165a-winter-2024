@@ -1,4 +1,5 @@
 #include "RID.h"
+#include "config.h"
 #include "../DllConfig.h"
 
 COMPILER_SYMBOL int RID_INDIRECTION_COLUMN(int* obj){
@@ -56,26 +57,25 @@ COMPILER_SYMBOL int RID_column_with_one(int* obj){
  *
  */
 const bool RID::check_schema (const int& column_num) const {
-    int schema_encoding = *(pointers[SCHEMA_ENCODING_COLUMN]);
     const int bin = 0b1 & (schema_encoding >> (column_num - 1));
     return bin;
 }
 
-/***
- *
- * Return corresponding column number of which has 1 in schema encoding. Will return right most 1 only if multiple.
- *
- * @return Return column number, excluding metadata columns if 1 is found within the range. Otherwise return -1.
- *
- */
-const int RID::column_with_one () const {
-    int num_elements = pointers.size() - 4; //Number of metadata columns
-    int schema_encoding = *(pointers[SCHEMA_ENCODING_COLUMN]);
-    for (int i = 0; i < num_elements; i++) {
-        if (0b1 & schema_encoding) {
-            return num_elements - i;
-        }
-        schema_encoding = schema_encoding >> 1;
-    }
-    return -1;
-}
+// /***
+//  *
+//  * Return corresponding column number of which has 1 in schema encoding. Will return right most 1 only if multiple.
+//  *
+//  * Deprecated
+//  * @return Return column number, excluding metadata columns if 1 is found within the range. Otherwise return -1.
+//  *
+//  */
+// const int RID::column_with_one () const {
+//     int _schema_encoding = schema_encoding;
+//     for (int i = 0; i < 32; i++) {
+//         if (0b1 & _schema_encoding) {
+//             return num_elements - i;
+//         }
+//         _schema_encoding = _schema_encoding >> 1;
+//     }
+//     return -1;
+// }

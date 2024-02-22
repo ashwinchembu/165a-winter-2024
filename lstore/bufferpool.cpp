@@ -112,8 +112,9 @@ void BufferPool::load (const RID& rid, const int& column){ //return the index of
 	}
 }
 
-void BufferPool::insert_new_page() {
-
+void BufferPool::insert_new_page(const RID& rid, const int& column, int value) {
+	// Make a new page
+	// Fit into Frame using information in the RID class passed.
 };
 
 int BufferPool::evict (){ //return the index of evicted
