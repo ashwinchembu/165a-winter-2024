@@ -114,7 +114,7 @@ PageRange::PageRange (RID& new_rid, const std::vector<int>& columns) {
     buffer_pool.insert_new_page(new_rid, RID_COLUMN, new_rid.id);
     buffer_pool.insert_new_page(new_rid, TIMESTAMP_COLUMN, 0);
     buffer_pool.insert_new_page(new_rid, SCHEMA_ENCODING_COLUMN, 0);
-    new_rid.schema_encoding = 0;
+    // new_rid.schema_encoding = 0; // Comment out for future usage : cascading abort
     buffer_pool.insert_new_page(new_rid, BASE_RID_COLUMN, new_rid.id);
     buffer_pool.insert_new_page(new_rid, TPS, 0);
     for (int i = 0; i < num_column; i++) {
@@ -186,7 +186,7 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
     page_range[base_last*num_column + TIMESTAMP_COLUMN].second->write(0); // Timestamp
     /// @TODO Bufferpool::unpin(new_rid, 2)
     page_range[base_last*num_column + SCHEMA_ENCODING_COLUMN].second->write(0); // schema encoding
-    new_rid.schema_encoding = 0;
+    // new_rid.schema_encoding = 0; // Comment out for future usage : cascading abort
     /// @TODO Bufferpool::unpin(new_rid, 3)
     page_range[base_last*num_column + BASE_RID_COLUMN].second->write(new_rid.id);
     page_range[base_last*num_column + TPS].second->write(0);
@@ -322,7 +322,7 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns) {
 
     // Write the schema encoding of where updated
     page_range[tail_last*num_column+SCHEMA_ENCODING_COLUMN].second->write(schema_encoding); // schema encoding
-    rid_new.schema_encoding = schema_encoding;
+    // rid_new.schema_encoding = schema_encoding; // Comment out for future usage : cascading abort
     /// @TODO Bufferpool::unpin(rid_new, 3);
 
     // Updating indirection column and schema encoding column for the base page
@@ -331,8 +331,10 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns) {
 
     /// @TODO Bufferpool::load();
     /// @TODO Bufferpool::pin(page_range[page_of_rid * num_column].first, 3);
-    rid.schema_encoding = (*((page_range[page_of_rid * num_column + SCHEMA_ENCODING_COLUMN].second)->data + offset*sizeof(int)) | schema_encoding);
-    *((page_range[page_of_rid * num_column + SCHEMA_ENCODING_COLUMN].second)->data + offset*sizeof(int)) = rid.schema_encoding;
+    // rid.schema_encoding = (*((page_range[page_of_rid * num_column + SCHEMA_ENCODING_COLUMN].second)->data + offset*sizeof(int)) | schema_encoding); // Comment out for future usage : cascading abort
+    // *((page_range[page_of_rid * num_column + SCHEMA_ENCODING_COLUMN].second)->data + offset*sizeof(int)) = rid.schema_encoding;
+
+    *((page_range[page_of_rid * num_column + SCHEMA_ENCODING_COLUMN].second)->data + offset*sizeof(int)) = (*((page_range[page_of_rid * num_column + SCHEMA_ENCODING_COLUMN].second)->data + offset*sizeof(int)) | schema_encoding);
     /// @TODO Bufferpool::unpin(page_range[page_of_rid * num_column].first, 3);
 
     // Setting the new RID to be representation of the page if the page was newly created

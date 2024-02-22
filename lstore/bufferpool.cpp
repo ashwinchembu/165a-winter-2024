@@ -120,6 +120,15 @@ void BufferPool::insert_new_page(const RID& rid, const int& column, int value) {
 int BufferPool::evict (){ //return the index of evicted
     // Called by load with which area to have a file evicted.
     // Evict a page using LRU that has no pin. Write back to disk if it is dirty.
+	/* Saving from Frame to file */
+	Frame decoy;
+	// Use fastformat library instead of to_string
+	fp = fopen (decoy.table_name + std::to_string(decoy.first_rid_page_range) + "_" + std::to_string(decoy.first_rid_page) + "_" + std::to_string(decoy.column) + ".dat", "wr");
+	fwrite(decoy.page->data, sizeof(int), PAGE_SIZE*sizeof(int), fp);
+	// Write in num_rows also into page
+	fclose(fp);
+	decoy.valid = false;
+
 }
 
 void BufferPool::evict_all (){

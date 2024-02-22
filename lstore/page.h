@@ -31,7 +31,9 @@ public:
     const int NUM_SLOTS = 4096*LOGICAL_PAGE;
     int num_slot_left = NUM_SLOTS;
     int base_last = 0;
+    bool base_last_wasfull = false;
     int tail_last = 0;
+    bool tail_last_wasfull = false;
     int num_column = 0;
 
     PageRange (RID& new_rid, const std::vector<int>& columns);

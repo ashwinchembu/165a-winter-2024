@@ -27,7 +27,7 @@ public:
     int first_rid_page_range = 0;
     int first_rid_page = 0;
     int offset = 0;
-    int schema_encoding = 0;
+    // int schema_encoding = 0; // Comment out for future usage : cascading abort
     std::string table_name = "";
 };
 

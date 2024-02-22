@@ -35,7 +35,10 @@ public:
     Frame ();
     virtual ~Frame ();
     Page* page = nullptr;
-    int first_rid_page = -1; //first rid in the page
+    int first_rid_page = 0; //first rid in the page
+    // Can we hold first rid of the page range and table for eviction? <= Should not be hard because it is passed on load / make new
+    std::string table_name = "";
+    int first_rid_page_range = 0;
     int column = -1;
     bool valid = false;
     int pin = 0;
