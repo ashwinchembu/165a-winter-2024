@@ -193,12 +193,9 @@ RID Table::insert(const std::vector<int>& columns) {
     	std::shared_ptr<PageRange>newPageRange{new PageRange(record, columns)};
 
         page_range.push_back(newPageRange); // Make a base page with given record
-        // return the RID for index or something
-
-        record = (page_range.back().get())->page_range[0].first;
     } else { // If there are base page already, just insert it normally.
         (page_range.back().get())->insert(record, columns);
-		record.first_rid_page_range = (page_range.back().get())->page_range[0].first.id;
+		record.first_rid_page_range = (page_range.back().get())->pages[0].first_rid_page_range;
     }
     page_directory.insert({rid_id, record});
     return record;
