@@ -10,4 +10,5 @@
     extern const int PAGE_SIZE;
     extern const int LOGICAL_PAGE;
     extern const int BUFFER_POOL_SIZE;
+    extern const int NUM_BUFFERPOOL_HASH_PARTITIONS;
 #endif

@@ -7,19 +7,23 @@
 
 
 BufferPool::BufferPool (const int& num_pages) : bufferpool_size(num_pages){
-  head = new Frame;
-  head->age = 0;
+  head = new Frame; //create head
   hash_vector.push_back(head); //head will be the first hash range beginning
-
   Frame* old_frame = head;
 
-  for(int i = 1; i < BUFFER_POOL_SIZE; i++){ //each frame is initialized with an age
+  for(int i = 1; i < (bufferpool_size - 1); i++){
     Frame* new_frame = new Frame;
     old_frame->next = new_frame;
     new_frame->prev = old_frame;
-    new_frame->age = i;
+    if(i % (bufferpool_size / NUM_BUFFERPOOL_HASH_PARTITIONS) == 0){ //check if the pointer should be a hash range beginning
+      hash_vector.push_back(new_frame);
+    }
     old_frame = new_frame;
   }
+
+  tail = new Frame; //create tail
+  old_frame->next = tail;
+  tail->prev = old_frame;
 }
 
 BufferPool::~BufferPool () {
@@ -27,50 +31,58 @@ BufferPool::~BufferPool () {
 }
 
 int BufferPool::get (const RID& rid, const int& column) {
-    bool found = false;
-    int index_of_found = -1;
-
-    for(int i = 0; i < BUFFER_POOL_SIZE; i++){ //scan through bufferpool to find desired page
-      if(buffer[i].valid && rid.first_rid_page == buffer[i].first_rid_page && column == buffer[i].column){ //if it is valid and the value that we want
-        found = true;
-        index_of_found = i;
-        break;
-      }
+    Frame* found = search(rid, column);
+    if(found == nullptr){ //if not already in the bufferpool, load into bufferpool
+      found = load(rid, column);
     }
-    if(!found){ //if not already in the bufferpool, load into bufferpool
-      index_of_found = load(rid, column);
-    }
-    update_ages(index_of_found);
-    return *(buffer[index_of_found].page->data + rid.offset); //return the value we want
+    update_ages(found);
+    return *(found->page->data + rid.offset); //return the value we want
 }
 
 void BufferPool::set (const RID& rid, const int& column, int value){ //return the index of where you placed it
-    // Given desired RID and desired column
-    // Check if it is already in the buffer pool or not.
-    // If not, call load to retrieve from disk and return the value
-    // Update all ages
-    //set dirty bit 1
+    Frame* found = search(rid, column);
+    if(found == nullptr){ //if not already in the bufferpool, load into bufferpool
+      found = load(rid, column);
+    }
+    update_ages(found);
+    *(found->page->data + rid.offset) = value;
+    found->dirty = true;
+    return;
 }
 
-void BufferPool::update_ages(const int& index_of_found){
-  int age_of_found = buffer[index_of_found].age;
-  for(int i = 0; i < BUFFER_POOL_SIZE; i++){ //age increment for all frames with age less than frame that was just accessed
-      if(buffer[i].age < age_of_found){
-          buffer[i].age++;
-      }
+Frame* BufferPool::search(const RID& rid, const int& column){
+  int hash = (rid.first_rid_page / 4096) % 4; //perform hash on rid
+  Frame* range_begin = hash_vector[hash]; //beginning of hash range
+  Frame* range_end = (hash == hash_vector.size()) ? tail : hash_vector[hash + 1]; //end of hash range
+
+  Frame* current_frame = range_begin; //iterate through range
+  while(current_frame != range_end){
+    if(rid.first_rid_page == current_frame->first_rid_page && column == current_frame->column){
+      return current_frame;
+    }
+    current_frame = current_frame->next;
   }
-  buffer[index_of_found].age = 0; //page just accessed has age of 0
-  return;
+
+  return nullptr; //if not found in the range
 }
 
-// Called by get
+void BufferPool::update_ages(Frame* just_accessed){ //change ages and reorder linked list
+  just_accessed->prev->next = just_accessed->next; //close gap where just_accessed used to be
+  just_accesed->next->prev = just_accessed->prev;
+  head->prev = just_accessed; //just_accessed becomes the new head
+  just_accessed->next = head;
+  just_accessed->prev = nullptr;
+  head = just_accessed;
+}
+
+// Called by get and set
    // There should be an option to not actually read file from storage, which we use it when we make a new file and write things in.
    // Check the availability of the pool. There should be some identifier.
    // Find the file, get the specific part and load into a memory. For now, I'm thinking about saving per table.
    // If bufferpool is full, call evict
    // Set the valid bit of the frame to 1;
    // Set the dirty bit of the frame to 0;
-void BufferPool::load (const RID& rid, const int& column){ //return the index of where you placed it
+Frame* BufferPool::load (const RID& rid, const int& column){ //return the index of where you placed it
 	dbMetadataIn.seekg(std::ios::beg);
 
 	std::string tableName = rid.table_name;
@@ -146,6 +158,10 @@ void BufferPool::evict (){
 	// Write in num_rows also into page
 	fclose(fp);
 	decoy.valid = false;
+
+}
+
+void BufferPool::write_back(Frame*){
 
 }
 

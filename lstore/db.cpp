@@ -67,12 +67,11 @@ COMPILER_SYMBOL int* Database_tables(int* obj){
 
 
 void Database::open(const std::string& path) {
-
-	//make bufferpool with size in config
+	BufferPool buffer_pool(BUFFER_POOL_SIZE);
 };
 
 void Database::close() {
-	buffer_pool.evict_all();
+	buffer_pool.~BufferPool();
 };
 
 /***

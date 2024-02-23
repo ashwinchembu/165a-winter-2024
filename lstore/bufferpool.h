@@ -42,9 +42,8 @@ public:
     bool valid = false;
     int pin = 0;
     bool dirty = false;
-    int age = -1;
-    Frame* next;
-    Frame* prev;
+    Frame* next = nullptr;
+    Frame* prev = nullptr;
 };
 
 class BufferPool {
@@ -55,10 +54,12 @@ public:
     Frame* tail;
     int get (const RID& rid, const int& column); // given a rid and column, returns the value in that location
     void set (const RID& rid, const int& column, int value); // given a rid and column, changes the value in that location
-    void load (const RID& rid, const int& column);
+    Frame* load (const RID& rid, const int& column); //from disk to bufferpool
+    Frame* search(const RID& rid, const int& column); //search in specific hash range
     void insert_new_page(const RID& rid, const int& column, int value);
-    void update_ages(const int& index_of_just_accessed);
-    void evict ();
+    void update_ages(Frame* just_accessed); // update all the ages based on which frame was just accessed
+    void evict (); //evict the oldest that is not pinned
+    void write_back(Frame*); //write back to disk if dirty
     void evict_all ();
     void pin (const int& rid, const int& page_num);
     void unpin (const int& rid, const int& page_num);
