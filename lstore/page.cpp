@@ -226,8 +226,10 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
     /// @TODO Bufferpool::load();
     /// @TODO Bufferpool::pin(page_range[page_of_rid * num_column].first, 0);
     //int latest_rid = buffer_pool.get(rid, INDIRECTION_COLUMN);
+    buffer_pool.pin(rid, INDIRECTION_COLUMN);
     RID latest_rid = page_directory.find(buffer_pool.get(rid, INDIRECTION_COLUMN))->second;
-
+    buffer_pool.set(rid, INDIRECTION_COLUMN, rid_new.id);
+    buffer_pool.unpin(rid, INDIRECTION_COLUMN);
     // Create new tail pages if there are no space left or tail page does not exist.
     int schema_encoding = 0;
     // If tail_last and base_last is equal, that means there are no tail page created.
@@ -281,11 +283,11 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
 
 
     // Updating indirection column and schema encoding column for the base page
-    buffer_pool.set(rid, INDIRECTION_COLUMN, rid_new.id);
     // rid.schema_encoding = (*((page_range[page_of_rid * num_column + SCHEMA_ENCODING_COLUMN].second)->data + offset*sizeof(int)) | schema_encoding); // Comment out for future usage : cascading abort
     // *((page_range[page_of_rid * num_column + SCHEMA_ENCODING_COLUMN].second)->data + offset*sizeof(int)) = rid.schema_encoding;
-
+    buffer_pool.pin(rid, SCHEMA_ENCODING_COLUMN);
     buffer_pool.set(rid, SCHEMA_ENCODING_COLUMN, (buffer_pool.get(rid, SCHEMA_ENCODING_COLUMN) | schema_encoding));
+    buffer_pool.unpin(rid, SCHEMA_ENCODING_COLUMN);
     tail_last_wasfull = (num_slot_used_tail == PAGE_SIZE);
 
     // Setting the new RID to be representation of the page if the page was newly created
