@@ -213,7 +213,7 @@ RID Table::insert(const std::vector<int>& columns) {
  * @return RID of the new row upon successful update
  *
  */
-RID Table::update(const RID& rid, const std::vector<int>& columns) {
+RID Table::update(RID& rid, const std::vector<int>& columns) {
     num_update++;
 	if (num_update >= MAX_TABLE_UPDATES){
 		merge();
@@ -221,15 +221,16 @@ RID Table::update(const RID& rid, const std::vector<int>& columns) {
     const int rid_id = num_update * -1;
     size_t i = 0;
     for (; i < page_range.size(); i++) {
-        if ((page_range[i].get())->page_range[0].first.id > rid.id) {
+        if ((page_range[i].get())->pages[0].first_rid_page_range == rid.first_rid_page_range) {
             break;
         }
     }
     i--;
     RID new_rid(rid_id);
-	new_rid.first_rid_page_range = (page_range[i].get())->page_range[0].first.id;
+	new_rid.table_name = name;
+	new_rid.first_rid_page_range = (page_range[i].get())->pages[0].first_rid_page_range;
 
-	(page_range[i].get())->update(rid, new_rid, columns);
+	(page_range[i].get())->update(rid, new_rid, columns, page_directory);
 	page_range_update[i]++;
 	if (page_range_update[i] >= MAX_PAGE_RANGE_UPDATES){
 		// Make a deep copy of page_range[i]
@@ -238,9 +239,9 @@ RID Table::update(const RID& rid, const std::vector<int>& columns) {
     	// Push the deep copy to the merge queue
     	merge_queue.push(deep_copy);
 	}
+
 	// int err = (page_range[i].get())->update(rid, rid_id, columns);
 	page_directory.insert({rid_id, new_rid});
-	new_rid.table_name = name;
     return new_rid;
 }
 

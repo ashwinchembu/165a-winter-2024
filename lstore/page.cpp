@@ -161,8 +161,8 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
     bool newpage = false;
     // Get first rid of the page and offset
     // Find if the last base page has capacity for new record
-    new_rid.offset = num_slot_used_base;
     if (base_last_wasfull) {
+        new_rid.offset = 0;
         new_rid.first_rid_page = new_rid.id;
         base_last_wasfull = false;
         newpage = true;
@@ -179,7 +179,9 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
             buffer_pool.insert_new_page(new_rid, NUM_METADATA_COLUMNS + i, columns[i]);
         }
         pages.push_back(new_rid);
+        num_slot_used_base = 1;
     } else {
+        new_rid.offset = num_slot_used_base;
         new_rid.first_rid_page = pages[base_last].id;
         buffer_pool.set(new_rid, INDIRECTION_COLUMN, new_rid.id);
         buffer_pool.set(new_rid, RID_COLUMN, new_rid.id);
@@ -191,8 +193,9 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
         for (int i = 0; i < num_column; i++) {
             buffer_pool.set(new_rid, NUM_METADATA_COLUMNS + i, columns[i]);
         }
+        num_slot_used_base++;
     }
-    num_slot_used_base++;
+    base_last_wasfull = (num_slot_used_base == PAGE_SIZE);
     // Inserted.
     return 0;
 }
@@ -207,37 +210,72 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
  * @return return RID of updated record upon successful insertion.
  *
  */
-int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns) {
+int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, const std::map<int, RID>& page_directory) {
     // Look for page available
     // Because the base record is monotonically increasing, we can use for loop and find the base page we need
     int page_of_rid = 0;
     for (; page_of_rid <= base_last; page_of_rid++) {
-        if (page_range[page_of_rid * num_column].first.id > rid.id) {
+        if (pages[page_of_rid].first_rid_page == rid.first_rid_page) {
             break;
         }
     }
     page_of_rid--; // Logical page number of the base record
 
     // Find offset for the base record
-    int offset = rid.id - page_range[page_of_rid * num_column].first.id;
+    int offset = rid.offset;
     // Get the latest update of the record. Accessing the indirection column.
 
     /// @TODO Bufferpool::load();
     /// @TODO Bufferpool::pin(page_range[page_of_rid * num_column].first, 0);
-    int latest_rid = (*((page_range[page_of_rid * num_column].second)->data + offset*sizeof(int)));
+    //int latest_rid = buffer_pool.get(rid, INDIRECTION_COLUMN);
+    RID latest_rid = page_directory.find(buffer_pool.get(rid, INDIRECTION_COLUMN))->second;
 
     // Create new tail pages if there are no space left or tail page does not exist.
     bool new_tail = false;
+    int schema_encoding = 0;
     // If tail_last and base_last is equal, that means there are no tail page created.
-    if (!(page_range[tail_last * num_column].second->has_capacity()) || tail_last == base_last) {
+    if (base_last_wasfull || tail_last == base_last) {
+        base_last_wasfull = false;
         tail_last++;
+
+        buffer_pool.insert_new_page(rid_new, INDIRECTION_COLUMN, rid_new.id);
+        buffer_pool.insert_new_page(rid_new, RID_COLUMN, rid_new.id);
+        buffer_pool.insert_new_page(rid_new, TIMESTAMP_COLUMN, 0);
+        // rid_new.schema_encoding = 0; // Comment out for future usage : cascading abort
+        buffer_pool.insert_new_page(rid_new, BASE_RID_COLUMN, rid_new.id);
+        buffer_pool.insert_new_page(rid_new, TPS, 0);
         for (int i = 0; i < num_column; i++) {
-            /// @TODO Bufferpool::load()
-            /// @TODO Bufferpool::pin(rid_new, i)
-            /// Use rid_new to pin.
-            page_range.push_back(std::make_pair(RID(), new Page()));
+            if (std::isnan(columns[i - NUM_METADATA_COLUMNS]) || columns[i-NUM_METADATA_COLUMNS] < -2147480000) { // Wrapper changes None to smallest integer possible
+                // If there are no update, we write the value from latest update
+                buffer_pool.insert_new_page(rid_new, NUM_METADATA_COLUMNS + i, buffer_pool.get(latest_rid, NUM_METADATA_COLUMNS + i));
+            } else {
+                // If there are update, we write the new value and update the schema encoding.
+                buffer_pool.insert_new_page(rid_new, NUM_METADATA_COLUMNS + i, columns[i - NUM_METADATA_COLUMNS]);
+                schema_encoding = schema_encoding | (0b1 << (num_column - i - 1));
+            }
         }
-        new_tail = true;
+        buffer_pool.insert_new_page(rid_new, SCHEMA_ENCODING_COLUMN, 0);
+    } else {
+
+        buffer_pool.set(rid_new, INDIRECTION_COLUMN, rid_new.id);
+        buffer_pool.set(rid_new, RID_COLUMN, rid_new.id);
+        buffer_pool.set(rid_new, TIMESTAMP_COLUMN, 0);
+        // rid_new.schema_encoding = 0; // Comment out for future usage : cascading abort
+        buffer_pool.set(rid_new, BASE_RID_COLUMN, rid_new.id);
+        buffer_pool.set(rid_new, TPS, 0);
+        for (int i = 0; i < num_column; i++) {
+            buffer_pool.set(rid_new, NUM_METADATA_COLUMNS + i, columns[i]);
+
+            if (std::isnan(columns[i - NUM_METADATA_COLUMNS]) || columns[i-NUM_METADATA_COLUMNS] < -2147480000) { // Wrapper changes None to smallest integer possible
+                // If there are no update, we write the value from latest update
+                buffer_pool.set(rid_new, NUM_METADATA_COLUMNS + i, buffer_pool.get(latest_rid, NUM_METADATA_COLUMNS + i));
+            } else {
+                // If there are update, we write the new value and update the schema encoding.
+                buffer_pool.set(rid_new, NUM_METADATA_COLUMNS + i, columns[i - NUM_METADATA_COLUMNS]);
+                schema_encoding = schema_encoding | (0b1 << (num_column - i - 1));
+            }
+        }
+        buffer_pool.set(rid_new, SCHEMA_ENCODING_COLUMN, 0);
     }
 
     // Find the logical page number for the latest update.
@@ -271,7 +309,6 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns) {
         latest_offset = (latest_rid - page_range[latest_page * num_column].first.id);
     }
 
-    int schema_encoding = 0;
     rid_new.offset = page_range[tail_last*num_column+RID_COLUMN].second->num_rows;
 
     // Writing metadata to page

@@ -43,7 +43,7 @@ public:
     ~PageRange();
     std::vector<RID> pages;
     int insert(RID& new_rid, const std::vector<int>& columns);
-    int update(RID& rid, RID& rid_new, const std::vector<int>& columns);
+    int update(RID& rid, RID& rid_new, const std::vector<int>& columns, const std::map<int, RID>& page_directory);
     bool base_has_capacity () const;
 };
 
