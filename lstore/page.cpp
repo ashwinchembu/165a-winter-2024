@@ -178,7 +178,7 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
         for (int i = 0; i < num_column; i++) {
             buffer_pool.insert_new_page(new_rid, NUM_METADATA_COLUMNS + i, columns[i]);
         }
-        pages.push_back(new_rid);
+        pages.insert(pages.begin() + base_last, new_rid);
         num_slot_used_base = 1;
     } else {
         new_rid.offset = num_slot_used_base;
@@ -221,8 +221,6 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
     }
     page_of_rid--; // Logical page number of the base record
 
-    // Find offset for the base record
-    int offset = rid.offset;
     // Get the latest update of the record. Accessing the indirection column.
 
     /// @TODO Bufferpool::load();
@@ -231,18 +229,18 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
     RID latest_rid = page_directory.find(buffer_pool.get(rid, INDIRECTION_COLUMN))->second;
 
     // Create new tail pages if there are no space left or tail page does not exist.
-    bool new_tail = false;
     int schema_encoding = 0;
     // If tail_last and base_last is equal, that means there are no tail page created.
     if (base_last_wasfull || tail_last == base_last) {
+        rid_new.offset = 0;
         base_last_wasfull = false;
         tail_last++;
 
-        buffer_pool.insert_new_page(rid_new, INDIRECTION_COLUMN, rid_new.id);
+        buffer_pool.insert_new_page(rid_new, INDIRECTION_COLUMN, rid.id);
         buffer_pool.insert_new_page(rid_new, RID_COLUMN, rid_new.id);
         buffer_pool.insert_new_page(rid_new, TIMESTAMP_COLUMN, 0);
         // rid_new.schema_encoding = 0; // Comment out for future usage : cascading abort
-        buffer_pool.insert_new_page(rid_new, BASE_RID_COLUMN, rid_new.id);
+        buffer_pool.insert_new_page(rid_new, BASE_RID_COLUMN, rid.id);
         buffer_pool.insert_new_page(rid_new, TPS, 0);
         for (int i = 0; i < num_column; i++) {
             if (std::isnan(columns[i - NUM_METADATA_COLUMNS]) || columns[i-NUM_METADATA_COLUMNS] < -2147480000) { // Wrapper changes None to smallest integer possible
@@ -254,14 +252,16 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
                 schema_encoding = schema_encoding | (0b1 << (num_column - i - 1));
             }
         }
-        buffer_pool.insert_new_page(rid_new, SCHEMA_ENCODING_COLUMN, 0);
+        buffer_pool.insert_new_page(rid_new, SCHEMA_ENCODING_COLUMN, schema_encoding);
+        num_slot_used_tail = 1;
+        pages.push_back(rid_new);
     } else {
-
-        buffer_pool.set(rid_new, INDIRECTION_COLUMN, rid_new.id);
+        rid_new.offset = num_slot_used_tail;
+        buffer_pool.set(rid_new, INDIRECTION_COLUMN, rid.id);
         buffer_pool.set(rid_new, RID_COLUMN, rid_new.id);
         buffer_pool.set(rid_new, TIMESTAMP_COLUMN, 0);
         // rid_new.schema_encoding = 0; // Comment out for future usage : cascading abort
-        buffer_pool.set(rid_new, BASE_RID_COLUMN, rid_new.id);
+        buffer_pool.set(rid_new, BASE_RID_COLUMN, rid.id);
         buffer_pool.set(rid_new, TPS, 0);
         for (int i = 0; i < num_column; i++) {
             buffer_pool.set(rid_new, NUM_METADATA_COLUMNS + i, columns[i]);
@@ -275,97 +275,20 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
                 schema_encoding = schema_encoding | (0b1 << (num_column - i - 1));
             }
         }
-        buffer_pool.set(rid_new, SCHEMA_ENCODING_COLUMN, 0);
+        buffer_pool.set(rid_new, SCHEMA_ENCODING_COLUMN, schema_encoding);
+        num_slot_used_tail++;
     }
 
-    // Find the logical page number for the latest update.
-    int latest_offset = 0;
-    int latest_page = page_of_rid;
-    if (latest_rid < 0) { // Are there any updates we should be aware of?
-        latest_page = base_last + 1;
-        for (; latest_page <= tail_last; latest_page++) { //Look for the logical page number of the latest update
-            if (new_tail && latest_page == tail_last) {
-                break; // If there was a new page, we should not go check there. (Full of garbage value)
-            } else if (page_range[latest_page * num_column].first.id < latest_rid) {
-                break; // Found the page number.
-            }
-        }
-        latest_page--; // Logical page number of the latest update
-
-        // Find the offset for the latest record. Linear search.
-
-        /// @TODO Bufferpool::load();
-        /// @TODO Bufferpool::pin(page_range[latest_page * num_column].first, 1);
-        while (latest_offset < NUM_SLOTS && latest_rid != (*((page_range[latest_page * num_column + RID_COLUMN].second)->data + latest_offset*sizeof(int)))) {
-            latest_offset++;
-        }
-        /// @TODO Bufferpool::unpin(page_range[latest_page * num_column].first, 1);
-        // Multi thread version
-        // int* end = ((page_range[latest_page * num_column + 1].second)->data + PAGE_SIZE*sizeof(int));
-        // int* itr = 	__gnu_parallel::find(((page_range[latest_page * num_column + 1].second)->data), end, latest_rid);
-        // latest_offset = PAGE_SIZE - ((end - itr) / sizeof(int));
-    } else {
-        // If there are no updates, offset is simple to calculate
-        latest_offset = (latest_rid - page_range[latest_page * num_column].first.id);
-    }
-
-    rid_new.offset = page_range[tail_last*num_column+RID_COLUMN].second->num_rows;
-
-    // Writing metadata to page
-    /// @TODO Bufferpool::load();
-    /// @TODO Bufferpool::pin(page_range[latest_page * num_column].first, 0);
-    page_range[tail_last*num_column].second->write(*((page_range[latest_page * num_column + INDIRECTION_COLUMN].second)->data + latest_offset*sizeof(int))); // Indirection column
-    /// @TODO Bufferpool::unpin(page_range[latest_page * num_column].first, 0);
-    /// @TODO Bufferpool::unpin(rid_new, 0);
-
-    page_range[tail_last*num_column+RID_COLUMN].second->write(rid_new.id); // RID column
-    rid_new.first_rid_page = *(page_range[tail_last*num_column+RID_COLUMN].second->data);
-    /// @TODO Bufferpool::unpin(rid_new, 1);
-
-    page_range[tail_last*num_column+TIMESTAMP_COLUMN].second->write(0); // Timestamp
-    /// @TODO Bufferpool::unpin(rid_new, 2);
-    page_range[tail_last*num_column + BASE_RID_COLUMN].second->write(rid.id);
-    page_range[tail_last*num_column + TPS].second->write(0);
-
-    // Writing data to page and also update schema encoding if necessary.
-    for (int i = NUM_METADATA_COLUMNS; i < num_column; i++) {
-        if (std::isnan(columns[i - NUM_METADATA_COLUMNS]) || columns[i-NUM_METADATA_COLUMNS] < -2147480000) { // Wrapper changes None to smallest integer possible
-            // If there are no update, we write the value from latest update
-            /// @TODO Bufferpool::load();
-            /// @TODO Bufferpool::pin(page_range[latest_page * num_column].first, i);
-            page_range[tail_last*num_column+i].second->write(*((page_range[latest_page * num_column + i].second)->data + latest_offset*sizeof(int)));
-            /// @TODO Bufferpool::unpin(page_range[latest_page * num_column].first, i);
-        } else {
-            // If there are update, we write the new value and update the schema encoding.
-            page_range[tail_last*num_column+i].second->write(columns[i - NUM_METADATA_COLUMNS]);
-            schema_encoding = schema_encoding | (0b1 << (num_column - i - 1));
-        }
-        /// @TODO Bufferpool::unpin(rid_new, i);
-    }
-
-    // Write the schema encoding of where updated
-    page_range[tail_last*num_column+SCHEMA_ENCODING_COLUMN].second->write(schema_encoding); // schema encoding
-    // rid_new.schema_encoding = schema_encoding; // Comment out for future usage : cascading abort
-    /// @TODO Bufferpool::unpin(rid_new, 3);
 
     // Updating indirection column and schema encoding column for the base page
-    *((page_range[page_of_rid * num_column].second)->data + offset*sizeof(int)) = rid_new.id;
-    /// @TODO Bufferpool::unpin(page_range[page_of_rid * num_column].first, 0);
-
-    /// @TODO Bufferpool::load();
-    /// @TODO Bufferpool::pin(page_range[page_of_rid * num_column].first, 3);
+    buffer_pool.set(rid, INDIRECTION_COLUMN, rid_new.id);
     // rid.schema_encoding = (*((page_range[page_of_rid * num_column + SCHEMA_ENCODING_COLUMN].second)->data + offset*sizeof(int)) | schema_encoding); // Comment out for future usage : cascading abort
     // *((page_range[page_of_rid * num_column + SCHEMA_ENCODING_COLUMN].second)->data + offset*sizeof(int)) = rid.schema_encoding;
 
-    *((page_range[page_of_rid * num_column + SCHEMA_ENCODING_COLUMN].second)->data + offset*sizeof(int)) = (*((page_range[page_of_rid * num_column + SCHEMA_ENCODING_COLUMN].second)->data + offset*sizeof(int)) | schema_encoding);
-    /// @TODO Bufferpool::unpin(page_range[page_of_rid * num_column].first, 3);
+    buffer_pool.set(rid, SCHEMA_ENCODING_COLUMN, (buffer_pool.get(rid, SCHEMA_ENCODING_COLUMN) | schema_encoding));
+    tail_last_wasfull = (num_slot_used_tail == PAGE_SIZE);
 
     // Setting the new RID to be representation of the page if the page was newly created
-    if (new_tail) {
-        for (int i = 0; i < num_column; i++) {
-            page_range[tail_last*num_column + i].first = rid_new;
-        }
-    }
     return 0;
 }
 
