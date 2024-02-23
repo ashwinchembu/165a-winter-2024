@@ -22,6 +22,9 @@ std::vector<int> sample(std::vector<int> data, int sz);
 
 std::string printArray(std::vector<int>& data);
 
+std::vector<std::string>tokenize(std::string str,
+		std::string delimiter);
+
 }
 
 
