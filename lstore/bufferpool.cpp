@@ -1,4 +1,6 @@
+#include <bits/types/FILE.h>
 #include <vector>
+#include <stdio.h>
 #include "page.h"
 #include "config.h"
 #include "bufferpool.h"
@@ -74,8 +76,8 @@ Frame* BufferPool::search(const RID& rid, const int& column){
 void BufferPool::update_ages(Frame* just_accessed, Frame* range_begin){ //change ages and reorder linked list
   if(just_accessed != range_begin){ //if not already the range beginning / most recently accessed
     just_accessed->prev->next = just_accessed->next; //close gap where just_accessed used to be
-    if(just_accesed->next != nullptr){ //if just accessed was not tail
-      just_accesed->next->prev = just_accessed->prev;
+    if(just_accessed->next != nullptr){ //if just accessed was not tail
+      just_accessed->next->prev = just_accessed->prev;
     }
     range_begin->prev = just_accessed; //just_accessed becomes the new head
     just_accessed->next = range_begin;
@@ -181,7 +183,8 @@ Frame* BufferPool::evict(const RID& rid){ //return the frame that was evicted
 
 void BufferPool::write_back(Frame* frame){
   // Use fastformat library instead of to_string
-  fp = fopen (frame->table_name + std::to_string(frame->first_rid_page_range) + "_" + std::to_string(frame->first_rid_page) + "_" + std::to_string(frame->column) + ".dat", "wr");
+  std::string file_name = frame->table_name + std::to_string(frame->first_rid_page_range) + "_" + std::to_string(frame->first_rid_page) + "_" + std::to_string(frame->column) + ".dat";
+  FILE* fp = fopen(file_name.c_str(), "wr");
   fwrite(frame->page->data, sizeof(int), PAGE_SIZE*sizeof(int), fp);
   // Write in num_rows also into page
   fclose(fp);
@@ -192,7 +195,7 @@ void BufferPool::write_back_all (){
     Frame* current_frame = head;
     while(current_frame != nullptr){
       if(current_frame->dirty){
-        write_back(urrent_frame);
+        write_back(current_frame);
       }
       current_frame = current_frame->next;
     }

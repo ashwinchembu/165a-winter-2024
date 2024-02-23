@@ -63,7 +63,7 @@ public:
     void write_back_all ();
     void pin (const RID& rid, const int& column);
     void unpin (const RID& rid, const int& column);
-    vector<Frame*> hash_vector;
+    std::vector<Frame*> hash_vector;
     //vector<int> frame_directory; //keep track of which frames are full, 1s and 0s
     int bufferpool_size;
 
