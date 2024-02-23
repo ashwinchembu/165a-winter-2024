@@ -9,6 +9,7 @@
 #include <cstdio>
 #include <memory>
 #include "bufferpool.h"
+#include "config.h"
 
 #include "../DllConfig.h"
 
@@ -188,15 +189,16 @@ RID Table::insert(const std::vector<int>& columns) {
 	record.table_name = name;
 	record.id = rid_id;
     if (page_range.size() == 0 || !(page_range.back()->base_has_capacity())) {
-		// If the last page range is full, make new one
+
     	std::shared_ptr<PageRange>newPageRange{new PageRange(record, columns)};
 
         page_range.push_back(newPageRange); // Make a base page with given record
-		// RID should be the first RID of the page
-        record = (page_range.back().get())->pages[0];
+        // return the RID for index or something
+
+        record = (page_range.back().get())->page_range[0].first;
     } else { // If there are base page already, just insert it normally.
         (page_range.back().get())->insert(record, columns);
-		record.first_rid_page_range = (page_range.back().get())->pages[0].id;
+		record.first_rid_page_range = (page_range.back().get())->page_range[0].first.id;
     }
     page_directory.insert({rid_id, record});
     return record;
@@ -211,24 +213,34 @@ RID Table::insert(const std::vector<int>& columns) {
  * @return RID of the new row upon successful update
  *
  */
-RID Table::update(RID& rid, const std::vector<int>& columns) {
+RID Table::update(const RID& rid, const std::vector<int>& columns) {
     num_update++;
+	if (num_update >= MAX_TABLE_UPDATES){
+		merge();
+	}
     const int rid_id = num_update * -1;
-    size_t i = 0; // Find the Page range to insert. Can use find.
+    size_t i = 0;
     for (; i < page_range.size(); i++) {
-        if ((page_range[i].get())->pages[0].first_rid_page_range == rid.first_rid_page_range) {
+        if ((page_range[i].get())->page_range[0].first.id > rid.id) {
             break;
         }
     }
     i--;
-
     RID new_rid(rid_id);
-	new_rid.first_rid_page_range = rid.first_rid_page_range;
-	new_rid.table_name = name;
+	new_rid.first_rid_page_range = (page_range[i].get())->page_range[0].first.id;
 
 	(page_range[i].get())->update(rid, new_rid, columns);
+	page_range_update[i]++;
+	if (page_range_update[i] >= MAX_PAGE_RANGE_UPDATES){
+		// Make a deep copy of page_range[i]
+    	std::shared_ptr<PageRange> deep_copy = std::make_shared<PageRange>(*(page_range[i].get()));
+
+    	// Push the deep copy to the merge queue
+    	merge_queue.push(deep_copy);
+	}
 	// int err = (page_range[i].get())->update(rid, rid_id, columns);
 	page_directory.insert({rid_id, new_rid});
+	new_rid.table_name = name;
     return new_rid;
 }
 
@@ -240,6 +252,9 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
  *
  */
 int Table::merge() {
+	if (!merge_queue.size()){
+		return 0;
+	}
 	/*
 	updating at page range level
 
@@ -248,32 +263,22 @@ int Table::merge() {
 		read it until TPS < tail ID
 	page directory is updated to point to the new pages
 	*/
+	std::shared_ptr<PageRange> to_merge = merge_queue.front();
+	merge_queue.pop();
+	int pool_size = to_merge->pages.size()*num_columns*2; // change to actual - temp
 
-	BufferPool* mergeBufferPool = new BufferPool();
-	std::vector<Page> newBasePage;
-	std::vector<Page> tailPages;
+	BufferPool* mergeBufferPool = new BufferPool(pool_size);
+	std::map<int, int> latest_update;
 	//load copy of all base pages in each page range
-	for (int i = 0; i < this->page_range.size(); i++) {
-		std::shared_ptr<PageRange> PR = this->page_range[i]; 
-		for (int j = PR->page_range.size(); j > 0; j--) { 
-			int ridID = PR->page_range[j].first.id;
-			if (ridID < 0) { // if the page in PageRange is a tail page
-				//make copy of tail page
-				if (mergeBufferPool->get(ridID, TPS) < ) {
-
-				}
-				tailPages.push_back(*(PR->page_range[j].second));
-			} else {
-				//make copy of base page
-				newBasePage.push_back(*(PR->page_range[j].second));
+	for (int i = to_merge->pages.size(); i < 0; i--) {
+		RID rid = to_merge->pages[i];
+		if (rid.id < 0){ //inside tail page
+			for (int to_load_tail_page_col = 0; to_load_tail_page_col > num_columns; to_load_tail_page_col++){
+				mergeBufferPool->load(rid, to_load_tail_page_col);
 			}
 		}
-		// iterate backwards over tail page
-		for (int slot = PR->page_range[j].second->NUM_SLOTS; slot > 0; slot--) {
-					// if (;;) {
-						
-					// }
-		}
+		
+
 	}
 
     return -1;

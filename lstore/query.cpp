@@ -4,9 +4,9 @@
 #include "page.h"
 #include "index.h"
 #include "query.h"
+#include "bufferpool.h"
 #include "../Toolkit.h"
 #include "../DllConfig.h"
-#include "config.h"
 
 COMPILER_SYMBOL int* Query_constructor(int* table){
 	return (int*)new Query((Table*)table);
@@ -107,7 +107,8 @@ std::vector<Record> Query::select_version(const int& search_key, const int& sear
         RID rid = table->page_directory.find(rids[i])->second;
         if(rid.id != 0){
             for(int j = 0; j <= relative_version; j++){ //go through indirection to get to correct version
-                rid = table->page_directory.find(*(rid.pointers[0]))->second; //go one step further in indirection
+                rid = table->page_directory.find((buffer_pool.get(rid, INDIRECTION_COLUMN)))->second; //go one step further in indirection
+                
                 if(rid.id > 0){
                     break;
                 }
@@ -115,7 +116,7 @@ std::vector<Record> Query::select_version(const int& search_key, const int& sear
             std::vector<int> record_columns(table->num_columns);
             for(int j = 0; j < table->num_columns; j++){ //transfer columns from desired version into record object
                 if(projected_columns_index[j]){
-                    record_columns[j] = *(rid.pointers[j + 4]);
+                    record_columns[j] = buffer_pool.get(rid, i + NUM_METADATA_COLUMNS);
                 }
             }
             records.push_back(Record(rids[i], search_key, record_columns)); //add a record with RID of base page, value of primary key, and contents of desired version
@@ -127,13 +128,13 @@ std::vector<Record> Query::select_version(const int& search_key, const int& sear
 /// @TODO Adopt to the change in RID
 bool Query::update(const int& primary_key, const std::vector<int>& columns) {
     RID base_rid = table->page_directory.find(table->index->locate(table->key, primary_key)[0])->second; //locate base RID of record to be updated
-    RID last_update = table->page_directory.find(*(base_rid.pointers[0]))->second; //locate the previous update
+    RID last_update = table->page_directory.find(buffer_pool.get(base_rid, INDIRECTION_COLUMN))->second; //locate the previous update
     RID update_rid = table->update(base_rid, columns); // insert update into the table
     std::vector<int> old_columns;
     std::vector<int> new_columns;
     for(int i = 0; i < table->num_columns; i++){ // fill old_columns with the contents of previous update
-        old_columns.push_back(*(last_update.pointers[i + 4]));
-        new_columns.push_back(*(update_rid.pointers[i + 4]));
+        old_columns.push_back(buffer_pool.get(last_update, i + NUM_METADATA_COLUMNS));
+        new_columns.push_back(buffer_pool.get(update_rid, i + NUM_METADATA_COLUMNS));
     }
     if(update_rid.id != 0){
         table->index->update_index(base_rid.id, new_columns, old_columns); //update the index
@@ -156,15 +157,15 @@ unsigned long int Query::sum_version(const int& start_range, const int& end_rang
     for (size_t i = 0; i < rids.size(); i++) { //for each of the rids, find the old value and sum
         RID rid = table->page_directory.find(rids[i])->second;
         if (rid.id != 0) { //If RID is valid i.e. not deleted
-            int indirection = *(rid.pointers[0]); // the new indirection
+            int indirection = buffer_pool.get(rid, INDIRECTION_COLUMN); // the new indirection
             for (int j = 1; j <= relative_version; j++) {
-                indirection = *(table->page_directory.find(indirection)->second.pointers[0]); //get the next indirection
+                indirection = buffer_pool.get(table->page_directory.find(indirection)->second, INDIRECTION_COLUMN); //get the next indirection
                 if(indirection > 0){
                     break;
                 }
             }
             RID old_rid = table->page_directory.find(indirection)->second;
-            sum += *((old_rid).pointers[4+aggregate_column_index]); // add the value for the old rid
+            sum += buffer_pool.get((old_rid), NUM_METADATA_COLUMNS+aggregate_column_index); // add the value for the old rid
             num_add++;
         }
     }
@@ -186,18 +187,18 @@ bool Query::increment(const int& key, const int& column) {
         return false;
     }
 
-    int value = *(rid.pointers[4+column]);
-    (*(rid.pointers[4+column]))++; //increment the column in record
+    int value = buffer_pool.get(rid, NUM_METADATA_COLUMNS+column);
+    (buffer_pool.set(rid, NUM_METADATA_COLUMNS+column, value++)); //increment the column in record
 
     // void Index::update_index(RID rid, std::vector<int>columns, std::vector<int>old_columns){
     std::vector<int> columns;
     std::vector<int> old_columns;
     for (int i = 0; i < table->num_columns; i++) {
         if (i != (4+column)) {
-            columns.push_back(*(rid.pointers[i]));
-            old_columns.push_back(*(rid.pointers[i]));
+            columns.push_back((buffer_pool.get(rid, i)));
+            old_columns.push_back((buffer_pool.get(rid, i)));
         } else {
-            columns.push_back(*(rid.pointers[i]));
+            columns.push_back((buffer_pool.get(rid, i)));
             old_columns.push_back(value);
         }
     }

@@ -11,4 +11,6 @@
     extern const int LOGICAL_PAGE;
     extern const int BUFFER_POOL_SIZE;
     extern const int NUM_BUFFERPOOL_HASH_PARTITIONS;
+    extern const int MAX_PAGE_RANGE_UPDATES;
+    extern const int MAX_TABLE_UPDATES;
 #endif
