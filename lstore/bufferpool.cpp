@@ -5,6 +5,7 @@
 #include "config.h"
 #include "bufferpool.h"
 #include <string>
+#include <cstring>
 #include <cmath>
 #include <stdexcept> // Throwing errors
 
@@ -100,43 +101,40 @@ void BufferPool::update_ages(Frame* just_accessed, Frame* range_begin){ //change
 Frame* BufferPool::load (const RID& rid, const int& column){ //return the index of where you placed it
   dbMetadataIn.seekg(std::ios::beg);
 
-  std::string tableName = rid.table_name;
-
   int numberOfFiles;
   dbMetadataIn.read((char*)&numberOfFiles,sizeof(int));
 
-  for(int i = 0; i<numberOfFiles;i++){
-  	std::string filename(std::to_string(i));
-  	filename+=".dat";
+  for(int i = 0; i < numberOfFiles; i++){
+  	std::ifstream directoryStream((std::to_string(i) + ".dat"),
+  			std::ifstream::in | std::ofstream::binary);
 
-  	std::ifstream ifs(filename, std::ofstream::out | std::ofstream::binary);
+  	char nameBuf[256];
+  	directoryStream.read((char*)&nameBuf,256);
 
-  	char nameBuf[257];
-  	ifs.read((char*)&nameBuf,257);
-
-  	if(strcmp(tableName.c_str(),nameBuf)){
+  	if(strcmp(rid.table_name.c_str(),nameBuf)){
   		double firstBaseId;
   		double firstTailId;
-  		ifs.read((char*)&firstBaseId,sizeof(double));
-  		ifs.read((char*)&firstTailId,sizeof(double));
-
   		int numCols;
   		int numEntries;
-  		ifs.seekg(NUMBER_OF_COLUMNS_OFFSET,std::ifstream::beg);
-  		ifs.read((char*)&numCols,sizeof(int));
-  		ifs.read((char*)&numEntries,sizeof(int));
 
+  		directoryStream.read((char*)&firstBaseId,sizeof(double));
+  		directoryStream.read((char*)&firstTailId,sizeof(double));
+  		directoryStream.read((char*)&numCols,sizeof(int));
+  		directoryStream.read((char*)&numEntries,sizeof(int));
 
   		if((rid.id > 0 && std::isnan(firstBaseId))
   			|| (rid.id < 0 && std::isnan(firstTailId))){
   			i += numCols - 1;
+  			continue;
   		}
 
   		if((rid.id > 0 && rid.id >= firstBaseId)
   				|| (rid.id < 0 && rid.id <= firstTailId)){
 
-  			Frame frame;
+  			std::ifstream ifs((std::to_string(i+column)+".dat"),
+  					std::ifstream::in | std::ofstream::binary);
 
+  			Frame* frame = new Frame();
   			Page* p = new Page();
 
   			for(int i = 0; i < numEntries;i++){
@@ -145,13 +143,12 @@ Frame* BufferPool::load (const RID& rid, const int& column){ //return the index 
   				p->write(nextEntry);
   			}
 
-  			frame.page = p;
-
-  			buffer.push_back(frame);
-
-  			break;
+  			frame->page = p;
+  			ifs.close();
+  			return frame;
   		}
 
+  		directoryStream.close();
   		i += numCols - 1;
   	}
   }
