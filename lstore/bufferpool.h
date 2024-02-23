@@ -7,27 +7,99 @@
 #include <vector>
 #include <fstream>
 
+/*
+ * The streams for the medata database file.
+ *
+ * -The metadata file keeps track of file names and allows
+ * for efficient searching of database files. This is because
+ * files are sorted in the metadata by name, starting rid, and coumn number.
+ * This means that if we are in the correct table but the
+ * wrong page range, we can jump page ranges.
+ * If we are in the correct page range but wrong column page,
+ * we can jump to the correct column.
+ *
+ * -The metadata file allows for pages to be added to disk
+ * without regard for ordering. To ensure the metadata works properly,
+ * paths are in the format
+ *
+ *     tablename/startrid/column/numofcolumns/isbasepage/endrid
+ *
+ * Where numofcolumns is the total number of columns of the table that
+ * has the page. Paths are stored in metadata without the file extension(.dat).
+ *
+ * -The flag at the beginning of the metadata file
+ * should updated if a file is added to disk but
+ * reorderMetadata() has not been called.
+ *
+ * -To ensure the metadata file works:
+ *
+ * whenever we update the files on disk,
+ * we call doesMetadataNeedReordering(),
+ * then reorderMetadata() if needed.
+ *
+ *
+ * -The metadata is in the format:
+ *
+ * 		updateflagFilename Filename Filename Filename Filename....
+ *
+ * Spaces between filesnames are used for parsing the filenames.
+ */
 std::ofstream dbMetadataOut("../Disk/DiskMetadata.dat",
 		std::ofstream::in | std::ofstream::binary);
 
 std::ifstream dbMetadataIn("../Disk/DiskMetadata.dat",
 		std::ifstream::in | std::ifstream::binary);
 
-int ENTRIES_PER_PAGE = 256;
 
-int TABLE_NAME_BYTES = 256;
-int TABLE_NAME_OFFSET = 0;
-int START_BASE_ID_OFFSET = TABLE_NAME_BYTES;
-int START_TAIL_ID_OFFSET = START_BASE_ID_OFFSET + sizeof(double);
-int NUMBER_OF_COLUMNS_OFFSET = START_TAIL_ID_OFFSET + sizeof(int);
-int NUMBER_OF_ENTRIES_OFFSET = NUMBER_OF_COLUMNS_OFFSET + sizeof(int);
+/*
+ * delimiter used to separate path names in metadata
+ */
+std::string METADATA_DELIMITER = " ";
 
-/*startBaseId and startTailId can be set to Nan if
- * not in table*/
+/*
+ * The byte offset off the update flag in the metadata
+ */
+size_t DB_METADATA_FLAG_OFFSET = 0;
 
-/*name startBaseId startTailId numberOfColumns numberOfEntries*/
-int METADATA_OFFSET =
-		TABLE_NAME_BYTES + sizeof(double) * 2 + sizeof(int) * 2;
+/*
+ * The constant used to reset the update flag
+ * in the metadata, flag is size int
+ */
+int METADATA_UPDATE_NOT_NEEDED = 0;
+
+
+/*
+ * The constant used to set the update int flag
+ * in the metadata, flag is size int
+ */
+int METADATA_UPDATE_NEEDED = 1;
+
+
+/*
+ * byte offset of actual path data in metadata file
+ */
+size_t DB_METADATA_DATA_OFFSET = sizeof(int);
+
+
+
+/*The logical offsets of file data in each file
+ *path.
+ *
+ * Paths are:
+ * tablename/startrid/column/numofcolumns/isbasepage/endrid
+ *
+ * where numofcolumns is the total number of columns of the table that
+ * has the page.
+ *
+ * paths are stored in metadata without the file extension(.dat).
+ *
+ * */
+int PATH_TABLE_NAME_OFFSET = 0;
+int PATH_START_RID_OFFSET = 1;
+int PATH_COLUMN_OFFSET = 2;
+int PATH_NUM_COLUMNS_OFFSET = 3;
+int PATH_IS_BASEPAGE_OFFSET = 4;
+int PATH_END_RID_OFFSET = 5;
 
 class Frame {
 public:

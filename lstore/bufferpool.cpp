@@ -1,14 +1,22 @@
 // #include <bits/types/FILE.h>
 #include <vector>
 #include <stdio.h>
-#include "page.h"
-#include "config.h"
-#include "bufferpool.h"
 #include <string>
+#include <algorithm>
 #include <cstring>
+#include <fcntl.h>
 #include <cmath>
 #include <stdexcept> // Throwing errors
 
+#include "page.h"
+#include "config.h"
+#include "bufferpool.h"
+#include "../Toolkit.h"
+
+bool doesMetadataNeedReordering();
+std::vector<std::string> reorderMetadata();
+std::vector<std::string>getFileNames();
+bool fileSorter(std::string& file1,std::string& file2);
 
 BufferPool::BufferPool (const int& num_pages) : bufferpool_size(num_pages){
   head = new Frame; //create head
@@ -99,59 +107,88 @@ void BufferPool::update_ages(Frame* just_accessed, Frame* range_begin){ //change
 // Set the valid bit of the frame to 1;
 // Set the dirty bit of the frame to 0;
 Frame* BufferPool::load (const RID& rid, const int& column){ //return the index of where you placed it
-  dbMetadataIn.seekg(std::ios::beg);
+	std::vector<std::string> fileNames;
 
-  int numberOfFiles;
-  dbMetadataIn.read((char*)&numberOfFiles,sizeof(int));
+	if(doesMetadataNeedReordering()){
+		std::vector<std::string> fileNames = reorderMetadata();
+	} else {
+		fileNames = getFileNames();
+	}
 
-  for(int i = 0; i < numberOfFiles; i++){
-  	std::ifstream directoryStream((std::to_string(i) + ".dat"),
-  			std::ifstream::in | std::ofstream::binary);
+	size_t i = 0;
+    for(; i < fileNames.size(); i++){
+	    std::vector<std::string>fileInfo
+	        = Toolkit::tokenize(fileNames[i],"//");
 
-  	char nameBuf[256];
-  	directoryStream.read((char*)&nameBuf,256);
+		 if(fileInfo[PATH_TABLE_NAME_OFFSET] != rid.table_name){
+			 continue;
+		 }
 
-  	if(strcmp(rid.table_name.c_str(),nameBuf)){
-  		double firstBaseId;
-  		double firstTailId;
-  		int numCols;
-  		int numEntries;
+		 int isBasePage = std::stoi(
+		         fileInfo[PATH_IS_BASEPAGE_OFFSET].c_str());
 
-  		directoryStream.read((char*)&firstBaseId,sizeof(double));
-  		directoryStream.read((char*)&firstTailId,sizeof(double));
-  		directoryStream.read((char*)&numCols,sizeof(int));
-  		directoryStream.read((char*)&numEntries,sizeof(int));
+		 int numColumns = std::stoi(fileInfo[PATH_NUM_COLUMNS_OFFSET]);
 
-  		if((rid.id > 0 && std::isnan(firstBaseId))
-  			|| (rid.id < 0 && std::isnan(firstTailId))){
-  			i += numCols - 1;
-  			continue;
-  		}
+		 int startRid = std::stoi(fileInfo[PATH_START_RID_OFFSET]);
+		 int endRid = std::stoi(fileInfo[PATH_END_RID_OFFSET]);
 
-  		if((rid.id > 0 && rid.id >= firstBaseId)
-  				|| (rid.id < 0 && rid.id <= firstTailId)){
+		 if((!isBasePage && rid.id < 0
+		         && rid.id <= startRid && rid.id >= endRid)
 
-  			std::ifstream ifs((std::to_string(i+column)+".dat"),
-  					std::ifstream::in | std::ofstream::binary);
+		     ||
 
-  			Frame* frame = new Frame();
-  			Page* p = new Page();
+			 (isBasePage && rid.id > 0
+			      && rid.id >= startRid && rid.id <= endRid)){
 
-  			for(int i = 0; i < numEntries;i++){
-  				int nextEntry;
-  				ifs.read((char*)&nextEntry,sizeof(int));
-  				p->write(nextEntry);
-  			}
+             int columnOffset = std::stoi(fileInfo[PATH_COLUMN_OFFSET]);
 
-  			frame->page = p;
-  			ifs.close();
-  			return frame;
-  		}
+		     std::ifstream ifs((fileNames[i + columnOffset] + ".dat"),
+		             std::ifstream::in | std::ofstream::binary);
 
-  		directoryStream.close();
-  		i += numCols - 1;
-  	}
-  }
+		     Frame* frame = new Frame();
+		     Page* p = new Page();
+
+		     int numberOfRecords = abs(startRid - endRid) + 1;
+
+		     for(int i = 0; i < numberOfRecords;i++){
+		         int nextEntry;
+			     ifs.read((char*)&nextEntry,sizeof(int));
+			     p->write(nextEntry);
+		     }
+
+		     frame->page = p;
+		     ifs.close();
+		     return frame;
+
+		  } else {
+			  i += numColumns - 1;
+		  }
+    }
+
+    if(i == fileNames.size()){
+    	std::string path(rid.table_name);
+    	path.append("\\")
+    	    .append(std::to_string(rid.id))
+			.append("\\")
+			.append(std::to_string(column))
+			.append("\\")
+			.append(std::to_string(rid.table_columns))
+			.append("\\")
+			.append(rid.id < 0 ? "0" : "1")
+			.append("\\")
+			.append(std::to_string(rid.id));
+
+    	creat(path.c_str(),0666);
+
+    	dbMetadataOut.seekp(std::ios::end);
+    	dbMetadataOut.write((char*)path.c_str(),path.size());
+    	dbMetadataOut.write((char*)&METADATA_DELIMITER, sizeof(char));
+
+    	dbMetadataOut.seekp(DB_METADATA_FLAG_OFFSET,std::ios::beg);
+    	dbMetadataOut.write((char*)&METADATA_UPDATE_NEEDED,sizeof(int));
+    }
+
+
   // std::string file_name = file_path + rid.table_name + "_" + std::to_string(rid.first_rid_page_range) + "_" + std::to_string(rid.first_rid_page) + "_" + std::to_string(column) + ".dat";
   // FILE* fp = std::fopen(file_name.c_str(), "r");
   // if (!fp) {
@@ -162,7 +199,7 @@ Frame* BufferPool::load (const RID& rid, const int& column){ //return the index 
   // fread(p->data, sizeof(int), (p->num_rows)*sizeof(int), fp);
 
   /* TODO: how to Find a appropriate Frame using rid.first_rid_page and insert here */
-  return nullptr;
+    return nullptr;
 }
 
 void BufferPool::insert_new_page(const RID& rid, const int& column, int value) {
@@ -248,3 +285,85 @@ void BufferPool::unpin (const RID& rid, const int& column) {
 Frame::Frame () {}
 
 Frame::~Frame () {}
+
+/*
+ * Is true if a file has been added to the metadata
+ * and a reformatting of the metadata has not yet occured.
+ */
+bool doesMetadataNeedReordering(){
+	int metadataNeedsUpdating;
+	dbMetadataIn.seekg(DB_METADATA_FLAG_OFFSET,std::ios::beg);
+	dbMetadataIn.read((char*)&metadataNeedsUpdating, sizeof(int));
+
+	return metadataNeedsUpdating;
+}
+
+/*
+ * resorts the paths in metadata.
+ * needs to be called before updating files on disk
+ * if doesMetadataNeedReordering() is true.
+ */
+std::vector<std::string> reorderMetadata(){
+	std::vector<std::string>fileNames = getFileNames();
+
+	std::sort(fileNames.begin(),fileNames.end(),fileSorter);
+
+	dbMetadataOut.seekp(DB_METADATA_DATA_OFFSET,std::ios::beg);
+
+	for(std::string& filePath : fileNames){
+		dbMetadataOut.write((char*)filePath.c_str(), sizeof(filePath));
+		dbMetadataOut.write((char*)(METADATA_DELIMITER.c_str()),sizeof(char));
+	}
+
+	dbMetadataOut.seekp(DB_METADATA_FLAG_OFFSET,std::ios::beg);
+
+	dbMetadataOut.write((char*)&METADATA_UPDATE_NOT_NEEDED,sizeof(int));
+
+	return fileNames;
+}
+
+/*
+ * Returns file names in metadata
+ */
+std::vector<std::string>getFileNames(){
+	dbMetadataIn.seekg(std::ios::end);
+
+	size_t sizeOfFile = dbMetadataIn.tellg()
+			- DB_METADATA_DATA_OFFSET;
+
+	dbMetadataIn.seekg(DB_METADATA_DATA_OFFSET,std::ios::beg);
+
+	char nameData[sizeOfFile + 1];
+	nameData[sizeOfFile + 1]= 0;
+
+	dbMetadataIn.read((char*)&nameData,sizeOfFile);
+
+	return{Toolkit::tokenize({nameData},METADATA_DELIMITER)};
+}
+
+bool fileSorter(std::string& file1,std::string& file2){
+	std::vector<std::string>file1Tokens = Toolkit::tokenize(file1,"\\");
+	std::vector<std::string>file2Tokens = Toolkit::tokenize(file2,"\\");
+
+    std::string file1Name = file1Tokens[PATH_TABLE_NAME_OFFSET];
+    int file1StartRID = std::stoi(file1Tokens[PATH_START_RID_OFFSET]);
+    int file1ColumnNumber = std::stoi(file1Tokens[PATH_NUM_COLUMNS_OFFSET]);
+
+    std::string file2Name = file2Tokens[PATH_TABLE_NAME_OFFSET];
+    int file2StartRID = std::stoi(file2Tokens[PATH_START_RID_OFFSET]);
+    int file2ColumnNumber = std::stoi(file2Tokens[PATH_NUM_COLUMNS_OFFSET]);
+
+    if(file1Name == file2Name){
+
+    	if(file1StartRID ==file2StartRID){
+    		return file1ColumnNumber < file2ColumnNumber;
+    	}
+
+    	return file1StartRID < file2StartRID;
+    }
+
+
+    return file1Name < file2Name;
+}
+
+
