@@ -30,7 +30,6 @@ public:
     int schema_encoding = 0; // Comment out for future usage : cascading abort
     std::string table_name = "";
 
-    int table_columns=-1;
 };
 
 #endif
