@@ -4,6 +4,7 @@
 #include "bufferpool.h"
 #include <cstring>
 #include <cmath>
+#include <stdexcept> // Throwing errors
 
 
 BufferPool::BufferPool (const int& num_pages) : bufferpool_size(num_pages){
@@ -24,10 +25,12 @@ BufferPool::BufferPool (const int& num_pages) : bufferpool_size(num_pages){
   tail = new Frame; //create tail
   old_frame->next = tail;
   tail->prev = old_frame;
+
+  //frame_directory.resize(num_pages, 0);
 }
 
 BufferPool::~BufferPool () {
-    evict_all();
+    write_back_all();
 }
 
 int BufferPool::get (const RID& rid, const int& column) {
@@ -35,18 +38,20 @@ int BufferPool::get (const RID& rid, const int& column) {
     if(found == nullptr){ //if not already in the bufferpool, load into bufferpool
       found = load(rid, column);
     }
-    update_ages(found);
-    return *(found->page->data + rid.offset); //return the value we want
+    update_ages(found, hash_vector[(rid.first_rid_page / 4096) % 4)];
+    return *(found->page->data + rid.offset * size_of(int)); //return the value we want
 }
 
 void BufferPool::set (const RID& rid, const int& column, int value){ //return the index of where you placed it
+    pin(rid, column);
     Frame* found = search(rid, column);
     if(found == nullptr){ //if not already in the bufferpool, load into bufferpool
       found = load(rid, column);
     }
-    update_ages(found);
-    *(found->page->data + rid.offset) = value;
+    update_ages(found, hash_vector[(rid.first_rid_page / 4096) % 4)];
+    *(found->page->data + rid.offset * size_of(int)) = value;
     found->dirty = true;
+    unpin(rid, column);
     return;
 }
 
@@ -66,13 +71,17 @@ Frame* BufferPool::search(const RID& rid, const int& column){
   return nullptr; //if not found in the range
 }
 
-void BufferPool::update_ages(Frame* just_accessed){ //change ages and reorder linked list
-  just_accessed->prev->next = just_accessed->next; //close gap where just_accessed used to be
-  just_accesed->next->prev = just_accessed->prev;
-  head->prev = just_accessed; //just_accessed becomes the new head
-  just_accessed->next = head;
-  just_accessed->prev = nullptr;
-  head = just_accessed;
+void BufferPool::update_ages(Frame* just_accessed, Frame* range_begin){ //change ages and reorder linked list
+  if(just_accessed != range_begin){ //if not already the range beginning / most recently accessed
+    just_accessed->prev->next = just_accessed->next; //close gap where just_accessed used to be
+    if(just_accesed->next != nullptr){ //if just accessed was not tail
+      just_accesed->next->prev = just_accessed->prev;
+    }
+    range_begin->prev = just_accessed; //just_accessed becomes the new head
+    just_accessed->next = range_begin;
+    just_accessed->prev = nullptr;
+    range_begin = just_accessed;
+  }
 }
 
 // Called by get and set
@@ -143,40 +152,72 @@ Frame* BufferPool::load (const RID& rid, const int& column){ //return the index 
 }
 
 void BufferPool::insert_new_page(const RID& rid, const int& column, int value) {
+  pin(rid, column);
 	// Make a new page
 	// Fit into Frame using information in the RID class passed.
+  //pin
+  unpin(rid, column);
 };
 
-void BufferPool::evict (){
-    // Called by load with which area to have a file evicted.
-    // Evict a page using LRU that has no pin. Write back to disk if it is dirty.
-	/* Saving from Frame to file */
-	Frame decoy;
-	// Use fastformat library instead of to_string
-	fp = fopen (decoy.table_name + std::to_string(decoy.first_rid_page_range) + "_" + std::to_string(decoy.first_rid_page) + "_" + std::to_string(decoy.column) + ".dat", "wr");
-	fwrite(decoy.page->data, sizeof(int), PAGE_SIZE*sizeof(int), fp);
-	// Write in num_rows also into page
-	fclose(fp);
-	decoy.valid = false;
+Frame* BufferPool::evict(const RID& rid){ //return the frame that was evicted
+  int hash = (rid.first_rid_page / 4096) % 4; //perform hash on rid
+  Frame* range_begin = hash_vector[hash]; //beginning of hash range
+  Frame* range_end = (hash == hash_vector.size()) ? tail : hash_vector[hash + 1]; //end of hash range
 
+  Frame* current_frame = range_end; //iterate through range
+  while(true){
+    if(current_frame->pin == 0){ //if not pinned
+      if(current_frame->dirty){ //if dirty
+        write_back(current_frame);
+      }
+      return current_frame;
+    }
+    current_frame = current_frame->prev;
+    if(current_frame == range_begin && current_frame->pin != 0){ //if all the pages are pinned
+      current_frame = range_end;
+    }
+  }
 }
 
-void BufferPool::write_back(Frame*){
-
+void BufferPool::write_back(Frame* frame){
+  // Use fastformat library instead of to_string
+  fp = fopen (frame->table_name + std::to_string(frame->first_rid_page_range) + "_" + std::to_string(frame->first_rid_page) + "_" + std::to_string(frame->column) + ".dat", "wr");
+  fwrite(frame->page->data, sizeof(int), PAGE_SIZE*sizeof(int), fp);
+  // Write in num_rows also into page
+  fclose(fp);
+  frame->valid = false;
 }
 
-void BufferPool::evict_all (){
-    // Called by close from db.cpp.
-    // This will cause all the pages to be evicted.
-    // This have separated file in case if there is some optimization if we can not think about which and order and such.
+void BufferPool::write_back_all (){
+    Frame* current_frame = head;
+    while(current_frame != nullptr){
+      if(current_frame->dirty){
+        write_back(urrent_frame);
+      }
+      current_frame = current_frame->next;
+    }
+    return;
 }
 
-void BufferPool::pin (const int& rid, const int& page_num) {
-    // Pin a page
+void BufferPool::pin (const RID& rid, const int& column) {
+  Frame* found = search(rid, column);
+  if(found == nullptr){ //if not already in the bufferpool, load into bufferpool
+    found = load(rid, column);
+  }
+  (found->pin)++;
+  return;
 }
 
-void BufferPool::unpin (const int& rid, const int& page_num) {
-    // Unpin a page
+void BufferPool::unpin (const RID& rid, const int& column) {
+  Frame* found = search(rid, column);
+  if(found == nullptr){ //if not in the bufferpool
+    throw std::invalid_argument("This record was never pinned to begin with");
+  }
+  (found->pin)--;
+  if(found->pin < 0){ //if pin count gets below 0
+    throw std::invalid_argument("This record was never pinned to begin with");
+  }
+  return;
 }
 
 Frame::Frame () {}

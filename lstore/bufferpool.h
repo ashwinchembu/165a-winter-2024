@@ -57,13 +57,14 @@ public:
     Frame* load (const RID& rid, const int& column); //from disk to bufferpool
     Frame* search(const RID& rid, const int& column); //search in specific hash range
     void insert_new_page(const RID& rid, const int& column, int value);
-    void update_ages(Frame* just_accessed); // update all the ages based on which frame was just accessed
-    void evict (); //evict the oldest that is not pinned
-    void write_back(Frame*); //write back to disk if dirty
-    void evict_all ();
-    void pin (const int& rid, const int& page_num);
-    void unpin (const int& rid, const int& page_num);
+    void update_ages(Frame* just_accessed, Frame* range_begin); // update all the ages in hash range based on which frame was just accessed
+    Frame* evict (const RID& rid); //evict the oldest that is not pinned
+    void write_back(Frame* frame); //write back to disk if dirty
+    void write_back_all ();
+    void pin (const RID& rid, const int& column);
+    void unpin (const RID& rid, const int& column);
     vector<Frame*> hash_vector;
+    //vector<int> frame_directory; //keep track of which frames are full, 1s and 0s
     int bufferpool_size;
 
 };
