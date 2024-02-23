@@ -10,3 +10,4 @@ const int NUM_METADATA_COLUMNS = 6;
 const int PAGE_SIZE = 4096;
 const int LOGICAL_PAGE = 8;
 const int BUFFER_POOL_SIZE = 64;
+const int NUM_BUFFERPOOL_HASH_PARTITIONS = 4;

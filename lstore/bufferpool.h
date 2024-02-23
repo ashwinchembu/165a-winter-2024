@@ -5,7 +5,6 @@
 #include "config.h"
 #include "page.h"
 #include <vector>
-
 #include <fstream>
 
 std::ofstream dbMetadataOut("../Disk/DiskMetadata.dat",
@@ -44,21 +43,28 @@ public:
     int pin = 0;
     bool dirty = false;
     int age = -1;
+    Frame* next;
+    Frame* prev;
 };
 
 class BufferPool {
 public:
-    BufferPool ();
+    BufferPool (const int& num_pages);
     virtual ~BufferPool ();
-    std::vector<Frame> buffer;
+    Frame* head;
+    Frame* tail;
     int get (const RID& rid, const int& column); // given a rid and column, returns the value in that location
     void set (const RID& rid, const int& column, int value); // given a rid and column, changes the value in that location
     void load (const RID& rid, const int& column);
     void insert_new_page(const RID& rid, const int& column, int value);
-    int evict ();
+    void update_ages(const int& index_of_just_accessed);
+    void evict ();
     void evict_all ();
     void pin (const int& rid, const int& page_num);
     void unpin (const int& rid, const int& page_num);
+    vector<Frame*> hash_vector;
+    int bufferpool_size;
+
 };
 
 

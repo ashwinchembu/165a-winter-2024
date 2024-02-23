@@ -6,10 +6,19 @@
 #include <cmath>
 
 
-BufferPool::BufferPool () {
-  buffer = std::vector<Frame>(BUFFER_POOL_SIZE);
-  for(int i = 0; i < BUFFER_POOL_SIZE; i++){ //each frame is initialized with an age
-    buffer[i].age = i;
+BufferPool::BufferPool (const int& num_pages) : bufferpool_size(num_pages){
+  head = new Frame;
+  head->age = 0;
+  hash_vector.push_back(head); //head will be the first hash range beginning
+
+  Frame* old_frame = head;
+
+  for(int i = 1; i < BUFFER_POOL_SIZE; i++){ //each frame is initialized with an age
+    Frame* new_frame = new Frame;
+    old_frame->next = new_frame;
+    new_frame->prev = old_frame;
+    new_frame->age = i;
+    old_frame = new_frame;
   }
 }
 
@@ -31,8 +40,7 @@ int BufferPool::get (const RID& rid, const int& column) {
     if(!found){ //if not already in the bufferpool, load into bufferpool
       index_of_found = load(rid, column);
     }
-    int age_of_found = buffer[index_of_found].age;
-    // Update all ages
+    update_ages(index_of_found);
     return *(buffer[index_of_found].page->data + rid.offset); //return the value we want
 }
 
@@ -44,6 +52,16 @@ void BufferPool::set (const RID& rid, const int& column, int value){ //return th
     //set dirty bit 1
 }
 
+void BufferPool::update_ages(const int& index_of_found){
+  int age_of_found = buffer[index_of_found].age;
+  for(int i = 0; i < BUFFER_POOL_SIZE; i++){ //age increment for all frames with age less than frame that was just accessed
+      if(buffer[i].age < age_of_found){
+          buffer[i].age++;
+      }
+  }
+  buffer[index_of_found].age = 0; //page just accessed has age of 0
+  return;
+}
 
 // Called by get
    // There should be an option to not actually read file from storage, which we use it when we make a new file and write things in.
@@ -117,7 +135,7 @@ void BufferPool::insert_new_page(const RID& rid, const int& column, int value) {
 	// Fit into Frame using information in the RID class passed.
 };
 
-int BufferPool::evict (){ //return the index of evicted
+void BufferPool::evict (){
     // Called by load with which area to have a file evicted.
     // Evict a page using LRU that has no pin. Write back to disk if it is dirty.
 	/* Saving from Frame to file */
