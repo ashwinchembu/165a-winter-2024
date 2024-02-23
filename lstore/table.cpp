@@ -242,6 +242,47 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
     return new_rid;
 }
 
+int Table::write(FILE* fp) {
+    fwrite(&key, sizeof(int), 1, fp);
+    fwrite(&num_update, sizeof(int), 1, fp);
+    fwrite(&num_insert, sizeof(int), 1, fp);
+    fwrite(&num_columns, sizeof(int), 1, fp);
+
+    // Will break. Look for alternative of string.
+    for(std::map<int, RID>::iterator iter=page_directory.begin(); iter!=page_directory.end(); iter++){
+        fwrite(&(iter->first), sizeof(int), 1, fp);
+        fwrite(&(iter->second), sizeof(RID), 1, fp);
+    }
+
+	for (std::shared_ptr<PageRange> pagerange : page_range) {
+		pagerange.get()->write(fp);
+	}
+	return 0;
+}
+
+
+int Table::read(FILE* fp) {
+    fread(&key, sizeof(int), 1, fp);
+    fread(&num_update, sizeof(int), 1, fp);
+    fread(&num_insert, sizeof(int), 1, fp);
+    fread(&num_columns, sizeof(int), 1, fp);
+	int num_element = num_insert + num_columns;
+	RID value;
+	int key;
+    // Will break. Look for alternative of string.
+    for(int i = 0; i < num_element; i++){
+		fread(&key, sizeof(int), 1, fp);
+		fread(&value, sizeof(RID), 1, fp);
+		page_directory[key] = value;
+		/// TODO Reconstruct index here.
+    }
+	name = value.table_name;
+	for (std::shared_ptr<PageRange> pagerange : page_range) {
+		pagerange.get()->write(fp);
+	}
+	return 0;
+}
+
 /***
  *
  * Merge few version of records and create new base page.

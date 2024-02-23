@@ -10,12 +10,7 @@
 #include "RID.h"
 #include <memory>
 #include <queue>
-
-
-const int INDIRECTION_COLUMN = 0;
-const int RID_COLUMN = 1;
-const int TIMESTAMP_COLUMN = 2;
-const int SCHEMA_ENCODING_COLUMN = 3;
+#include "config.h"
 
 // param name: string         #Table name
 // param num_columns: int     #Number of Columns: all columns are integer
@@ -39,12 +34,13 @@ public:
     std::map<int, RID> page_directory; //<RID.id, RID>
     std::queue<std::shared_ptr<PageRange>> merge_queue;
     std::vector<std::shared_ptr<PageRange>> page_range;
-    std::map<int, int> page_range_update; //<RID.id, RID>
+    std::map<int, int> page_range_update;
     Index* index = nullptr;
     // int last_page_range = -1;
     int num_update = 0;
     int num_insert = 0;
 
+    int num_columns; //number of columns of actual data, excluding the metadata
 
     Table(const std::string& name, const int& num_columns, const int& key);
 
@@ -54,8 +50,9 @@ public:
     RID insert(const std::vector<int>& columns);
     RID update(RID& rid, const std::vector<int>& columns);
     int merge();
+    int write(FILE* fp);
+    int read(FILE* fp);
 
-    int num_columns; //number of columns of actual data, excluding the metadata
 };
 
 #endif

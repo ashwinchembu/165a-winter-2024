@@ -71,6 +71,9 @@ void Database::open(const std::string& path) {
 };
 
 void Database::close() {
+	for (std::map<std::string, Table>::iterator itr = tables.begin(); itr != tables.end(); itr++) {
+		itr->second.merge();
+	}
 	buffer_pool.~BufferPool();
 };
 

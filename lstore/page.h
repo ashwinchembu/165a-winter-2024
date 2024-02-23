@@ -35,16 +35,18 @@ public:
     int base_last = 0;
     bool base_last_wasfull = false;
     int tail_last = 0;
-    bool tail_last_wasfull = false;
+    bool tail_last_wasfull = true;
     int num_column = 0;
+    std::vector<RID> pages;
 
     PageRange (RID& new_rid, const std::vector<int>& columns);
     // PageRange(const PageRange& other);
     ~PageRange();
-    std::vector<RID> pages;
     int insert(RID& new_rid, const std::vector<int>& columns);
     int update(RID& rid, RID& rid_new, const std::vector<int>& columns, const std::map<int, RID>& page_directory);
     bool base_has_capacity () const;
+    int write(FILE* fp);
+    int read(FILE* fp);
 };
 
 #endif

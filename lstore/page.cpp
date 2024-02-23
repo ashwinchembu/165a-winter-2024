@@ -114,7 +114,7 @@ PageRange::PageRange (RID& new_rid, const std::vector<int>& columns) {
     buffer_pool.insert_new_page(new_rid, RID_COLUMN, new_rid.id);
     buffer_pool.insert_new_page(new_rid, TIMESTAMP_COLUMN, 0);
     buffer_pool.insert_new_page(new_rid, SCHEMA_ENCODING_COLUMN, 0);
-    // new_rid.schema_encoding = 0; // Comment out for future usage : cascading abort
+    new_rid.schema_encoding = 0; // Comment out for future usage : cascading abort
     buffer_pool.insert_new_page(new_rid, BASE_RID_COLUMN, new_rid.id);
     buffer_pool.insert_new_page(new_rid, TPS, 0);
     for (int i = 0; i < num_column; i++) {
@@ -172,7 +172,7 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
         buffer_pool.insert_new_page(new_rid, RID_COLUMN, new_rid.id);
         buffer_pool.insert_new_page(new_rid, TIMESTAMP_COLUMN, 0);
         buffer_pool.insert_new_page(new_rid, SCHEMA_ENCODING_COLUMN, 0);
-        // new_rid.schema_encoding = 0; // Comment out for future usage : cascading abort
+        new_rid.schema_encoding = 0; // Comment out for future usage : cascading abort
         buffer_pool.insert_new_page(new_rid, BASE_RID_COLUMN, new_rid.id);
         buffer_pool.insert_new_page(new_rid, TPS, 0);
         for (int i = 0; i < num_column; i++) {
@@ -187,7 +187,7 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
         buffer_pool.set(new_rid, RID_COLUMN, new_rid.id);
         buffer_pool.set(new_rid, TIMESTAMP_COLUMN, 0);
         buffer_pool.set(new_rid, SCHEMA_ENCODING_COLUMN, 0);
-        // new_rid.schema_encoding = 0; // Comment out for future usage : cascading abort
+        new_rid.schema_encoding = 0; // Comment out for future usage : cascading abort
         buffer_pool.set(new_rid, BASE_RID_COLUMN, new_rid.id);
         buffer_pool.set(new_rid, TPS, 0);
         for (int i = 0; i < num_column; i++) {
@@ -233,7 +233,7 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
     // Create new tail pages if there are no space left or tail page does not exist.
     int schema_encoding = 0;
     // If tail_last and base_last is equal, that means there are no tail page created.
-    if (base_last_wasfull || tail_last == base_last) {
+    if (tail_last_wasfull) {
         rid_new.offset = 0;
         rid_new.first_rid_page = rid_new.id;
         base_last_wasfull = false;
@@ -264,7 +264,6 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
         buffer_pool.set(rid_new, INDIRECTION_COLUMN, rid.id);
         buffer_pool.set(rid_new, RID_COLUMN, rid_new.id);
         buffer_pool.set(rid_new, TIMESTAMP_COLUMN, 0);
-        // rid_new.schema_encoding = 0; // Comment out for future usage : cascading abort
         buffer_pool.set(rid_new, BASE_RID_COLUMN, rid.id);
         buffer_pool.set(rid_new, TPS, 0);
         for (int i = 0; i < num_column; i++) {
@@ -283,17 +282,49 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
         num_slot_used_tail++;
     }
 
-
+    rid_new.schema_encoding = schema_encoding; // Comment out for future usage : cascading abort
     // Updating indirection column and schema encoding column for the base page
     // rid.schema_encoding = (*((page_range[page_of_rid * num_column + SCHEMA_ENCODING_COLUMN].second)->data + offset*sizeof(int)) | schema_encoding); // Comment out for future usage : cascading abort
     // *((page_range[page_of_rid * num_column + SCHEMA_ENCODING_COLUMN].second)->data + offset*sizeof(int)) = rid.schema_encoding;
     buffer_pool.pin(rid, SCHEMA_ENCODING_COLUMN);
-    buffer_pool.set(rid, SCHEMA_ENCODING_COLUMN, (buffer_pool.get(rid, SCHEMA_ENCODING_COLUMN) | schema_encoding));
+    rid.schema_encoding = buffer_pool.get(rid, SCHEMA_ENCODING_COLUMN) | schema_encoding;
+    buffer_pool.set(rid, SCHEMA_ENCODING_COLUMN, rid.schema_encoding);
     buffer_pool.unpin(rid, SCHEMA_ENCODING_COLUMN);
     tail_last_wasfull = (num_slot_used_tail == PAGE_SIZE);
 
     // Setting the new RID to be representation of the page if the page was newly created
     return 0;
+}
+
+
+
+int PageRange::write(FILE* fp) {
+    fwrite(&num_slot_left, sizeof(int), 1, fp);
+    fwrite(&num_slot_used_base, sizeof(int), 1, fp);
+    fwrite(&num_slot_used_tail, sizeof(int), 1, fp);
+    fwrite(&base_last, sizeof(int), 1, fp);
+    fwrite(&tail_last, sizeof(int), 1, fp);
+    // Will break. Look for alternative of string.
+    fwrite(pages.data(), sizeof(pages[0]), tail_last, fp);
+    base_last_wasfull = (num_slot_used_base == PAGE_SIZE);
+    tail_last_wasfull = (num_slot_used_tail == PAGE_SIZE);
+    fwrite(&num_column, sizeof(int), 1, fp);
+	return 0;
+}
+
+
+int PageRange::read(FILE* fp) {
+    fread(&num_slot_left, sizeof(int), 1, fp);
+    fread(&num_slot_used_base, sizeof(int), 1, fp);
+    fread(&num_slot_used_tail, sizeof(int), 1, fp);
+    fread(&base_last, sizeof(int), 1, fp);
+    fread(&tail_last, sizeof(int), 1, fp);
+    // Will break. Look for alternative of string.
+    fread(pages.data(), sizeof(pages[0]), tail_last, fp);
+    base_last_wasfull = (num_slot_used_base == PAGE_SIZE);
+    tail_last_wasfull = (num_slot_used_tail == PAGE_SIZE);
+    fread(&num_column, sizeof(int), 1, fp);
+	return 0;
 }
 
 Page::Page() {
