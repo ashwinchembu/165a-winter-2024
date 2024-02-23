@@ -273,11 +273,12 @@ void addPageToDisk(RID rid, int column){
 		std::string logicalPath(rid.table_name);
 		logicalPath.append("_")
 		           .append(rid.id < 0 ? "0" : "1")
-				   .append(std::to_string(rid.id))
-				   .append("_")
-				   .append(std::to_string(rid.id))
-				   .append("_")
-				   .append(std::to_string(column));
+			   .append("_")
+			   .append(std::to_string(rid.id))
+			   .append("_")
+			   .append(std::to_string(rid.id))
+			   .append("_")
+			   .append(std::to_string(column));
 
 
 		dbMetadataOut.seekp(std::ios::end);
