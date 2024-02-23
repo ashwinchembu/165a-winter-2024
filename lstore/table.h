@@ -50,7 +50,7 @@ public:
     friend class Query;
 
     RID insert(const std::vector<int>& columns);
-    RID update(const RID& rid, const std::vector<int>& columns);
+    RID update(RID& rid, const std::vector<int>& columns);
     int merge();
 
     int num_columns; //number of columns of actual data, excluding the metadata

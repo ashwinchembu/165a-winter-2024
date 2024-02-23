@@ -188,16 +188,15 @@ RID Table::insert(const std::vector<int>& columns) {
 	record.table_name = name;
 	record.id = rid_id;
     if (page_range.size() == 0 || !(page_range.back()->base_has_capacity())) {
-
+		// If the last page range is full, make new one
     	std::shared_ptr<PageRange>newPageRange{new PageRange(record, columns)};
 
         page_range.push_back(newPageRange); // Make a base page with given record
-        // return the RID for index or something
-
-        record = (page_range.back().get())->page_range[0].first;
+		// RID should be the first RID of the page
+        record = (page_range.back().get())->pages[0];
     } else { // If there are base page already, just insert it normally.
         (page_range.back().get())->insert(record, columns);
-		record.first_rid_page_range = (page_range.back().get())->page_range[0].first.id;
+		record.first_rid_page_range = (page_range.back().get())->pages[0].id;
     }
     page_directory.insert({rid_id, record});
     return record;
@@ -212,23 +211,24 @@ RID Table::insert(const std::vector<int>& columns) {
  * @return RID of the new row upon successful update
  *
  */
-RID Table::update(const RID& rid, const std::vector<int>& columns) {
+RID Table::update(RID& rid, const std::vector<int>& columns) {
     num_update++;
     const int rid_id = num_update * -1;
-    size_t i = 0;
+    size_t i = 0; // Find the Page range to insert. Can use find.
     for (; i < page_range.size(); i++) {
-        if ((page_range[i].get())->page_range[0].first.id > rid.id) {
+        if ((page_range[i].get())->pages[0].first_rid_page_range == rid.first_rid_page_range) {
             break;
         }
     }
     i--;
+
     RID new_rid(rid_id);
-	new_rid.first_rid_page_range = (page_range[i].get())->page_range[0].first.id;
+	new_rid.first_rid_page_range = rid.first_rid_page_range;
+	new_rid.table_name = name;
 
 	(page_range[i].get())->update(rid, new_rid, columns);
 	// int err = (page_range[i].get())->update(rid, rid_id, columns);
 	page_directory.insert({rid_id, new_rid});
-	new_rid.table_name = name;
     return new_rid;
 }
 

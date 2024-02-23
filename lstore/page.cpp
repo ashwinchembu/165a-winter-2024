@@ -120,21 +120,21 @@ PageRange::PageRange (RID& new_rid, const std::vector<int>& columns) {
     for (int i = 0; i < num_column; i++) {
         buffer_pool.insert_new_page(new_rid, NUM_METADATA_COLUMNS + i, columns[i]);
     }
-
+    pages.push_back(new_rid);
     num_column = num_column + NUM_METADATA_COLUMNS;
     base_last = 0;
-    num_slot_left--;
+    num_slot_used_base++;
 }
 
-PageRange::PageRange(const PageRange& other) {
-    this->page_range = other.page_range;
-}
-
-PageRange::~PageRange () {
-    for (size_t i = 0; i < page_range.size(); i++) {
-        delete page_range[i].second;
-    }
-}
+// PageRange::PageRange(const PageRange& other) {
+//     this->page_range = other.page_range;
+// }
+//
+// PageRange::~PageRange () {
+//     for (size_t i = 0; i < page_range.size(); i++) {
+//         delete page_range[i].second;
+//     }
+// }
 
 /***
  *
@@ -144,7 +144,8 @@ PageRange::~PageRange () {
  *
  */
 bool PageRange::base_has_capacity () const {
-    return num_slot_left > 0;
+    return (base_last < LOGICAL_PAGE) || (base_last <= LOGICAL_PAGE && num_slot_used_base < PAGE_SIZE);
+    // Lazy evaluation
 }
 
 /***
@@ -158,57 +159,42 @@ bool PageRange::base_has_capacity () const {
  */
 int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
     bool newpage = false;
+    // Get first rid of the page and offset
     // Find if the last base page has capacity for new record
-    if (!(page_range[base_last*num_column].second->has_capacity())) {
-        tail_last++;
+    new_rid.offset = num_slot_used_base;
+    if (base_last_wasfull) {
+        new_rid.first_rid_page = new_rid.id;
+        base_last_wasfull = false;
         newpage = true;
+        tail_last++;
         base_last++; // Assuming that they will call after check if there are space left or not.
+        buffer_pool.insert_new_page(new_rid, INDIRECTION_COLUMN, new_rid.id);
+        buffer_pool.insert_new_page(new_rid, RID_COLUMN, new_rid.id);
+        buffer_pool.insert_new_page(new_rid, TIMESTAMP_COLUMN, 0);
+        buffer_pool.insert_new_page(new_rid, SCHEMA_ENCODING_COLUMN, 0);
+        // new_rid.schema_encoding = 0; // Comment out for future usage : cascading abort
+        buffer_pool.insert_new_page(new_rid, BASE_RID_COLUMN, new_rid.id);
+        buffer_pool.insert_new_page(new_rid, TPS, 0);
         for (int i = 0; i < num_column; i++) {
-            page_range.insert(page_range.begin() + base_last*num_column, std::make_pair(RID(), new Page()));
-            /// @TODO Bufferpool::load()
-            /// @TODO Bufferpool::pin(new_rid, i)
-            new_rid.offset = 0;
+            buffer_pool.insert_new_page(new_rid, NUM_METADATA_COLUMNS + i, columns[i]);
         }
+        pages.push_back(new_rid);
     } else {
+        new_rid.first_rid_page = pages[base_last].id;
+        buffer_pool.set(new_rid, INDIRECTION_COLUMN, new_rid.id);
+        buffer_pool.set(new_rid, RID_COLUMN, new_rid.id);
+        buffer_pool.set(new_rid, TIMESTAMP_COLUMN, 0);
+        buffer_pool.set(new_rid, SCHEMA_ENCODING_COLUMN, 0);
+        // new_rid.schema_encoding = 0; // Comment out for future usage : cascading abort
+        buffer_pool.set(new_rid, BASE_RID_COLUMN, new_rid.id);
+        buffer_pool.set(new_rid, TPS, 0);
         for (int i = 0; i < num_column; i++) {
-            /// @TODO Bufferpool::load()
-            /// @TODO Bufferpool::pin(new_rid, i)
+            buffer_pool.set(new_rid, NUM_METADATA_COLUMNS + i, columns[i]);
         }
     }
-    new_rid.offset = page_range[base_last*num_column + RID_COLUMN].second->num_rows;
-    // Start inserting new record
-    // Metadata columns
-    page_range[base_last*num_column + INDIRECTION_COLUMN].second->write(new_rid.id); // Indirection column
-    /// @TODO Bufferpool::unpin(new_rid, 0)
-    page_range[base_last*num_column + RID_COLUMN].second->write(new_rid.id); // RID column
-    new_rid.first_rid_page = *((page_range[base_last*num_column + RID_COLUMN].second)->data);
-    /// @TODO Bufferpool::unpin(new_rid, 1)
-    page_range[base_last*num_column + TIMESTAMP_COLUMN].second->write(0); // Timestamp
-    /// @TODO Bufferpool::unpin(new_rid, 2)
-    page_range[base_last*num_column + SCHEMA_ENCODING_COLUMN].second->write(0); // schema encoding
-    // new_rid.schema_encoding = 0; // Comment out for future usage : cascading abort
-    /// @TODO Bufferpool::unpin(new_rid, 3)
-    page_range[base_last*num_column + BASE_RID_COLUMN].second->write(new_rid.id);
-    page_range[base_last*num_column + TPS].second->write(0);
-    // Inserting data columns
-
-
-    for (int i = NUM_METADATA_COLUMNS; i < num_column; i++) {
-        page_range[base_last*num_column+i].second->write(columns[i - NUM_METADATA_COLUMNS]);
-        /// @TODO Bufferpool::unpin(new_rid, i)
-    }
-
-    // Setting the new RID to be representation of the page if the page was newly created
-    if (newpage){
-        for (int i = 0; i < num_column; i++) {
-        page_range[base_last*num_column + i].first = new_rid;
-        }
-    }
+    num_slot_used_base++;
     // Inserted.
-    num_slot_left--;
-
     return 0;
-    // Collect pointers, and make RID class, return it.
 }
 
 /***

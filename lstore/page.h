@@ -30,6 +30,8 @@ public:
     // const int LOGICAL_PAGE = 8;
     const int NUM_SLOTS = 4096*LOGICAL_PAGE;
     int num_slot_left = NUM_SLOTS;
+    int num_slot_used_base = 0;
+    int num_slot_used_tail = 0;
     int base_last = 0;
     bool base_last_wasfull = false;
     int tail_last = 0;
@@ -37,9 +39,9 @@ public:
     int num_column = 0;
 
     PageRange (RID& new_rid, const std::vector<int>& columns);
-    PageRange(const PageRange& other);
+    // PageRange(const PageRange& other);
     ~PageRange();
-    std::vector<std::pair<RID, Page*>> page_range;
+    std::vector<RID> pages;
     int insert(RID& new_rid, const std::vector<int>& columns);
     int update(RID& rid, RID& rid_new, const std::vector<int>& columns);
     bool base_has_capacity () const;
