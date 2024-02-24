@@ -53,7 +53,7 @@ class Table:
 
     def __merge(self):
         print("merge is happening")
-        pass
+        return Table_merge(self.selfPtr)
     
     def destroyPointer(self):
         Table_destructor(self.selfPtr)

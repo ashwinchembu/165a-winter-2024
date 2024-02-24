@@ -1,50 +1,49 @@
 #include "RID.h"
 #include "config.h"
-#include "../DllConfig.h"
 
-COMPILER_SYMBOL int RID_INDIRECTION_COLUMN(int* obj){
-	return ((RID*)obj)->INDIRECTION_COLUMN;
-}
-
-COMPILER_SYMBOL int RID_RID_COLUMN(int* obj){
-	return ((RID*)obj)->RID_COLUMN;
-}
-
-COMPILER_SYMBOL int RID_TIMESTAMP_COLUMN(int* obj){
-	return  ((RID*)obj)->TIMESTAMP_COLUMN;
-}
-
-COMPILER_SYMBOL int RID_SCHEMA_ENCODING_COLUMN(int* obj){
-	return ((RID*)obj)->SCHEMA_ENCODING_COLUMN;
-}
-
-COMPILER_SYMBOL int* RID_constructor(int* ptrs, const int i){
-	std::vector<int*>* ptr = (std::vector<int*>*)ptrs;
-
-	return (int*)(new RID(*ptr,i));
-}
-
-COMPILER_SYMBOL void RID_destructor(int* obj){
-	delete ((RID*)obj);
-}
-
-COMPILER_SYMBOL int* RID_pointers(int* obj){
-	RID* ref = (RID*)obj;
-	return (int*)(&(ref->pointers));
-}
-
-COMPILER_SYMBOL int RID_id(int* obj){
-	return ((RID*)obj)->id;
-}
-
-COMPILER_SYMBOL bool RID_check_schema(int* obj, const int column_num){
-	return ((RID*)obj)->check_schema(column_num);
-}
-
-COMPILER_SYMBOL int RID_column_with_one(int* obj){
-	return ((RID*)obj)->column_with_one();
-}
-
+//COMPILER_SYMBOL int RID_INDIRECTION_COLUMN(int* obj){
+//	return ((RID*)obj)->INDIRECTION_COLUMN;
+//}
+//
+//COMPILER_SYMBOL int RID_RID_COLUMN(int* obj){
+//	return ((RID*)obj)->RID_COLUMN;
+//}
+//
+//COMPILER_SYMBOL int RID_TIMESTAMP_COLUMN(int* obj){
+//	return  ((RID*)obj)->TIMESTAMP_COLUMN;
+//}
+//
+//COMPILER_SYMBOL int RID_SCHEMA_ENCODING_COLUMN(int* obj){
+//	return ((RID*)obj)->SCHEMA_ENCODING_COLUMN;
+//}
+//
+//COMPILER_SYMBOL int* RID_constructor(int* ptrs, const int i){
+//	std::vector<int*>* ptr = (std::vector<int*>*)ptrs;
+//
+//	return (int*)(new RID(*ptr,i));
+//}
+//
+//COMPILER_SYMBOL void RID_destructor(int* obj){
+//	delete ((RID*)obj);
+//}
+//
+//COMPILER_SYMBOL int* RID_pointers(int* obj){
+//	RID* ref = (RID*)obj;
+//	return (int*)(&(ref->pointers));
+//}
+//
+//COMPILER_SYMBOL int RID_id(int* obj){
+//	return ((RID*)obj)->id;
+//}
+//
+//COMPILER_SYMBOL bool RID_check_schema(int* obj, const int column_num){
+//	return ((RID*)obj)->check_schema(column_num);
+//}
+//
+//COMPILER_SYMBOL int RID_column_with_one(int* obj){
+//	return ((RID*)obj)->column_with_one();
+//}
+//
 
 
 
@@ -79,3 +78,20 @@ const bool RID::check_schema (const int& column_num) const {
 //     }
 //     return -1;
 // }
+
+int RID::write(FILE* fp) {
+	fwrite(&id, sizeof(int), 1, fp);
+	fwrite(&first_rid_page, sizeof(int), 1, fp);
+	fwrite(&first_rid_page_range, sizeof(int), 1, fp);
+	fwrite(&offset, sizeof(int), 1, fp);
+	fwrite(&schema_encoding, sizeof(int), 1, fp);
+	return 0;
+}
+int RID::read(FILE* fp) {
+	fread(&id, sizeof(int), 1, fp);
+	fread(&first_rid_page, sizeof(int), 1, fp);
+	fread(&first_rid_page_range, sizeof(int), 1, fp);
+	fread(&offset, sizeof(int), 1, fp);
+	fread(&schema_encoding, sizeof(int), 1, fp);
+	return 0;
+}

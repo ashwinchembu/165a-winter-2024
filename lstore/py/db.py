@@ -10,10 +10,10 @@ class Database():
 
     # Not required for milestone1
     def open(self, path):
-        pass
+        Database_open(self.selfptr,path.encode())
 
     def close(self):
-        pass
+        Database_close(self.selfptr)
 
     """
     # Creates a new table

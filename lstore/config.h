@@ -1,5 +1,6 @@
 #ifndef CONFIG_H
 #define CONFIG_H
+#include <string>
     extern const int INDIRECTION_COLUMN;
     extern const int RID_COLUMN;
     extern const int TIMESTAMP_COLUMN;
@@ -13,4 +14,5 @@
     extern const int NUM_BUFFERPOOL_HASH_PARTITIONS;
     extern const int MAX_PAGE_RANGE_UPDATES;
     extern const int MAX_TABLE_UPDATES;
+    extern const std::string file_path;
 #endif

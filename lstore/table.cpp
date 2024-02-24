@@ -188,6 +188,8 @@ RID Table::insert(const std::vector<int>& columns) {
     RID record;
 	record.table_name = name;
 	record.id = rid_id;
+
+
     if (page_range.size() == 0 || !(page_range.back()->base_has_capacity())) {
 
     	std::shared_ptr<PageRange>newPageRange{new PageRange(record, columns)};
@@ -240,6 +242,47 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 	// int err = (page_range[i].get())->update(rid, rid_id, columns);
 	page_directory.insert({rid_id, new_rid});
     return new_rid;
+}
+
+int Table::write(FILE* fp) {
+    fwrite(&key, sizeof(int), 1, fp);
+    fwrite(&num_update, sizeof(int), 1, fp);
+    fwrite(&num_insert, sizeof(int), 1, fp);
+    fwrite(&num_columns, sizeof(int), 1, fp);
+	// TODO Save table name here
+    for(std::map<int, RID>::iterator iter=page_directory.begin(); iter!=page_directory.end(); iter++){
+        fwrite(&(iter->first), sizeof(int), 1, fp);
+        iter->second.write(fp);
+    }
+
+	for (std::shared_ptr<PageRange> pagerange : page_range) {
+		pagerange.get()->write(fp);
+	}
+	return 0;
+}
+
+
+int Table::read(FILE* fp) {
+    fread(&key, sizeof(int), 1, fp);
+    fread(&num_update, sizeof(int), 1, fp);
+    fread(&num_insert, sizeof(int), 1, fp);
+    fread(&num_columns, sizeof(int), 1, fp);
+	// TODO Get table name here
+	int num_element = num_insert + num_columns;
+	RID value;
+	int key;
+    for(int i = 0; i < num_element; i++){
+		fread(&key, sizeof(int), 1, fp);
+		value.read(fp);
+		value.table_name = name;
+		page_directory[key] = value;
+		/// TODO Reconstruct index here.
+    }
+	name = value.table_name;
+	for (std::shared_ptr<PageRange> pagerange : page_range) {
+		pagerange.get()->write(fp);
+	}
+	return 0;
 }
 
 /***

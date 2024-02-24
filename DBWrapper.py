@@ -18,7 +18,6 @@ elif thePlatform == "Windows":
 
 # Functions from db.cpp
 
-
 add_to_buffer_vector=DB.add_to_buffer_vector
 add_to_buffer_vector.argtypes = [c_int]
 
@@ -30,7 +29,6 @@ get_from_buffer_vector.restype = c_int
 get_from_buffer_vector.argtypes = [c_int]
 
 erase_buffer_vector=DB.erase_buffer_vector
-
 
 Database_constructor = DB.Database_constructor
 Database_constructor.restype = POINTER(c_int)
@@ -53,9 +51,13 @@ Database_tables=DB.Database_tables
 Database_tables.restype = POINTER(c_int)
 Database_tables.argtypes = [POINTER(c_int)]
 
+Database_open = DB.Database_open
+Database_open.argtypes=[POINTER(c_int),POINTER(c_char)]
+
+Database_close = DB.Database_close
+Database_close.argtypes=[POINTER(c_int)]
 
 # Functions from index.cpp
-
 
 clearRidBuffer = DB.clearRidBuffer
 
@@ -110,94 +112,90 @@ Index_update_index.argtypes = [POINTER(c_int),POINTER(c_int),POINTER(c_int),POIN
 Index_print_data = DB.Index_print_data
 Index_print_data.argtypes = [POINTER(c_int)]
 
-
 # Functions from page.cpp
 
-
-Page_PAGE_SIZE=DB.Page_PAGE_SIZE;
-Page_PAGE_SIZE.restype = c_int
-Page_PAGE_SIZE.argtypes = [POINTER(c_int)]
-
-Page_NUM_SLOTS=DB.Page_NUM_SLOTS
-Page_NUM_SLOTS.restype = c_int
-Page_NUM_SLOTS.argtypes = [POINTER(c_int)]
-
-Page_num_rows = DB.Page_num_rows
-Page_num_rows.restype = c_int
-Page_num_rows.argtypes = [POINTER(c_int)]
+# Page_PAGE_SIZE=DB.Page_PAGE_SIZE;
+# Page_PAGE_SIZE.restype = c_int
+# Page_PAGE_SIZE.argtypes = [POINTER(c_int)]
+#
+# Page_NUM_SLOTS=DB.Page_NUM_SLOTS
+# Page_NUM_SLOTS.restype = c_int
+# Page_NUM_SLOTS.argtypes = [POINTER(c_int)]
+#
+# Page_num_rows = DB.Page_num_rows
+# Page_num_rows.restype = c_int
+# Page_num_rows.argtypes = [POINTER(c_int)]
 
 # Page_availability = DB.Page_availability
 # Page_availability.restype = POINTER(c_int)
 # Page_availability.argtypes = [POINTER(c_int)]
 
-Page_constructor = DB.Page_constructor
-Page_constructor.restype = POINTER(c_int)
-
-Page_destructor = DB.Page_destructor
-Page_destructor.argtypes = [POINTER(c_int)]
-
-Page_has_capacity = DB.Page_has_capacity
-Page_has_capacity.restype = c_bool
-Page_has_capacity.argtypes = [POINTER(c_int)]
-
-Page_write = DB.Page_write
-Page_write.restype = POINTER(c_int)
-Page_write.argtypes = [POINTER(c_int),c_int]
-
-Page_data = DB.Page_data
-Page_data.restype = POINTER(c_int)
-Page_data.argtypes = [POINTER(c_int)]
-
-PageRange_PAGE_SIZE = DB.PageRange_PAGE_SIZE
-PageRange_PAGE_SIZE.restype = c_int
-PageRange_PAGE_SIZE.argtypes = [POINTER(c_int)]
-
-PageRange_NUM_SLOTS=DB.PageRange_NUM_SLOTS
-PageRange_NUM_SLOTS.restype = c_int
-PageRange_NUM_SLOTS.argtypes = [POINTER(c_int)]
-
-PageRange_num_slot_left = DB.PageRange_num_slot_left
-PageRange_num_slot_left.restype = c_int
-PageRange_num_slot_left.argtypes = [POINTER(c_int)]
-
-PageRange_base_last = DB.PageRange_base_last
-PageRange_base_last.restype = c_int
-PageRange_base_last.argtypes = [POINTER(c_int)]
-
-PageRange_tail_last = DB.PageRange_tail_last
-PageRange_tail_last.restype = c_int
-PageRange_tail_last.argtypes = [POINTER(c_int)]
-
-PageRange_num_column = DB.PageRange_num_column
-PageRange_num_column.restype = c_int
-PageRange_num_column.argtypes = [POINTER(c_int)]
-
-PageRange_constructor=DB.PageRange_constructor
-PageRange_constructor.restype = POINTER(c_int)
-PageRange_constructor.argtypes = [c_int,POINTER(c_int)]
-
-PageRange_destructor=DB.PageRange_destructor
-PageRange_destructor.argtypes = [POINTER(c_int)]
-
-PageRange_page_range = DB.PageRange_page_range
-PageRange_page_range.restype = POINTER(c_int)
-PageRange_page_range.argtypes = [POINTER(c_int)]
-
-PageRange_insert = DB.PageRange_insert
-PageRange_insert.restype = POINTER(c_int)
-PageRange_insert.argtypes = [POINTER(c_int),c_int,POINTER(c_int)]
-
-PageRange_update =  DB.PageRange_update
-PageRange_update.restype = POINTER(c_int)
-PageRange_update.argtypes = [POINTER(c_int),POINTER(c_int),c_int,POINTER(c_int)]
-
-PageRange_base_has_capacity = DB.PageRange_base_has_capacity
-PageRange_base_has_capacity.restype = c_bool
-PageRange_base_has_capacity.argtypes = [POINTER(c_int)]
-
+# Page_constructor = DB.Page_constructor
+# Page_constructor.restype = POINTER(c_int)
+#
+# Page_destructor = DB.Page_destructor
+# Page_destructor.argtypes = [POINTER(c_int)]
+#
+# Page_has_capacity = DB.Page_has_capacity
+# Page_has_capacity.restype = c_bool
+# Page_has_capacity.argtypes = [POINTER(c_int)]
+#
+# Page_write = DB.Page_write
+# Page_write.restype = POINTER(c_int)
+# Page_write.argtypes = [POINTER(c_int),c_int]
+#
+# Page_data = DB.Page_data
+# Page_data.restype = POINTER(c_int)
+# Page_data.argtypes = [POINTER(c_int)]
+#
+# PageRange_PAGE_SIZE = DB.PageRange_PAGE_SIZE
+# PageRange_PAGE_SIZE.restype = c_int
+# PageRange_PAGE_SIZE.argtypes = [POINTER(c_int)]
+#
+# PageRange_NUM_SLOTS=DB.PageRange_NUM_SLOTS
+# PageRange_NUM_SLOTS.restype = c_int
+# PageRange_NUM_SLOTS.argtypes = [POINTER(c_int)]
+#
+# PageRange_num_slot_left = DB.PageRange_num_slot_left
+# PageRange_num_slot_left.restype = c_int
+# PageRange_num_slot_left.argtypes = [POINTER(c_int)]
+#
+# PageRange_base_last = DB.PageRange_base_last
+# PageRange_base_last.restype = c_int
+# PageRange_base_last.argtypes = [POINTER(c_int)]
+#
+# PageRange_tail_last = DB.PageRange_tail_last
+# PageRange_tail_last.restype = c_int
+# PageRange_tail_last.argtypes = [POINTER(c_int)]
+#
+# PageRange_num_column = DB.PageRange_num_column
+# PageRange_num_column.restype = c_int
+# PageRange_num_column.argtypes = [POINTER(c_int)]
+#
+# PageRange_constructor=DB.PageRange_constructor
+# PageRange_constructor.restype = POINTER(c_int)
+# PageRange_constructor.argtypes = [c_int,POINTER(c_int)]
+#
+# PageRange_destructor=DB.PageRange_destructor
+# PageRange_destructor.argtypes = [POINTER(c_int)]
+#
+# PageRange_page_range = DB.PageRange_page_range
+# PageRange_page_range.restype = POINTER(c_int)
+# PageRange_page_range.argtypes = [POINTER(c_int)]
+#
+# PageRange_insert = DB.PageRange_insert
+# PageRange_insert.restype = POINTER(c_int)
+# PageRange_insert.argtypes = [POINTER(c_int),c_int,POINTER(c_int)]
+#
+# PageRange_update =  DB.PageRange_update
+# PageRange_update.restype = POINTER(c_int)
+# PageRange_update.argtypes = [POINTER(c_int),POINTER(c_int),c_int,POINTER(c_int)]
+#
+# PageRange_base_has_capacity = DB.PageRange_base_has_capacity
+# PageRange_base_has_capacity.restype = c_bool
+# PageRange_base_has_capacity.argtypes = [POINTER(c_int)]
 
 # Functions from query.cpp
-
 
 Query_constructor=DB.Query_constructor
 Query_constructor.restype = POINTER(c_int)
@@ -242,9 +240,7 @@ Query_table=DB.Query_table
 Query_table.restype =POINTER(c_int)
 Query_table.argtypes = [POINTER(c_int)]
 
-
 # Functions from table.cpp
-
 
 Record_constructor=DB.Record_constructor
 Record_constructor.restype = POINTER(c_int)
@@ -315,7 +311,6 @@ Table_merge.argtypes = [POINTER(c_int)]
 Table_num_columns=DB.Table_num_columns
 Table_num_columns.restype = c_int
 Table_num_columns.argtypes = [POINTER(c_int)]
-
 
 clearRecordBuffer=DB.clearRecordBuffer
 

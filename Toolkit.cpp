@@ -4,6 +4,7 @@
 #include <iterator>
 #include <sstream>
 #include <random>
+#include <regex>
 
 #include "DllConfig.h"
 #include <limits>
@@ -69,6 +70,16 @@ std::string printArray(std::vector<int>& data){
 	   std::ostream_iterator<int>(buffer," "));
 
 	return std::string(buffer.str().c_str());
+}
+
+std::vector<std::string>tokenize(
+		std::string str,std::string delimiter){
+	std::regex pattern{delimiter};
+
+	std::sregex_token_iterator start{str.begin(),str.end(),
+	pattern,-1};
+
+	return {start,{}};
 }
 
 }

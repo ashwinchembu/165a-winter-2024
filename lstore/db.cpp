@@ -64,6 +64,13 @@ COMPILER_SYMBOL int* Database_tables(int* obj){
 	return(int*)(&(self->tables));
 }
 
+COMPILER_SYMBOL void Database_open(int* obj,char* path){
+	((Database*)obj)->open(path);
+}
+
+COMPILER_SYMBOL void Database_close(int* obj){
+	((Database*)obj)->close();
+}
 
 
 void Database::open(const std::string& path) {
@@ -71,6 +78,9 @@ void Database::open(const std::string& path) {
 };
 
 void Database::close() {
+	for (std::map<std::string, Table>::iterator itr = tables.begin(); itr != tables.end(); itr++) {
+		itr->second.merge();
+	}
 	buffer_pool.~BufferPool();
 };
 

@@ -1,11 +1,20 @@
+// #include <bits/types/FILE.h>
 #include <vector>
+#include <stdio.h>
+#include <string>
+#include <algorithm>
+#include <cstring>
+#include <fcntl.h>
+#include <cmath>
+#include <stdexcept> // Throwing errors
+#include <unistd.h>
+
 #include "page.h"
 #include "config.h"
 #include "bufferpool.h"
-#include <cstring>
-#include <cmath>
-#include <stdexcept> // Throwing errors
+#include "../Toolkit.h"
 
+BufferPool buffer_pool(BUFFER_POOL_SIZE);
 
 BufferPool::BufferPool (const int& num_pages) : bufferpool_size(num_pages){
   head = new Frame; //create head
@@ -33,6 +42,10 @@ BufferPool::~BufferPool () {
     write_back_all(); //make sure all unsaved data gets back to disk
 }
 
+int BufferPool::hash_fun(int x) {
+  return (x / 4096) % 4;
+}
+
 int BufferPool::get (const RID& rid, const int& column) {
     Frame* found = search(rid, column);
     if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
@@ -56,7 +69,7 @@ void BufferPool::set (const RID& rid, const int& column, int value){
 }
 
 Frame* BufferPool::search(const RID& rid, const int& column){
-  int hash = (rid.first_rid_page / 4096) % 4; //perform hash on rid
+  int hash = hash_fun(rid.first_rid_page); //perform hash on rid
   Frame* range_begin = hash_vector[hash]; //beginning of hash range
   Frame* range_end = (hash == hash_vector.size()) ? tail : hash_vector[hash + 1]; //end of hash range
 
@@ -74,8 +87,8 @@ Frame* BufferPool::search(const RID& rid, const int& column){
 void BufferPool::update_ages(Frame* just_accessed, Frame* range_begin){ //change ages and reorder linked list
   if(just_accessed != range_begin){ //if not already the range beginning / most recently accessed
     just_accessed->prev->next = just_accessed->next; //close gap where just_accessed used to be
-    if(just_accesed->next != nullptr){ //if just accessed was not tail
-      just_accesed->next->prev = just_accessed->prev;
+    if(just_accessed->next != nullptr){ //if just accessed was not tail
+      just_accessed->next->prev = just_accessed->prev;
     }
     just_accessed->next = range_begin; //just_accessed becomes the new range beginning
     if(range_begin != nullptr){ //if range_begin was not head
@@ -94,61 +107,35 @@ void BufferPool::update_ages(Frame* just_accessed, Frame* range_begin){ //change
    // Check the availability of the pool. There should be some identifier.
    // Find the file, get the specific part and load into a memory. For now, I'm thinking about saving per table.
 Frame* BufferPool::load (const RID& rid, const int& column){ //return the frame that the page was loaded into
-	dbMetadataIn.seekg(std::ios::beg);
+  std::string path = "..\\Disk\\" + rid.table_name
+      + "_" + std::to_string(rid.first_rid_page_range)
+      + "_" + std::to_string(rid.first_rid_page)
+      + "_" + std::to_string(column) + ".dat";
 
-	std::string tableName = rid.table_name;
+  int fd = open((const char*)path.c_str(), O_RDWR);
 
-	int numberOfFiles;
-	dbMetadataIn.read((char*)&numberOfFiles,sizeof(int));
+  if(fd != -1){
+    Page* p = new Page();
+    float buffer;
+        read(fd, &(p->num_rows), sizeof(int));
+        read(fd, p->data, p->num_rows * sizeof(int));
+    // while(true){
+    // 	read(fd, &buffer, sizeof(float));
+  //
+    // 	if(std::isnan(buffer)){
+    // 		break;
+    // 	}
+  //
+    // 	p->write((int)buffer);
+    // }
 
-	for(int i = 0; i<numberOfFiles;i++){ //?? We want to load a single page, what is the reason for for loop?
-		std::string filename(std::to_string(i));
-		filename+=".dat";
+    close(fd);
 
-		std::ifstream ifs(filename, std::ofstream::out | std::ofstream::binary);
+    Frame* frame = insert_into_frame(rid, column, p); //insert the page into a frame in the bufferpool
+    frame->dirty = false; //frame has not yet been modified
+  }
 
-		char nameBuf[257];
-		ifs.read((char*)&nameBuf,257);
-
-		if(strcmp(tableName.c_str(),nameBuf)){
-			double firstBaseId;
-			double firstTailId;
-			ifs.read((char*)&firstBaseId,sizeof(double));
-			ifs.read((char*)&firstTailId,sizeof(double));
-
-			int numCols;
-			int numEntries;
-			ifs.seekg(NUMBER_OF_COLUMNS_OFFSET,std::ifstream::beg);
-			ifs.read((char*)&numCols,sizeof(int));
-			ifs.read((char*)&numEntries,sizeof(int));
-
-
-			if((rid.id > 0 && std::isnan(firstBaseId))
-				|| (rid.id < 0 && std::isnan(firstTailId))){
-				i += numCols - 1;
-			}
-
-			if((rid.id > 0 && rid.id >= firstBaseId)
-					|| (rid.id < 0 && rid.id <= firstTailId)){
-
-				Page* p = new Page();
-
-				for(int i = 0; i < numEntries;i++){
-					int nextEntry;
-					ifs.read((char*)&nextEntry,sizeof(int));
-					p->write(nextEntry);
-				}
-
-        Frame* frame = insert_into_frame(rid, column, p); //insert the page into a frame in the bufferpool
-        frame->dirty = false; //frame has not yet been modified
-
-				break;
-			}
-
-			i += numCols - 1;
-		}
-	}
-  return frame;
+    return frame;
 }
 
 Frame* BufferPool::insert_into_frame(const RID& rid, const int& column, Page* page){ //return the frame that the page was placed into
@@ -183,6 +170,15 @@ Frame* BufferPool::insert_into_frame(const RID& rid, const int& column, Page* pa
   return frame;
 }
 
+// std::string file_name = file_path + rid.table_name + "_" + std::to_string(rid.first_rid_page_range) + "_" + std::to_string(rid.first_rid_page) + "_" + std::to_string(column) + ".dat";
+// FILE* fp = std::fopen(file_name.c_str(), "r");
+// if (!fp) {
+//   throw std::invalid_argument("File with given RID does not exist");
+// }
+// Page* p = new Page();
+// fread(&(p->num_rows), sizeof(int), 1, fp);
+// fread(p->data, sizeof(int), (p->num_rows)*sizeof(int), fp);
+
 void BufferPool::insert_new_page(const RID& rid, const int& column, const int& value) {
   pin(rid, column);
   Page* page;
@@ -215,13 +211,36 @@ Frame* BufferPool::evict(const RID& rid){ //return the frame that was evicted
 }
 
 void BufferPool::write_back(Frame* frame){
-  // Use fastformat library instead of to_string
-  fp = fopen (frame->table_name + std::to_string(frame->first_rid_page_range) + "_" + std::to_string(frame->first_rid_page) + "_" + std::to_string(frame->column) + ".dat", "wr");
-  fwrite(frame->page->data, sizeof(int), PAGE_SIZE*sizeof(int), fp);
-  // Write in num_rows also into page
-  fclose(fp);
-  frame->valid = false; //the frame is now empty
+	std::string path = "..\\Disk\\" + frame->table_name
+				+ "_" + std::to_string(frame->first_rid_page_range)
+				+ "_" + std::to_string(frame->first_rid_page)
+				+"_" + std::to_string(frame->column) + ".dat";
+
+	int fd = open((const char*)path.c_str(), O_RDWR);
+
+	if(fd != -1){
+        write(fd,&(frame->page->num_rows),sizeof(int));
+		write(fd,frame->page->data,frame->page->num_rows* sizeof(int));
+
+		// float nan = std::nan("");
+		// write(fd,&nan,sizeof(float));
+
+		close(fd);
+	}
+
+  frame->valid = false; //frame is now empty
 }
+
+//
+//  std::string file_name = file_path + frame->table_name + "_" + std::to_string(frame->first_rid_page_range) + "_" + std::to_string(frame->first_rid_page) + "_" + std::to_string(frame->column) + ".dat";
+//
+//
+//
+//  FILE* fp = fopen(file_name.c_str(), "w");
+//  fwrite(&(frame->page->num_rows), sizeof(int), 1, fp);
+//  fwrite(frame->page->data, sizeof(int), PAGE_SIZE*sizeof(int), fp);
+//  // Write in num_rows also into page
+//  fclose(fp);
 
 void BufferPool::write_back_all (){
     Frame* current_frame = head;
@@ -231,7 +250,9 @@ void BufferPool::write_back_all (){
       }
       current_frame = current_frame->next;
     }
-    return;
+    current_frame = current_frame->next;
+  }
+  return;
 }
 
 void BufferPool::pin (const RID& rid, const int& column) {
