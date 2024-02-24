@@ -7,13 +7,12 @@
 #include <fcntl.h>
 #include <cmath>
 #include <stdexcept> // Throwing errors
+#include <unistd.h>
 
 #include "page.h"
 #include "config.h"
 #include "bufferpool.h"
 #include "../Toolkit.h"
-
-std::vector<std::string>getFileNames();
 
 BufferPool::BufferPool (const int& num_pages) : bufferpool_size(num_pages){
   head = new Frame; //create head
@@ -96,6 +95,12 @@ void BufferPool::update_ages(Frame* just_accessed, Frame* range_begin){ //change
   }
 }
 
+bool placeholderForHasSpace;
+
+Frame* placeholderForGetAvaliableFrame(RID rid){
+	return 0;
+}
+
 // Called by get and set
 // There should be an option to not actually read file from storage, which we use it when we make a new file and write things in.
 // Check the availability of the pool. There should be some identifier.
@@ -104,66 +109,59 @@ void BufferPool::update_ages(Frame* just_accessed, Frame* range_begin){ //change
 // Set the valid bit of the frame to 1;
 // Set the dirty bit of the frame to 0;
 Frame* BufferPool::load (const RID& rid, const int& column){ //return the index of where you placed it
-	std::vector<std::string> fileNames = getFileNames();
+	std::string path = "..\\Disk\\" + rid.table_name
+			+ "_" + std::to_string(rid.first_rid_page_range)
+			+ "_" + std::to_string(rid.first_rid_page)
+			+ "_" + std::to_string(column) + ".dat";
 
-	size_t i = 0;
-    for(; i < fileNames.size(); i++){
-	    std::vector<std::string>fileInfo
-	        = Toolkit::tokenize(fileNames[i],"_");
+	int fd = open((const char*)path.c_str(), O_RDWR);
 
-		 if(fileInfo[PATH_TABLE_NAME_OFFSET] != rid.table_name
-				 || fileInfo[PATH_COLUMN_OFFSET] != column){
-			 continue;
-		 }
+	Frame* evictedFrame = nullptr;
 
-		 int isBasePage = std::stoi(
-		         fileInfo[PATH_IS_BASEPAGE_OFFSET].c_str());
+	if(fd != -1){
+		Page* p = new Page();
+		float buffer;
 
-		 int startRid = std::stoi(fileInfo[PATH_START_RID_OFFSET]);
-		 int endRid = std::stoi(fileInfo[PATH_END_RID_OFFSET]);
+		while(true){
+			read(fd, &buffer, sizeof(float));
 
-		 if((!isBasePage && rid.id < 0
-		         && rid.id <= startRid && rid.id >= endRid)
+			if(std::isnan(buffer)){
+				break;
+			}
 
-		     ||
+			p->write((int)buffer);
+		}
 
-			 (isBasePage && rid.id > 0
-			      && rid.id >= startRid && rid.id <= endRid)){
+		close(fd);
 
-             std::string physicalPath = "..\\Disk\\" + fileNames[i] + ".dat";
+		if(!placeholderForHasSpace){
+			evictedFrame = evict(rid);
+		} else {
+			evictedFrame = placeholderForGetAvaliableFrame(rid);
+		}
 
-		     std::ifstream ifs(physicalPath,
-		             std::ifstream::in | std::ofstream::binary);
+		evictedFrame->page = p;
+		evictedFrame->table_name = rid.table_name;
+		evictedFrame->first_rid_page = rid.first_rid_page;
+		evictedFrame->first_rid_page_range = rid.first_rid_page_range;
+		evictedFrame->column = column;
+		evictedFrame->valid= true;
+		evictedFrame->pin = 0;
+		evictedFrame->dirty = false;
+	}
 
-		     Frame* frame = new Frame();
-		     Page* p = new Page();
-
-		     int numberOfRecords = abs(startRid - endRid) + 1;
-
-		     for(int i = 0; i < numberOfRecords;i++){
-		         int nextEntry;
-			     ifs.read((char*)&nextEntry,sizeof(int));
-			     p->write(nextEntry);
-		     }
-
-		     frame->page = p;
-		     ifs.close();
-		     return frame;
-
-		  }
-    }
-  // std::string file_name = file_path + rid.table_name + "_" + std::to_string(rid.first_rid_page_range) + "_" + std::to_string(rid.first_rid_page) + "_" + std::to_string(column) + ".dat";
-  // FILE* fp = std::fopen(file_name.c_str(), "r");
-  // if (!fp) {
-  //   throw std::invalid_argument("File with given RID does not exist");
-  // }
-  // Page* p = new Page();
-  // fread(&(p->num_rows), sizeof(int), 1, fp);
-  // fread(p->data, sizeof(int), (p->num_rows)*sizeof(int), fp);
-
-  /* TODO: how to Find a appropriate Frame using rid.first_rid_page and insert here */
-    return nullptr;
+    return evictedFrame;
 }
+// std::string file_name = file_path + rid.table_name + "_" + std::to_string(rid.first_rid_page_range) + "_" + std::to_string(rid.first_rid_page) + "_" + std::to_string(column) + ".dat";
+// FILE* fp = std::fopen(file_name.c_str(), "r");
+// if (!fp) {
+//   throw std::invalid_argument("File with given RID does not exist");
+// }
+// Page* p = new Page();
+// fread(&(p->num_rows), sizeof(int), 1, fp);
+// fread(p->data, sizeof(int), (p->num_rows)*sizeof(int), fp);
+
+/* TODO: how to Find a appropriate Frame using rid.first_rid_page and insert here */
 
 void BufferPool::insert_new_page(const RID& rid, const int& column, int value) {
   Page* p = new Page();
@@ -205,32 +203,24 @@ Frame* BufferPool::evict(const RID& rid){ //return the frame that was evicted
 void BufferPool::write_back(Frame* frame){
   // Use fastformat library instead of to_string
 
-  bool isBasePage = frame->first_rid_page > 0;
-  int firstId = frame->first_rid_page;
-  int lastId = isBasePage ?
-		  firstId + frame->page->num_rows - 1
-		  : firstId - frame->page->num_rows + 1;
+	std::string path = "..\\Disk\\" + frame->table_name
+				+ "_" + std::to_string(frame->first_rid_page_range)
+				+ "_" + std::to_string(frame->first_rid_page)
+				+"_" + std::to_string(frame->column) + ".dat";
 
-  std::string logicalPath =
-		     frame->table_name + "_"
-             + std::to_string((int)isBasePage) + "_"
-			 + std::to_string(firstId) + "_"
-			 + std::to_string(lastId) + "_"
-			 + std::to_string(frame->column);
+	int fd = open((const char*)path.c_str(), O_RDWR);
 
-  std::string physicalPath = "..\\Disk\\" + logicalPath + ".dat";
+	if(fd != -1){
+		write(fd,frame->page->data,frame->page->num_rows* sizeof(int));
 
-  std::ofstream fileStream(physicalPath,
-		  std::ofstream::out | std::ofstream::binary);
+		float nan = std::nan("");
+		write(fd,&nan,sizeof(float));
 
-  if(!fileStream.is_open()){
-	  dbMetadataOut.seekp(std::ios::end);
-	  dbMetadataOut.write((char*)logicalPath.c_str(),logicalPath.size());
-	  dbMetadataOut.write((char*)&METADATA_DELIMITER, sizeof(char));
-  }
+		close(fd);
+	}
 
-  fileStream.write((char*)frame->page->data,PAGE_SIZE*sizeof(int));
-  fileStream.close();
+   frame->valid = false;
+}
 
 //
 //  std::string file_name = file_path + frame->table_name + "_" + std::to_string(frame->first_rid_page_range) + "_" + std::to_string(frame->first_rid_page) + "_" + std::to_string(frame->column) + ".dat";
@@ -242,8 +232,6 @@ void BufferPool::write_back(Frame* frame){
 //  fwrite(frame->page->data, sizeof(int), PAGE_SIZE*sizeof(int), fp);
 //  // Write in num_rows also into page
 //  fclose(fp);
-  frame->valid = false;
-}
 
 void BufferPool::write_back_all (){
   Frame* current_frame = head;
@@ -280,21 +268,4 @@ void BufferPool::unpin (const RID& rid, const int& column) {
 Frame::Frame () {}
 
 Frame::~Frame () {}
-
-/*
- * Returns file names in metadata
- */
-std::vector<std::string>getFileNames(){
-	dbMetadataIn.seekg(std::ios::end);
-	size_t sizeOfFile = dbMetadataIn.tellg();
-
-	dbMetadataIn.seekg(0,std::ios::beg);
-
-	char nameData[sizeOfFile + 1];
-	nameData[sizeOfFile + 1]= 0;
-
-	dbMetadataIn.read((char*)&nameData,sizeOfFile);
-
-	return{Toolkit::tokenize({nameData},METADATA_DELIMITER)};
-}
 
