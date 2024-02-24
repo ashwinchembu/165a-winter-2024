@@ -22,6 +22,8 @@ public:
     RID (int i) : id(i) {};
     RID (int i, int k, int j, int l, std::string s) : id(i), first_rid_page_range(k), first_rid_page(j), offset(l), table_name(s) {};
     const bool check_schema (const int& column_num) const;
+    int write(FILE* fp);
+    int read(FILE* fp);
     // const int column_with_one () const;
     int id;
     int first_rid_page_range = 0;

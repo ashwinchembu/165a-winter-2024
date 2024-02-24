@@ -79,3 +79,10 @@ const bool RID::check_schema (const int& column_num) const {
 //     }
 //     return -1;
 // }
+
+int RID::write(FILE* fp) {
+
+}
+int RID::read(FILE* fp) {
+
+}

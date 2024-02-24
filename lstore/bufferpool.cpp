@@ -121,16 +121,17 @@ Frame* BufferPool::load (const RID& rid, const int& column){ //return the index 
 	if(fd != -1){
 		Page* p = new Page();
 		float buffer;
-
-		while(true){
-			read(fd, &buffer, sizeof(float));
-
-			if(std::isnan(buffer)){
-				break;
-			}
-
-			p->write((int)buffer);
-		}
+        read(fd, &(p->num_rows), sizeof(int));
+        read(fd, p->data, p->num_rows * sizeof(int));
+		// while(true){
+		// 	read(fd, &buffer, sizeof(float));
+  //
+		// 	if(std::isnan(buffer)){
+		// 		break;
+		// 	}
+  //
+		// 	p->write((int)buffer);
+		// }
 
 		close(fd);
 
@@ -211,10 +212,11 @@ void BufferPool::write_back(Frame* frame){
 	int fd = open((const char*)path.c_str(), O_RDWR);
 
 	if(fd != -1){
+        write(fd,&(frame->page->num_rows),sizeof(int));
 		write(fd,frame->page->data,frame->page->num_rows* sizeof(int));
 
-		float nan = std::nan("");
-		write(fd,&nan,sizeof(float));
+		// float nan = std::nan("");
+		// write(fd,&nan,sizeof(float));
 
 		close(fd);
 	}
