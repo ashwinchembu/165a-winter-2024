@@ -81,8 +81,18 @@ const bool RID::check_schema (const int& column_num) const {
 // }
 
 int RID::write(FILE* fp) {
-
+	fwrite(&id, sizeof(int), 1, fp);
+	fwrite(&first_rid_page, sizeof(int), 1, fp);
+	fwrite(&first_rid_page_range, sizeof(int), 1, fp);
+	fwrite(&offset, sizeof(int), 1, fp);
+	fwrite(&schema_encoding, sizeof(int), 1, fp);
+	return 0;
 }
 int RID::read(FILE* fp) {
-
+	fread(&id, sizeof(int), 1, fp);
+	fread(&first_rid_page, sizeof(int), 1, fp);
+	fread(&first_rid_page_range, sizeof(int), 1, fp);
+	fread(&offset, sizeof(int), 1, fp);
+	fread(&schema_encoding, sizeof(int), 1, fp);
+	return 0;
 }

@@ -305,7 +305,10 @@ int PageRange::write(FILE* fp) {
     fwrite(&base_last, sizeof(int), 1, fp);
     fwrite(&tail_last, sizeof(int), 1, fp);
     // Will break. Look for alternative of string.
-    fwrite(pages.data(), sizeof(pages[0]), tail_last, fp);
+    // fwrite(pages.data(), sizeof(pages[0]), tail_last, fp);
+    for (int i = 0; i <tail_last; i++) {
+        pages[i].write(fp);
+    }
     base_last_wasfull = (num_slot_used_base == PAGE_SIZE);
     tail_last_wasfull = (num_slot_used_tail == PAGE_SIZE);
     fwrite(&num_column, sizeof(int), 1, fp);
@@ -320,7 +323,11 @@ int PageRange::read(FILE* fp) {
     fread(&base_last, sizeof(int), 1, fp);
     fread(&tail_last, sizeof(int), 1, fp);
     // Will break. Look for alternative of string.
-    fread(pages.data(), sizeof(pages[0]), tail_last, fp);
+    // fread(pages.data(), sizeof(pages[0]), tail_last, fp);
+    pages.resize(tail_last);
+    for (int i = 0; i <tail_last; i++) {
+        pages[i].read(fp);
+    }
     base_last_wasfull = (num_slot_used_base == PAGE_SIZE);
     tail_last_wasfull = (num_slot_used_tail == PAGE_SIZE);
     fread(&num_column, sizeof(int), 1, fp);
