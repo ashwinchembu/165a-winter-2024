@@ -14,6 +14,8 @@
 #include "bufferpool.h"
 #include "../Toolkit.h"
 
+BufferPool buffer_pool(BUFFER_POOL_SIZE);
+
 BufferPool::BufferPool (const int& num_pages) : bufferpool_size(num_pages){
   head = new Frame; //create head
   hash_vector.push_back(head); //head will be the first hash range beginning

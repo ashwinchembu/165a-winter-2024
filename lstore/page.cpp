@@ -9,99 +9,99 @@
 #include "table.h"
 #include "../DllConfig.h"
 
-COMPILER_SYMBOL int Page_PAGE_SIZE(int* obj){
-	return  ((Page*)obj)->PAGE_SIZE;
-}
-
-COMPILER_SYMBOL int Page_NUM_SLOTS(int* obj){
-	return  ((Page*)obj)->NUM_SLOTS;
-}
-
-COMPILER_SYMBOL int Page_num_rows(int* obj){
-	return  ((Page*)obj)->num_rows;
-}
-
-// COMPILER_SYMBOL int* Page_availability(int* obj){
-// 	return  ((Page*)obj)->availability;
-// }
-
-COMPILER_SYMBOL int* Page_constructor(){
-	return (int*)(new Page());
-}
-
-COMPILER_SYMBOL void Page_destructor(int* obj){
-	Page* ref = ((Page*)obj);
-	delete ref;
-}
-
-COMPILER_SYMBOL bool Page_has_capacity(int* obj){
-	return  ((Page*)obj)->has_capacity();
-}
-
-COMPILER_SYMBOL int* Page_write(int* obj, int value){
-	return  ((Page*)obj)->write(value);
-}
-
-COMPILER_SYMBOL int* Page_data(int* obj){
-	return  ((Page*)obj)->data;
-}
-
-COMPILER_SYMBOL int PageRange_PAGE_SIZE(int* obj){
-	return ((PageRange*)obj)->PAGE_SIZE;
-}
-
-COMPILER_SYMBOL int PageRange_NUM_SLOTS(int* obj){
-	return ((PageRange*)obj)->NUM_SLOTS;
-}
-
-COMPILER_SYMBOL int PageRange_num_slot_left(int* obj){
-	return ((PageRange*)obj)->num_slot_left;
-}
-
-COMPILER_SYMBOL int PageRange_base_last(int* obj){
-	return ((PageRange*)obj)->base_last;
-}
-
-COMPILER_SYMBOL int PageRange_tail_last(int* obj){
-	return ((PageRange*)obj)->tail_last;
-}
-
-COMPILER_SYMBOL int PageRange_num_column(int* obj){
-	return ((PageRange*)obj)->num_column;
-}
-
-COMPILER_SYMBOL int* PageRange_constructor(const int new_rid, int* columns){
-	std::vector<int>* cols = (std::vector<int>*)columns;
-	return (int*)(new PageRange(new_rid,*cols));
-}
-
-COMPILER_SYMBOL void PageRange_destructor(int* obj){
-	delete ((PageRange*)obj);
-}
-
-COMPILER_SYMBOL int* PageRange_page_range(int* obj){
-	PageRange* ref = (PageRange*)obj;
-
-	return (int*)(&(ref->page_range));
-}
-
-COMPILER_SYMBOL int* PageRange_insert(int* obj, const int new_rid, int*columns){
-	PageRange* ref = (PageRange*)obj;
-	std::vector<int>* cols = (std::vector<int>*)columns;
-	return (int*)(new RID(ref->insert(new_rid,*cols)));
-}
-
-COMPILER_SYMBOL int* PageRange_update(int* obj, int* rid, const int rid_new, int*columns){
-	PageRange* ref = (PageRange*)obj;
-	std::vector<int>* cols = (std::vector<int>*)columns;
-	RID* r = (RID*)rid;
-
-	return (int*)(new RID(ref->update(*r,rid_new,*cols)));
-}
-
-COMPILER_SYMBOL bool PageRange_base_has_capacity(int* obj){
-	return ((PageRange*)obj)->base_has_capacity();
-}
+//COMPILER_SYMBOL int Page_PAGE_SIZE(int* obj){
+//	return  ((Page*)obj)->PAGE_SIZE;
+//}
+//
+//COMPILER_SYMBOL int Page_NUM_SLOTS(int* obj){
+//	return  ((Page*)obj)->NUM_SLOTS;
+//}
+//
+//COMPILER_SYMBOL int Page_num_rows(int* obj){
+//	return  ((Page*)obj)->num_rows;
+//}
+//
+//// COMPILER_SYMBOL int* Page_availability(int* obj){
+//// 	return  ((Page*)obj)->availability;
+//// }
+//
+//COMPILER_SYMBOL int* Page_constructor(){
+//	return (int*)(new Page());
+//}
+//
+//COMPILER_SYMBOL void Page_destructor(int* obj){
+//	Page* ref = ((Page*)obj);
+//	delete ref;
+//}
+//
+//COMPILER_SYMBOL bool Page_has_capacity(int* obj){
+//	return  ((Page*)obj)->has_capacity();
+//}
+//
+//COMPILER_SYMBOL int* Page_write(int* obj, int value){
+//	return  ((Page*)obj)->write(value);
+//}
+//
+//COMPILER_SYMBOL int* Page_data(int* obj){
+//	return  ((Page*)obj)->data;
+//}
+//
+//COMPILER_SYMBOL int PageRange_PAGE_SIZE(int* obj){
+//	return ((PageRange*)obj)->PAGE_SIZE;
+//}
+//
+//COMPILER_SYMBOL int PageRange_NUM_SLOTS(int* obj){
+//	return ((PageRange*)obj)->NUM_SLOTS;
+//}
+//
+//COMPILER_SYMBOL int PageRange_num_slot_left(int* obj){
+//	return ((PageRange*)obj)->num_slot_left;
+//}
+//
+//COMPILER_SYMBOL int PageRange_base_last(int* obj){
+//	return ((PageRange*)obj)->base_last;
+//}
+//
+//COMPILER_SYMBOL int PageRange_tail_last(int* obj){
+//	return ((PageRange*)obj)->tail_last;
+//}
+//
+//COMPILER_SYMBOL int PageRange_num_column(int* obj){
+//	return ((PageRange*)obj)->num_column;
+//}
+//
+//COMPILER_SYMBOL int* PageRange_constructor(const int new_rid, int* columns){
+//	std::vector<int>* cols = (std::vector<int>*)columns;
+//	return (int*)(new PageRange(new_rid,*cols));
+//}
+//
+//COMPILER_SYMBOL void PageRange_destructor(int* obj){
+//	delete ((PageRange*)obj);
+//}
+//
+//COMPILER_SYMBOL int* PageRange_page_range(int* obj){
+//	PageRange* ref = (PageRange*)obj;
+//
+//	return (int*)(&(ref->page_range));
+//}
+//
+//COMPILER_SYMBOL int* PageRange_insert(int* obj, const int new_rid, int*columns){
+//	PageRange* ref = (PageRange*)obj;
+//	std::vector<int>* cols = (std::vector<int>*)columns;
+//	return (int*)(new RID(ref->insert(new_rid,*cols)));
+//}
+//
+//COMPILER_SYMBOL int* PageRange_update(int* obj, int* rid, const int rid_new, int*columns){
+//	PageRange* ref = (PageRange*)obj;
+//	std::vector<int>* cols = (std::vector<int>*)columns;
+//	RID* r = (RID*)rid;
+//
+//	return (int*)(new RID(ref->update(*r,rid_new,*cols)));
+//}
+//
+//COMPILER_SYMBOL bool PageRange_base_has_capacity(int* obj){
+//	return ((PageRange*)obj)->base_has_capacity();
+//}
 
 PageRange::PageRange (RID& new_rid, const std::vector<int>& columns) {
     new_rid.offset = 0;

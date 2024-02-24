@@ -7,41 +7,6 @@
 #include <vector>
 #include <fstream>
 
-/*
- * The streams for the metadata database file.
- *
- * -The metadata is in the format:
- *
- *  Filename Filename Filename Filename Filename....
- */
-std::ofstream dbMetadataOut("../Disk/DiskMetadata.dat",
-		std::ofstream::in | std::ofstream::binary);
-
-std::ifstream dbMetadataIn("../Disk/DiskMetadata.dat",
-		std::ifstream::in | std::ifstream::binary);
-
-
-/*
- * delimiter used to separate path names in metadata
- */
-std::string METADATA_DELIMITER = " ";
-
-/*The logical offsets of file data in each file
- *path.
- *
- * Paths are:
- * tablename_isbasepage_startrid_endrid_column
-
- * paths are stored in metadata without the file extension(.dat)
- * or parent directory.
- *
- * */
-int PATH_TABLE_NAME_OFFSET = 0;
-int PATH_IS_BASEPAGE_OFFSET = 1;
-int PATH_START_RID_OFFSET = 2;
-int PATH_END_RID_OFFSET = 3;
-int PATH_COLUMN_OFFSET = 4;
-
 class Frame {
 public:
     Frame ();

@@ -64,6 +64,13 @@ COMPILER_SYMBOL int* Database_tables(int* obj){
 	return(int*)(&(self->tables));
 }
 
+COMPILER_SYMBOL void Database_open(int* obj,char* path){
+	((Database*)obj)->open(path);
+}
+
+COMPILER_SYMBOL void Database_close(int* obj){
+	((Database*)obj)->close();
+}
 
 
 void Database::open(const std::string& path) {
