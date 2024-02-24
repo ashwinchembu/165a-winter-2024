@@ -51,7 +51,7 @@ int BufferPool::get (const RID& rid, const int& column) {
     if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
       found = load(rid, column);
     }
-    update_ages(found, hash_vector[(rid.first_rid_page / 4096) % 4)];
+    update_ages(found, hash_vector[hash_fun(rid.first_rid_page)];
     return *(found->page->data + rid.offset * size_of(int)); //return the value we want
 }
 
@@ -61,7 +61,7 @@ void BufferPool::set (const RID& rid, const int& column, int value){
     if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
       found = load(rid, column);
     }
-    update_ages(found, hash_vector[(rid.first_rid_page / 4096) % 4)];
+    update_ages(found, hash_vector[hash_fun(rid.first_rid_page)];
     *(found->page->data + rid.offset * size_of(int)) = value;
     found->dirty = true; //the page has been modified
     unpin(rid, column);
@@ -90,12 +90,8 @@ void BufferPool::update_ages(Frame* just_accessed, Frame* range_begin){ //change
     if(just_accessed->next != nullptr){ //if just accessed was not tail
       just_accessed->next->prev = just_accessed->prev;
     }
-    just_accessed->next = range_begin; //just_accessed becomes the new range beginning
-    if(range_begin != nullptr){ //if range_begin was not head
-      just_accessed->prev = range_begin->prev;
-    } else {
-      just_accessed->prev = nullptr;
-    }
+    just_accessed->prev = range_begin->prev; //just_accessed becomes the new range beginning
+    just_accessed->next = range_begin;
     range_begin->prev = just_accessed;
     range_begin = just_accessed;
   }
@@ -103,9 +99,6 @@ void BufferPool::update_ages(Frame* just_accessed, Frame* range_begin){ //change
 }
 
 // Called by get and set
-   // There should be an option to not actually read file from storage, which we use it when we make a new file and write things in.
-   // Check the availability of the pool. There should be some identifier.
-   // Find the file, get the specific part and load into a memory. For now, I'm thinking about saving per table.
 Frame* BufferPool::load (const RID& rid, const int& column){ //return the frame that the page was loaded into
   std::string path = "..\\Disk\\" + rid.table_name
       + "_" + std::to_string(rid.first_rid_page_range)
@@ -114,6 +107,7 @@ Frame* BufferPool::load (const RID& rid, const int& column){ //return the frame 
 
   int fd = open((const char*)path.c_str(), O_RDWR);
 
+  Frame* frame = nullptr;
   if(fd != -1){
     Page* p = new Page();
     float buffer;
@@ -140,7 +134,8 @@ Frame* BufferPool::load (const RID& rid, const int& column){ //return the frame 
 
 Frame* BufferPool::insert_into_frame(const RID& rid, const int& column, Page* page){ //return the frame that the page was placed into
   Frame* frame;
-  int hash = (rid.first_rid_page / 4096) % 4; //determine correct hash range
+  int hash = hash_fun(rid.first_rid_page); //determine correct hash range
+
   if(frame_directory[hash] == bufferpool_size / NUM_BUFFERPOOL_HASH_PARTITIONS)){ //if hash range is full
     frame = evict(rid);
   } else{ //find empty frame to fill
@@ -159,6 +154,7 @@ Frame* BufferPool::insert_into_frame(const RID& rid, const int& column, Page* pa
       throw std::invalid_argument("conflict over whether hash range is full or not");
     }
   }
+
   frame->page = page;
   frame->first_rid_page = rid.first_rid_page;
   frame->table_name = rid.table_name;
@@ -184,14 +180,14 @@ void BufferPool::insert_new_page(const RID& rid, const int& column, const int& v
   Page* page;
   *(page->data + rid.offset * size_of(int)) = value;
   Frame* frame = insert_into_frame(rid, column, page); //insert the page into a frame in the bufferpool
-  update_ages(frame, hash_vector[(rid.first_rid_page / 4096) % 4)];
+  update_ages(frame, hash_vector[hash_fun(rid.first_rid_page)];
   frame->dirty = true; //make sure data will be written back to disk
   unpin(rid, column);
   return;
 }
 
 Frame* BufferPool::evict(const RID& rid){ //return the frame that was evicted
-  int hash = (rid.first_rid_page / 4096) % 4; //determine correct hash range
+  int hash = hash_fun(rid.first_rid_page); //determine correct hash range
   Frame* range_begin = hash_vector[hash]; //beginning of hash range
   Frame* range_end = (hash == hash_vector.size()) ? tail : hash_vector[hash + 1]; //end of hash range
 
