@@ -148,6 +148,8 @@ bool PageRange::base_has_capacity () const {
     // Lazy evaluation
 }
 
+PageRange::~PageRange(){}
+
 /***
  *
  * Insert a record at the end of base pages
