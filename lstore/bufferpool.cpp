@@ -13,7 +13,6 @@
 #include "bufferpool.h"
 #include "../Toolkit.h"
 
-void addPageToDisk(RID rid,int column);
 std::vector<std::string>getFileNames();
 
 BufferPool::BufferPool (const int& num_pages) : bufferpool_size(num_pages){
@@ -131,11 +130,9 @@ Frame* BufferPool::load (const RID& rid, const int& column){ //return the index 
 			 (isBasePage && rid.id > 0
 			      && rid.id >= startRid && rid.id <= endRid)){
 
-             std::string path("../Disk/");
-             path.append(fileNames[i])
-                 .append(".dat");
+             std::string physicalPath = "..\\Disk\\" + fileNames[i] + ".dat";
 
-		     std::ifstream ifs(path,
+		     std::ifstream ifs(physicalPath,
 		             std::ifstream::in | std::ofstream::binary);
 
 		     Frame* frame = new Frame();
@@ -207,12 +204,44 @@ Frame* BufferPool::evict(const RID& rid){ //return the frame that was evicted
 
 void BufferPool::write_back(Frame* frame){
   // Use fastformat library instead of to_string
-  std::string file_name = file_path + frame->table_name + "_" + std::to_string(frame->first_rid_page_range) + "_" + std::to_string(frame->first_rid_page) + "_" + std::to_string(frame->column) + ".dat";
-  FILE* fp = fopen(file_name.c_str(), "w");
-  fwrite(&(frame->page->num_rows), sizeof(int), 1, fp);
-  fwrite(frame->page->data, sizeof(int), PAGE_SIZE*sizeof(int), fp);
-  // Write in num_rows also into page
-  fclose(fp);
+
+  bool isBasePage = frame->first_rid_page > 0;
+  int firstId = frame->first_rid_page;
+  int lastId = isBasePage ?
+		  firstId + frame->page->num_rows - 1
+		  : firstId - frame->page->num_rows + 1;
+
+  std::string logicalPath =
+		     frame->table_name + "_"
+             + std::to_string((int)isBasePage) + "_"
+			 + std::to_string(firstId) + "_"
+			 + std::to_string(lastId) + "_"
+			 + std::to_string(frame->column);
+
+  std::string physicalPath = "..\\Disk\\" + logicalPath + ".dat";
+
+  std::ofstream fileStream(physicalPath,
+		  std::ofstream::out | std::ofstream::binary);
+
+  if(!fileStream.is_open()){
+	  dbMetadataOut.seekp(std::ios::end);
+	  dbMetadataOut.write((char*)logicalPath.c_str(),logicalPath.size());
+	  dbMetadataOut.write((char*)&METADATA_DELIMITER, sizeof(char));
+  }
+
+  fileStream.write((char*)frame->page->data,PAGE_SIZE*sizeof(int));
+  fileStream.close();
+
+//
+//  std::string file_name = file_path + frame->table_name + "_" + std::to_string(frame->first_rid_page_range) + "_" + std::to_string(frame->first_rid_page) + "_" + std::to_string(frame->column) + ".dat";
+//
+//
+//
+//  FILE* fp = fopen(file_name.c_str(), "w");
+//  fwrite(&(frame->page->num_rows), sizeof(int), 1, fp);
+//  fwrite(frame->page->data, sizeof(int), PAGE_SIZE*sizeof(int), fp);
+//  // Write in num_rows also into page
+//  fclose(fp);
   frame->valid = false;
 }
 
@@ -268,33 +297,4 @@ std::vector<std::string>getFileNames(){
 
 	return{Toolkit::tokenize({nameData},METADATA_DELIMITER)};
 }
-
-void addPageToDisk(RID rid, int column){
-		std::string logicalPath(rid.table_name);
-		logicalPath.append("_")
-		           .append(rid.id < 0 ? "0" : "1")
-			   .append("_")
-			   .append(std::to_string(rid.id))
-			   .append("_")
-			   .append(std::to_string(rid.id))
-			   .append("_")
-			   .append(std::to_string(column));
-
-
-		dbMetadataOut.seekp(std::ios::end);
-		dbMetadataOut.write((char*)logicalPath.c_str(),logicalPath.size());
-		dbMetadataOut.write((char*)&METADATA_DELIMITER, sizeof(char));
-
-		std::string physicalPath("../Disk/");
-		physicalPath.append(logicalPath)
-					.append(".dat");
-
-		creat(physicalPath.c_str(),0666);
-
-		/*
-		 * todo: have this write data or we delete
-		 * the function and do something else
-		 */
-}
-
 
