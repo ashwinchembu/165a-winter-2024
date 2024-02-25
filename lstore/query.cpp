@@ -116,7 +116,7 @@ std::vector<Record> Query::select_version(const int& search_key, const int& sear
             std::vector<int> record_columns(table->num_columns);
             for(int j = 0; j < table->num_columns; j++){ //transfer columns from desired version into record object
                 if(projected_columns_index[j]){
-                    record_columns[j] = buffer_pool.get(rid, i + NUM_METADATA_COLUMNS);
+                    record_columns[j] = buffer_pool.get(rid, j + NUM_METADATA_COLUMNS);
                 }
             }
             records.push_back(Record(rids[i], search_key, record_columns)); //add a record with RID of base page, value of primary key, and contents of desired version
