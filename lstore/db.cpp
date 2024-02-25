@@ -87,6 +87,7 @@ Database::Database() {
 }
 
 Database::~Database() {
+	BufferPool buffer_pool(BUFFER_POOL_SIZE);
 	buffer_pool.~BufferPool();
 }
 
