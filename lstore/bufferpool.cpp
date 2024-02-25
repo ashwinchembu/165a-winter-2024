@@ -80,7 +80,7 @@ Frame* BufferPool::search(const RID& rid, const int& column){
   Frame* range_begin = hash_vector[hash]; //beginning of hash range
   Frame* range_end = (hash == hash_vector.size() - 1) ? tail : hash_vector[hash + 1]->prev; //end of hash range
   Frame* current_frame = range_begin; //iterate through range
-  while(current_frame != range_end){
+  while(current_frame != range_end->next){
     if(rid.id == 32769){
 
     std::cout << "Looking for " << rid.first_rid_page << ", found " << current_frame->first_rid_page << std::endl;
@@ -165,14 +165,14 @@ Frame* BufferPool::insert_into_frame(const RID& rid, const int& column, Page* pa
     Frame* range_end = (hash == hash_vector.size() - 1) ? tail : hash_vector[hash + 1]->prev; //end of hash range
 
     Frame* current_frame = range_begin; //iterate through range
-    while(current_frame != range_end){
+    while(current_frame != range_end->next){
       if(!current_frame->valid){ //frame is empty
         frame = current_frame;
         break;
       }
       current_frame = current_frame->next;
     }
-    if(current_frame == range_end){
+    if(current_frame == range_end->next){
       throw std::invalid_argument("conflict over whether hash range is full or not");
     }
   }
