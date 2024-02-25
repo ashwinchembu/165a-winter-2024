@@ -116,29 +116,38 @@ Frame* BufferPool::load (const RID& rid, const int& column){ //return the frame 
     + "_" + std::to_string(rid.first_rid_page)
     + "_" + std::to_string(column) + ".dat";
 
-  int fd = open((const char*)data_path.c_str(), O_RDWR);
-
-  Frame* frame = nullptr;
-  if(fd != -1){
-    Page* p = new Page();
-    // float buffer;
-    read(fd, &(p->num_rows), sizeof(int));
-    read(fd, p->data, p->num_rows * sizeof(int));
-    // while(true){
-    // 	read(fd, &buffer, sizeof(float));
-    //
-    // 	if(std::isnan(buffer)){
-    // 		break;
-    // 	}
-    //
-    // 	p->write((int)buffer);
-    // }
-
-    close(fd);
-
-    Frame* frame = insert_into_frame(rid, column, p); //insert the page into a frame in the bufferpool
-    frame->dirty = false; //frame has not yet been modified
+  FILE* fp = fopen((data_path).c_str(),"r");
+  if (!fp) {
+    throw std::invalid_argument("Couldn't open file " + data_path);
   }
+  Frame* frame = nullptr;
+  Page* p = new Page();
+  fread(&(p->num_rows), 1, sizeof(int), fp);
+  fread(p->data, p->num_rows, sizeof(int), fp);
+  fclose(fp);
+  Frame* frame = insert_into_frame(rid, column, p); //insert the page into a frame in the bufferpool
+  frame->dirty = false; //frame has not yet been modified
+  // int fd = open((const char*)data_path.c_str(), O_RDWR);
+  // if(fd != -1){
+  //   Page* p = new Page();
+  //   // float buffer;
+  //   read(fd, &(p->num_rows), sizeof(int));
+  //   read(fd, p->data, p->num_rows * sizeof(int));
+  //   // while(true){
+  //   // 	read(fd, &buffer, sizeof(float));
+  //   //
+  //   // 	if(std::isnan(buffer)){
+  //   // 		break;
+  //   // 	}
+  //   //
+  //   // 	p->write((int)buffer);
+  //   // }
+  //
+  //   close(fd);
+  //
+  //   Frame* frame = insert_into_frame(rid, column, p); //insert the page into a frame in the bufferpool
+  //   frame->dirty = false; //frame has not yet been modified
+  // }
 
   return frame;
 }
