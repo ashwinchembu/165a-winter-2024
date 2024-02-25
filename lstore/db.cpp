@@ -80,7 +80,7 @@ Database::Database() {
 //	BufferPool buffer_pool(BUFFER_POOL_SIZE);
 //	std::cout << "expr" << std::endl;
 
-	buffer_pool.path = file_path + "/Disk/";
+	//buffer_pool.path = file_path + "/Disk/";
 	// if (!std::filesystem::is_directory(file_path) || !std::filesystem::exists(file_path)) { // Check if src folder exists
 	// 	std::filesystem::create_directories(buffer_pool.path); // create src folder
 	// }
@@ -94,7 +94,7 @@ void Database::open(const std::string& path) {
 //	// path is relative to parent directory of this file
 //	std::cout<<"call87";
 //	BufferPool buffer_pool(BUFFER_POOL_SIZE);
-	buffer_pool.path = path + "/Disk/";
+	//buffer_pool.path = path + "/Disk/";
 	file_path = path;
 
 	// if (!std::filesystem::is_directory(buffer_pool.path) || !std::filesystem::exists(buffer_pool.path)) { // Check if src folder exists
