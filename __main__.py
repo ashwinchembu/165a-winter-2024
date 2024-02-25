@@ -12,7 +12,7 @@ keys = []
 insert_time_0 = process_time()
 for i in range(0, 1000000):
     # print("inserting ", i, "th value")
-    query.insert(906659671 + i, 93, 0, 0, 0)
+    query.insert(906659671 + i, 93, 5, 4, 2)
     keys.append(906659671 + i)
 insert_time_1 = process_time()
 
