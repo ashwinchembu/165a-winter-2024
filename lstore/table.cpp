@@ -175,9 +175,9 @@ Table::Table(const std::string& name, const int& num_columns, const int& key): n
 };
 
 Table::~Table() {
-    for(std::map<int, RID>::iterator iter=page_directory.begin(); iter!=page_directory.end(); iter++){
-		delete &(iter->second);
-    }
+  //   for(std::map<int, RID>::iterator iter=page_directory.begin(); iter!=page_directory.end(); iter++){
+		// delete &(iter->second);
+  //   }
 }
 
 /***
