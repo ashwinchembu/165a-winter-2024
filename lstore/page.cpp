@@ -320,7 +320,7 @@ int PageRange::read(FILE* fp) {
 }
 
 Page::Page() {
-    data = new int[PAGE_SIZE * 4];
+    data = new int[PAGE_SIZE];
     // for (int i = 0; i < PAGE_SIZE; i++) {
     //     availability[i] = 0;
     // }
