@@ -7,7 +7,7 @@ CC := g++
 SRC := __main__.cpp Toolkit.cpp lstore/db.cpp lstore/index.cpp lstore/page.cpp lstore/query.cpp lstore/RID.cpp lstore/table.cpp lstore/config.cpp lstore/bufferpool.cpp
 
 # Dependencies
-DEPS := lstore/db.h lstore/index.h lstore/page.h lstore/query.h lstore/RID.h lstore/table.h DllConfig.h toolkit.h lstore/bufferpool.h lstore/config.h
+DEPS := lstore/db.h lstore/index.h lstore/page.h lstore/query.h lstore/RID.h lstore/table.h DllConfig.h Toolkit.h lstore/bufferpool.h lstore/config.h
 
 # Header files
 INC := -I.
