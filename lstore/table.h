@@ -5,8 +5,8 @@
 #include <utility>
 #include <ctime>
 #include <string>
-#include "index.h"
-#include "page.h"
+// #include "index.h"
+// #include "page.h"
 #include "RID.h"
 #include <memory>
 #include <queue>
@@ -42,6 +42,7 @@ public:
 
     int num_columns; //number of columns of actual data, excluding the metadata
 
+    Table () {};
     Table(const std::string& name, const int& num_columns, const int& key);
 
     friend class Index;

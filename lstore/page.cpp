@@ -174,7 +174,6 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
         buffer_pool.insert_new_page(new_rid, RID_COLUMN, new_rid.id);
         buffer_pool.insert_new_page(new_rid, TIMESTAMP_COLUMN, 0);
         buffer_pool.insert_new_page(new_rid, SCHEMA_ENCODING_COLUMN, 0);
-        new_rid.schema_encoding = 0; // Comment out for future usage : cascading abort
         buffer_pool.insert_new_page(new_rid, BASE_RID_COLUMN, new_rid.id);
         buffer_pool.insert_new_page(new_rid, TPS, 0);
         for (int i = 0; i < num_column; i++) {
@@ -189,7 +188,6 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
         buffer_pool.set(new_rid, RID_COLUMN, new_rid.id);
         buffer_pool.set(new_rid, TIMESTAMP_COLUMN, 0);
         buffer_pool.set(new_rid, SCHEMA_ENCODING_COLUMN, 0);
-        new_rid.schema_encoding = 0; // Comment out for future usage : cascading abort
         buffer_pool.set(new_rid, BASE_RID_COLUMN, new_rid.id);
         buffer_pool.set(new_rid, TPS, 0);
         for (int i = 0; i < num_column; i++) {
@@ -244,7 +242,6 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
         buffer_pool.insert_new_page(rid_new, INDIRECTION_COLUMN, rid.id);
         buffer_pool.insert_new_page(rid_new, RID_COLUMN, rid_new.id);
         buffer_pool.insert_new_page(rid_new, TIMESTAMP_COLUMN, 0);
-        // rid_new.schema_encoding = 0; // Comment out for future usage : cascading abort
         buffer_pool.insert_new_page(rid_new, BASE_RID_COLUMN, rid.id);
         buffer_pool.insert_new_page(rid_new, TPS, 0);
         for (int i = 0; i < num_column; i++) {
@@ -284,12 +281,8 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
         num_slot_used_tail++;
     }
 
-    rid_new.schema_encoding = schema_encoding; // Comment out for future usage : cascading abort
     // Updating indirection column and schema encoding column for the base page
-    // rid.schema_encoding = (*((page_range[page_of_rid * num_column + SCHEMA_ENCODING_COLUMN].second)->data + offset*sizeof(int)) | schema_encoding); // Comment out for future usage : cascading abort
-    // *((page_range[page_of_rid * num_column + SCHEMA_ENCODING_COLUMN].second)->data + offset*sizeof(int)) = rid.schema_encoding;
     buffer_pool.pin(rid, SCHEMA_ENCODING_COLUMN);
-    rid.schema_encoding = buffer_pool.get(rid, SCHEMA_ENCODING_COLUMN) | schema_encoding;
     buffer_pool.set(rid, SCHEMA_ENCODING_COLUMN, rid.schema_encoding);
     buffer_pool.unpin(rid, SCHEMA_ENCODING_COLUMN);
     tail_last_wasfull = (num_slot_used_tail == PAGE_SIZE);

@@ -47,18 +47,18 @@
 
 
 
-/***
- *
- * Given a column number, this will check if the schema encoding of corresponding digit is 1 or not
- *
- * @param int column_num Column number to check schema encoding on.
- * @return Return 1 if schema encoding is 1, and return 0 if schema encoding is 0.
- *
- */
-const bool RID::check_schema (const int& column_num) const {
-    const int bin = 0b1 & (schema_encoding >> (column_num - 1));
-    return bin;
-}
+// /***
+//  *
+//  * Given a column number, this will check if the schema encoding of corresponding digit is 1 or not
+//  *
+//  * @param int column_num Column number to check schema encoding on.
+//  * @return Return 1 if schema encoding is 1, and return 0 if schema encoding is 0.
+//  *
+//  */
+// const bool RID::check_schema (const int& column_num) const {
+//     const int bin = 0b1 & (schema_encoding >> (column_num - 1));
+//     return bin;
+// }
 
 // /***
 //  *
@@ -84,7 +84,6 @@ int RID::write(FILE* fp) {
 	fwrite(&first_rid_page, sizeof(int), 1, fp);
 	fwrite(&first_rid_page_range, sizeof(int), 1, fp);
 	fwrite(&offset, sizeof(int), 1, fp);
-	fwrite(&schema_encoding, sizeof(int), 1, fp);
 	return 0;
 }
 int RID::read(FILE* fp) {
@@ -92,6 +91,5 @@ int RID::read(FILE* fp) {
 	fread(&first_rid_page, sizeof(int), 1, fp);
 	fread(&first_rid_page_range, sizeof(int), 1, fp);
 	fread(&offset, sizeof(int), 1, fp);
-	fread(&schema_encoding, sizeof(int), 1, fp);
 	return 0;
 }

@@ -76,23 +76,26 @@ COMPILER_SYMBOL void Database_close(int* obj){
 
 
 void Database::open(const std::string& path) {
+	// path is relative to parent directory of this file
 	BufferPool buffer_pool(BUFFER_POOL_SIZE);
-
-	read();
+	buffer_pool.path = path;
+	file_path = path;
+	read(path);
 };
 
 void Database::close() {
-	for (std::map<std::string, Table>::iterator itr = tables.begin(); itr != tables.end(); itr++) {
-		itr->second.merge();
-	}
+	// Comment out until merge is done.
+	// for (std::map<std::string, Table>::iterator itr = tables.begin(); itr != tables.end(); itr++) {
+	// 	itr->second.merge();
+	// }
 
 	write();
 
 	buffer_pool.~BufferPool();
 };
 
-void Database::read(){
-	FILE* fp = fopen("..//Disk//ProgramState.dat","r");
+void Database::read(const std::string& path){
+	FILE* fp = fopen(("../" + path + "/ProgramState.dat").c_str(),"r");
 	int numTables;
 	fread(&numTables,sizeof(int),1,fp);
 
@@ -111,7 +114,7 @@ void Database::read(){
 }
 
 void Database::write(){
-	FILE* fp = fopen("..//Disk//ProgramState.dat","w");
+	FILE* fp = fopen(("../" + file_path + "/ProgramState.dat").c_str(),"w");
 	int numTables = tables.size();
 
 	fwrite(&numTables,sizeof(int),1,fp);

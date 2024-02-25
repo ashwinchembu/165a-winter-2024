@@ -51,8 +51,8 @@ int BufferPool::get (const RID& rid, const int& column) {
     if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
       found = load(rid, column);
     }
-    update_ages(found, hash_vector[hash_fun(rid.first_rid_page)];
-    return *(found->page->data + rid.offset * size_of(int)); //return the value we want
+    update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
+    return *(found->page->data + rid.offset * sizeof(int)); //return the value we want
 }
 
 void BufferPool::set (const RID& rid, const int& column, int value){
@@ -61,8 +61,8 @@ void BufferPool::set (const RID& rid, const int& column, int value){
     if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
       found = load(rid, column);
     }
-    update_ages(found, hash_vector[hash_fun(rid.first_rid_page)];
-    *(found->page->data + rid.offset * size_of(int)) = value;
+    update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
+    *(found->page->data + rid.offset * sizeof(int)) = value;
     found->dirty = true; //the page has been modified
     unpin(rid, column);
     return;
@@ -100,12 +100,12 @@ void BufferPool::update_ages(Frame* just_accessed, Frame* range_begin){ //change
 
 // Called by get and set
 Frame* BufferPool::load (const RID& rid, const int& column){ //return the frame that the page was loaded into
-  std::string path = "..\\Disk\\" + rid.table_name
+  std::string data_path = "../" + path + file_path + rid.table_name
       + "_" + std::to_string(rid.first_rid_page_range)
       + "_" + std::to_string(rid.first_rid_page)
       + "_" + std::to_string(column) + ".dat";
 
-  int fd = open((const char*)path.c_str(), O_RDWR);
+  int fd = open((const char*)data_path.c_str(), O_RDWR);
 
   Frame* frame = nullptr;
   if(fd != -1){
@@ -133,10 +133,10 @@ Frame* BufferPool::load (const RID& rid, const int& column){ //return the frame 
 }
 
 Frame* BufferPool::insert_into_frame(const RID& rid, const int& column, Page* page){ //return the frame that the page was placed into
-  Frame* frame;
+  Frame* frame = nullptr;
   int hash = hash_fun(rid.first_rid_page); //determine correct hash range
 
-  if(frame_directory[hash] == bufferpool_size / NUM_BUFFERPOOL_HASH_PARTITIONS)){ //if hash range is full
+  if(frame_directory[hash] == bufferpool_size / NUM_BUFFERPOOL_HASH_PARTITIONS){ //if hash range is full
     frame = evict(rid);
   } else{ //find empty frame to fill
     Frame* range_begin = hash_vector[hash]; //beginning of hash range
@@ -178,9 +178,9 @@ Frame* BufferPool::insert_into_frame(const RID& rid, const int& column, Page* pa
 void BufferPool::insert_new_page(const RID& rid, const int& column, const int& value) {
   pin(rid, column);
   Page* page;
-  *(page->data + rid.offset * size_of(int)) = value;
+  *(page->data + rid.offset * sizeof(int)) = value;
   Frame* frame = insert_into_frame(rid, column, page); //insert the page into a frame in the bufferpool
-  update_ages(frame, hash_vector[hash_fun(rid.first_rid_page)];
+  update_ages(frame, hash_vector[hash_fun(rid.first_rid_page)]);
   frame->dirty = true; //make sure data will be written back to disk
   unpin(rid, column);
   return;
@@ -207,12 +207,12 @@ Frame* BufferPool::evict(const RID& rid){ //return the frame that was evicted
 }
 
 void BufferPool::write_back(Frame* frame){
-	std::string path = "..\\Disk\\" + frame->table_name
-				+ "_" + std::to_string(frame->first_rid_page_range)
-				+ "_" + std::to_string(frame->first_rid_page)
-				+"_" + std::to_string(frame->column) + ".dat";
+  std::string data_path = "../" + path + file_path + frame->table_name
+      + "_" + std::to_string(frame->first_rid_page_range)
+      + "_" + std::to_string(frame->first_rid_page)
+      + "_" + std::to_string(frame->column) + ".dat";
 
-	int fd = open((const char*)path.c_str(), O_RDWR);
+	int fd = open((const char*)data_path.c_str(), O_RDWR);
 
 	if(fd != -1){
         write(fd,&(frame->page->num_rows),sizeof(int));
@@ -239,15 +239,14 @@ void BufferPool::write_back(Frame* frame){
 //  fclose(fp);
 
 void BufferPool::write_back_all (){
-    Frame* current_frame = head;
-    while(current_frame != nullptr){ //iterate through entire bufferpool
-      if(current_frame->dirty && current_frame->valid){
-        write_back(current_frame);
-      }
-      current_frame = current_frame->next;
+  Frame* current_frame = head;
+  while(current_frame != nullptr){ //iterate through entire bufferpool
+    if(current_frame->dirty && current_frame->valid){
+      write_back(current_frame);
     }
     current_frame = current_frame->next;
   }
+  current_frame = current_frame->next;
   return;
 }
 

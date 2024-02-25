@@ -260,10 +260,12 @@ int Table::write(FILE* fp) {
     }
 
     index->write(fp);
-
-	for (std::shared_ptr<PageRange> pagerange : page_range) {
-		pagerange.get()->write(fp);
+	int num_page_range = page_range.size();
+	fwrite(&(num_page_range), sizeof(int), 1, fp);
+	for (int i = 0; i < num_page_range; i++) {
+		page_range[i].get()->write(fp);
 	}
+
 	return 0;
 }
 
@@ -291,10 +293,15 @@ int Table::read(FILE* fp) {
 
     index->read(fp);
 
-	name = value.table_name;
-	for (std::shared_ptr<PageRange> pagerange : page_range) {
-		pagerange.get()->write(fp);
+	page_range.clear();
+	int num_page_range = 0;
+	fread(&(num_page_range), sizeof(int), 1, fp);
+	for (int i = 0; i < num_page_range; i++) {
+		std::shared_ptr<PageRange>newPageRange{new PageRange()};
+		newPageRange.get()->read(fp);
+		page_range.push_back(newPageRange);
 	}
+
 	return 0;
 }
 

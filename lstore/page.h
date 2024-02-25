@@ -38,7 +38,7 @@ public:
     bool tail_last_wasfull = true;
     int num_column = 0;
     std::vector<RID> pages;
-
+    PageRange () {} // Never use this outside of loading saved data
     PageRange (RID& new_rid, const std::vector<int>& columns);
     // PageRange(const PageRange& other);
     ~PageRange();
