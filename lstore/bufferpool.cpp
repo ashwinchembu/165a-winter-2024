@@ -199,6 +199,7 @@ void BufferPool::insert_new_page(const RID& rid, const int& column, const int& v
 }
 
 Frame* BufferPool::evict(const RID& rid){ //return the frame that was evicted
+  std::cout << "eviction" << std::endl;
   size_t hash = hash_fun(rid.first_rid_page); //determine correct hash range
   Frame* range_begin = hash_vector[hash]; //beginning of hash range
   Frame* range_end = (hash == hash_vector.size() - 1) ? tail : hash_vector[hash + 1]; //end of hash range
