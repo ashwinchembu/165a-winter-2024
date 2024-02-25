@@ -77,6 +77,7 @@ COMPILER_SYMBOL void Database_close(int* obj){
 Database::Database() {
 	BufferPool buffer_pool(BUFFER_POOL_SIZE);
 	buffer_pool.path = file_path;
+	std::cout << "expr" << std::endl;
 }
 
 void Database::open(const std::string& path) {
