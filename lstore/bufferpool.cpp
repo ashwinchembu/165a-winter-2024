@@ -76,8 +76,8 @@ Frame* BufferPool::search(const RID& rid, const int& column){
 
   Frame* current_frame = range_begin; //iterate through range
   while(current_frame != range_end){
+    std::cout << "mewo" << std::endl;
     if ((current_frame->valid)) {
-      std::cout << "hello?" << std::endl;
       std::cout << rid.first_rid_page << " " << current_frame->first_rid_page << " " << column << " " << current_frame->column << std::endl;
       if(rid.first_rid_page == current_frame->first_rid_page && column == current_frame->column){
         return current_frame;
@@ -265,7 +265,6 @@ void BufferPool::pin (const RID& rid, const int& column) {
     found = load(rid, column);
   }
   (found->pin)++;
-  std::cout << found->pin << std::endl;
   return;
 }
 
