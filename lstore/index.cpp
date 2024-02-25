@@ -198,9 +198,9 @@ void Index::insert_index(int& rid, std::vector<int> columns) {
         auto itr = indices.find(i);
         if (itr != indices.end()) {
             itr->second.insert({columns[i], rid});
+    std::cout << "expr" << std::endl;
         }
     }
-            std::cout << "expr" << std::endl;
 
 }
 
