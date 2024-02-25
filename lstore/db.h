@@ -10,7 +10,6 @@
 class Database{
   public:
     Database();
-    ~Database() {buffer_pool.~BufferPool();};
     void open(const std::string& path);
     void close();
     Table create_table(const std::string& name, const int& num_columns, const int& key_index);

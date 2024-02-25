@@ -74,15 +74,15 @@ COMPILER_SYMBOL void Database_close(int* obj){
 	((Database*)obj)->close();
 }
 
-BufferPool buffer_pool(BUFFER_POOL_SIZE);
-
 Database::Database() {
+	BufferPool buffer_pool(BUFFER_POOL_SIZE);
 	buffer_pool.path = file_path;
 	std::cout << "expr" << std::endl;
 }
 
 void Database::open(const std::string& path) {
 	// path is relative to parent directory of this file
+	BufferPool buffer_pool(BUFFER_POOL_SIZE);
 	buffer_pool.path = path;
 	file_path = path;
 	// If the directory is empty then make new database.
@@ -94,10 +94,10 @@ void Database::close() {
 	// for (std::map<std::string, Table>::iterator itr = tables.begin(); itr != tables.end(); itr++) {
 	// 	itr->second.merge();
 	// }
-	buffer_pool.write_back_all();
+
 	write();
 
-	//buffer_pool.~BufferPool();
+	buffer_pool.~BufferPool();
 };
 
 void Database::read(const std::string& path){
