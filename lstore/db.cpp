@@ -82,6 +82,10 @@ Database::Database() {
 //	std::cout << "expr" << std::endl;
 }
 
+Database::~Database() {
+	buffer_pool.~BufferPool();
+}
+
 void Database::open(const std::string& path) {
 //	// path is relative to parent directory of this file
 //	std::cout<<"call87";
@@ -99,8 +103,7 @@ void Database::close() {
 	// }
 
 	write();
-
-	buffer_pool.~BufferPool();
+	buffer_pool.write_back_all();
 };
 
 void Database::read(const std::string& path){
