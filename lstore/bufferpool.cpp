@@ -23,7 +23,6 @@ BufferPool::BufferPool (const int& num_pages) : bufferpool_size(num_pages){
   frame_directory.push_back(0); //each hash range begins empty
 
   Frame* old_frame = head; //create number of frames according to bufferpool size
-  std::cout << "???" << std::endl;
   for(int i = 1; i < (bufferpool_size - 1); i++){
     Frame* new_frame = new Frame;
     old_frame->next = new_frame;
@@ -34,7 +33,6 @@ BufferPool::BufferPool (const int& num_pages) : bufferpool_size(num_pages){
     }
     old_frame = new_frame;
   }
-  std::cout << "???" << std::endl;
 
   tail = new Frame; //create tail
   old_frame->next = tail;
