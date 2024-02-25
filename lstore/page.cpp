@@ -162,6 +162,7 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
     // Get first rid of the page and offset
     // Find if the last base page has capacity for new record
     if (base_last_wasfull) {
+        std::cout << "expr" << std::endl;
         new_rid.offset = 0;
         new_rid.first_rid_page = new_rid.id;
         base_last_wasfull = false;
