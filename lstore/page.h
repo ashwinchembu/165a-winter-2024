@@ -11,7 +11,7 @@
 class Page {
 public:
     /// @TODO Move this to config file
-    const int NUM_SLOTS = PAGE_SIZE; // bytes
+    // const int NUM_SLOTS = PAGE_SIZE; // bytes
     int num_rows = 0;
     // int availability[NUM_SLOTS] = {0}; // 0 is empty, 1 is occupied, 2 is deleted.
     Page ();

@@ -332,7 +332,7 @@ int PageRange::read(FILE* fp) {
 
 Page::Page() {
     data = new int[PAGE_SIZE * 4];
-    // for (int i = 0; i < NUM_SLOTS; i++) {
+    // for (int i = 0; i < PAGE_SIZE; i++) {
     //     availability[i] = 0;
     // }
 }
@@ -349,7 +349,7 @@ Page::~Page() {
  *
  */
 const bool Page::has_capacity() const {
-    return(num_rows < NUM_SLOTS);
+    return(num_rows < PAGE_SIZE);
 }
 
 /***
@@ -362,7 +362,7 @@ const bool Page::has_capacity() const {
 int Page::write(const int& value) {
     int* insert = nullptr;
     // num_rows++;
-    // for (int location = 0; location < NUM_SLOTS; location++) {
+    // for (int location = 0; location < PAGE_SIZE; location++) {
     //     if (availability[location] == 0) {
     //         //insert on location
     //         int offset = location * sizeof(int); // Bytes from top of the page
@@ -389,7 +389,7 @@ int Page::write(const int& value) {
  */
 std::ostream& operator<<(std::ostream& os, const Page& p)
 {
-    for (int i = 0; i < p.NUM_SLOTS; i++) {
+    for (int i = 0; i < PAGE_SIZE; i++) {
         os << *(p.data + i*sizeof(int)) << " ";
     }
     return os;
