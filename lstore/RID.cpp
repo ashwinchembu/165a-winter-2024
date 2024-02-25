@@ -85,7 +85,6 @@ RID::RID (const RID& rhs) {
     first_rid_page = rhs.first_rid_page;
     offset = rhs.offset;
     table_name = rhs.table_name;
-	std::cout << "meow" << std::endl;
 }
 
 

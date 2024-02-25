@@ -20,7 +20,7 @@ public:
     // const int NUM_METADATA_COLUMNS = 6;
     RID () {};
     RID (const RID& rhs);
-    ~RID(){std::cout << "expr" << std::endl;}
+    ~RID(){}
     RID (int i) : id(i) {};
     // RID (int i, int k, int j, int l, std::string s) : id(i), first_rid_page_range(k), first_rid_page(j), offset(l), table_name(s) {};
     // const bool check_schema (const int& column_num) const;
