@@ -71,6 +71,7 @@ void BufferPool::set (const RID& rid, const int& column, int value){
   update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
   // *(found->page->data + rid.offset * sizeof(int)) = value;
   found->page->write(value);
+  std::cout << *(found->page) << std::endl;
   found->dirty = true; //the page has been modified
   unpin(rid, column);
   return;
