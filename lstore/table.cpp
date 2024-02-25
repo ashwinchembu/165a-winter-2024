@@ -249,11 +249,17 @@ int Table::write(FILE* fp) {
     fwrite(&num_update, sizeof(int), 1, fp);
     fwrite(&num_insert, sizeof(int), 1, fp);
     fwrite(&num_columns, sizeof(int), 1, fp);
-	// TODO Save table name here
+
+    char nameBuffer[128];
+    strcpy(nameBuffer,name.c_str());
+    fwrite(nameBuffer,128,1,fp);
+
     for(std::map<int, RID>::iterator iter=page_directory.begin(); iter!=page_directory.end(); iter++){
         fwrite(&(iter->first), sizeof(int), 1, fp);
         iter->second.write(fp);
     }
+
+    index->write(fp);
 
 	for (std::shared_ptr<PageRange> pagerange : page_range) {
 		pagerange.get()->write(fp);
@@ -267,17 +273,24 @@ int Table::read(FILE* fp) {
     fread(&num_update, sizeof(int), 1, fp);
     fread(&num_insert, sizeof(int), 1, fp);
     fread(&num_columns, sizeof(int), 1, fp);
-	// TODO Get table name here
+
+    char nameBuffer[128];
+    fread(nameBuffer,128,1,fp);
+    name = std::string(nameBuffer);
+
 	int num_element = num_insert + num_columns;
 	RID value;
 	int key;
+
     for(int i = 0; i < num_element; i++){
 		fread(&key, sizeof(int), 1, fp);
 		value.read(fp);
 		value.table_name = name;
 		page_directory[key] = value;
-		/// TODO Reconstruct index here.
     }
+
+    index->read(fp);
+
 	name = value.table_name;
 	for (std::shared_ptr<PageRange> pagerange : page_range) {
 		pagerange.get()->write(fp);
