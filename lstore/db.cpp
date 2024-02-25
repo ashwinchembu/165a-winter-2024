@@ -86,8 +86,8 @@ void Database::open(const std::string& path) {
 //	// path is relative to parent directory of this file
 //	std::cout<<"call87";
 //	BufferPool buffer_pool(BUFFER_POOL_SIZE);
-//	buffer_pool.path = path;
-//	file_path = path;
+	buffer_pool.path = path;
+	file_path = path;
 //	// If the directory is empty then make new database.
 	read(path);
 };
@@ -104,7 +104,7 @@ void Database::close() {
 };
 
 void Database::read(const std::string& path){
-	FILE* fp = fopen(std::string("../Disk/ProgramState.dat").c_str(),"r");
+	FILE* fp = fopen(("../" + path + "/ProgramState.dat").c_str(),"r
 
 
 	 fseek(fp, 0, SEEK_END);
@@ -135,7 +135,7 @@ void Database::read(const std::string& path){
 }
 
 void Database::write(){
-	FILE* fp = fopen(std::string("../Disk/ProgramState.dat").c_str(),"w");
+	FILE* fp = fopen(("../" + file_path + "/ProgramState.dat").c_str(),"w
 	int numTables = tables.size();
 
 	fwrite(&numTables,sizeof(int),1,fp);
