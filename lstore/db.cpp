@@ -74,6 +74,10 @@ COMPILER_SYMBOL void Database_close(int* obj){
 	((Database*)obj)->close();
 }
 
+Database::Database() {
+	BufferPool buffer_pool(BUFFER_POOL_SIZE);
+	buffer_pool.path = file_path;
+}
 
 void Database::open(const std::string& path) {
 	// path is relative to parent directory of this file
