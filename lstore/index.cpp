@@ -15,6 +15,7 @@
 #include "../DllConfig.h"
 #include "config.h"
 #include "bufferpool.h"
+#include <cmath>
 
 std::vector<int>ridBuffer;
 
@@ -216,6 +217,54 @@ void Index::update_index(int& rid, std::vector<int> columns, std::vector<int> ol
     }
 }
 
+int Index::write(FILE* fp){
+	int sz = indices.size();
+	fwrite(&sz,sizeof(int),1,fp);
+
+	for(auto& index : indices){
+		fwrite(&index.first,sizeof(int),1,fp);
+
+		sz = index.second.size();
+		fwrite(&sz,sizeof(int),1,fp);
+
+		for(auto& records : index.second){
+			fwrite(&records.first,sizeof(int),1,fp);
+			fwrite(&records.second,sizeof(int),1,fp);
+		}
+	}
+
+	return 0;
+}
+
+int Index::read(Table* container,FILE* fp){
+	table = container;
+
+	int totalIndices;
+	fread(&totalIndices,sizeof(int),1,fp);
+
+	for(int i=0;i<totalIndices;i++){
+		std::unordered_multimap<int, int>nextMap;
+
+		int index;
+		fread(&index,sizeof(int),1,fp);
+
+		int mapPairs;
+		fread(&mapPairs,sizeof(int),1,fp);
+
+		for(int j=0;j<mapPairs;j++){
+			int value;
+			int id;
+			fread(&value,sizeof(int),1,fp);
+			fread(&id,sizeof(int),1,fp);
+
+			nextMap.insert({value,id});
+		}
+
+		indices.insert({index,nextMap});
+	}
+
+	return 0;
+}
 
 void Index::setTable(Table* t){
     this->table = t;

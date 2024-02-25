@@ -25,6 +25,9 @@ public:
     void update_index(int& rid, std::vector<int> columns, std::vector<int> old_columns);
 
     void printData();
+
+   int write(FILE* fp);
+   int read(Table* container, FILE* fp);
 };
 
 #endif
