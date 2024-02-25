@@ -140,9 +140,11 @@ Frame* BufferPool::insert_into_frame(const RID& rid, const int& column, Page* pa
   if(frame_directory[hash] == bufferpool_size / NUM_BUFFERPOOL_HASH_PARTITIONS){ //if hash range is full
     frame = evict(rid);
   } else{ //find empty frame to fill
+    std::cout << "Error at 1\n";
     Frame* range_begin = (*(hash_vector[hash])); //beginning of hash range
+    std::cout << "Error at 2\n";
     Frame* range_end = (hash == hash_vector.size() - 1) ? tail : (*(hash_vector[hash + 1]))->prev; //end of hash range
-
+    std::cout << "Error at 3\n";
     Frame* current_frame = range_begin; //iterate through range
     while(current_frame != range_end->next){
       if(!current_frame->valid){ //frame is empty
