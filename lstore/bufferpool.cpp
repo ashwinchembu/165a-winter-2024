@@ -226,6 +226,9 @@ Frame* BufferPool::evict(const RID& rid){ //return the frame that was evicted
       if(current_frame->dirty && current_frame->valid){ //if dirty and valid write back to disk
         write_back(current_frame);
       }
+      if(rid.id == 32769){
+        std::cout << "Evicted " << std::endl;
+      }
       return current_frame;
     }
     current_frame = current_frame->prev;
