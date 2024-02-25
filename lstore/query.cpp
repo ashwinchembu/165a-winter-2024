@@ -86,7 +86,7 @@ bool Query::deleteRecord(const int& primary_key) {
 bool Query::insert(const std::vector<int>& columns) {
     // Return true if successful, false otherwise
     RID rid = table->insert(columns);
-    // table->index->insert_index(rid.id, columns);
+    table->index->insert_index(rid.id, columns);
     return rid.id;
 }
 
