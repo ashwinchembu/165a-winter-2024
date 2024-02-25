@@ -114,7 +114,6 @@ PageRange::PageRange (RID& new_rid, const std::vector<int>& columns) {
     buffer_pool.insert_new_page(new_rid, RID_COLUMN, new_rid.id);
     buffer_pool.insert_new_page(new_rid, TIMESTAMP_COLUMN, 0);
     buffer_pool.insert_new_page(new_rid, SCHEMA_ENCODING_COLUMN, 0);
-    new_rid.schema_encoding = 0; // Comment out for future usage : cascading abort
     buffer_pool.insert_new_page(new_rid, BASE_RID_COLUMN, new_rid.id);
     buffer_pool.insert_new_page(new_rid, TPS, 0);
     for (int i = 0; i < num_column; i++) {
@@ -283,7 +282,7 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
 
     // Updating indirection column and schema encoding column for the base page
     buffer_pool.pin(rid, SCHEMA_ENCODING_COLUMN);
-    buffer_pool.set(rid, SCHEMA_ENCODING_COLUMN, rid.schema_encoding);
+    buffer_pool.set(rid, SCHEMA_ENCODING_COLUMN, buffer_pool.get(rid, SCHEMA_ENCODING_COLUMN) | schema_encoding);
     buffer_pool.unpin(rid, SCHEMA_ENCODING_COLUMN);
     tail_last_wasfull = (num_slot_used_tail == PAGE_SIZE);
 

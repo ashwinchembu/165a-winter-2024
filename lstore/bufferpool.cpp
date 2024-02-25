@@ -39,7 +39,7 @@ BufferPool::BufferPool (const int& num_pages) : bufferpool_size(num_pages){
 }
 
 BufferPool::~BufferPool () {
-    write_back_all(); //make sure all unsaved data gets back to disk
+  write_back_all(); //make sure all unsaved data gets back to disk
 }
 
 int BufferPool::hash_fun(int x) {
@@ -47,29 +47,29 @@ int BufferPool::hash_fun(int x) {
 }
 
 int BufferPool::get (const RID& rid, const int& column) {
-    Frame* found = search(rid, column);
-    if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
-      found = load(rid, column);
-    }
-    update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
-    return *(found->page->data + rid.offset * sizeof(int)); //return the value we want
+  Frame* found = search(rid, column);
+  if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
+    found = load(rid, column);
+  }
+  update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
+  return *(found->page->data + rid.offset * sizeof(int)); //return the value we want
 }
 
 void BufferPool::set (const RID& rid, const int& column, int value){
-    pin(rid, column);
-    Frame* found = search(rid, column);
-    if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
-      found = load(rid, column);
-    }
-    update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
-    *(found->page->data + rid.offset * sizeof(int)) = value;
-    found->dirty = true; //the page has been modified
-    unpin(rid, column);
-    return;
+  pin(rid, column);
+  Frame* found = search(rid, column);
+  if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
+    found = load(rid, column);
+  }
+  update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
+  *(found->page->data + rid.offset * sizeof(int)) = value;
+  found->dirty = true; //the page has been modified
+  unpin(rid, column);
+  return;
 }
 
 Frame* BufferPool::search(const RID& rid, const int& column){
-  int hash = hash_fun(rid.first_rid_page); //perform hash on rid
+  size_t hash = hash_fun(rid.first_rid_page); //perform hash on rid
   Frame* range_begin = hash_vector[hash]; //beginning of hash range
   Frame* range_end = (hash == hash_vector.size()) ? tail : hash_vector[hash + 1]; //end of hash range
 
@@ -101,25 +101,25 @@ void BufferPool::update_ages(Frame* just_accessed, Frame* range_begin){ //change
 // Called by get and set
 Frame* BufferPool::load (const RID& rid, const int& column){ //return the frame that the page was loaded into
   std::string data_path = "../" + path + file_path + rid.table_name
-      + "_" + std::to_string(rid.first_rid_page_range)
-      + "_" + std::to_string(rid.first_rid_page)
-      + "_" + std::to_string(column) + ".dat";
+    + "_" + std::to_string(rid.first_rid_page_range)
+    + "_" + std::to_string(rid.first_rid_page)
+    + "_" + std::to_string(column) + ".dat";
 
   int fd = open((const char*)data_path.c_str(), O_RDWR);
 
   Frame* frame = nullptr;
   if(fd != -1){
     Page* p = new Page();
-    float buffer;
-        read(fd, &(p->num_rows), sizeof(int));
-        read(fd, p->data, p->num_rows * sizeof(int));
+    // float buffer;
+    read(fd, &(p->num_rows), sizeof(int));
+    read(fd, p->data, p->num_rows * sizeof(int));
     // while(true){
     // 	read(fd, &buffer, sizeof(float));
-  //
+    //
     // 	if(std::isnan(buffer)){
     // 		break;
     // 	}
-  //
+    //
     // 	p->write((int)buffer);
     // }
 
@@ -129,12 +129,12 @@ Frame* BufferPool::load (const RID& rid, const int& column){ //return the frame 
     frame->dirty = false; //frame has not yet been modified
   }
 
-    return frame;
+  return frame;
 }
 
 Frame* BufferPool::insert_into_frame(const RID& rid, const int& column, Page* page){ //return the frame that the page was placed into
   Frame* frame = nullptr;
-  int hash = hash_fun(rid.first_rid_page); //determine correct hash range
+  size_t hash = hash_fun(rid.first_rid_page); //determine correct hash range
 
   if(frame_directory[hash] == bufferpool_size / NUM_BUFFERPOOL_HASH_PARTITIONS){ //if hash range is full
     frame = evict(rid);
@@ -177,7 +177,7 @@ Frame* BufferPool::insert_into_frame(const RID& rid, const int& column, Page* pa
 
 void BufferPool::insert_new_page(const RID& rid, const int& column, const int& value) {
   pin(rid, column);
-  Page* page;
+  Page* page = new Page();
   *(page->data + rid.offset * sizeof(int)) = value;
   Frame* frame = insert_into_frame(rid, column, page); //insert the page into a frame in the bufferpool
   update_ages(frame, hash_vector[hash_fun(rid.first_rid_page)]);
@@ -187,7 +187,7 @@ void BufferPool::insert_new_page(const RID& rid, const int& column, const int& v
 }
 
 Frame* BufferPool::evict(const RID& rid){ //return the frame that was evicted
-  int hash = hash_fun(rid.first_rid_page); //determine correct hash range
+  size_t hash = hash_fun(rid.first_rid_page); //determine correct hash range
   Frame* range_begin = hash_vector[hash]; //beginning of hash range
   Frame* range_end = (hash == hash_vector.size()) ? tail : hash_vector[hash + 1]; //end of hash range
 
@@ -208,21 +208,21 @@ Frame* BufferPool::evict(const RID& rid){ //return the frame that was evicted
 
 void BufferPool::write_back(Frame* frame){
   std::string data_path = "../" + path + file_path + frame->table_name
-      + "_" + std::to_string(frame->first_rid_page_range)
-      + "_" + std::to_string(frame->first_rid_page)
-      + "_" + std::to_string(frame->column) + ".dat";
+    + "_" + std::to_string(frame->first_rid_page_range)
+    + "_" + std::to_string(frame->first_rid_page)
+    + "_" + std::to_string(frame->column) + ".dat";
 
-	int fd = open((const char*)data_path.c_str(), O_RDWR);
+  int fd = open((const char*)data_path.c_str(), O_RDWR);
 
-	if(fd != -1){
-        write(fd,&(frame->page->num_rows),sizeof(int));
-		write(fd,frame->page->data,frame->page->num_rows* sizeof(int));
+  if(fd != -1){
+    write(fd,&(frame->page->num_rows),sizeof(int));
+    write(fd,frame->page->data,frame->page->num_rows* sizeof(int));
 
-		// float nan = std::nan("");
-		// write(fd,&nan,sizeof(float));
+    // float nan = std::nan("");
+    // write(fd,&nan,sizeof(float));
 
-		close(fd);
-	}
+    close(fd);
+  }
 
   frame->valid = false; //frame is now empty
 }
