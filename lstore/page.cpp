@@ -331,7 +331,7 @@ int PageRange::read(FILE* fp) {
 }
 
 Page::Page() {
-    data = new int[PAGE_SIZE];
+    data = new int[PAGE_SIZE * 4];
     // for (int i = 0; i < NUM_SLOTS; i++) {
     //     availability[i] = 0;
     // }
