@@ -200,6 +200,8 @@ void Index::insert_index(int& rid, std::vector<int> columns) {
             itr->second.insert({columns[i], rid});
         }
     }
+            std::cout << "expr" << std::endl;
+
 }
 
 void Index::update_index(int& rid, std::vector<int> columns, std::vector<int> old_columns){

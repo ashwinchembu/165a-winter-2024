@@ -199,7 +199,6 @@ RID Table::insert(const std::vector<int>& columns) {
 		record.first_rid_page_range = (page_range.back().get())->pages[0].first_rid_page_range;
         (page_range.back().get())->insert(record, columns);
     }
-        std::cout << "expr" << std::endl;
 
     page_directory.insert({rid_id, record});
     return record;
