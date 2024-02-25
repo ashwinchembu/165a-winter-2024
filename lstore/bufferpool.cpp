@@ -40,6 +40,7 @@ BufferPool::BufferPool (const int& num_pages) : bufferpool_size(num_pages){
 }
 
 BufferPool::~BufferPool () {
+  std::cout << "destructor" << std::endl;
   write_back_all(); //make sure all unsaved data gets back to disk
 
   Frame* current_frame = head;
