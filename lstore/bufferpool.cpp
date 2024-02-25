@@ -41,6 +41,12 @@ BufferPool::BufferPool (const int& num_pages) : bufferpool_size(num_pages){
 
 BufferPool::~BufferPool () {
   write_back_all(); //make sure all unsaved data gets back to disk
+
+  Frame* current_frame = head;
+  while(current_frame != nullptr){ //iterate through entire bufferpool
+    current_frame = current_frame->next;
+    delete current_frame->prev;
+  }
 }
 
 int BufferPool::hash_fun(int x) {
@@ -249,7 +255,6 @@ void BufferPool::write_back_all (){
     }
     current_frame = current_frame->next;
   }
-  current_frame = current_frame->next;
   return;
 }
 
