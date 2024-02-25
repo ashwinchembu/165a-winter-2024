@@ -2,6 +2,7 @@
 #define RIDH
 #include <vector>
 #include <string>
+#include <iostream>
 
 // RID class contains everything associated with one record
 // This includes RID id number, pointers to each page including data and metadata
@@ -18,7 +19,7 @@ public:
     // const int TPS = 5;
     // const int NUM_METADATA_COLUMNS = 6;
     RID () {};
-    ~RID(){}
+    ~RID(){std::cout << "expr" << std::endl;}
     RID (int i) : id(i) {};
     // RID (int i, int k, int j, int l, std::string s) : id(i), first_rid_page_range(k), first_rid_page(j), offset(l), table_name(s) {};
     // const bool check_schema (const int& column_num) const;
