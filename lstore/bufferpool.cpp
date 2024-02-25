@@ -225,6 +225,9 @@ void BufferPool::write_back(Frame* frame){
     + "_" + std::to_string(frame->first_rid_page)
     + "_" + std::to_string(frame->column) + ".dat";
   std::cout << "Writing back to" << data_path << std::endl;
+  FILE* fp = fopen((data_path).c_str(),"w");
+  fwrite(&(frame->first_rid_page_range), 1, sizeof(int), fp);
+  fclose(fp);
   int fd = open((const char*)data_path.c_str(), O_RDWR);
 
   if(fd != -1){

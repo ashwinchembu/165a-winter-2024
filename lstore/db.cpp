@@ -107,7 +107,7 @@ void Database::close() {
 };
 
 void Database::read(const std::string& path){
-	FILE* fp = fopen(("../" + path + "/ProgramState.dat").c_str(),"r");
+	FILE* fp = fopen((path + "/ProgramState.dat").c_str(),"r");
 
 
 	 fseek(fp, 0, SEEK_END);
@@ -138,7 +138,7 @@ void Database::read(const std::string& path){
 }
 
 void Database::write(){
-	FILE* fp = fopen(("../" + file_path + "/ProgramState.dat").c_str(),"w");
+	FILE* fp = fopen((file_path + "/ProgramState.dat").c_str(),"w");
 	size_t numTables = tables.size();
 
 	fwrite(&numTables,sizeof(int),1,fp);
