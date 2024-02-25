@@ -181,6 +181,7 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
     } else {
         new_rid.offset = num_slot_used_base;
         new_rid.first_rid_page = pages[base_last].id;
+        std::cout << new_rid.first_rid_page << std::endl;
         buffer_pool.set(new_rid, INDIRECTION_COLUMN, new_rid.id);
         buffer_pool.set(new_rid, RID_COLUMN, new_rid.id);
         buffer_pool.set(new_rid, TIMESTAMP_COLUMN, 0);
