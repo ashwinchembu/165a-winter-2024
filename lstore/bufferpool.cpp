@@ -162,7 +162,7 @@ Frame* BufferPool::insert_into_frame(const RID& rid, const int& column, Page* pa
     frame = evict(rid);
   } else{ //find empty frame to fill
     Frame* range_begin = hash_vector[hash]; //beginning of hash range
-    Frame* range_end = (hash == hash_vector.size() - 1) ? tail : hash_vector[hash + 1]; //end of hash range
+    Frame* range_end = (hash == hash_vector.size() - 1) ? tail : hash_vector[hash + 1]->prev; //end of hash range
 
     Frame* current_frame = range_begin; //iterate through range
     while(current_frame != range_end){
@@ -218,7 +218,7 @@ void BufferPool::insert_new_page(const RID& rid, const int& column, const int& v
 Frame* BufferPool::evict(const RID& rid){ //return the frame that was evicted
   size_t hash = hash_fun(rid.first_rid_page); //determine correct hash range
   Frame* range_begin = hash_vector[hash]; //beginning of hash range
-  Frame* range_end = (hash == hash_vector.size() - 1) ? tail : hash_vector[hash + 1]; //end of hash range
+  Frame* range_end = (hash == hash_vector.size() - 1) ? tail : hash_vector[hash + 1]->prev; //end of hash range
 
   Frame* current_frame = range_end; //iterate through range
   while(true){ //search until a page with no pins is found
