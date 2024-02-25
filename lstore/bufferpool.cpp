@@ -84,6 +84,7 @@ Frame* BufferPool::search(const RID& rid, const int& column){
     if(rid.id == 32769){
 
     std::cout << "Looking for " << rid.first_rid_page << ", found " << current_frame->first_rid_page << std::endl;
+    std::cout << "Looking for column " << column << ", found " << current_frame->column << std::endl;
     }
     if ((current_frame->valid)) {
       if(rid.first_rid_page == current_frame->first_rid_page && column == current_frame->column){
@@ -199,6 +200,11 @@ void BufferPool::insert_new_page(const RID& rid, const int& column, const int& v
   Page* page = new Page();
   page->write(value);
   // *(page->data + rid.offset) = value;
+  if(rid.id == 32769){
+
+    std::cout << "Inserting " << rid.first_rid_page << std::endl;
+    std::cout << "Inserting column " << column << std::endl;
+    }
   Frame* frame = insert_into_frame(rid, column, page); //insert the page into a frame in the bufferpool
   std::cout << "Pin new page" << std::endl;
   pin(rid, column);
@@ -280,7 +286,6 @@ void BufferPool::write_back_all (){
 }
 
 void BufferPool::pin (const RID& rid, const int& column) {
-  std::cout << "Search page with " << rid.id << std::endl;
   Frame* found = search(rid, column);
   if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
     found = load(rid, column);
