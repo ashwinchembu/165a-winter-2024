@@ -59,7 +59,7 @@ int BufferPool::get (const RID& rid, const int& column) {
     found = load(rid, column);
   }
   update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
-  return *(found->page->data + rid.offset * sizeof(int)); //return the value we want
+  return *(found->page->data + rid.offset); //return the value we want
 }
 
 void BufferPool::set (const RID& rid, const int& column, int value){
