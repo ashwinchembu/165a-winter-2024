@@ -173,8 +173,8 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
         buffer_pool.insert_new_page(new_rid, SCHEMA_ENCODING_COLUMN, 0);
         buffer_pool.insert_new_page(new_rid, BASE_RID_COLUMN, new_rid.id);
         buffer_pool.insert_new_page(new_rid, TPS, 0);
-        for (int i = 0; i < num_column; i++) {
-            buffer_pool.insert_new_page(new_rid, NUM_METADATA_COLUMNS + i, columns[i]);
+        for (int i = NUM_METADATA_COLUMNS; i < num_column; i++) {
+            buffer_pool.insert_new_page(new_rid, i, columns[i - NUM_METADATA_COLUMNS]);
         }
         pages.insert(pages.begin() + base_last, new_rid);
         num_slot_used_base = 1;
@@ -187,9 +187,9 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
         buffer_pool.set(new_rid, SCHEMA_ENCODING_COLUMN, 0);
         buffer_pool.set(new_rid, BASE_RID_COLUMN, new_rid.id);
         buffer_pool.set(new_rid, TPS, 0);
-        for (int i = 0; i < num_column; i++) {
+        for (int i = NUM_METADATA_COLUMNS; i < num_column; i++) {
             std::cout << "Update " << i << std::endl;
-            buffer_pool.set(new_rid, NUM_METADATA_COLUMNS + i, columns[i]);
+            buffer_pool.set(new_rid, i, columns[i - NUM_METADATA_COLUMNS]);
         }
         num_slot_used_base++;
     }
