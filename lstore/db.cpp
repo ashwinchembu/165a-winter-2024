@@ -1,10 +1,12 @@
 #include <map>
 #include <string>
 #include <stdexcept>
+#include <cstdio>
 #include "table.h"
 #include "db.h"
 #include "bufferpool.h"
 #include <cstdio>
+#include <cstring>
 #include "config.h"
 #include "../DllConfig.h"
 
@@ -75,14 +77,56 @@ COMPILER_SYMBOL void Database_close(int* obj){
 
 void Database::open(const std::string& path) {
 	BufferPool buffer_pool(BUFFER_POOL_SIZE);
+
+	read();
 };
 
 void Database::close() {
 	for (std::map<std::string, Table>::iterator itr = tables.begin(); itr != tables.end(); itr++) {
 		itr->second.merge();
 	}
+
+	write();
+
 	buffer_pool.~BufferPool();
 };
+
+void Database::read(){
+	FILE* fp = fopen("..//Disk//ProgramState.dat","r");
+	int numTables;
+	fread(&numTables,sizeof(int),1,fp);
+
+	char nameBuffer[128];
+
+	for(int i = 0;i < numTables;i++){
+		fread(&nameBuffer,128,1,fp);
+
+		Table t;
+		t.read(fp);
+
+		tables.insert({{nameBuffer},t});
+	}
+
+	fclose(fp);
+}
+
+void Database::write(){
+	FILE* fp = fopen("..//Disk//ProgramState.dat","w");
+	int numTables = tables.size();
+
+	fwrite(&numTables,sizeof(int),1,fp);
+
+	char nameBuffer[128];
+
+	for(auto& t : tables){
+		strcpy(nameBuffer,t.first.c_str());
+		fwrite(nameBuffer,128,1,fp);
+
+		t.second.write(fp);
+	}
+
+	fclose(fp);
+}
 
 /***
  *
@@ -135,3 +179,5 @@ Table Database::get_table(const std::string& name){
   }
   return table->second;
 }
+
+

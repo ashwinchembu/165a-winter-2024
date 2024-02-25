@@ -17,6 +17,9 @@ class Database{
     Table get_table(const std::string& name);
 
     std::map<std::string, Table> tables;
+
+    void read();
+    void write();
 };
 
 #endif
