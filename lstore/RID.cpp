@@ -79,6 +79,16 @@
 //     return -1;
 // }
 
+RID::RID (const RID& rhs) {
+	id = rhs.id;
+    first_rid_page_range = rhs.first_rid_page_range;
+    first_rid_page = rhs.first_rid_page;
+    offset = rhs.offset;
+    table_name = rhs.table_name;
+	std::cout << "meow" << std::endl;
+}
+
+
 int RID::write(FILE* fp) {
 	fwrite(&id, sizeof(int), 1, fp);
 	fwrite(&first_rid_page, sizeof(int), 1, fp);
