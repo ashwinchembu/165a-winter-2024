@@ -320,7 +320,7 @@ int PageRange::read(FILE* fp) {
 }
 
 Page::Page() {
-    data = new int[PAGE_SIZE];
+    data = new int[PAGE_SIZE * 4];
     // for (int i = 0; i < PAGE_SIZE; i++) {
     //     availability[i] = 0;
     // }
@@ -361,7 +361,7 @@ int Page::write(const int& value) {
     //         break;
     //     }
     // }
-    insert = data + num_rows /**sizeof(int)*/;
+    insert = data + num_rows *sizeof(int);
     *insert = value;
     num_rows++;
     return 0;
