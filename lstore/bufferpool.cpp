@@ -89,7 +89,7 @@ Frame* BufferPool::search(const RID& rid, const int& column){
   return nullptr; //if not found in the range
 }
 
-void BufferPool::update_ages(Frame* just_accessed, Frame* range_begin){ //change ages and reorder linked list
+void BufferPool::update_ages(Frame* just_accessed, Frame*& range_begin){ //change ages and reorder linked list
   if(just_accessed != range_begin){ //if not already the range beginning / most recently accessed
     just_accessed->prev->next = just_accessed->next; //close gap where just_accessed used to be
     if(just_accessed->next != nullptr){ //if just accessed was not tail
@@ -98,7 +98,7 @@ void BufferPool::update_ages(Frame* just_accessed, Frame* range_begin){ //change
     just_accessed->prev = range_begin->prev; //just_accessed becomes the new range beginning
     just_accessed->next = range_begin;
     range_begin->prev = just_accessed;
-    range_begin = just_accessed;
+    range_begin = just_accessed; // Error, does not actually change the range begin. i.e. hash_vector[hash_fun(rid.first_rid_page)] stay the same.
   }
   return;
 }
