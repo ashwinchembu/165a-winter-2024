@@ -188,6 +188,7 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
         buffer_pool.set(new_rid, BASE_RID_COLUMN, new_rid.id);
         buffer_pool.set(new_rid, TPS, 0);
         for (int i = 0; i < num_column; i++) {
+            std::cout << "Update " << i << std::endl;
             buffer_pool.set(new_rid, NUM_METADATA_COLUMNS + i, columns[i]);
         }
         num_slot_used_base++;

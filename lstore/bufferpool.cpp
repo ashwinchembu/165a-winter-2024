@@ -99,7 +99,7 @@ void BufferPool::update_ages(Frame* just_accessed, Frame*& range_begin){ //chang
     just_accessed->prev = range_begin->prev; //just_accessed becomes the new range beginning
     just_accessed->next = range_begin;
     range_begin->prev = just_accessed;
-    range_begin = just_accessed; // Error, does not actually change the range begin. i.e. hash_vector[hash_fun(rid.first_rid_page)] stay the same.
+    range_begin = just_accessed;
   }
   return;
 }
