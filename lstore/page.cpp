@@ -180,7 +180,7 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
         num_slot_used_base = 1;
     } else {
         std::cout << num_slot_used_base << std::endl;
-        // new_rid.offset = num_slot_used_base;
+        new_rid.offset = num_slot_used_base;
         new_rid.first_rid_page = pages[base_last].id;
         for (size_t i = 0; i < pages.size(); i++) {
             std::cout << pages[i].id << std::endl;
@@ -375,7 +375,7 @@ int Page::write(const int& value) {
     insert = data + num_rows *sizeof(int);
     *insert = value;
     num_rows++;
-    return num_rows - 1;
+    return 0;
 }
 
 /***
