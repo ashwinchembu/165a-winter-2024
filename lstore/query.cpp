@@ -85,9 +85,9 @@ bool Query::deleteRecord(const int& primary_key) {
 
 bool Query::insert(const std::vector<int>& columns) {
     // Return true if successful, false otherwise
-    RID* rid = table->insert(columns);
-    // table->index->insert_index(rid.id, columns);
-    return rid->id;
+    RID rid = table->insert(columns);
+    table->index->insert_index(rid.id, columns);
+    return rid.id;
 }
 
 std::vector<Record> Query::select(const int& search_key, const int& search_key_index, const std::vector<int>& projected_columns_index) {
@@ -129,17 +129,17 @@ std::vector<Record> Query::select_version(const int& search_key, const int& sear
 bool Query::update(const int& primary_key, const std::vector<int>& columns) {
     RID base_rid = table->page_directory.find(table->index->locate(table->key, primary_key)[0])->second; //locate base RID of record to be updated
     RID last_update = table->page_directory.find(buffer_pool.get(base_rid, INDIRECTION_COLUMN))->second; //locate the previous update
-    RID* update_rid = table->update(base_rid, columns); // insert update into the table
+    RID update_rid = table->update(base_rid, columns); // insert update into the table
     std::vector<int> old_columns;
     std::vector<int> new_columns;
     for(int i = 0; i < table->num_columns; i++){ // fill old_columns with the contents of previous update
         old_columns.push_back(buffer_pool.get(last_update, i + NUM_METADATA_COLUMNS));
-        new_columns.push_back(buffer_pool.get(*update_rid, i + NUM_METADATA_COLUMNS));
+        new_columns.push_back(buffer_pool.get(update_rid, i + NUM_METADATA_COLUMNS));
     }
-    if(update_rid->id != 0){
+    if(update_rid.id != 0){
         table->index->update_index(base_rid.id, new_columns, old_columns); //update the index
     }
-    return (update_rid->id != 0); //return true if successfully updated
+    return (update_rid.id != 0); //return true if successfully updated
 }
 
 unsigned long int Query::sum(const int& start_range, const int& end_range, const int& aggregate_column_index) {

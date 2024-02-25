@@ -147,7 +147,7 @@ COMPILER_SYMBOL int* Table_insert(int* obj,int* columns){
 
 	Table* ref = (Table*)obj;
 
-	return (int*)(ref->insert(*cols));
+	return (int*)new RID((ref->insert(*cols)));
 
 }
 
@@ -158,7 +158,7 @@ COMPILER_SYMBOL int* Table_update(int* obj,int* rid, int* columns){
 
 	RID* r = (RID*) rid;
 
-	return (int*)(ref->update(*r,*cols));
+	return (int*)new RID(ref->update(*r,*cols));
 }
 
 COMPILER_SYMBOL int Table_merge(int* obj){
@@ -174,12 +174,6 @@ Table::Table(const std::string& name, const int& num_columns, const int& key): n
     index->setTable(this);
 };
 
-Table::~Table() {
-  //   for(std::map<int, RID>::iterator iter=page_directory.begin(); iter!=page_directory.end(); iter++){
-		// delete &(iter->second);
-  //   }
-}
-
 /***
  *
  * Insert a record into appropriate base page.
@@ -188,24 +182,25 @@ Table::~Table() {
  * @return const std::vector<int>& columns the values of the record
  *
  */
-RID* Table::insert(const std::vector<int>& columns) {
+RID Table::insert(const std::vector<int>& columns) {
     num_insert++;
     int rid_id = num_insert;
-    RID* record = new RID(rid_id);
-	record->table_name = name;
+    RID record;
+	record.table_name = name;
+	record.id = rid_id;
 
 
     if (page_range.size() == 0 || !(page_range.back()->base_has_capacity())) {
 
-    	std::shared_ptr<PageRange>newPageRange{new PageRange(*record, columns)};
+    	std::shared_ptr<PageRange>newPageRange{new PageRange(record, columns)};
 
         page_range.push_back(newPageRange); // Make a base page with given record
     } else { // If there are base page already, just insert it normally.
-		record->first_rid_page_range = (page_range.back().get())->pages[0].first_rid_page_range;
-        (page_range.back().get())->insert(*record, columns);
+		record.first_rid_page_range = (page_range.back().get())->pages[0].first_rid_page_range;
+        (page_range.back().get())->insert(record, columns);
     }
 
-    page_directory.insert({rid_id, *record});
+    page_directory.insert({rid_id, record});
     return record;
 }
 
@@ -218,7 +213,7 @@ RID* Table::insert(const std::vector<int>& columns) {
  * @return RID of the new row upon successful update
  *
  */
-RID* Table::update(RID& rid, const std::vector<int>& columns) {
+RID Table::update(RID& rid, const std::vector<int>& columns) {
     num_update++;
 	if (num_update >= MAX_TABLE_UPDATES){
 		merge();
@@ -231,11 +226,11 @@ RID* Table::update(RID& rid, const std::vector<int>& columns) {
         }
     }
     i--;
-    RID* new_rid = new RID(rid_id);
-	new_rid->table_name = name;
-	new_rid->first_rid_page_range = (page_range[i].get())->pages[0].first_rid_page_range;
+    RID new_rid(rid_id);
+	new_rid.table_name = name;
+	new_rid.first_rid_page_range = (page_range[i].get())->pages[0].first_rid_page_range;
 
-	(page_range[i].get())->update(rid, *new_rid, columns, page_directory);
+	(page_range[i].get())->update(rid, new_rid, columns, page_directory);
 	page_range_update[i]++;
 	if (page_range_update[i] >= MAX_PAGE_RANGE_UPDATES){
 		// Make a deep copy of page_range[i]
@@ -262,7 +257,7 @@ RID* Table::update(RID& rid, const std::vector<int>& columns) {
 	}
 
 	// int err = (page_range[i].get())->update(rid, rid_id, columns);
-	page_directory.insert({rid_id, *new_rid});
+	page_directory.insert({rid_id, new_rid});
     return new_rid;
 }
 
