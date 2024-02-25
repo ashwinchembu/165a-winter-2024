@@ -78,7 +78,7 @@ void BufferPool::set (const RID& rid, const int& column, int value){
 Frame* BufferPool::search(const RID& rid, const int& column){
   size_t hash = hash_fun(rid.first_rid_page); //perform hash on rid
   Frame* range_begin = hash_vector[hash]; //beginning of hash range
-  Frame* range_end = (hash == hash_vector.size() - 1) ? tail : hash_vector[hash + 1]; //end of hash range
+  Frame* range_end = (hash == hash_vector.size() - 1) ? tail : hash_vector[hash + 1]->prev; //end of hash range
   Frame* current_frame = range_begin; //iterate through range
   while(current_frame != range_end){
     if(rid.id == 32769){
