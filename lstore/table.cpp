@@ -147,7 +147,7 @@ COMPILER_SYMBOL int* Table_insert(int* obj,int* columns){
 
 	Table* ref = (Table*)obj;
 
-	return (int*)new RID((ref->insert(*cols)));
+	return (int*)(ref->insert(*cols));
 
 }
 
@@ -158,7 +158,7 @@ COMPILER_SYMBOL int* Table_update(int* obj,int* rid, int* columns){
 
 	RID* r = (RID*) rid;
 
-	return (int*)new RID(ref->update(*r,*cols));
+	return (int*)(ref->update(*r,*cols));
 }
 
 COMPILER_SYMBOL int Table_merge(int* obj){
