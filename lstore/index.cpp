@@ -236,9 +236,7 @@ int Index::write(FILE* fp){
 	return 0;
 }
 
-int Index::read(Table* container,FILE* fp){
-	table = container;
-
+int Index::read(FILE* fp){
 	int totalIndices;
 	fread(&totalIndices,sizeof(int),1,fp);
 

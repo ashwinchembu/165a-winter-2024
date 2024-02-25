@@ -27,7 +27,7 @@ public:
     void printData();
 
    int write(FILE* fp);
-   int read(Table* container, FILE* fp);
+   int read(FILE* fp);
 };
 
 #endif
