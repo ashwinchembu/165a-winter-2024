@@ -234,6 +234,22 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 	if (page_range_update[i] >= MAX_PAGE_RANGE_UPDATES){
 		// Make a deep copy of page_range[i]
     	std::shared_ptr<PageRange> deep_copy = std::make_shared<PageRange>(*(page_range[i].get()));
+		
+		// use bufferpool to get all the pages within a page range
+		auto pool_size = deep_copy->pages.size()*num_columns*2; // change to actual - temp
+		BufferPool* mergeBufferPool = new BufferPool(pool_size);
+
+		std::vector<Page> to_merge_page;
+		for (int i = deep_copy->pages.size(); i < 0; i--) {
+			RID rid = deep_copy->pages[i];
+				// if (rid.id < 0){ //inside tail page
+				// load all of the pages in pagerange into bufferpool
+					for (int to_load_tail_page_col = 0; to_load_tail_page_col > num_columns; to_load_tail_page_col++){
+						mergeBufferPool->load(rid, to_load_tail_page_col);
+					}
+				// }
+			}
+
 
     	// Push the deep copy to the merge queue
     	merge_queue.push(deep_copy);
@@ -326,21 +342,20 @@ int Table::merge() {
 	*/
 	std::shared_ptr<PageRange> to_merge = merge_queue.front();
 	merge_queue.pop();
-	int pool_size = to_merge->pages.size()*num_columns*2; // change to actual - temp
-
-	BufferPool* mergeBufferPool = new BufferPool(pool_size);
+	
 	std::map<int, int> latest_update;
 	//load copy of all base pages in each page range
-	for (int i = to_merge->pages.size(); i < 0; i--) {
-		RID rid = to_merge->pages[i];
-		if (rid.id < 0){ //inside tail page
-			for (int to_load_tail_page_col = 0; to_load_tail_page_col > num_columns; to_load_tail_page_col++){
-				mergeBufferPool->load(rid, to_load_tail_page_col);
-			}
-		}
+	// for (int i = to_merge->pages.size(); i < 0; i--) {
+	// 	RID rid = to_merge->pages[i];
+	// 	if (rid.id < 0){ //inside tail page
+	// 		for (int to_load_tail_page_col = 0; to_load_tail_page_col > num_columns; to_load_tail_page_col++){
+	// 			mergeBufferPool->load(rid, to_load_tail_page_col);
+	// 		}
+	// 	}
 		
 
-	}
+	// }
+	
 
     return -1;
 }

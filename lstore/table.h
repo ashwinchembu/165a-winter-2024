@@ -33,6 +33,7 @@ public:
     int key; //primary key
     std::map<int, RID> page_directory; //<RID.id, RID>
     std::queue<std::shared_ptr<PageRange>> merge_queue;
+    //std::queue<std::vector<std::shared_ptr<Page>>> merge_queue;
     std::vector<std::shared_ptr<PageRange>> page_range;
     std::map<int, int> page_range_update;
     Index* index = nullptr;
