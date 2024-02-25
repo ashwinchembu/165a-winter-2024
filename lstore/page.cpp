@@ -179,7 +179,6 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
         pages.insert(pages.begin() + base_last, new_rid);
         num_slot_used_base = 1;
     } else {
-        std::cout << "expr" << std::endl;
         new_rid.offset = num_slot_used_base;
         new_rid.first_rid_page = pages[base_last].id;
         buffer_pool.set(new_rid, INDIRECTION_COLUMN, new_rid.id);
@@ -188,6 +187,7 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
         buffer_pool.set(new_rid, SCHEMA_ENCODING_COLUMN, 0);
         buffer_pool.set(new_rid, BASE_RID_COLUMN, new_rid.id);
         buffer_pool.set(new_rid, TPS, 0);
+        std::cout << "expr" << std::endl;
         for (int i = NUM_METADATA_COLUMNS; i < num_column; i++) {
             buffer_pool.set(new_rid, i, columns[i - NUM_METADATA_COLUMNS]);
         }
