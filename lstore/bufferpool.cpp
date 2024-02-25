@@ -233,7 +233,7 @@ void BufferPool::write_back(Frame* frame){
     + "_" + std::to_string(frame->first_rid_page_range)
     + "_" + std::to_string(frame->first_rid_page)
     + "_" + std::to_string(frame->column) + ".dat";
-  std::cout << frame->page << std::endl;
+  std::cout << *(frame->page) << std::endl;
   std::cout << "Writing back to" << data_path << std::endl;
   FILE* fp = fopen((data_path).c_str(),"w");
   if (!fp) {
