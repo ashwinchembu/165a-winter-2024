@@ -76,6 +76,7 @@ COMPILER_SYMBOL void Database_close(int* obj){
 }
 
 Database::Database() {
+	BufferPool buffer_pool(BUFFER_POOL_SIZE);
 //	BufferPool buffer_pool(BUFFER_POOL_SIZE);
 //	std::cout << "expr" << std::endl;
 
@@ -87,7 +88,6 @@ Database::Database() {
 }
 
 Database::~Database() {
-	BufferPool buffer_pool(BUFFER_POOL_SIZE);
 	buffer_pool.~BufferPool();
 }
 
