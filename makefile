@@ -40,7 +40,7 @@ OPTIMIZATION := -Ofast -flto=auto -march=native -fopenmp -D_GLIBCXX_PARALLEL -fr
 
 
 # Flags
-CFLAGS := -Wall -shared -fPIC -std=c++11 -pipe
+CFLAGS := -Wall -shared -fPIC -std=c++11 -pipe -lstdc++fs
 
 # Combine flags
 CFLAGS += $(OS_FLAGS)
