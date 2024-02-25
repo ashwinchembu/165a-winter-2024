@@ -82,7 +82,7 @@ Database::Database() {
 
 	//buffer_pool.path = file_path + "/Disk/";
 	if (!std::filesystem::is_directory(file_path) || !std::filesystem::exists(file_path)) { // Check if src folder exists
-		std::filesystem::create_directories(buffer_pool.path); // create src folder
+		std::filesystem::create_directories(buffer_pool.path.c_str()); // create src folder
 	}
 }
 
@@ -98,7 +98,7 @@ void Database::open(const std::string& path) {
 	file_path = path;
 
 	if (!std::filesystem::is_directory(buffer_pool.path) || !std::filesystem::exists(buffer_pool.path)) { // Check if src folder exists
-		std::filesystem::create_directories(buffer_pool.path); // create src folder
+		std::filesystem::create_directories(buffer_pool.path.c_str()); // create src folder
 	}
 
 
