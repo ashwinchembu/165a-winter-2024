@@ -42,6 +42,7 @@ public:
     void write_back_all();
     void pin (const RID& rid, const int& column);
     void unpin (const RID& rid, const int& column);
+    void set_path (const std::string& path_rhs);
     std::vector<Frame*> hash_vector; //the starting frame of each hash range
     std::vector<int> frame_directory; //keep track of how many open frames in each hash range
     int bufferpool_size;

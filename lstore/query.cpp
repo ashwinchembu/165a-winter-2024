@@ -127,9 +127,9 @@ std::vector<Record> Query::select_version(const int& search_key, const int& sear
 
 /// @TODO Adopt to the change in RID
 bool Query::update(const int& primary_key, const std::vector<int>& columns) {
-    std::cout << "1" << std::endl;
+    //std::cout << "1" << std::endl;
     RID base_rid = table->page_directory.find(table->index->locate(table->key, primary_key)[0])->second; //locate base RID of record to be updated
-    std::cout << "2" << std::endl;
+    //std::cout << "2" << std::endl;
     RID last_update = table->page_directory.find(buffer_pool.get(base_rid, INDIRECTION_COLUMN))->second; //locate the previous update
     std::cout << "3" << std::endl;
     RID update_rid = table->update(base_rid, columns); // insert update into the table

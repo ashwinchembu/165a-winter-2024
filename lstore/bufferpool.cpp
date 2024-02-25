@@ -301,6 +301,11 @@ void BufferPool::unpin (const RID& rid, const int& column) {
   return;
 }
 
+void BufferPool::set_path (const std::string& path_rhs) {
+  path = path_rhs;
+}
+
+
 Frame::Frame () {}
 
 Frame::~Frame () {}

@@ -77,7 +77,7 @@ COMPILER_SYMBOL void Database_close(int* obj){
 
 BufferPool buffer_pool(BUFFER_POOL_SIZE);
 Database::Database() {
-	// buffer_pool.path = file_path + "/Disk/";
+	buffer_pool.set_path(file_path + "/Disk/");
 	std::cout << buffer_pool.path << std::endl;
 	if (!std::filesystem::is_directory(file_path) || !std::filesystem::exists(file_path)) { // Check if src folder exists
 		std::filesystem::create_directories(file_path + "/Disk/"); // create src folder
@@ -92,7 +92,8 @@ void Database::open(const std::string& path) {
 //	// path is relative to parent directory of this file
 //	std::cout<<"call87";
 //	BufferPool buffer_pool(BUFFER_POOL_SIZE);
-	//buffer_pool.path = path + "/Disk/";
+	buffer_pool.set_path(file_path + "/Disk/");
+
 	file_path = path;
 
 	if (!std::filesystem::is_directory(file_path) || !std::filesystem::exists(file_path)) { // Check if src folder exists
@@ -180,7 +181,6 @@ Table Database::create_table(const std::string& name, const int& num_columns, co
   if (insert.second == false) {
     throw std::invalid_argument("A table with this name already exists in the database. The table was not added.");
   }
-  buffer_pool.path = file_path + "/Disk/";
   return table;
 }
 
