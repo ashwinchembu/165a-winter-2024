@@ -151,7 +151,6 @@ Frame* BufferPool::load (const RID& rid, const int& column){ //return the frame 
 }
 
 Frame* BufferPool::insert_into_frame(const RID& rid, const int& column, Page* page){ //return the frame that the page was placed into
-  std::cout << "start new page" << std::endl;
   Frame* frame = nullptr;
   size_t hash = hash_fun(rid.first_rid_page); //determine correct hash range
 
@@ -173,7 +172,6 @@ Frame* BufferPool::insert_into_frame(const RID& rid, const int& column, Page* pa
       throw std::invalid_argument("conflict over whether hash range is full or not");
     }
   }
-
   frame->page = page;
   frame->first_rid_page = rid.first_rid_page;
   frame->table_name = rid.table_name;
@@ -181,7 +179,6 @@ Frame* BufferPool::insert_into_frame(const RID& rid, const int& column, Page* pa
   frame->column = column;
   frame->valid = true;
   frame_directory[hash]++; //a frame has been filled
-
   return frame;
 }
 
@@ -195,14 +192,20 @@ Frame* BufferPool::insert_into_frame(const RID& rid, const int& column, Page* pa
 // fread(p->data, sizeof(int), (p->num_rows)*sizeof(int), fp);
 
 void BufferPool::insert_new_page(const RID& rid, const int& column, const int& value) {
+    std::cout << "start new page" << std::endl;
+
   Page* page = new Page();
   page->write(value);
   // *(page->data + rid.offset) = value;
   Frame* frame = insert_into_frame(rid, column, page); //insert the page into a frame in the bufferpool
+  std::cout << "made new page" << std::endl;
+
   pin(rid, column);
   update_ages(frame, hash_vector[hash_fun(rid.first_rid_page)]);
   frame->dirty = true; //make sure data will be written back to disk
   unpin(rid, column);
+  std::cout << "end new page" << std::endl;
+
   return;
 }
 
