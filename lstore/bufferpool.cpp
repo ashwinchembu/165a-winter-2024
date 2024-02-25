@@ -258,10 +258,10 @@ void BufferPool::write_back_all (){
 void BufferPool::pin (const RID& rid, const int& column) {
   Frame* found = search(rid, column);
   if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
-    std::cout << "why" << std::endl;
     found = load(rid, column);
   }
   (found->pin)++;
+  std::cout << found->pin << std::endl;
   return;
 }
 
@@ -272,6 +272,8 @@ void BufferPool::unpin (const RID& rid, const int& column) {
   }
   (found->pin)--;
   if(found->pin < 0){ //if pin count gets below 0
+    (found->pin) = 0;
+    std::cout << "here?" << std::endl;
     throw std::invalid_argument("Attempt to unpin record that was not already pinned");
   }
   return;
