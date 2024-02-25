@@ -62,7 +62,6 @@ void BufferPool::set (const RID& rid, const int& column, int value){
   if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
     found = load(rid, column);
   }
-  std::cout << "setting value and has frame" << std::endl;
   update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
   *(found->page->data + rid.offset * sizeof(int)) = value;
   found->dirty = true; //the page has been modified
@@ -78,12 +77,10 @@ Frame* BufferPool::search(const RID& rid, const int& column){
   Frame* current_frame = range_begin; //iterate through range
   while(current_frame != range_end){
     if ((current_frame->valid)) {
-      std::cout << rid.first_rid_page << " " << current_frame->first_rid_page << " " << column << " " << current_frame->column << std::endl;
       if(rid.first_rid_page == current_frame->first_rid_page && column == current_frame->column){
         return current_frame;
       }
     }
-    std::cout << "mewo" << std::endl;
     current_frame = current_frame->next;
   }
   std::cout << "miss!" << std::endl;
@@ -273,7 +270,6 @@ void BufferPool::unpin (const RID& rid, const int& column) {
   (found->pin)--;
   if(found->pin < 0){ //if pin count gets below 0
     (found->pin) = 0;
-    std::cout << "here?" << std::endl;
     throw std::invalid_argument("Attempt to unpin record that was not already pinned");
   }
   return;
