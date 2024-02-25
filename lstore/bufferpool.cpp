@@ -177,11 +177,12 @@ Frame* BufferPool::insert_into_frame(const RID& rid, const int& column, Page* pa
 // fread(p->data, sizeof(int), (p->num_rows)*sizeof(int), fp);
 
 void BufferPool::insert_new_page(const RID& rid, const int& column, const int& value) {
-      std::cout << "what?" << std::endl;
-
   pin(rid, column);
+  std::cout << "pin(rid, column);" << std::endl;
   Page* page = new Page();
+  std::cout << "Page* page = new Page();" << std::endl;
   *(page->data + rid.offset * sizeof(int)) = value;
+  std::cout << "*(page->data + rid.offset * sizeof(int)) = value;" << std::endl;
   Frame* frame = insert_into_frame(rid, column, page); //insert the page into a frame in the bufferpool
   update_ages(frame, hash_vector[hash_fun(rid.first_rid_page)]);
   frame->dirty = true; //make sure data will be written back to disk
