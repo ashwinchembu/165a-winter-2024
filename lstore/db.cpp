@@ -80,6 +80,7 @@ void Database::open(const std::string& path) {
 	BufferPool buffer_pool(BUFFER_POOL_SIZE);
 	buffer_pool.path = path;
 	file_path = path;
+	// If the directory is empty then make new database.
 	read(path);
 };
 
