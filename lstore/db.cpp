@@ -180,6 +180,7 @@ Table Database::create_table(const std::string& name, const int& num_columns, co
   if (insert.second == false) {
     throw std::invalid_argument("A table with this name already exists in the database. The table was not added.");
   }
+  buffer_pool.path = file_path + "/Disk/";
   return table;
 }
 

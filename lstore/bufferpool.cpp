@@ -8,7 +8,7 @@
 #include <cmath>
 #include <stdexcept> // Throwing errors
 #include <iostream>
-#include <unistd.h>
+// #include <unistd.h>
 
 #include "page.h"
 #include "config.h"
@@ -227,18 +227,23 @@ void BufferPool::write_back(Frame* frame){
   std::cout << "Writing back to" << data_path << std::endl;
   FILE* fp = fopen((data_path).c_str(),"w");
   fwrite(&(frame->first_rid_page_range), 1, sizeof(int), fp);
-  fclose(fp);
-  int fd = open((const char*)data_path.c_str(), O_RDWR);
-
-  if(fd != -1){
-    write(fd,&(frame->page->num_rows),sizeof(int));
-    write(fd,frame->page->data,frame->page->num_rows* sizeof(int));
-
-    // float nan = std::nan("");
-    // write(fd,&nan,sizeof(float));
-
-    close(fd);
+  if (!fp) {
+    throw std::invalid_argument("Couldn't open file " + data_path);
   }
+  fwrite(&(frame->page->num_rows), 1, sizeof(int), fp);
+  fwrite(frame->page->data, frame->page->num_rows, sizeof(int), fp);
+  fclose(fp);
+  // int fd = open((const char*)data_path.c_str(), O_RDWR);
+  //
+  // if(fd != -1){
+  //   write(fd,&(frame->page->num_rows),sizeof(int));
+  //   write(fd,frame->page->data,frame->page->num_rows* sizeof(int));
+  //
+  //   // float nan = std::nan("");
+  //   // write(fd,&nan,sizeof(float));
+  //
+  //   close(fd);
+  // }
   delete frame->page;
   frame->valid = false; //frame is now empty
 }
