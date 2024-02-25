@@ -193,7 +193,6 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
         num_slot_used_base++;
     }
     base_last_wasfull = (num_slot_used_base == PAGE_SIZE);
-        std::cout << "expr" << std::endl;
     // Inserted.
     return 0;
 }
