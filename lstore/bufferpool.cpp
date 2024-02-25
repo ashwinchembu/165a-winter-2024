@@ -125,7 +125,7 @@ Frame* BufferPool::load (const RID& rid, const int& column){ //return the frame 
   fread(&(p->num_rows), 1, sizeof(int), fp);
   fread(p->data, p->num_rows, sizeof(int), fp);
   fclose(fp);
-  Frame* frame = insert_into_frame(rid, column, p); //insert the page into a frame in the bufferpool
+  frame = insert_into_frame(rid, column, p); //insert the page into a frame in the bufferpool
   frame->dirty = false; //frame has not yet been modified
   // int fd = open((const char*)data_path.c_str(), O_RDWR);
   // if(fd != -1){
