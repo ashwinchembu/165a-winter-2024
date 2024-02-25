@@ -361,7 +361,7 @@ int Page::write(const int& value) {
     //         break;
     //     }
     // }
-    insert = data + num_rows *sizeof(int);
+    insert = data + num_rows;
     *insert = value;
     num_rows++;
     return 0;
