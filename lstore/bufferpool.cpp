@@ -97,7 +97,6 @@ Frame* BufferPool::search(const RID& rid, const int& column){
 }
 
 void BufferPool::update_ages(Frame* just_accessed, Frame** range_begin){ //change ages and reorder linked list
-  std::cout << "about to update ages\n";
   if(just_accessed != *range_begin){ //if not already the range beginning / most recently accessed
     just_accessed->prev->next = just_accessed->next; //close gap where just_accessed used to be
     if(just_accessed->next != nullptr){ //if just accessed was not tail
@@ -108,7 +107,7 @@ void BufferPool::update_ages(Frame* just_accessed, Frame** range_begin){ //chang
     (*range_begin)->prev = just_accessed;
     *range_begin = just_accessed;
   }
-  std::cout << "updated ages\n";
+
   return;
 }
 
@@ -130,27 +129,6 @@ Frame* BufferPool::load (const RID& rid, const int& column){ //return the frame 
   fclose(fp);
   frame = insert_into_frame(rid, column, p); //insert the page into a frame in the bufferpool
   frame->dirty = false; //frame has not yet been modified
-  // int fd = open((const char*)data_path.c_str(), O_RDWR);
-  // if(fd != -1){
-  //   Page* p = new Page();
-  //   // float buffer;
-  //   read(fd, &(p->num_rows), sizeof(int));
-  //   read(fd, p->data, p->num_rows * sizeof(int));
-  //   // while(true){
-  //   // 	read(fd, &buffer, sizeof(float));
-  //   //
-  //   // 	if(std::isnan(buffer)){
-  //   // 		break;
-  //   // 	}
-  //   //
-  //   // 	p->write((int)buffer);
-  //   // }
-  //
-  //   close(fd);
-  //
-  //   Frame* frame = insert_into_frame(rid, column, p); //insert the page into a frame in the bufferpool
-  //   frame->dirty = false; //frame has not yet been modified
-  // }
 
   return frame;
 }
@@ -187,29 +165,18 @@ Frame* BufferPool::insert_into_frame(const RID& rid, const int& column, Page* pa
   return frame;
 }
 
-// std::string file_name = file_path + rid.table_name + "_" + std::to_string(rid.first_rid_page_range) + "_" + std::to_string(rid.first_rid_page) + "_" + std::to_string(column) + ".dat";
-// FILE* fp = std::fopen(file_name.c_str(), "r");
-// if (!fp) {
-//   throw std::invalid_argument("File with given RID does not exist");
-// }
-// Page* p = new Page();
-// fread(&(p->num_rows), sizeof(int), 1, fp);
-// fread(p->data, sizeof(int), (p->num_rows)*sizeof(int), fp);
-
 void BufferPool::insert_new_page(const RID& rid, const int& column, const int& value) {
 
   Page* page = new Page();
   page->write(value);
   // *(page->data + rid.offset) = value;
-  if(rid.id == 32769){
-
     std::cout << "Inserting " << rid.first_rid_page << std::endl;
     std::cout << "Inserting column " << column << std::endl;
-    }
   Frame* frame = insert_into_frame(rid, column, page); //insert the page into a frame in the bufferpool
   std::cout << "Pin new page" << std::endl;
   pin(rid, column);
   update_ages(frame, hash_vector[hash_fun(rid.first_rid_page)]);
+  std::cout << "updated ages\n";
   frame->dirty = true; //make sure data will be written back to disk
   unpin(rid, column);
 
@@ -252,31 +219,9 @@ void BufferPool::write_back(Frame* frame){
   fwrite(&(frame->page->num_rows), 1, sizeof(int), fp);
   fwrite(frame->page->data, frame->page->num_rows, sizeof(int), fp);
   fclose(fp);
-  // int fd = open((const char*)data_path.c_str(), O_RDWR);
-  //
-  // if(fd != -1){
-  //   write(fd,&(frame->page->num_rows),sizeof(int));
-  //   write(fd,frame->page->data,frame->page->num_rows* sizeof(int));
-  //
-  //   // float nan = std::nan("");
-  //   // write(fd,&nan,sizeof(float));
-  //
-  //   close(fd);
-  // }
   delete frame->page;
   frame->valid = false; //frame is now empty
 }
-
-//
-//  std::string file_name = file_path + frame->table_name + "_" + std::to_string(frame->first_rid_page_range) + "_" + std::to_string(frame->first_rid_page) + "_" + std::to_string(frame->column) + ".dat";
-//
-//
-//
-//  FILE* fp = fopen(file_name.c_str(), "w");
-//  fwrite(&(frame->page->num_rows), sizeof(int), 1, fp);
-//  fwrite(frame->page->data, sizeof(int), PAGE_SIZE*sizeof(int), fp);
-//  // Write in num_rows also into page
-//  fclose(fp);
 
 void BufferPool::write_back_all (){
   Frame* current_frame = head;
