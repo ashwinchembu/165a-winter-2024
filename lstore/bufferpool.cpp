@@ -20,7 +20,6 @@
 BufferPool::BufferPool (const int& num_pages) : bufferpool_size(num_pages){
   head = new Frame; //create head
   hash_vector.push_back(&head); //head will be the first hash range beginning
-  std::cout << "Range begin made at 0\n";
   frame_directory.push_back(0); //each hash range begins empty
 
   Frame* old_frame = head; //create number of frames according to bufferpool size
@@ -29,7 +28,6 @@ BufferPool::BufferPool (const int& num_pages) : bufferpool_size(num_pages){
     old_frame->next = new_frame;
     new_frame->prev = old_frame;
     if(i % (bufferpool_size / NUM_BUFFERPOOL_HASH_PARTITIONS) == 0){ //check if the frame should be a hash range beginning
-      std::cout << "Range begin made at " << i << "\n";
       hash_vector.push_back(&new_frame);
       frame_directory.push_back(0);
     }
@@ -145,6 +143,8 @@ Frame* BufferPool::insert_into_frame(const RID& rid, const int& column, Page* pa
     std::cout << "Error at 1\n";
     Frame* range_begin = (*(hash_vector[hash])); //beginning of hash range
     std::cout << "Error at 2\n";
+    std::cout << "Can we print " << hash + 1 << "\n";
+    std::cout << "Can we print " << *(hash_vector[hash + 1]) << "\n";
     Frame* range_end = (hash == hash_vector.size() - 1) ? tail : (*(hash_vector[hash + 1]))->prev; //end of hash range
     std::cout << "Error at 3\n";
     Frame* current_frame = range_begin; //iterate through range
