@@ -269,7 +269,6 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
     }
 
     // Updating indirection column and schema encoding column for the base page
-    std::cout << "?" << std::endl;
     buffer_pool.pin(rid, SCHEMA_ENCODING_COLUMN);
     buffer_pool.set(rid, SCHEMA_ENCODING_COLUMN, buffer_pool.get(rid, SCHEMA_ENCODING_COLUMN) | schema_encoding);
     buffer_pool.unpin(rid, SCHEMA_ENCODING_COLUMN);

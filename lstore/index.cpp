@@ -205,21 +205,17 @@ void Index::insert_index(int& rid, std::vector<int> columns) {
 
 void Index::update_index(int& rid, std::vector<int> columns, std::vector<int> old_columns){
     for (size_t i = 0; i< indices.size(); i++) {
-        std::cout << "expr" << std::endl;
         if (indices[i].size() > 0) {	//if there is a index for that column
             int old_value = old_columns[i];
             auto range = indices[i].equal_range(old_value);
             for(auto itr = range.first; itr != range.second; itr++){
-        std::cout << "expr" << std::endl;
                 if (itr->second == rid) {
                     indices[i].erase(itr);
                     break;
                 }
-        std::cout << "expr" << std::endl;
             }
             indices[i].insert({columns[i], rid});
         }
-        std::cout << "expr" << std::endl;
     }
 }
 
