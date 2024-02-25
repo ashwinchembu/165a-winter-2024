@@ -78,6 +78,7 @@ Frame* BufferPool::search(const RID& rid, const int& column){
   while(current_frame != range_end){
     if(rid.first_rid_page == current_frame->first_rid_page && column == current_frame->column){
       return current_frame;
+      std::cout << "hello?" << std::endl;
     }
     current_frame = current_frame->next;
   }
