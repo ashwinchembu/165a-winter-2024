@@ -81,7 +81,10 @@ Frame* BufferPool::search(const RID& rid, const int& column){
   Frame* range_end = (hash == hash_vector.size() - 1) ? tail : hash_vector[hash + 1]; //end of hash range
   Frame* current_frame = range_begin; //iterate through range
   while(current_frame != range_end){
-    std::cout << "Looking in" << std::endl;
+    if(rid.id == 32769){
+
+    std::cout << "Looking for " << rid.first_rid_page << ", found " << current_frame->first_rid_page << std::endl;
+    }
     if ((current_frame->valid)) {
       if(rid.first_rid_page == current_frame->first_rid_page && column == current_frame->column){
         return current_frame;
