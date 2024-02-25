@@ -36,7 +36,7 @@ public:
     Frame* search(const RID& rid, const int& column); //search in specific hash range
     Frame* insert_into_frame(const RID& rid, const int& column, Page* page); //insert a page into a frame
     void insert_new_page(const RID& rid, const int& column, const int& value); //write new data to memory
-    void update_ages(Frame* just_accessed, Frame*& range_begin); // update all the ages in hash range based on which frame was just accessed
+    Frame* update_ages(Frame* just_accessed, Frame* range_begin); // update all the ages in hash range based on which frame was just accessed
     Frame* evict (const RID& rid); //evict the oldest frame that is not pinned
     void write_back(Frame* frame); //write back to disk if dirty
     void write_back_all();

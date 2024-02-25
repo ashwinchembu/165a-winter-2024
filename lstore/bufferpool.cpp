@@ -58,7 +58,7 @@ int BufferPool::get (const RID& rid, const int& column) {
   if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
     found = load(rid, column);
   }
-  update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
+  hash_vector[hash_fun(rid.first_rid_page)] = update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
   return *(found->page->data + rid.offset); //return the value we want
 }
 
@@ -68,7 +68,7 @@ void BufferPool::set (const RID& rid, const int& column, int value){
   if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
     found = load(rid, column);
   }
-  update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
+  hash_vector[hash_fun(rid.first_rid_page)] = update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
   found->page->write(value);
   found->dirty = true; //the page has been modified
   unpin(rid, column);
@@ -97,7 +97,7 @@ Frame* BufferPool::search(const RID& rid, const int& column){
   return nullptr; //if not found in the range
 }
 
-void BufferPool::update_ages(Frame* just_accessed, Frame*& range_begin){ //change ages and reorder linked list
+Frame* BufferPool::update_ages(Frame* just_accessed, Frame* range_begin){ //change ages and reorder linked list
   if(just_accessed != range_begin){ //if not already the range beginning / most recently accessed
     just_accessed->prev->next = just_accessed->next; //close gap where just_accessed used to be
     if(just_accessed->next != nullptr){ //if just accessed was not tail
@@ -106,9 +106,9 @@ void BufferPool::update_ages(Frame* just_accessed, Frame*& range_begin){ //chang
     just_accessed->prev = range_begin->prev; //just_accessed becomes the new range beginning
     just_accessed->next = range_begin;
     range_begin->prev = just_accessed;
-    range_begin = just_accessed;
+    // range_begin = just_accessed;
   }
-  return;
+  return just_accessed;
 }
 
 // Called by get and set
@@ -208,7 +208,7 @@ void BufferPool::insert_new_page(const RID& rid, const int& column, const int& v
   Frame* frame = insert_into_frame(rid, column, page); //insert the page into a frame in the bufferpool
   std::cout << "Pin new page" << std::endl;
   pin(rid, column);
-  update_ages(frame, hash_vector[hash_fun(rid.first_rid_page)]);
+  hash_vector[hash_fun(rid.first_rid_page)] = update_ages(frame, hash_vector[hash_fun(rid.first_rid_page)]);
   frame->dirty = true; //make sure data will be written back to disk
   unpin(rid, column);
 
