@@ -281,6 +281,7 @@ void BufferPool::write_back_all (){
 
 void BufferPool::pin (const RID& rid, const int& column) {
   Frame* found = search(rid, column);
+  std::cout << "expr" << std::endl;
   if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
     found = load(rid, column);
   }
