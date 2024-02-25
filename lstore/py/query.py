@@ -1,6 +1,6 @@
 from .table import Table, Record
 from .index import Index
-from .page import Page, PageSet
+from .page import Page
 import sys
 from DBWrapper import *
 
