@@ -76,8 +76,8 @@ void BufferPool::set (const RID& rid, const int& column, int value){
 
 Frame* BufferPool::search(const RID& rid, const int& column){
   size_t hash = hash_fun(rid.first_rid_page); //perform hash on rid
-  Frame* range_begin = (*hash_vector[hash]); //beginning of hash range
-  Frame* range_end = (hash == hash_vector.size() - 1) ? tail : (*hash_vector[hash + 1])->prev; //end of hash range
+  Frame* range_begin = (*(hash_vector[hash])); //beginning of hash range
+  Frame* range_end = (hash == hash_vector.size() - 1) ? tail : (*(hash_vector[hash + 1]))->prev; //end of hash range
   Frame* current_frame = range_begin; //iterate through range
   while(current_frame != range_end->next){
     if(rid.id == 32769){
@@ -97,6 +97,7 @@ Frame* BufferPool::search(const RID& rid, const int& column){
 }
 
 void BufferPool::update_ages(Frame* just_accessed, Frame** range_begin){ //change ages and reorder linked list
+  std::cout << "about to update ages\n";
   if(just_accessed != *range_begin){ //if not already the range beginning / most recently accessed
     just_accessed->prev->next = just_accessed->next; //close gap where just_accessed used to be
     if(just_accessed->next != nullptr){ //if just accessed was not tail
@@ -107,6 +108,7 @@ void BufferPool::update_ages(Frame* just_accessed, Frame** range_begin){ //chang
     (*range_begin)->prev = just_accessed;
     *range_begin = just_accessed;
   }
+  std::cout << "updated ages\n";
   return;
 }
 
@@ -160,8 +162,8 @@ Frame* BufferPool::insert_into_frame(const RID& rid, const int& column, Page* pa
   if(frame_directory[hash] == bufferpool_size / NUM_BUFFERPOOL_HASH_PARTITIONS){ //if hash range is full
     frame = evict(rid);
   } else{ //find empty frame to fill
-    Frame* range_begin = (*hash_vector[hash]); //beginning of hash range
-    Frame* range_end = (hash == hash_vector.size() - 1) ? tail : (*hash_vector[hash + 1])->prev; //end of hash range
+    Frame* range_begin = (*(hash_vector[hash])); //beginning of hash range
+    Frame* range_end = (hash == hash_vector.size() - 1) ? tail : (*(hash_vector[hash + 1]))->prev; //end of hash range
 
     Frame* current_frame = range_begin; //iterate through range
     while(current_frame != range_end->next){
@@ -216,8 +218,8 @@ void BufferPool::insert_new_page(const RID& rid, const int& column, const int& v
 
 Frame* BufferPool::evict(const RID& rid){ //return the frame that was evicted
   size_t hash = hash_fun(rid.first_rid_page); //determine correct hash range
-  Frame* range_begin = (*hash_vector[hash]); //beginning of hash range
-  Frame* range_end = (hash == hash_vector.size() - 1) ? tail : (*hash_vector[hash + 1])->prev; //end of hash range
+  Frame* range_begin = (*(hash_vector[hash])); //beginning of hash range
+  Frame* range_end = (hash == hash_vector.size() - 1) ? tail : (*(hash_vector[hash + 1]))->prev; //end of hash range
 
   Frame* current_frame = range_end; //iterate through range
   while(true){ //search until a page with no pins is found
