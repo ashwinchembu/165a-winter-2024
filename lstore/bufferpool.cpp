@@ -69,9 +69,9 @@ void BufferPool::set (const RID& rid, const int& column, int value){
     found = load(rid, column);
   }
   update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
-  // *(found->page->data + rid.offset * sizeof(int)) = value;
+  // *(found->page->data + rid.offset) = value;
   found->page->write(value);
-  // std::cout << *(found->page) << std::endl << std::endl;
+  std::cout << "Wrote" << std::endl << std::endl;
   found->dirty = true; //the page has been modified
   unpin(rid, column);
   return;
@@ -198,7 +198,7 @@ Frame* BufferPool::insert_into_frame(const RID& rid, const int& column, Page* pa
 void BufferPool::insert_new_page(const RID& rid, const int& column, const int& value) {
   Page* page = new Page();
   page->write(value);
-  // *(page->data + rid.offset * sizeof(int)) = value;
+  // *(page->data + rid.offset) = value;
   Frame* frame = insert_into_frame(rid, column, page); //insert the page into a frame in the bufferpool
   pin(rid, column);
   update_ages(frame, hash_vector[hash_fun(rid.first_rid_page)]);
@@ -208,7 +208,6 @@ void BufferPool::insert_new_page(const RID& rid, const int& column, const int& v
 }
 
 Frame* BufferPool::evict(const RID& rid){ //return the frame that was evicted
-  std::cout << "eviction" << std::endl;
   size_t hash = hash_fun(rid.first_rid_page); //determine correct hash range
   Frame* range_begin = hash_vector[hash]; //beginning of hash range
   Frame* range_end = (hash == hash_vector.size() - 1) ? tail : hash_vector[hash + 1]; //end of hash range
@@ -233,7 +232,6 @@ void BufferPool::write_back(Frame* frame){
     + "_" + std::to_string(frame->first_rid_page_range)
     + "_" + std::to_string(frame->first_rid_page)
     + "_" + std::to_string(frame->column) + ".dat";
-  std::cout << *(frame->page) << std::endl;
   std::cout << "Writing back to" << data_path << std::endl;
   FILE* fp = fopen((data_path).c_str(),"w");
   if (!fp) {
@@ -255,6 +253,7 @@ void BufferPool::write_back(Frame* frame){
   // }
   delete frame->page;
   frame->valid = false; //frame is now empty
+  std::cout << "Done writing" << std::endl;
 }
 
 //
