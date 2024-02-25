@@ -76,15 +76,13 @@ COMPILER_SYMBOL void Database_close(int* obj){
 }
 
 Database::Database() {
-	BufferPool buffer_pool(BUFFER_POOL_SIZE);
-//	BufferPool buffer_pool(BUFFER_POOL_SIZE);
-//	std::cout << "expr" << std::endl;
+	// BufferPool buffer_pool(BUFFER_POOL_SIZE);
 
-	//buffer_pool.path = file_path + "/Disk/";
-	if (!std::filesystem::is_directory(file_path) || !std::filesystem::exists(file_path)) { // Check if src folder exists
-		std::filesystem::create_directories(file_path); // create src folder
-	}
+	buffer_pool.path = file_path + "/Disk/";
 	std::cout << buffer_pool.path << std::endl;
+	if (!std::filesystem::is_directory(file_path) || !std::filesystem::exists(file_path)) { // Check if src folder exists
+		std::filesystem::create_directories(buffer_pool.path); // create src folder
+	}
 }
 
 Database::~Database() {
