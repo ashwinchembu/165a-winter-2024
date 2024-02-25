@@ -40,7 +40,6 @@ BufferPool::BufferPool (const int& num_pages) : bufferpool_size(num_pages){
 }
 
 BufferPool::~BufferPool () {
-  std::cout << "destructor" << std::endl;
   write_back_all(); //make sure all unsaved data gets back to disk
 
   Frame* current_frame = head;
@@ -112,7 +111,7 @@ void BufferPool::update_ages(Frame* just_accessed, Frame*& range_begin){ //chang
 
 // Called by get and set
 Frame* BufferPool::load (const RID& rid, const int& column){ //return the frame that the page was loaded into
-  std::string data_path = "../" + path + file_path + rid.table_name
+  std::string data_path = path + rid.table_name
     + "_" + std::to_string(rid.first_rid_page_range)
     + "_" + std::to_string(rid.first_rid_page)
     + "_" + std::to_string(column) + ".dat";
@@ -220,7 +219,7 @@ Frame* BufferPool::evict(const RID& rid){ //return the frame that was evicted
 }
 
 void BufferPool::write_back(Frame* frame){
-  std::string data_path = "../" + path + file_path + frame->table_name
+  std::string data_path = path + frame->table_name
     + "_" + std::to_string(frame->first_rid_page_range)
     + "_" + std::to_string(frame->first_rid_page)
     + "_" + std::to_string(frame->column) + ".dat";
