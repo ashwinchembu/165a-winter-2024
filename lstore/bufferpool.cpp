@@ -7,6 +7,7 @@
 #include <fcntl.h>
 #include <cmath>
 #include <stdexcept> // Throwing errors
+#include <iostream>
 #include <unistd.h>
 
 #include "page.h"
@@ -176,6 +177,8 @@ Frame* BufferPool::insert_into_frame(const RID& rid, const int& column, Page* pa
 // fread(p->data, sizeof(int), (p->num_rows)*sizeof(int), fp);
 
 void BufferPool::insert_new_page(const RID& rid, const int& column, const int& value) {
+      std::cout << "what?" << std::endl;
+
   pin(rid, column);
   Page* page = new Page();
   *(page->data + rid.offset * sizeof(int)) = value;
