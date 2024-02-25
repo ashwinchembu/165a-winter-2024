@@ -190,10 +190,10 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
         for (int i = NUM_METADATA_COLUMNS; i < num_column; i++) {
             buffer_pool.set(new_rid, i, columns[i - NUM_METADATA_COLUMNS]);
         }
-        std::cout << "expr" << std::endl;
         num_slot_used_base++;
     }
     base_last_wasfull = (num_slot_used_base == PAGE_SIZE);
+        std::cout << "expr" << std::endl;
     // Inserted.
     return 0;
 }
