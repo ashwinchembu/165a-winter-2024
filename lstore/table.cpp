@@ -170,9 +170,7 @@ COMPILER_SYMBOL int Table_num_columns(int* obj){
 }
 
 Table::Table(const std::string& name, const int& num_columns, const int& key): name(name), key(key), num_columns(num_columns) {
-	std::cout << 1 << std::endl;
     index = new Index();
-	std::cout << 2 << std::endl;
     index->setTable(this);
 };
 

@@ -17,7 +17,6 @@ for i in range(0, 1000000):
 insert_time_1 = process_time()
 
 print("Inserting 10K records took:  \t\t\t", insert_time_1 - insert_time_0)
-db.close()
 # Measuring update Performance
 update_cols = [
     [None, None, None, None, None],
