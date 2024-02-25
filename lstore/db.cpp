@@ -44,7 +44,6 @@ COMPILER_SYMBOL void Database_destructor(int* obj){
 }
 
 COMPILER_SYMBOL int* Database_create_table(int*obj,char* name, const int num_columns,  const int key_index){
-	std::cout << "expr49" << std::endl;
 	Database* self = ((Database*)obj);
 	Table* ret = new Table(self->create_table({name},num_columns,key_index));
 
@@ -84,7 +83,7 @@ Database::Database() {
 	if (!std::filesystem::is_directory(file_path) || !std::filesystem::exists(file_path)) { // Check if src folder exists
 		std::filesystem::create_directories(file_path); // create src folder
 	}
-	std::cout << buffer_pool.path.c_str() << std::endl;
+	std::cout << buffer_pool.path << std::endl;
 }
 
 Database::~Database() {
@@ -178,7 +177,6 @@ void Database::write(){
  *
  */
 Table Database::create_table(const std::string& name, const int& num_columns, const int& key_index){
-  std::cout << "expr" << std::endl;
   Table table(name, num_columns, key_index);
   auto insert = tables.insert(std::make_pair(name, table));
   if (insert.second == false) {

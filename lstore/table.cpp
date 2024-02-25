@@ -265,7 +265,6 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
     	// Push the deep copy to the merge queue
     	merge_queue.push(deep_copy);
 	}
-	std::cout << "???" << std::endl;
 	// int err = (page_range[i].get())->update(rid, rid_id, columns);
 	page_directory.insert({rid_id, new_rid});
     return new_rid;

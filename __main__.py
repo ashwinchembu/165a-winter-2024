@@ -5,14 +5,13 @@ from random import choice, randrange
 
 # Student Id and 4 grades
 db = Database()
-print("??")
 grades_table = db.create_table('Grades', 5, 0)
 query = Query(grades_table)
 keys = []
 
 insert_time_0 = process_time()
 for i in range(0, 1000000):
-    #print("inserting ", i, "th value")
+    print("inserting ", i, "th value")
     query.insert(906659671 + i, 93, 0, 0, 0)
     keys.append(906659671 + i)
 insert_time_1 = process_time()
