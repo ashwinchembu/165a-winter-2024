@@ -74,7 +74,6 @@ void BufferPool::set (const RID& rid, const int& column, int value){
   // std::cout << *(found->page) << std::endl << std::endl;
   found->dirty = true; //the page has been modified
   unpin(rid, column);
-  std::cout << sizeof(*(found->page->data)) << std::endl;
   return;
 }
 
