@@ -379,7 +379,7 @@ int Page::write(const int& value) {
 std::ostream& operator<<(std::ostream& os, const Page& p)
 {
     for (int i = 0; i < PAGE_SIZE; i++) {
-        os << *(p.data + i*sizeof(int)) << " ";
+        os << *(p.data + i) << " ";
     }
     return os;
 }
