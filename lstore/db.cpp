@@ -1,5 +1,6 @@
 #include <map>
 #include <string>
+#include <filesystem>
 #include <stdexcept>
 #include <cstdio>
 #include "table.h"
@@ -9,7 +10,6 @@
 #include <cstring>
 #include "config.h"
 #include "../DllConfig.h"
-#include <experimental/filesystem> // We are using c++11
 
 std::vector<int>bufferVector;
 
@@ -79,12 +79,10 @@ COMPILER_SYMBOL void Database_close(int* obj){
 Database::Database() {
 //	BufferPool buffer_pool(BUFFER_POOL_SIZE);
 //	std::cout << "expr" << std::endl;
-	if (!std::experimental::filesystem::is_directory(file_path) || !std::experimental::filesystem::exists(file_path)) { // Check if src folder exists
-		std::experimental::filesystem::create_directory(file_path); // create src folder
-	}
+
 	buffer_pool.path = file_path + "/Disk/";
-	if (!std::experimental::filesystem::is_directory(buffer_pool.path) || !std::experimental::filesystem::exists(buffer_pool.path)) { // Check if src folder exists
-		std::experimental::filesystem::create_directory(buffer_pool.path); // create src folder
+	if (!std::filesystem::is_directory(file_path) || !std::filesystem::exists(file_path)) { // Check if src folder exists
+		std::filesystem::create_directories(buffer_pool.path); // create src folder
 	}
 }
 
@@ -99,8 +97,8 @@ void Database::open(const std::string& path) {
 	buffer_pool.path = path + "/Disk/";
 	file_path = path;
 
-	if (!std::experimental::filesystem::is_directory(buffer_pool.path) || !std::experimental::filesystem::exists(buffer_pool.path)) { // Check if src folder exists
-		std::experimental::filesystem::create_directory(buffer_pool.path); // create src folder
+	if (!std::filesystem::is_directory(buffer_pool.path) || !std::filesystem::exists(buffer_pool.path)) { // Check if src folder exists
+		std::filesystem::create_directories(buffer_pool.path); // create src folder
 	}
 
 
