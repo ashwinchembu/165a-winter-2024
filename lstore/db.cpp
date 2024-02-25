@@ -44,8 +44,10 @@ COMPILER_SYMBOL void Database_destructor(int* obj){
 }
 
 COMPILER_SYMBOL int* Database_create_table(int*obj,char* name, const int num_columns,  const int key_index){
+	std::cout << "expr49" << std::endl;
 	Database* self = ((Database*)obj);
 	Table* ret = new Table(self->create_table({name},num_columns,key_index));
+
 
 	return (int*)ret;
 }
@@ -75,17 +77,18 @@ COMPILER_SYMBOL void Database_close(int* obj){
 }
 
 Database::Database() {
-	BufferPool buffer_pool(BUFFER_POOL_SIZE);
-	buffer_pool.path = file_path;
-	std::cout << "expr" << std::endl;
+//	BufferPool buffer_pool(BUFFER_POOL_SIZE);
+//	buffer_pool.path = file_path;
+//	std::cout << "expr" << std::endl;
 }
 
 void Database::open(const std::string& path) {
-	// path is relative to parent directory of this file
-	BufferPool buffer_pool(BUFFER_POOL_SIZE);
-	buffer_pool.path = path;
-	file_path = path;
-	// If the directory is empty then make new database.
+//	// path is relative to parent directory of this file
+//	std::cout<<"call87";
+//	BufferPool buffer_pool(BUFFER_POOL_SIZE);
+//	buffer_pool.path = path;
+//	file_path = path;
+//	// If the directory is empty then make new database.
 	read(path);
 };
 
@@ -101,26 +104,38 @@ void Database::close() {
 };
 
 void Database::read(const std::string& path){
-	FILE* fp = fopen(("../" + path + "/ProgramState.dat").c_str(),"r");
-	int numTables;
-	fread(&numTables,sizeof(int),1,fp);
+	FILE* fp = fopen(std::string("../Disk/ProgramState.dat").c_str(),"r");
 
-	char nameBuffer[128];
 
-	for(int i = 0;i < numTables;i++){
-		fread(&nameBuffer,128,1,fp);
+	 fseek(fp, 0, SEEK_END);
 
-		Table t;
-		t.read(fp);
+	    // Get the current position of the file pointer, which is the file size
+	   long fileSize = ftell(fp);
 
-		tables.insert({{nameBuffer},t});
-	}
+	   if(!fileSize){//database hasn't been used yet
+		   fclose(fp);
+		   return;
+	   }
 
-	fclose(fp);
+	    int numTables;
+	    fread(&numTables,sizeof(int),1,fp);
+
+		char nameBuffer[128];
+
+		for(int i = 0;i < numTables;i++){
+			fread(&nameBuffer,128,1,fp);
+
+			Table t;
+			t.read(fp);
+
+			tables.insert({{nameBuffer},t});
+		}
+
+		fclose(fp);
 }
 
 void Database::write(){
-	FILE* fp = fopen(("../" + file_path + "/ProgramState.dat").c_str(),"w");
+	FILE* fp = fopen(std::string("../Disk/ProgramState.dat").c_str(),"w");
 	int numTables = tables.size();
 
 	fwrite(&numTables,sizeof(int),1,fp);
