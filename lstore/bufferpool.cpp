@@ -232,7 +232,7 @@ void BufferPool::write_back(Frame* frame){
 
     close(fd);
   }
-
+  delete frame->page;
   frame->valid = false; //frame is now empty
 }
 
