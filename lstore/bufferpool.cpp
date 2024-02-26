@@ -122,7 +122,6 @@ void BufferPool::update_ages(Frame*& just_accessed, Frame*& range_begin){ //chan
     // just_accessed->next = range_begin;
     // range_begin->prev = just_accessed;
     // range_begin = just_accessed;
-    std::cout << ":(" << std::endl;
   }
   return;
 }
@@ -152,7 +151,7 @@ Frame* BufferPool::load (const RID& rid, const int& column){ //return the frame 
 Frame* BufferPool::insert_into_frame(const RID& rid, const int& column, Page* page){ //return the frame that the page was placed into
   Frame* frame = nullptr;
   size_t hash = hash_fun(rid.first_rid_page); //determine correct hash range
-
+  std::cout << frame_directory[hash] << std::endl;
   if(frame_directory[hash] == (bufferpool_size / NUM_BUFFERPOOL_HASH_PARTITIONS)){ //if hash range is full
     frame = evict(rid);
   } else{ //find empty frame to fill
@@ -238,6 +237,8 @@ Frame* BufferPool::evict(const RID& rid){ //return the frame that was evicted
       if(current_frame->dirty && current_frame->valid){ //if dirty and valid write back to disk
         write_back(current_frame);
       }
+      frame_directory[hash]--;
+      current_frame->valid = false; //frame is now empty
       if(rid.id == 32769){
         std::cout << "Evicted " << std::endl;
       }
@@ -264,7 +265,6 @@ void BufferPool::write_back(Frame* frame){
   fwrite(frame->page->data, frame->page->num_rows, sizeof(int), fp);
   fclose(fp);
   delete frame->page;
-  frame->valid = false; //frame is now empty
 }
 
 void BufferPool::write_back_all (){
