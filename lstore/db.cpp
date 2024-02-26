@@ -85,9 +85,9 @@ Database::Database() {
 
 Database::~Database() {
 	buffer_pool.~BufferPool();
-	for(auto& t : tables){
-		delete t.second.index;
-	}
+	// for(auto& t : tables){
+	// 	delete t.second.index;
+	// }
 }
 
 void Database::open(const std::string& path) {
