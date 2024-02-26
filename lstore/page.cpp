@@ -228,12 +228,15 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
         rid_new.first_rid_page = rid_new.id;
         base_last_wasfull = false;
         tail_last++;
+        std::cout << "Pagerange 4" << std::endl;
 
         buffer_pool.insert_new_page(rid_new, INDIRECTION_COLUMN, rid.id);
         buffer_pool.insert_new_page(rid_new, RID_COLUMN, rid_new.id);
         buffer_pool.insert_new_page(rid_new, TIMESTAMP_COLUMN, 0);
         buffer_pool.insert_new_page(rid_new, BASE_RID_COLUMN, rid.id);
         buffer_pool.insert_new_page(rid_new, TPS, 0);
+        std::cout << "Pagerange 5" << std::endl;
+
         for (int i = NUM_METADATA_COLUMNS; i < num_column; i++) {
             if (std::isnan(columns[i - NUM_METADATA_COLUMNS]) || columns[i-NUM_METADATA_COLUMNS] < -2147480000) { // Wrapper changes None to smallest integer possible
                 // If there are no update, we write the value from latest update
@@ -244,17 +247,23 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
                 schema_encoding = schema_encoding | (0b1 << (num_column - i - 1));
             }
         }
+        std::cout << "Pagerange 6" << std::endl;
+
         buffer_pool.insert_new_page(rid_new, SCHEMA_ENCODING_COLUMN, schema_encoding);
         num_slot_used_tail = 1;
         pages.push_back(rid_new);
     } else {
         rid_new.first_rid_page = pages.back().first_rid_page;
         rid_new.offset = num_slot_used_tail;
+        std::cout << "Pagerange 4" << std::endl;
+
         buffer_pool.set(rid_new, INDIRECTION_COLUMN, rid.id);
         buffer_pool.set(rid_new, RID_COLUMN, rid_new.id);
         buffer_pool.set(rid_new, TIMESTAMP_COLUMN, 0);
         buffer_pool.set(rid_new, BASE_RID_COLUMN, rid.id);
         buffer_pool.set(rid_new, TPS, 0);
+        std::cout << "Pagerange 5" << std::endl;
+
         for (int i = NUM_METADATA_COLUMNS; i < num_column; i++) {
             buffer_pool.set(rid_new, i, columns[i - NUM_METADATA_COLUMNS]);
 
@@ -267,6 +276,8 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
                 schema_encoding = schema_encoding | (0b1 << (num_column - i - 1));
             }
         }
+        std::cout << "Pagerange 6" << std::endl;
+
         buffer_pool.set(rid_new, SCHEMA_ENCODING_COLUMN, schema_encoding);
         num_slot_used_tail++;
     }
