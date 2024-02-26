@@ -175,7 +175,7 @@ Table::Table(const std::string& name, const int& num_columns, const int& key): n
 };
 
 Table::~Table() {
-	delete index;
+	//delete index;
 }
 
 /***
