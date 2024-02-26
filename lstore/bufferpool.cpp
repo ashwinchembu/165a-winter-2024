@@ -109,7 +109,7 @@ void BufferPool::update_ages(Frame*& just_accessed, Frame*& range_begin){ //chan
     }
     just_accessed->prev = range_begin->prev; //just_accessed becomes the new range beginning
     just_accessed->next = range_begin;
-    if (!range_begin->prev) {
+    if (range_begin->prev != nullptr) {
       range_begin->prev->next = just_accessed;
     }
     range_begin->prev = just_accessed;
