@@ -170,6 +170,15 @@ void BufferPool::insert_new_page(const RID& rid, const int& column, const int& v
   // *(page->data + rid.offset) = value;
     std::cout << "Inserting " << rid.first_rid_page << std::endl;
     std::cout << "Inserting column " << column << std::endl;
+    if(rid.id == 32769){
+
+    Frame* range_begin = hash_vector[hash_fun(rid.first_rid_page)];
+    Frame* range_end = hash_vector[hash_fun(rid.first_rid_page) + 1];
+    std::cout << "hash range before insert:\n";
+    while(range_begin != range_end){
+      std::cout << "rid: " << range_begin->first_rid_page << " column: " << range_begin->column << "\n";
+      range_begin = range_begin->next;
+    }}
   Frame* frame = insert_into_frame(rid, column, page); //insert the page into a frame in the bufferpool
   std::cout << "Pin new page" << std::endl;
   pin(rid, column);
@@ -177,7 +186,7 @@ void BufferPool::insert_new_page(const RID& rid, const int& column, const int& v
 
   Frame* range_begin = hash_vector[hash_fun(rid.first_rid_page)];
   Frame* range_end = hash_vector[hash_fun(rid.first_rid_page) + 1];
-  std::cout << "hash range before:\n";
+  std::cout << "hash range before age update:\n";
   while(range_begin != range_end){
     std::cout << "rid: " << range_begin->first_rid_page << " column: " << range_begin->column << "\n";
     range_begin = range_begin->next;
