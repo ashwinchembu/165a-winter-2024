@@ -171,7 +171,8 @@ void BufferPool::insert_new_page(const RID& rid, const int& column, const int& v
     std::cout << "Inserting " << rid.first_rid_page << std::endl;
     std::cout << "Inserting column " << column << std::endl;
     if(rid.id == 32769){
-
+    std::cout << "hash: " << hash_fun(rid.first_rid_page) << '\n';
+    std::cout << "hash + 1: " << hash_fun(rid.first_rid_page) + 1 << '\n';
     Frame* range_begin = hash_vector[hash_fun(rid.first_rid_page)];
     Frame* range_end = hash_vector[hash_fun(rid.first_rid_page) + 1];
     std::cout << "hash range before insert:\n";
