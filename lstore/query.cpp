@@ -1,5 +1,7 @@
 #include <vector>
 #include <string>
+#include <cmath>
+#include "config.h"
 #include "table.h"
 #include "page.h"
 #include "index.h"
@@ -116,7 +118,7 @@ std::vector<Record> Query::select_version(const int& search_key, const int& sear
             std::vector<int> record_columns(table->num_columns);
             for(int j = 0; j < table->num_columns; j++){ //transfer columns from desired version into record object
                 if(projected_columns_index[j]){
-                    record_columns[j] = buffer_pool.get(rid, i + NUM_METADATA_COLUMNS);
+                    record_columns[j] = buffer_pool.get(rid, j + NUM_METADATA_COLUMNS);
                 }
             }
             records.push_back(Record(rids[i], search_key, record_columns)); //add a record with RID of base page, value of primary key, and contents of desired version
@@ -134,7 +136,11 @@ bool Query::update(const int& primary_key, const std::vector<int>& columns) {
     std::vector<int> new_columns;
     for(int i = 0; i < table->num_columns; i++){ // fill old_columns with the contents of previous update
         old_columns.push_back(buffer_pool.get(last_update, i + NUM_METADATA_COLUMNS));
-        new_columns.push_back(buffer_pool.get(update_rid, i + NUM_METADATA_COLUMNS));
+        if (std::isnan(columns[i]) || columns[i] < -2147480000) {
+            new_columns.push_back(old_columns[i]);
+        } else {
+            new_columns.push_back(buffer_pool.get(update_rid, i + NUM_METADATA_COLUMNS));
+        }
     }
     if(update_rid.id != 0){
         table->index->update_index(base_rid.id, new_columns, old_columns); //update the index

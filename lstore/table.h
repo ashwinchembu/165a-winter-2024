@@ -44,6 +44,7 @@ public:
     int num_columns; //number of columns of actual data, excluding the metadata
 
     Table () {};
+    ~Table ();
     Table(const std::string& name, const int& num_columns, const int& key);
 
     friend class Index;
