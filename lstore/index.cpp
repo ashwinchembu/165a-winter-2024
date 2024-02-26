@@ -115,12 +115,11 @@ std::vector<int> Index::locate (const int& column_number, const int& value) {
     if(index == indices.end()){
       create_index(column_number);
       index = indices.find(column_number);
+      std::cout << "expr" << std::endl;
     }
-    std::cout << "expr" << std::endl;
     auto range = (*index).second.equal_range(value); //check for all matching records in the index
     for(auto iter = range.first; iter != range.second; iter++){
         matching_records.push_back(iter->second);
-        std::cout << "expr" << std::endl;
     }
 
     return matching_records;
@@ -165,7 +164,7 @@ void Index::create_index(const int& column_number) {
             int value;
             int indirection_num = buffer_pool.get(rid, INDIRECTION_COLUMN);
 
-            if (buffer_pool.get(rid, SCHEMA_ENCODING_COLUMN)) { // If the column of the record at loc is updated
+            if (buffer_pool.get(rid, SCHEMA_ENCODING_COLUMN >> (column_number - 1)) & (0b1)) { // If the column of the record at loc is updated
                 RID update_rid = table->page_directory.find(indirection_num)->second;
                 value = buffer_pool.get(update_rid, column_number + NUM_METADATA_COLUMNS);
             } else {
