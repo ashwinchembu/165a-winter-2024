@@ -107,7 +107,14 @@ void BufferPool::update_ages(Frame*& just_accessed, Frame*& range_begin){ //chan
   std::cout << "range_begin->next " << range_begin->next << std::endl;
   std::cout << "just_accessed->prev " << just_accessed->prev << std::endl;
   std::cout << "just_accessed->next " << just_accessed->next << std::endl;
-
+  std::cout << "Printing the whole bufferpool: \n";
+  Frame* current_frame = head;
+  int i = 0;
+  while(current_frame != nullptr){ //iterate through entire bufferpool
+    i++;
+    std::cout << i << " " << current_frame << "\n";
+    current_frame = current_frame->next;
+  }
   if(just_accessed != range_begin){ //if not already the range beginning / most recently accessed
     if(just_accessed->next == nullptr ){
       tail = just_accessed->prev;
@@ -131,6 +138,14 @@ void BufferPool::update_ages(Frame*& just_accessed, Frame*& range_begin){ //chan
   std::cout << "range_begin->next " << range_begin->next << std::endl;
   std::cout << "just_accessed->prev " << just_accessed->prev << std::endl;
   std::cout << "just_accessed->next " << just_accessed->next << std::endl;
+    std::cout << "Printing the whole bufferpool: \n";
+  Frame* current_frame = head;
+  int i = 0;
+  while(current_frame != nullptr){ //iterate through entire bufferpool
+    i++;
+    std::cout << i << " " << current_frame << "\n";
+    current_frame = current_frame->next;
+  }
   return;
 }
 
