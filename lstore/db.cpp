@@ -108,9 +108,10 @@ void Database::close() {
 	// for (std::map<std::string, Table>::iterator itr = tables.begin(); itr != tables.end(); itr++) {
 	// 	itr->second.merge();
 	// }
-
 	write();
+	std::cout << "expr" << std::endl;
 	buffer_pool.write_back_all();
+	std::cout << "expr" << std::endl;
 };
 
 void Database::read(const std::string& path){
