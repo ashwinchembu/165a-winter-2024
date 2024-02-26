@@ -41,7 +41,7 @@ public:
     PageRange () {} // Never use this outside of loading saved data
     PageRange (RID& new_rid, const std::vector<int>& columns);
     // PageRange(const PageRange& other);
-    ~PageRange();
+    ~PageRange() { std::cout << "???????" << std::endl; };
     int insert(RID& new_rid, const std::vector<int>& columns);
     int update(RID& rid, RID& rid_new, const std::vector<int>& columns, const std::map<int, RID>& page_directory);
     bool base_has_capacity () const;
