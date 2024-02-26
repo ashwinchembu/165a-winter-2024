@@ -39,8 +39,6 @@ BufferPool::BufferPool (const int& num_pages) : bufferpool_size(num_pages){
   tail = new Frame; //create tail
   old_frame->next = tail;
   tail->prev = old_frame;
-
-  Frame* current_frame = head;
 }
 
 BufferPool::~BufferPool () {
@@ -102,6 +100,14 @@ Frame* BufferPool::search(const RID& rid, const int& column){
 }
 
 void BufferPool::update_ages(Frame*& just_accessed, Frame*& range_begin){ //change ages and reorder linked list
+  std::cout << "before update age " << std::endl;
+  std::cout << "just_accessed " << just_accessed << std::endl;
+  std::cout << "range_begin " << range_begin << std::endl;
+  std::cout << "range_begin->prev " << range_begin->prev << std::endl;
+  std::cout << "range_begin->next " << range_begin->next << std::endl;
+  std::cout << "just_accessed->prev " << just_accessed->prev << std::endl;
+  std::cout << "just_accessed->next " << just_accessed->next << std::endl;
+
   if(just_accessed != range_begin){ //if not already the range beginning / most recently accessed
     if(just_accessed->next == nullptr ){
       tail = just_accessed->prev;
@@ -118,6 +124,13 @@ void BufferPool::update_ages(Frame*& just_accessed, Frame*& range_begin){ //chan
     range_begin->prev = just_accessed;
     range_begin = just_accessed;
   }
+  std::cout << "after update age " << std::endl;
+  std::cout << "just_accessed " << just_accessed << std::endl;
+  std::cout << "range_begin " << range_begin << std::endl;
+  std::cout << "range_begin->prev " << range_begin->prev << std::endl;
+  std::cout << "range_begin->next " << range_begin->next << std::endl;
+  std::cout << "just_accessed->prev " << just_accessed->prev << std::endl;
+  std::cout << "just_accessed->next " << just_accessed->next << std::endl;
   return;
 }
 
