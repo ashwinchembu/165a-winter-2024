@@ -91,17 +91,16 @@ void Database::open(const std::string& path) {
 //	// path is relative to parent directory of this file
 //	std::cout<<"call87";
 //	BufferPool buffer_pool(BUFFER_POOL_SIZE);
-	buffer_pool.set_path(file_path + "/Disk/");
 
 	file_path = path;
+	buffer_pool.set_path(file_path + "/Disk/");
 
 	if (!std::filesystem::is_directory(file_path) || !std::filesystem::exists(file_path)) { // Check if src folder exists
 		std::filesystem::create_directories(file_path + "/Disk/"); // create src folder
+	} else {
+		read(path);
 	}
-
-
 //	// If the directory is empty then make new database.
-	read(path);
 };
 
 void Database::close() {
@@ -116,33 +115,35 @@ void Database::close() {
 
 void Database::read(const std::string& path){
 	FILE* fp = fopen((path + "/ProgramState.dat").c_str(),"r");
+	if (!fp) {
+		return;
+	}
 
+// 	fseek(fp, 0, SEEK_END);
+//
+// 	// Get the current position of the file pointer, which is the file size
+// 	long fileSize = ftell(fp);
+//
+// 	if(!fileSize){//database hasn't been used yet
+// 		fclose(fp);
+// 		return;
+// 	}
 
-	 fseek(fp, 0, SEEK_END);
+	int numTables;
+	fread(&numTables,sizeof(int),1,fp);
 
-	    // Get the current position of the file pointer, which is the file size
-	   long fileSize = ftell(fp);
+	char nameBuffer[128];
 
-	   if(!fileSize){//database hasn't been used yet
-		   fclose(fp);
-		   return;
-	   }
+	for(int i = 0;i < numTables;i++){
+		fread(&nameBuffer,128,1,fp);
 
-	    int numTables;
-	    fread(&numTables,sizeof(int),1,fp);
+		Table t;
+		t.read(fp);
 
-		char nameBuffer[128];
+		tables.insert({{nameBuffer},t});
+	}
 
-		for(int i = 0;i < numTables;i++){
-			fread(&nameBuffer,128,1,fp);
-
-			Table t;
-			t.read(fp);
-
-			tables.insert({{nameBuffer},t});
-		}
-
-		fclose(fp);
+	fclose(fp);
 }
 
 void Database::write(){
