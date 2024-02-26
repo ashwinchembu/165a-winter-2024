@@ -20,6 +20,7 @@
 BufferPool::BufferPool (const int& num_pages) : bufferpool_size(num_pages){
   head = new Frame; //create head
   hash_vector.push_back(head); //head will be the first hash range beginning
+  std::cout << "Range begin at " << head << "\n";
   frame_directory.push_back(0); //each hash range begins empty
 
   Frame* old_frame = head; //create number of frames according to bufferpool size
@@ -29,6 +30,7 @@ BufferPool::BufferPool (const int& num_pages) : bufferpool_size(num_pages){
     new_frame->prev = old_frame;
     if(i % (bufferpool_size / NUM_BUFFERPOOL_HASH_PARTITIONS) == 0){ //check if the frame should be a hash range beginning
       hash_vector.push_back(new_frame);
+      std::cout << "Range begin at " << new_frame << "\n";
       frame_directory.push_back(0);
     }
     old_frame = new_frame;
@@ -37,6 +39,13 @@ BufferPool::BufferPool (const int& num_pages) : bufferpool_size(num_pages){
   tail = new Frame; //create tail
   old_frame->next = tail;
   tail->prev = old_frame;
+
+  Frame* current_frame = head;
+  std::cout << "Printing the whole bufferpool: \n";
+  while(current_frame != nullptr){ //iterate through entire bufferpool
+    std::cout << current_frame << "\n";
+    current_frame = current_frame->next;
+  }
 }
 
 BufferPool::~BufferPool () {
