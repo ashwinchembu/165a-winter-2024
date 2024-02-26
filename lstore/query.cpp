@@ -137,11 +137,16 @@ bool Query::update(const int& primary_key, const std::vector<int>& columns) {
     std::vector<int> old_columns;
     std::vector<int> new_columns;
     for(int i = 0; i < table->num_columns; i++){ // fill old_columns with the contents of previous update
+        std::cout << "Old col: " << old_columns[i] << std::endl;
         old_columns.push_back(buffer_pool.get(last_update, i + NUM_METADATA_COLUMNS));
-                std::cout << "Old col: " << old_columns[i] << std::endl;
+        if (std::isnan(columns[i - NUM_METADATA_COLUMNS]) || columns[i-NUM_METADATA_COLUMNS] < -2147480000) {
 
-        new_columns.push_back(buffer_pool.get(update_rid, i + NUM_METADATA_COLUMNS));
-                std::cout << "New col: " << new_columns[i] << std::endl;
+            new_columns.push_back(buffer_pool.get(last_update, i + NUM_METADATA_COLUMNS));
+        } else {
+
+            new_columns.push_back(buffer_pool.get(update_rid, i + NUM_METADATA_COLUMNS));
+        }
+        std::cout << "New col: " << new_columns[i] << std::endl;
     }
     if(update_rid.id != 0){
         table->index->update_index(base_rid.id, new_columns, old_columns); //update the index
