@@ -263,7 +263,7 @@ void BufferPool::write_back(Frame* frame){
   }
   std::string data_path = path + frame->table_name
     + "_" + std::to_string(frame->first_rid_page_range)
-    + "_" + frp_s
+    + frp_s
     + "_" + std::to_string(frame->column) + ".dat";
   FILE* fp = fopen((data_path).c_str(),"w");
   if (!fp) {
