@@ -100,21 +100,7 @@ Frame* BufferPool::search(const RID& rid, const int& column){
 }
 
 void BufferPool::update_ages(Frame*& just_accessed, Frame*& range_begin){ //change ages and reorder linked list
-  std::cout << "before update age " << std::endl;
-  std::cout << "just_accessed " << just_accessed << std::endl;
-  std::cout << "range_begin " << range_begin << std::endl;
-  std::cout << "range_begin->prev " << range_begin->prev << std::endl;
-  std::cout << "range_begin->next " << range_begin->next << std::endl;
-  std::cout << "just_accessed->prev " << just_accessed->prev << std::endl;
-  std::cout << "just_accessed->next " << just_accessed->next << std::endl;
-  std::cout << "Printing the whole bufferpool: \n";
-  Frame* current_frame = head;
-  int i = 0;
-  while(current_frame != nullptr){ //iterate through entire bufferpool
-    i++;
-    std::cout << i << " " << current_frame << "\n";
-    current_frame = current_frame->next;
-  }
+
   if(just_accessed != range_begin){ //if not already the range beginning / most recently accessed
     if(just_accessed->next == nullptr ){
       tail = just_accessed->prev;
@@ -130,21 +116,6 @@ void BufferPool::update_ages(Frame*& just_accessed, Frame*& range_begin){ //chan
     just_accessed->next = range_begin;
     range_begin->prev = just_accessed;
     range_begin = just_accessed;
-  }
-  std::cout << "after update age " << std::endl;
-  std::cout << "just_accessed " << just_accessed << std::endl;
-  std::cout << "range_begin " << range_begin << std::endl;
-  std::cout << "range_begin->prev " << range_begin->prev << std::endl;
-  std::cout << "range_begin->next " << range_begin->next << std::endl;
-  std::cout << "just_accessed->prev " << just_accessed->prev << std::endl;
-  std::cout << "just_accessed->next " << just_accessed->next << std::endl;
-    std::cout << "Printing the whole bufferpool: \n";
-  current_frame = head;
-  i = 0;
-  while(current_frame != nullptr){ //iterate through entire bufferpool
-    i++;
-    std::cout << i << " " << current_frame << "\n";
-    current_frame = current_frame->next;
   }
   return;
 }
@@ -207,54 +178,53 @@ void BufferPool::insert_new_page(const RID& rid, const int& column, const int& v
   page->write(value);
   // *(page->data + rid.offset) = value;
 
-
-    if(rid.id >= 20000){
-
-  std::cout << "Printing the whole bufferpool: \n";
-  Frame* current_frame = head;
-  int i = 0;
-  while(current_frame != nullptr){ //iterate through entire bufferpool
-    i++;
-    std::cout << i << " " << current_frame << "\n";
-    current_frame = current_frame->next;
-  }
-    std::cout << "range begin: " << hash_vector[hash_fun(rid.first_rid_page)] << '\n';
-    std::cout << "range end: " << hash_vector[hash_fun(rid.first_rid_page) + 1] << '\n';
-    Frame* range_begin = hash_vector[hash_fun(rid.first_rid_page)];
-    Frame* range_end = hash_vector[hash_fun(rid.first_rid_page) + 1];
-    std::cout << "hash range before insert:\n";
-    while(!(*range_begin == *range_end)){
-      std::cout << "current frame: " << range_begin << '\n';
-      std::cout << "rid: " << range_begin->first_rid_page << " column: " << range_begin->column << "\n";
-      range_begin = range_begin->next;
-    }}
-
-
   Frame* frame = insert_into_frame(rid, column, page); //insert the page into a frame in the bufferpool
   pin(rid, column);
 
 
-    if(rid.id >= 20000){
+  if(rid.id >= 20000){
 
-
-  Frame* range_begin = hash_vector[hash_fun(rid.first_rid_page)];
-  Frame* range_end = hash_vector[hash_fun(rid.first_rid_page) + 1];
-  std::cout << "hash range before age update:\n";
-  while(!(*range_begin == *range_end)){
-    std::cout << "rid: " << range_begin->first_rid_page << " column: " << range_begin->column << "\n";
-    range_begin = range_begin->next;
+    std::cout << "before update age " << std::endl;
+    std::cout << "frame " << frame << std::endl;
+    std::cout << "hash_vector[hash_fun(rid.first_rid_page)] " << hash_vector[hash_fun(rid.first_rid_page)] << std::endl;
+    std::cout << "hash_vector[hash_fun(rid.first_rid_page)]->prev " << hash_vector[hash_fun(rid.first_rid_page)]->prev << std::endl;
+    std::cout << "hash_vector[hash_fun(rid.first_rid_page)]->next " << hash_vector[hash_fun(rid.first_rid_page)]->next << std::endl;
+    std::cout << "frame->prev " << frame->prev << std::endl;
+    std::cout << "frame->next " << frame->next << std::endl;
+    std::cout << "Printing the whole bufferpool: \n";
+    Frame* current_frame = head;
+    int i = 0;
+    while(current_frame != nullptr){ //iterate through entire bufferpool
+      i++;
+      std::cout << i << " " << current_frame << "\n";
+      current_frame = current_frame->next;
+    }
   }
-  range_begin = hash_vector[hash_fun(rid.first_rid_page)];
-  range_end = hash_vector[hash_fun(rid.first_rid_page) + 1];
-  std::cout << "hash range after:\n";
-  while(!(*range_begin == *range_end)){
-    std::cout << "rid: " << range_begin->first_rid_page << " column: " << range_begin->column << "\n";
-    range_begin = range_begin->next;
-  }}
+
 
 
   frame->dirty = true; //make sure data will be written back to disk
   update_ages(frame, hash_vector[hash_fun(rid.first_rid_page)]);
+
+  if(rid.id >= 20000){
+
+    std::cout << "before update age " << std::endl;
+    std::cout << "frame " << frame << std::endl;
+    std::cout << "hash_vector[hash_fun(rid.first_rid_page)] " << hash_vector[hash_fun(rid.first_rid_page)] << std::endl;
+    std::cout << "hash_vector[hash_fun(rid.first_rid_page)]->prev " << hash_vector[hash_fun(rid.first_rid_page)]->prev << std::endl;
+    std::cout << "hash_vector[hash_fun(rid.first_rid_page)]->next " << hash_vector[hash_fun(rid.first_rid_page)]->next << std::endl;
+    std::cout << "frame->prev " << frame->prev << std::endl;
+    std::cout << "frame->next " << frame->next << std::endl;
+    std::cout << "Printing the whole bufferpool: \n";
+    Frame* current_frame = head;
+    int i = 0;
+    while(current_frame != nullptr){ //iterate through entire bufferpool
+      i++;
+      std::cout << i << " " << current_frame << "\n";
+      current_frame = current_frame->next;
+    }
+  }
+
   unpin(rid, column);
 
   return;
