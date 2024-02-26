@@ -254,12 +254,12 @@ void BufferPool::pin (const RID& rid, const int& column) {
 void BufferPool::unpin (const RID& rid, const int& column) {
   Frame* found = search(rid, column);
   if(found == nullptr || !found->valid){ //if not in the bufferpool
-    throw std::invalid_argument("Attempt to unpin record that was not already pinned");
+    throw std::invalid_argument("Attempt to unpin record that was not already pinned (No record found)");
   }
   (found->pin)--;
   if(found->pin < 0){ //if pin count gets below 0
     (found->pin) = 0;
-    throw std::invalid_argument("Attempt to unpin record that was not already pinned");
+    throw std::invalid_argument("Attempt to unpin record that was not already pinned (Pin negative value)");
   }
   return;
 }
