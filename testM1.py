@@ -127,7 +127,7 @@ def speed_tester2():
 
         records[key] = [key, randint(0, 20), randint(0, 20), randint(0, 20), randint(0, 20)]
         query.insert(*records[key])
-        # print('inserted', records[key])
+        print('inserted', records[key])
     print("Insert finished")
 
     # Check inserted records using select query
@@ -281,12 +281,12 @@ def run_test():
         print(e)
         traceback.print_exc()
 
-    # try:
-    #     speed_tester2()
-    # except Exception as e:
-    #     print("Something went wrong")
-    #     print(e)
-    #     traceback.print_exc()
+    try:
+        speed_tester2()
+    except Exception as e:
+        print("Something went wrong")
+        print(e)
+        traceback.print_exc()
 
     end = timer()
     print("\n------------------------------------")
