@@ -214,7 +214,7 @@ void BufferPool::write_back(Frame* frame){
   int frp = frame->first_rid_page;
   std::string frp_s = std::to_string(frame->first_rid_page);
   if (frp < 0) {
-    frp_s = "_M" + std::to_string(-1 * (frp));
+    frp_s = "M" + std::to_string(-1 * (frp));
   }
   std::string data_path = path + frame->table_name
     + "_" + std::to_string(frame->first_rid_page_range)
