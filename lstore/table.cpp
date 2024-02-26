@@ -230,8 +230,6 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 		}
 	}
 	std::cout << "Update 3" << std::endl;
-	std::cout << rid.first_rid_page_range << std::endl;
-	std::cout << i << std::endl;
 	RID new_rid(rid_id);
 	new_rid.table_name = name;
 	new_rid.first_rid_page_range = rid.first_rid_page_range;
