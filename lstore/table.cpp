@@ -174,6 +174,10 @@ Table::Table(const std::string& name, const int& num_columns, const int& key): n
     index->setTable(this);
 };
 
+Table::~Table() {
+	delete index;
+}
+
 /***
  *
  * Insert a record into appropriate base page.
