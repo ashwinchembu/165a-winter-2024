@@ -102,26 +102,26 @@ Frame* BufferPool::search(const RID& rid, const int& column){
     }
     current_frame = current_frame->next;
   }
-  std::cout << "miss!" << std::endl;
+  // std::cout << "miss!" << std::endl;
   return nullptr; //if not found in the range
 }
 
 void BufferPool::update_ages(Frame*& just_accessed, Frame*& range_begin){ //change ages and reorder linked list
   if(just_accessed != range_begin){ //if not already the range beginning / most recently accessed
-    if(just_accessed->next == nullptr ){
-      tail = just_accessed->prev;
-    } else if (range_begin->prev == nullptr) {
-      head = just_accessed;
-    }
-
-    just_accessed->prev->next = just_accessed->next; //close gap where just_accessed used to be
-    if(just_accessed->next != nullptr){ //if just accessed was not tail
-      just_accessed->next->prev = just_accessed->prev;
-    }
-    just_accessed->prev = range_begin->prev; //just_accessed becomes the new range beginning
-    just_accessed->next = range_begin;
-    range_begin->prev = just_accessed;
-    range_begin = just_accessed;
+    // if(just_accessed->next == nullptr ){
+    //   tail = just_accessed->prev;
+    // } else if (range_begin->prev == nullptr) {
+    //   head = just_accessed;
+    // }
+    //
+    // just_accessed->prev->next = just_accessed->next; //close gap where just_accessed used to be
+    // if(just_accessed->next != nullptr){ //if just accessed was not tail
+    //   just_accessed->next->prev = just_accessed->prev;
+    // }
+    // just_accessed->prev = range_begin->prev; //just_accessed becomes the new range beginning
+    // just_accessed->next = range_begin;
+    // range_begin->prev = just_accessed;
+    // range_begin = just_accessed;
   }
   return;
 }
@@ -256,7 +256,7 @@ void BufferPool::write_back(Frame* frame){
     + "_" + std::to_string(frame->first_rid_page_range)
     + "_" + std::to_string(frame->first_rid_page)
     + "_" + std::to_string(frame->column) + ".dat";
-  std::cout << "Writing back to" << data_path << std::endl;
+  // std::cout << "Writing back to" << data_path << std::endl;
   FILE* fp = fopen((data_path).c_str(),"w");
   if (!fp) {
     throw std::invalid_argument("Couldn't open file " + data_path);
