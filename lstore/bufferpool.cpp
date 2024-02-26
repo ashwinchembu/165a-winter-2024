@@ -77,9 +77,9 @@ void BufferPool::set (const RID& rid, const int& column, int value){
   if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
     found = load(rid, column);
   }
-  update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
   found->page->write(value);
   found->dirty = true; //the page has been modified
+  update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
   unpin(rid, column);
   return;
 }
@@ -107,22 +107,22 @@ Frame* BufferPool::search(const RID& rid, const int& column){
 }
 
 void BufferPool::update_ages(Frame*& just_accessed, Frame*& range_begin){ //change ages and reorder linked list
-  // if(just_accessed != range_begin){ //if not already the range beginning / most recently accessed
-  //   if(just_accessed->next == nullptr ){
-  //     tail = just_accessed->prev;
-  //   } else if (range_begin->prev == nullptr) {
-  //     head = just_accessed;
-  //   }
-  //
-  //   just_accessed->prev->next = just_accessed->next; //close gap where just_accessed used to be
-  //   if(just_accessed->next != nullptr){ //if just accessed was not tail
-  //     just_accessed->next->prev = just_accessed->prev;
-  //   }
-  //   just_accessed->prev = range_begin->prev; //just_accessed becomes the new range beginning
-  //   just_accessed->next = range_begin;
-  //   range_begin->prev = just_accessed;
-  //   range_begin = just_accessed;
-  // }
+  if(just_accessed != range_begin){ //if not already the range beginning / most recently accessed
+    if(just_accessed->next == nullptr ){
+      tail = just_accessed->prev;
+    } else if (range_begin->prev == nullptr) {
+      head = just_accessed;
+    }
+
+    just_accessed->prev->next = just_accessed->next; //close gap where just_accessed used to be
+    if(just_accessed->next != nullptr){ //if just accessed was not tail
+      just_accessed->next->prev = just_accessed->prev;
+    }
+    just_accessed->prev = range_begin->prev; //just_accessed becomes the new range beginning
+    just_accessed->next = range_begin;
+    range_begin->prev = just_accessed;
+    range_begin = just_accessed;
+  }
   return;
 }
 
@@ -210,7 +210,6 @@ void BufferPool::insert_new_page(const RID& rid, const int& column, const int& v
     range_begin = range_begin->next;
   }
 }
-  update_ages(frame, hash_vector[hash_fun(rid.first_rid_page)]);
   if(rid.id == 32769){
 
   Frame* range_begin = hash_vector[hash_fun(rid.first_rid_page)];
@@ -221,6 +220,7 @@ void BufferPool::insert_new_page(const RID& rid, const int& column, const int& v
     range_begin = range_begin->next;
   }}
   frame->dirty = true; //make sure data will be written back to disk
+  update_ages(frame, hash_vector[hash_fun(rid.first_rid_page)]);
   unpin(rid, column);
 
   return;
