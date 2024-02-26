@@ -11,6 +11,8 @@
 #include <memory>
 #include <queue>
 #include "config.h"
+#include "bufferpool.h"
+
 
 // param name: string         #Table name
 // param num_columns: int     #Number of Columns: all columns are integer
@@ -32,7 +34,7 @@ public:
     std::string name;
     int key; //primary key
     std::map<int, RID> page_directory; //<RID.id, RID>
-    std::queue<std::shared_ptr<PageRange>> merge_queue;
+    std::queue<std::vector<Frame*>> merge_queue;
     //std::queue<std::vector<std::shared_ptr<Page>>> merge_queue;
     std::vector<std::shared_ptr<PageRange>> page_range;
     std::map<int, int> page_range_update;
