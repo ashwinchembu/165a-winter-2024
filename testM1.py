@@ -281,12 +281,12 @@ def run_test():
         print(e)
         traceback.print_exc()
 
-    try:
-        speed_tester2()
-    except Exception as e:
-        print("Something went wrong")
-        print(e)
-        traceback.print_exc()
+    # try:
+    #     speed_tester2()
+    # except Exception as e:
+    #     print("Something went wrong")
+    #     print(e)
+    #     traceback.print_exc()
 
     end = timer()
     print("\n------------------------------------")
