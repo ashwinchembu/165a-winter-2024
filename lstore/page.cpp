@@ -214,7 +214,7 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
     /// @TODO Bufferpool::pin(page_range[page_of_rid * num_column].first, 0);
     //int latest_rid = buffer_pool.get(rid, INDIRECTION_COLUMN);
     // std::cout << tail_last_wasfull << std::endl;
-    std::cout << num_slot_used_tail << std::endl;
+    // std::cout << num_slot_used_tail << std::endl;
     std::cout << rid.first_rid_page << std::endl;
     std::cout << rid.first_rid_page_range << std::endl;
     std::cout << "Pagerange 1" << std::endl;
