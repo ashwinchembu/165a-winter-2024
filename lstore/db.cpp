@@ -84,9 +84,10 @@ Database::Database() {
 }
 
 Database::~Database() {
-	std::cout << "expr" << std::endl;
 	buffer_pool.~BufferPool();
-	std::cout << "expr" << std::endl;
+	for(auto& t : tables){
+		delete t.second.index;
+	}
 }
 
 void Database::open(const std::string& path) {
