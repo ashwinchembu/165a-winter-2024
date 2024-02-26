@@ -67,26 +67,7 @@ void BufferPool::set (const RID& rid, const int& column, int value){
   if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
     found = load(rid, column);
   }
-  if(rid.id == 32769){
-
-  Frame* range_begin = hash_vector[hash_fun(rid.first_rid_page)];
-  Frame* range_end = hash_vector[hash_fun(rid.first_rid_page) + 1];
-  std::cout << "hash range before:\n";
-  while(range_begin != range_end){
-    std::cout << "rid: " << range_begin->first_rid_page << " column: " << range_begin->column << "\n";
-    range_begin = range_begin->next;
-  }
-}
   update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
-  if(rid.id == 32769){
-
-  Frame* range_begin = hash_vector[hash_fun(rid.first_rid_page)];
-  Frame* range_end = hash_vector[hash_fun(rid.first_rid_page) + 1];
-  std::cout << "hash range after:\n";
-  while(range_begin != range_end){
-    std::cout << "rid: " << range_begin->first_rid_page << " column: " << range_begin->column << "\n";
-    range_begin = range_begin->next;
-  }}
   found->page->write(value);
   found->dirty = true; //the page has been modified
   unpin(rid, column);
@@ -158,11 +139,8 @@ Frame* BufferPool::insert_into_frame(const RID& rid, const int& column, Page* pa
   if(frame_directory[hash] == bufferpool_size / NUM_BUFFERPOOL_HASH_PARTITIONS){ //if hash range is full
     frame = evict(rid);
   } else{ //find empty frame to fill
-    std::cout << "Error at 1\n";
     Frame* range_begin = hash_vector[hash]; //beginning of hash range
-    std::cout << "Error at 2\n";
     Frame* range_end = hash == hash_vector.size() - 1 ? tail : hash_vector[hash + 1]->prev; //end of hash range
-    std::cout << "Error at 3\n";
     Frame* current_frame = range_begin; //iterate through range
     while(current_frame != range_end->next){
       if(!current_frame->valid){ //frame is empty
@@ -195,8 +173,26 @@ void BufferPool::insert_new_page(const RID& rid, const int& column, const int& v
   Frame* frame = insert_into_frame(rid, column, page); //insert the page into a frame in the bufferpool
   std::cout << "Pin new page" << std::endl;
   pin(rid, column);
+  if(rid.id == 32769){
+
+  Frame* range_begin = hash_vector[hash_fun(rid.first_rid_page)];
+  Frame* range_end = hash_vector[hash_fun(rid.first_rid_page) + 1];
+  std::cout << "hash range before:\n";
+  while(range_begin != range_end){
+    std::cout << "rid: " << range_begin->first_rid_page << " column: " << range_begin->column << "\n";
+    range_begin = range_begin->next;
+  }
+}
   update_ages(frame, hash_vector[hash_fun(rid.first_rid_page)]);
-  std::cout << "updated ages\n";
+  if(rid.id == 32769){
+
+  Frame* range_begin = hash_vector[hash_fun(rid.first_rid_page)];
+  Frame* range_end = hash_vector[hash_fun(rid.first_rid_page) + 1];
+  std::cout << "hash range after:\n";
+  while(range_begin != range_end){
+    std::cout << "rid: " << range_begin->first_rid_page << " column: " << range_begin->column << "\n";
+    range_begin = range_begin->next;
+  }}
   frame->dirty = true; //make sure data will be written back to disk
   unpin(rid, column);
 
