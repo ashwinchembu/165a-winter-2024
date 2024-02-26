@@ -140,9 +140,9 @@ bool Query::update(const int& primary_key, const std::vector<int>& columns) {
     for(int i = 0; i < table->num_columns; i++){ // fill old_columns with the contents of previous update
         std::cout << "Old col: " << old_columns[i] << std::endl;
         old_columns.push_back(buffer_pool.get(last_update, i + NUM_METADATA_COLUMNS));
-        if (std::isnan(columns[i - NUM_METADATA_COLUMNS]) || columns[i-NUM_METADATA_COLUMNS] < -2147480000) {
+        if (std::isnan(columns[i]) || columns[i] < -2147480000) {
 
-            new_columns.push_back(buffer_pool.get(last_update, i + NUM_METADATA_COLUMNS));
+            new_columns.push_back(old_columns[i]);
         } else {
 
             new_columns.push_back(buffer_pool.get(update_rid, i + NUM_METADATA_COLUMNS));
