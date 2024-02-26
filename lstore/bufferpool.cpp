@@ -120,9 +120,14 @@ void BufferPool::update_ages(Frame*& just_accessed, Frame*& range_begin){ //chan
 
 // Called by get and set
 Frame* BufferPool::load (const RID& rid, const int& column){ //return the frame that the page was loaded into
+  int frp = rid.first_rid_page;
+  std::string frp_s = std::to_string(rid.first_rid_page);
+  if (frp < 0) {
+    frp_s = "_M" + std::to_string(-1 * (frp));
+  }
   std::string data_path = path + rid.table_name
     + "_" + std::to_string(rid.first_rid_page_range)
-    + "_" + std::to_string(rid.first_rid_page)
+    + frp_s
     + "_" + std::to_string(column) + ".dat";
 
   FILE* fp = fopen((data_path).c_str(),"r");
@@ -251,11 +256,15 @@ Frame* BufferPool::evict(const RID& rid){ //return the frame that was evicted
 }
 
 void BufferPool::write_back(Frame* frame){
+  int frp = frame->first_rid_page;
+  std::string frp_s = std::to_string(frame->first_rid_page);
+  if (frp < 0) {
+    frp_s = "_M" + std::to_string(-1 * (frp));
+  }
   std::string data_path = path + frame->table_name
     + "_" + std::to_string(frame->first_rid_page_range)
-    + "_" + std::to_string(frame->first_rid_page)
+    + "_" + frp_s
     + "_" + std::to_string(frame->column) + ".dat";
-  // std::cout << "Writing back to" << data_path << std::endl;
   FILE* fp = fopen((data_path).c_str(),"w");
   if (!fp) {
     throw std::invalid_argument("Couldn't open file " + data_path);
