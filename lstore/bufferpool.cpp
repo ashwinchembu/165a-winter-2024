@@ -183,9 +183,9 @@ void BufferPool::insert_new_page(const RID& rid, const int& column, const int& v
   Page* page = new Page();
   page->write(value);
   // *(page->data + rid.offset) = value;
-    std::cout << "Inserting " << rid.first_rid_page << std::endl;
-    std::cout << "Inserting column " << column << std::endl;
-    if(rid.id == 32769){
+
+
+    if(rid.id >= 20000){
     std::cout << "range begin: " << hash_vector[hash_fun(rid.first_rid_page)] << '\n';
     std::cout << "range end: " << hash_vector[hash_fun(rid.first_rid_page) + 1] << '\n';
     Frame* range_begin = hash_vector[hash_fun(rid.first_rid_page)];
@@ -196,10 +196,14 @@ void BufferPool::insert_new_page(const RID& rid, const int& column, const int& v
       std::cout << "rid: " << range_begin->first_rid_page << " column: " << range_begin->column << "\n";
       range_begin = range_begin->next;
     }}
+
+
   Frame* frame = insert_into_frame(rid, column, page); //insert the page into a frame in the bufferpool
-  std::cout << "Pin new page" << std::endl;
   pin(rid, column);
-  if(rid.id == 32769){
+
+
+    if(rid.id >= 20000){
+
 
   Frame* range_begin = hash_vector[hash_fun(rid.first_rid_page)];
   Frame* range_end = hash_vector[hash_fun(rid.first_rid_page) + 1];
@@ -208,16 +212,15 @@ void BufferPool::insert_new_page(const RID& rid, const int& column, const int& v
     std::cout << "rid: " << range_begin->first_rid_page << " column: " << range_begin->column << "\n";
     range_begin = range_begin->next;
   }
-}
-  if(rid.id == 32769){
-
-  Frame* range_begin = hash_vector[hash_fun(rid.first_rid_page)];
-  Frame* range_end = hash_vector[hash_fun(rid.first_rid_page) + 1];
+  range_begin = hash_vector[hash_fun(rid.first_rid_page)];
+  range_end = hash_vector[hash_fun(rid.first_rid_page) + 1];
   std::cout << "hash range after:\n";
   while(!(*range_begin == *range_end)){
     std::cout << "rid: " << range_begin->first_rid_page << " column: " << range_begin->column << "\n";
     range_begin = range_begin->next;
   }}
+
+
   frame->dirty = true; //make sure data will be written back to disk
   update_ages(frame, hash_vector[hash_fun(rid.first_rid_page)]);
   unpin(rid, column);
