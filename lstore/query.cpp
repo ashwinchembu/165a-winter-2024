@@ -134,7 +134,9 @@ bool Query::update(const int& primary_key, const std::vector<int>& columns) {
     RID base_rid = table->page_directory.find(table->index->locate(table->key, primary_key)[0])->second; //locate base RID of record to be updated
     std::cout << "Update 0" << std::endl;
     RID last_update = table->page_directory.find(buffer_pool.get(base_rid, INDIRECTION_COLUMN))->second; //locate the previous update
+    std::cout << "Update 1" << std::endl;
     RID update_rid = table->update(base_rid, columns); // insert update into the table
+    std::cout << "Update 2" << std::endl;
     std::vector<int> old_columns;
     std::vector<int> new_columns;
     for(int i = 0; i < table->num_columns; i++){ // fill old_columns with the contents of previous update
