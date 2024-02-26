@@ -1,5 +1,6 @@
 #include <vector>
 #include <string>
+#include <cmath>
 #include "config.h"
 #include "table.h"
 #include "page.h"
