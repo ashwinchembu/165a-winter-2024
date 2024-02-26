@@ -41,11 +41,6 @@ BufferPool::BufferPool (const int& num_pages) : bufferpool_size(num_pages){
   tail->prev = old_frame;
 
   Frame* current_frame = head;
-  std::cout << "Printing the whole bufferpool: \n";
-  while(current_frame != nullptr){ //iterate through entire bufferpool
-    std::cout << current_frame << "\n";
-    current_frame = current_frame->next;
-  }
 }
 
 BufferPool::~BufferPool () {
@@ -186,6 +181,15 @@ void BufferPool::insert_new_page(const RID& rid, const int& column, const int& v
 
 
     if(rid.id >= 20000){
+
+  std::cout << "Printing the whole bufferpool: \n";
+  Frame* current_frame = head;
+  int i = 0;
+  while(current_frame != nullptr){ //iterate through entire bufferpool
+    i++;
+    std::cout << i << " " << current_frame << "\n";
+    current_frame = current_frame->next;
+  }
     std::cout << "range begin: " << hash_vector[hash_fun(rid.first_rid_page)] << '\n';
     std::cout << "range end: " << hash_vector[hash_fun(rid.first_rid_page) + 1] << '\n';
     Frame* range_begin = hash_vector[hash_fun(rid.first_rid_page)];
