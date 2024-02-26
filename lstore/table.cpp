@@ -215,11 +215,11 @@ RID Table::insert(const std::vector<int>& columns) {
  */
 RID Table::update(RID& rid, const std::vector<int>& columns) {
     num_update++;
-	// if (num_update >= MAX_TABLE_UPDATES){
-	// 	    std::cout << "Update 0" << std::endl;
- //
-	// 	merge();
-	// }
+	if (num_update >= MAX_TABLE_UPDATES){
+		    std::cout << "Update 0" << std::endl;
+
+		merge();
+	}
 		    std::cout << "Update 1" << std::endl;
     const int rid_id = num_update * -1;
     size_t i = 0;
