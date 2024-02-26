@@ -119,6 +119,7 @@ std::vector<int> Index::locate (const int& column_number, const int& value) {
     auto range = (*index).second.equal_range(value); //check for all matching records in the index
     for(auto iter = range.first; iter != range.second; iter++){
         matching_records.push_back(iter->second);
+        std::cout << "expr" << std::endl;
     }
 
     return matching_records;
