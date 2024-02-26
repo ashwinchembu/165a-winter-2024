@@ -113,6 +113,7 @@ void Database::close() {
 	// }
 	write();
 	buffer_pool.write_back_all();
+	std::cout << "expr" << std::endl;
 };
 
 void Database::read(const std::string& path){
