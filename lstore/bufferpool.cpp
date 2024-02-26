@@ -107,21 +107,57 @@ Frame* BufferPool::search(const RID& rid, const int& column){
 }
 
 void BufferPool::update_ages(Frame*& just_accessed, Frame*& range_begin){ //change ages and reorder linked list
-  if(!(*just_accessed == *range_begin)){ //if not already the range beginning / most recently accessed
-    if(*just_accessed == *tail){
+  if(just_accessed != range_begin){ //if not already the range beginning / most recently accessed
+    if(just_accessed->next == nullptr ){
+      std::cout << "tail before" << tail << '\n';
       tail = just_accessed->prev;
-    }
-    (just_accessed)->prev->next = (just_accessed)->next; //close gap where just_accessed used to be
-    if((just_accessed)->next != nullptr){ //if just accessed was not tail
-      (just_accessed)->next->prev = (just_accessed)->prev;
-    }
-    (just_accessed)->prev = (range_begin)->prev; //just_accessed becomes the new range beginning
-    (just_accessed)->next = range_begin;
-    (range_begin)->prev = just_accessed;
-    if(*range_begin == *head){
+      std::cout << "tail after" << tail << '\n';
+    } else if (range_begin-prev = nullptr) {
+      std::cout << "head before" << head << '\n';
       head = just_accessed;
+      std::cout << "head after" << head << '\n';
     }
+    std::cout << "Before swap" << '\n';
+    std::cout << just_accessed->prev << "->" << just_accessed << "->" << just_accessed->next << '\n';
+    std::cout << "range_begin" << range_begin << '\n';
+
+    just_accessed->prev->next = just_accessed->next; //close gap where just_accessed used to be
+
+    std::cout << "after prev->next swap" << '\n';
+    std::cout << just_accessed->prev << "->" << just_accessed << "->" << just_accessed->next << '\n';
+    std::cout << "range_begin" << range_begin << '\n';
+
+    if(just_accessed->next != nullptr){ //if just accessed was not tail
+      just_accessed->next->prev = just_accessed->prev;
+
+      std::cout << "after next->prev swap" << '\n';
+      std::cout << just_accessed->prev << "->" << just_accessed << "->" << just_accessed->next << '\n';
+      std::cout << "range_begin" << range_begin << '\n';
+
+    }
+    just_accessed->prev = range_begin->prev; //just_accessed becomes the new range beginning
+
+    std::cout << "after prev set to range_begin prev" << '\n';
+    std::cout << just_accessed->prev << "->" << just_accessed << "->" << just_accessed->next << '\n';
+    std::cout << "range_begin" << range_begin << '\n';
+
+    just_accessed->next = range_begin;
+
+    std::cout << "after next set to begin" << '\n';
+    std::cout << just_accessed->prev << "->" << just_accessed << "->" << just_accessed->next << '\n';
+    std::cout << "range_begin" << range_begin << '\n';
+
+    range_begin->prev = just_accessed;
+
+    std::cout << "after range_begin prev set to just accessed" << '\n';
+    std::cout << just_accessed->prev << "->" << just_accessed << "->" << just_accessed->next << '\n';
+    std::cout << "range_begin" << range_begin << '\n';
+
     range_begin = just_accessed;
+
+    std::cout << "range_begin = just swaped" << '\n';
+    std::cout << just_accessed->prev << "->" << just_accessed << "->" << just_accessed->next << '\n';
+    std::cout << "range_begin" << range_begin << '\n';
   }
   return;
 }
