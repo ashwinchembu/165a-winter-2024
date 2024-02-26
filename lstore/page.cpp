@@ -147,7 +147,9 @@ bool PageRange::base_has_capacity () const {
     // Lazy evaluation
 }
 
-PageRange::~PageRange(){}
+PageRange::~PageRange(){
+    std::cout << "?????" << std::endl;
+}
 
 /***
  *
