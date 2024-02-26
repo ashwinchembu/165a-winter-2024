@@ -129,31 +129,21 @@ std::vector<Record> Query::select_version(const int& search_key, const int& sear
 
 /// @TODO Adopt to the change in RID
 bool Query::update(const int& primary_key, const std::vector<int>& columns) {
-    std::cout << "Update -1" << std::endl;
-    std::cout << primary_key << std::endl;
     RID base_rid = table->page_directory.find(table->index->locate(table->key, primary_key)[0])->second; //locate base RID of record to be updated
-    std::cout << "Update 0" << std::endl;
     RID last_update = table->page_directory.find(buffer_pool.get(base_rid, INDIRECTION_COLUMN))->second; //locate the previous update
-    std::cout << "Update 1" << std::endl;
     RID update_rid = table->update(base_rid, columns); // insert update into the table
-    std::cout << "Update 2" << std::endl;
     std::vector<int> old_columns;
     std::vector<int> new_columns;
     for(int i = 0; i < table->num_columns; i++){ // fill old_columns with the contents of previous update
         old_columns.push_back(buffer_pool.get(last_update, i + NUM_METADATA_COLUMNS));
-        std::cout << "Old col: " << old_columns[i] << std::endl;
         if (std::isnan(columns[i]) || columns[i] < -2147480000) {
-
             new_columns.push_back(old_columns[i]);
         } else {
-
             new_columns.push_back(buffer_pool.get(update_rid, i + NUM_METADATA_COLUMNS));
         }
-        std::cout << "New col: " << new_columns[i] << std::endl;
     }
     if(update_rid.id != 0){
         table->index->update_index(base_rid.id, new_columns, old_columns); //update the index
-        std::cout << "base_rid.id: " << base_rid.id << std::endl;
     }
     return (update_rid.id != 0); //return true if successfully updated
 }
