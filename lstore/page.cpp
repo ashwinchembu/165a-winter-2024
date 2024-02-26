@@ -235,7 +235,7 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
             } else {
                 // If there are update, we write the new value and update the schema encoding.
                 buffer_pool.insert_new_page(rid_new, i, columns[i - NUM_METADATA_COLUMNS]);
-                schema_encoding = schema_encoding | (0b1 << (num_column - i - 1));
+                schema_encoding = schema_encoding | (0b1 << (num_column - (i - NUM_METADATA_COLUMNS) - 1));
             }
         }
         buffer_pool.insert_new_page(rid_new, SCHEMA_ENCODING_COLUMN, schema_encoding);
@@ -258,7 +258,7 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
             } else {
                 // If there are update, we write the new value and update the schema encoding.
                 buffer_pool.set(rid_new, i, columns[i - NUM_METADATA_COLUMNS]);
-                schema_encoding = schema_encoding | (0b1 << (num_column - i - 1));
+                schema_encoding = schema_encoding | (0b1 << (num_column - (i - NUM_METADATA_COLUMNS) - 1));
             }
         }
         buffer_pool.set(rid_new, SCHEMA_ENCODING_COLUMN, schema_encoding);
