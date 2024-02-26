@@ -210,33 +210,24 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
 int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, const std::map<int, RID>& page_directory) {
     // Get the latest update of the record. Accessing the indirection column.
 
-    std::cout << "Pagerange 1" << std::endl;
     buffer_pool.pin(rid, INDIRECTION_COLUMN);
     RID latest_rid = page_directory.find(buffer_pool.get(rid, INDIRECTION_COLUMN))->second;
     buffer_pool.set(rid, INDIRECTION_COLUMN, rid_new.id);
     buffer_pool.unpin(rid, INDIRECTION_COLUMN);
-    std::cout << "Pagerange 2" << std::endl;
     // Create new tail pages if there are no space left or tail page does not exist.
     int schema_encoding = 0;
     // If tail_last and base_last is equal, that means there are no tail page created.
 
-    std::cout << "Pagerange 3" << std::endl;
     if (tail_last_wasfull) {
-        std::cout << "Pagerange 3.2" << std::endl;
-
         rid_new.offset = 0;
         rid_new.first_rid_page = rid_new.id;
         base_last_wasfull = false;
         tail_last++;
-        std::cout << "Pagerange 4" << std::endl;
-
         buffer_pool.insert_new_page(rid_new, INDIRECTION_COLUMN, rid.id);
         buffer_pool.insert_new_page(rid_new, RID_COLUMN, rid_new.id);
         buffer_pool.insert_new_page(rid_new, TIMESTAMP_COLUMN, 0);
         buffer_pool.insert_new_page(rid_new, BASE_RID_COLUMN, rid.id);
         buffer_pool.insert_new_page(rid_new, TPS, 0);
-        std::cout << "Pagerange 5" << std::endl;
-
         for (int i = NUM_METADATA_COLUMNS; i < num_column; i++) {
             if (std::isnan(columns[i - NUM_METADATA_COLUMNS]) || columns[i-NUM_METADATA_COLUMNS] < -2147480000) { // Wrapper changes None to smallest integer possible
                 // If there are no update, we write the value from latest update
@@ -247,25 +238,17 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
                 schema_encoding = schema_encoding | (0b1 << (num_column - i - 1));
             }
         }
-        std::cout << "Pagerange 6" << std::endl;
-
         buffer_pool.insert_new_page(rid_new, SCHEMA_ENCODING_COLUMN, schema_encoding);
         num_slot_used_tail = 1;
         pages.push_back(rid_new);
     } else {
-            std::cout << "Pagerange 3.7" << std::endl;
-
         rid_new.first_rid_page = pages.back().first_rid_page;
         rid_new.offset = num_slot_used_tail;
-        std::cout << "Pagerange 4" << std::endl;
-
         buffer_pool.set(rid_new, INDIRECTION_COLUMN, rid.id);
         buffer_pool.set(rid_new, RID_COLUMN, rid_new.id);
         buffer_pool.set(rid_new, TIMESTAMP_COLUMN, 0);
         buffer_pool.set(rid_new, BASE_RID_COLUMN, rid.id);
         buffer_pool.set(rid_new, TPS, 0);
-        std::cout << "Pagerange 5" << std::endl;
-
         for (int i = NUM_METADATA_COLUMNS; i < num_column; i++) {
             buffer_pool.set(rid_new, i, columns[i - NUM_METADATA_COLUMNS]);
 
@@ -278,8 +261,6 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
                 schema_encoding = schema_encoding | (0b1 << (num_column - i - 1));
             }
         }
-        std::cout << "Pagerange 6" << std::endl;
-
         buffer_pool.set(rid_new, SCHEMA_ENCODING_COLUMN, schema_encoding);
         num_slot_used_tail++;
     }
