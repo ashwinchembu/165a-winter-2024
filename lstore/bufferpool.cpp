@@ -67,11 +67,26 @@ void BufferPool::set (const RID& rid, const int& column, int value){
   if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
     found = load(rid, column);
   }
-  std::cout << "found before " << found << "\n";
-  std::cout << "hash before " << hash_vector[hash_fun(rid.first_rid_page)] << "\n";
+  if(rid.id == 32769){
+
+  Frame* range_begin = hash_vector[hash_fun(rid.first_rid_page)];
+  Frame* range_end = hash_vector[hash_fun(rid.first_rid_page) + 1];
+  std::cout << "hash range before:\n";
+  while(range_begin != range_end){
+    std::cout << "rid: " << range_begin->first_rid_page << " column: " << range_begin->column << "\n";
+    range_begin = range_begin->next;
+  }
+}
   update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
-  std::cout << "found after " << found << "\n";
-  std::cout << "hash after " << hash_vector[hash_fun(rid.first_rid_page)] << "\n";
+  if(rid.id == 32769){
+
+  Frame* range_begin = hash_vector[hash_fun(rid.first_rid_page)];
+  Frame* range_end = hash_vector[hash_fun(rid.first_rid_page) + 1];
+  std::cout << "hash range after:\n";
+  while(range_begin != range_end){
+    std::cout << "rid: " << range_begin->first_rid_page << " column: " << range_begin->column << "\n";
+    range_begin = range_begin->next;
+  }}
   found->page->write(value);
   found->dirty = true; //the page has been modified
   unpin(rid, column);
