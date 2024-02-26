@@ -1,5 +1,6 @@
 #include <map>
 #include <string>
+#include <filesystem>
 #include <stdexcept>
 #include <cstdio>
 #include "table.h"
@@ -9,7 +10,6 @@
 #include <cstring>
 #include "config.h"
 #include "../DllConfig.h"
-
 
 std::vector<int>bufferVector;
 
@@ -40,12 +40,15 @@ COMPILER_SYMBOL int* Database_constructor(){
 }
 
 COMPILER_SYMBOL void Database_destructor(int* obj){
+	std::cout << "dest" << std::endl;
 	delete ((Database*)obj);
+	std::cout << "dest" << std::endl;
 }
 
 COMPILER_SYMBOL int* Database_create_table(int*obj,char* name, const int num_columns,  const int key_index){
 	Database* self = ((Database*)obj);
 	Table* ret = new Table(self->create_table({name},num_columns,key_index));
+
 
 	return (int*)ret;
 }
@@ -71,16 +74,41 @@ COMPILER_SYMBOL void Database_open(int* obj,char* path){
 }
 
 COMPILER_SYMBOL void Database_close(int* obj){
+		std::cout << "close" << std::endl;
+
 	((Database*)obj)->close();
+		std::cout << "close" << std::endl;
 }
 
+BufferPool buffer_pool(BUFFER_POOL_SIZE);
+Database::Database() {
+	buffer_pool.set_path(file_path + "/Disk/");
+	if (!std::filesystem::is_directory(file_path) || !std::filesystem::exists(file_path)) { // Check if src folder exists
+		std::filesystem::create_directories(file_path + "/Disk/"); // create src folder
+	}
+}
+
+Database::~Database() {
+	buffer_pool.~BufferPool();
+	// for(auto& t : tables){
+	// 	delete t.second.index;
+	// }
+}
 
 void Database::open(const std::string& path) {
-	// path is relative to parent directory of this file
-	BufferPool buffer_pool(BUFFER_POOL_SIZE);
-	buffer_pool.path = path;
+//	// path is relative to parent directory of this file
+//	std::cout<<"call87";
+//	BufferPool buffer_pool(BUFFER_POOL_SIZE);
+
 	file_path = path;
-	read(path);
+	buffer_pool.set_path(file_path + "/Disk/");
+
+	if (!std::filesystem::is_directory(file_path) || !std::filesystem::exists(file_path)) { // Check if src folder exists
+		std::filesystem::create_directories(file_path + "/Disk/"); // create src folder
+	} else {
+		read(path);
+	}
+//	// If the directory is empty then make new database.
 };
 
 void Database::close() {
@@ -88,14 +116,26 @@ void Database::close() {
 	// for (std::map<std::string, Table>::iterator itr = tables.begin(); itr != tables.end(); itr++) {
 	// 	itr->second.merge();
 	// }
-
 	write();
-
-	buffer_pool.~BufferPool();
+	buffer_pool.write_back_all();
 };
 
 void Database::read(const std::string& path){
-	FILE* fp = fopen(("../" + path + "/ProgramState.dat").c_str(),"r");
+	FILE* fp = fopen((path + "/ProgramState.dat").c_str(),"r");
+	if (!fp) {
+		return;
+	}
+
+	fseek(fp, 0, SEEK_END);
+
+	// Get the current position of the file pointer, which is the file size
+	long fileSize = ftell(fp);
+
+	if(!fileSize){//database hasn't been used yet
+		fclose(fp);
+		return;
+	}
+
 	int numTables;
 	fread(&numTables,sizeof(int),1,fp);
 
@@ -114,8 +154,8 @@ void Database::read(const std::string& path){
 }
 
 void Database::write(){
-	FILE* fp = fopen(("../" + file_path + "/ProgramState.dat").c_str(),"w");
-	int numTables = tables.size();
+	FILE* fp = fopen((file_path + "/ProgramState.dat").c_str(),"w");
+	size_t numTables = tables.size();
 
 	fwrite(&numTables,sizeof(int),1,fp);
 

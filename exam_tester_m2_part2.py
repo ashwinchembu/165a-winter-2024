@@ -98,3 +98,4 @@ for key in deleted_keys:
     records.pop(key, None)
 
 db.close()
+print("db closed")

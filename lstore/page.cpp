@@ -161,7 +161,6 @@ PageRange::~PageRange(){}
 int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
     // Get first rid of the page and offset
     // Find if the last base page has capacity for new record
-    std::cout << "what" << std::endl;
     if (base_last_wasfull) {
         new_rid.offset = 0;
         new_rid.first_rid_page = new_rid.id;
@@ -174,8 +173,8 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
         buffer_pool.insert_new_page(new_rid, SCHEMA_ENCODING_COLUMN, 0);
         buffer_pool.insert_new_page(new_rid, BASE_RID_COLUMN, new_rid.id);
         buffer_pool.insert_new_page(new_rid, TPS, 0);
-        for (int i = 0; i < num_column; i++) {
-            buffer_pool.insert_new_page(new_rid, NUM_METADATA_COLUMNS + i, columns[i]);
+        for (int i = NUM_METADATA_COLUMNS; i < num_column; i++) {
+            buffer_pool.insert_new_page(new_rid, i, columns[i - NUM_METADATA_COLUMNS]);
         }
         pages.insert(pages.begin() + base_last, new_rid);
         num_slot_used_base = 1;
@@ -188,8 +187,8 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
         buffer_pool.set(new_rid, SCHEMA_ENCODING_COLUMN, 0);
         buffer_pool.set(new_rid, BASE_RID_COLUMN, new_rid.id);
         buffer_pool.set(new_rid, TPS, 0);
-        for (int i = 0; i < num_column; i++) {
-            buffer_pool.set(new_rid, NUM_METADATA_COLUMNS + i, columns[i]);
+        for (int i = NUM_METADATA_COLUMNS; i < num_column; i++) {
+            buffer_pool.set(new_rid, i, columns[i - NUM_METADATA_COLUMNS]);
         }
         num_slot_used_base++;
     }
@@ -209,21 +208,8 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
  *
  */
 int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, const std::map<int, RID>& page_directory) {
-    // Look for page available
-    // Because the base record is monotonically increasing, we can use for loop and find the base page we need
-    int page_of_rid = 0;
-    for (; page_of_rid <= base_last; page_of_rid++) {
-        if (pages[page_of_rid].first_rid_page == rid.first_rid_page) {
-            break;
-        }
-    }
-    page_of_rid--; // Logical page number of the base record
-
     // Get the latest update of the record. Accessing the indirection column.
 
-    /// @TODO Bufferpool::load();
-    /// @TODO Bufferpool::pin(page_range[page_of_rid * num_column].first, 0);
-    //int latest_rid = buffer_pool.get(rid, INDIRECTION_COLUMN);
     buffer_pool.pin(rid, INDIRECTION_COLUMN);
     RID latest_rid = page_directory.find(buffer_pool.get(rid, INDIRECTION_COLUMN))->second;
     buffer_pool.set(rid, INDIRECTION_COLUMN, rid_new.id);
@@ -231,25 +217,25 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
     // Create new tail pages if there are no space left or tail page does not exist.
     int schema_encoding = 0;
     // If tail_last and base_last is equal, that means there are no tail page created.
+
     if (tail_last_wasfull) {
         rid_new.offset = 0;
         rid_new.first_rid_page = rid_new.id;
         base_last_wasfull = false;
         tail_last++;
-
         buffer_pool.insert_new_page(rid_new, INDIRECTION_COLUMN, rid.id);
         buffer_pool.insert_new_page(rid_new, RID_COLUMN, rid_new.id);
         buffer_pool.insert_new_page(rid_new, TIMESTAMP_COLUMN, 0);
         buffer_pool.insert_new_page(rid_new, BASE_RID_COLUMN, rid.id);
         buffer_pool.insert_new_page(rid_new, TPS, 0);
-        for (int i = 0; i < num_column; i++) {
+        for (int i = NUM_METADATA_COLUMNS; i < num_column; i++) {
             if (std::isnan(columns[i - NUM_METADATA_COLUMNS]) || columns[i-NUM_METADATA_COLUMNS] < -2147480000) { // Wrapper changes None to smallest integer possible
                 // If there are no update, we write the value from latest update
-                buffer_pool.insert_new_page(rid_new, NUM_METADATA_COLUMNS + i, buffer_pool.get(latest_rid, NUM_METADATA_COLUMNS + i));
+                buffer_pool.insert_new_page(rid_new, i, buffer_pool.get(latest_rid, i));
             } else {
                 // If there are update, we write the new value and update the schema encoding.
-                buffer_pool.insert_new_page(rid_new, NUM_METADATA_COLUMNS + i, columns[i - NUM_METADATA_COLUMNS]);
-                schema_encoding = schema_encoding | (0b1 << (num_column - i - 1));
+                buffer_pool.insert_new_page(rid_new, i, columns[i - NUM_METADATA_COLUMNS]);
+                schema_encoding = schema_encoding | (0b1 << (num_column - (i - NUM_METADATA_COLUMNS) - 1));
             }
         }
         buffer_pool.insert_new_page(rid_new, SCHEMA_ENCODING_COLUMN, schema_encoding);
@@ -263,16 +249,16 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
         buffer_pool.set(rid_new, TIMESTAMP_COLUMN, 0);
         buffer_pool.set(rid_new, BASE_RID_COLUMN, rid.id);
         buffer_pool.set(rid_new, TPS, 0);
-        for (int i = 0; i < num_column; i++) {
-            buffer_pool.set(rid_new, NUM_METADATA_COLUMNS + i, columns[i]);
+        for (int i = NUM_METADATA_COLUMNS; i < num_column; i++) {
+            buffer_pool.set(rid_new, i, columns[i - NUM_METADATA_COLUMNS]);
 
             if (std::isnan(columns[i - NUM_METADATA_COLUMNS]) || columns[i-NUM_METADATA_COLUMNS] < -2147480000) { // Wrapper changes None to smallest integer possible
                 // If there are no update, we write the value from latest update
-                buffer_pool.set(rid_new, NUM_METADATA_COLUMNS + i, buffer_pool.get(latest_rid, NUM_METADATA_COLUMNS + i));
+                buffer_pool.set(rid_new, i, buffer_pool.get(latest_rid, i));
             } else {
                 // If there are update, we write the new value and update the schema encoding.
-                buffer_pool.set(rid_new, NUM_METADATA_COLUMNS + i, columns[i - NUM_METADATA_COLUMNS]);
-                schema_encoding = schema_encoding | (0b1 << (num_column - i - 1));
+                buffer_pool.set(rid_new, i, columns[i - NUM_METADATA_COLUMNS]);
+                schema_encoding = schema_encoding | (0b1 << (num_column - (i - NUM_METADATA_COLUMNS) - 1));
             }
         }
         buffer_pool.set(rid_new, SCHEMA_ENCODING_COLUMN, schema_encoding);
@@ -284,7 +270,6 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
     buffer_pool.set(rid, SCHEMA_ENCODING_COLUMN, buffer_pool.get(rid, SCHEMA_ENCODING_COLUMN) | schema_encoding);
     buffer_pool.unpin(rid, SCHEMA_ENCODING_COLUMN);
     tail_last_wasfull = (num_slot_used_tail == PAGE_SIZE);
-
     // Setting the new RID to be representation of the page if the page was newly created
     return 0;
 }
@@ -328,8 +313,8 @@ int PageRange::read(FILE* fp) {
 }
 
 Page::Page() {
-    data = new int[PAGE_SIZE];
-    // for (int i = 0; i < NUM_SLOTS; i++) {
+    data = new int[PAGE_SIZE * 4];
+    // for (int i = 0; i < PAGE_SIZE; i++) {
     //     availability[i] = 0;
     // }
 }
@@ -346,7 +331,7 @@ Page::~Page() {
  *
  */
 const bool Page::has_capacity() const {
-    return(num_rows < NUM_SLOTS);
+    return(num_rows < PAGE_SIZE);
 }
 
 /***
@@ -359,7 +344,7 @@ const bool Page::has_capacity() const {
 int Page::write(const int& value) {
     int* insert = nullptr;
     // num_rows++;
-    // for (int location = 0; location < NUM_SLOTS; location++) {
+    // for (int location = 0; location < PAGE_SIZE; location++) {
     //     if (availability[location] == 0) {
     //         //insert on location
     //         int offset = location * sizeof(int); // Bytes from top of the page
@@ -369,7 +354,7 @@ int Page::write(const int& value) {
     //         break;
     //     }
     // }
-    insert = data + num_rows *sizeof(int);
+    insert = data + num_rows;
     *insert = value;
     num_rows++;
     return 0;
@@ -386,8 +371,8 @@ int Page::write(const int& value) {
  */
 std::ostream& operator<<(std::ostream& os, const Page& p)
 {
-    for (int i = 0; i < p.NUM_SLOTS; i++) {
-        os << *(p.data + i*sizeof(int)) << " ";
+    for (int i = 0; i < PAGE_SIZE; i++) {
+        os << *(p.data + i) << " ";
     }
     return os;
 }

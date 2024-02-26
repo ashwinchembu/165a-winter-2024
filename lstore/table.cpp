@@ -177,6 +177,10 @@ Table::Table(const std::string& name, const int& num_columns, const int& key): n
     index->setTable(this);
 };
 
+Table::~Table() {
+	//delete index;
+}
+
 /***
  *
  * Insert a record into appropriate base page.
@@ -199,9 +203,10 @@ RID Table::insert(const std::vector<int>& columns) {
 
         page_range.push_back(newPageRange); // Make a base page with given record
     } else { // If there are base page already, just insert it normally.
-        (page_range.back().get())->insert(record, columns);
 		record.first_rid_page_range = (page_range.back().get())->pages[0].first_rid_page_range;
+        (page_range.back().get())->insert(record, columns);
     }
+
     page_directory.insert({rid_id, record});
     return record;
 }
@@ -220,23 +225,22 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 	if (num_update >= MAX_TABLE_UPDATES){
 		merge();
 	}
-    const int rid_id = num_update * -1;
-    size_t i = 0;
-    for (; i < page_range.size(); i++) {
-        if ((page_range[i].get())->pages[0].first_rid_page_range == rid.first_rid_page_range) {
-            break;
-        }
-    }
-    i--;
-    RID new_rid(rid_id);
+	const int rid_id = num_update * -1;
+	size_t i = 0;
+	for (; i < page_range.size(); i++) {
+		if ((page_range[i].get())->pages[0].first_rid_page_range == rid.first_rid_page_range) {
+			break;
+		}
+	}
+	RID new_rid(rid_id);
 	new_rid.table_name = name;
-	new_rid.first_rid_page_range = (page_range[i].get())->pages[0].first_rid_page_range;
+	new_rid.first_rid_page_range = rid.first_rid_page_range;
 
 	(page_range[i].get())->update(rid, new_rid, columns, page_directory);
 	page_range_update[i]++;
 	if (page_range_update[i] >= MAX_PAGE_RANGE_UPDATES){
 		// Make a deep copy of page_range[i]
-    	std::shared_ptr<PageRange> deep_copy = std::make_shared<PageRange>(*(page_range[i].get()));
+		std::shared_ptr<PageRange> deep_copy = std::make_shared<PageRange>(*(page_range[i].get()));
 		
 		// use bufferpool to get all the pages within a page range
 		auto pool_size = deep_copy->pages.size()*num_columns*2; // change to actual - temp
@@ -255,7 +259,6 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 
 	}
 	
-
 	// int err = (page_range[i].get())->update(rid, rid_id, columns);
 	page_directory.insert({rid_id, new_rid});
     return new_rid;
