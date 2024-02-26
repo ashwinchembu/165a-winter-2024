@@ -180,48 +180,48 @@ void BufferPool::insert_new_page(const RID& rid, const int& column, const int& v
   pin(rid, column);
 
 
-  if(rid.id >= 15000){
-
-    std::cout << "before update age " << std::endl;
-    std::cout << "frame " << frame << std::endl;
-    std::cout << "hash_vector[hash_fun(rid.first_rid_page)] " << hash_vector[hash_fun(rid.first_rid_page)] << std::endl;
-    std::cout << "hash_vector[hash_fun(rid.first_rid_page)]->prev " << hash_vector[hash_fun(rid.first_rid_page)]->prev << std::endl;
-    std::cout << "hash_vector[hash_fun(rid.first_rid_page)]->next " << hash_vector[hash_fun(rid.first_rid_page)]->next << std::endl;
-    std::cout << "frame->prev " << frame->prev << std::endl;
-    std::cout << "frame->next " << frame->next << std::endl;
-    std::cout << "Printing the whole bufferpool: \n";
-    Frame* current_frame = head;
-    int i = 0;
-    while(current_frame != nullptr){ //iterate through entire bufferpool
-      i++;
-      std::cout << i << " " << current_frame << " first_rid_page:" << current_frame->first_rid_page << " column:" << current_frame->column << "\n";
-      current_frame = current_frame->next;
-    }
-  }
+  // if(rid.id >= 15000){
+  //
+  //   std::cout << "before update age " << std::endl;
+  //   std::cout << "frame " << frame << std::endl;
+  //   std::cout << "hash_vector[hash_fun(rid.first_rid_page)] " << hash_vector[hash_fun(rid.first_rid_page)] << std::endl;
+  //   std::cout << "hash_vector[hash_fun(rid.first_rid_page)]->prev " << hash_vector[hash_fun(rid.first_rid_page)]->prev << std::endl;
+  //   std::cout << "hash_vector[hash_fun(rid.first_rid_page)]->next " << hash_vector[hash_fun(rid.first_rid_page)]->next << std::endl;
+  //   std::cout << "frame->prev " << frame->prev << std::endl;
+  //   std::cout << "frame->next " << frame->next << std::endl;
+  //   std::cout << "Printing the whole bufferpool: \n";
+  //   Frame* current_frame = head;
+  //   int i = 0;
+  //   while(current_frame != nullptr){ //iterate through entire bufferpool
+  //     i++;
+  //     std::cout << i << " " << current_frame << " first_rid_page:" << current_frame->first_rid_page << " column:" << current_frame->column << "\n";
+  //     current_frame = current_frame->next;
+  //   }
+  // }
 
 
 
   frame->dirty = true; //make sure data will be written back to disk
   update_ages(frame, hash_vector[hash_fun(rid.first_rid_page)]);
 
-  if(rid.id >= 15000){
-
-    std::cout << "after update age " << std::endl;
-    std::cout << "frame " << frame << std::endl;
-    std::cout << "hash_vector[hash_fun(rid.first_rid_page)] " << hash_vector[hash_fun(rid.first_rid_page)] << std::endl;
-    std::cout << "hash_vector[hash_fun(rid.first_rid_page)]->prev " << hash_vector[hash_fun(rid.first_rid_page)]->prev << std::endl;
-    std::cout << "hash_vector[hash_fun(rid.first_rid_page)]->next " << hash_vector[hash_fun(rid.first_rid_page)]->next << std::endl;
-    std::cout << "frame->prev " << frame->prev << std::endl;
-    std::cout << "frame->next " << frame->next << std::endl;
-    std::cout << "Printing the whole bufferpool: \n";
-    Frame* current_frame = head;
-    int i = 0;
-    while(current_frame != nullptr){ //iterate through entire bufferpool
-      i++;
-      std::cout << i << " " << current_frame << " first_rid_page:" << current_frame->first_rid_page << " column:" << current_frame->column << "\n";
-      current_frame = current_frame->next;
-    }
-  }
+  // if(rid.id >= 15000){
+  //
+  //   std::cout << "after update age " << std::endl;
+  //   std::cout << "frame " << frame << std::endl;
+  //   std::cout << "hash_vector[hash_fun(rid.first_rid_page)] " << hash_vector[hash_fun(rid.first_rid_page)] << std::endl;
+  //   std::cout << "hash_vector[hash_fun(rid.first_rid_page)]->prev " << hash_vector[hash_fun(rid.first_rid_page)]->prev << std::endl;
+  //   std::cout << "hash_vector[hash_fun(rid.first_rid_page)]->next " << hash_vector[hash_fun(rid.first_rid_page)]->next << std::endl;
+  //   std::cout << "frame->prev " << frame->prev << std::endl;
+  //   std::cout << "frame->next " << frame->next << std::endl;
+  //   std::cout << "Printing the whole bufferpool: \n";
+  //   Frame* current_frame = head;
+  //   int i = 0;
+  //   while(current_frame != nullptr){ //iterate through entire bufferpool
+  //     i++;
+  //     std::cout << i << " " << current_frame << " first_rid_page:" << current_frame->first_rid_page << " column:" << current_frame->column << "\n";
+  //     current_frame = current_frame->next;
+  //   }
+  // }
 
   unpin(rid, column);
 
