@@ -123,11 +123,11 @@ Frame* BufferPool::load (const RID& rid, const int& column){ //return the frame 
   int frp = rid.first_rid_page;
   std::string frp_s = std::to_string(rid.first_rid_page);
   if (frp < 0) {
-    frp_s = "_M" + std::to_string(-1 * (frp));
+    frp_s = "M" + std::to_string(-1 * (frp));
   }
   std::string data_path = path + rid.table_name
     + "_" + std::to_string(rid.first_rid_page_range)
-    + frp_s
+    + "_" + frp_s
     + "_" + std::to_string(column) + ".dat";
 
   FILE* fp = fopen((data_path).c_str(),"r");
@@ -220,7 +220,7 @@ void BufferPool::write_back(Frame* frame){
   }
   std::string data_path = path + frame->table_name
     + "_" + std::to_string(frame->first_rid_page_range)
-    + frp_s
+    + "_" + frp_s
     + "_" + std::to_string(frame->column) + ".dat";
   FILE* fp = fopen((data_path).c_str(),"w");
   if (!fp) {
