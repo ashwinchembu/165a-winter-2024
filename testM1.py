@@ -294,12 +294,12 @@ def run_test():
     print("Total score for speed testers: ", score)
     print("--------------------------------------\n")
 
-    # try:
-    #     correctness_tester()
-    # except Exception as e:
-    #     print("Something went wrong")
-    #     print(e)
-    #     traceback.print_exc()
-    # print("Total score: ", score + 5)
+    try:
+        correctness_tester()
+    except Exception as e:
+        print("Something went wrong")
+        print(e)
+        traceback.print_exc()
+    print("Total score: ", score + 5)
 
 run_test()
