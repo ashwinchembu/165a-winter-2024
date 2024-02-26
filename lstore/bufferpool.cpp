@@ -83,11 +83,6 @@ Frame* BufferPool::search(const RID& rid, const int& column){
   Frame* range_end = (hash == hash_vector.size() - 1) ? tail : hash_vector[hash + 1]->prev; //end of hash range
   Frame* current_frame = range_begin; //iterate through range
   while(current_frame != range_end->next){
-    if(rid.id == 32769){
-
-    std::cout << "Looking for " << rid.first_rid_page << ", found " << current_frame->first_rid_page << std::endl;
-    std::cout << "Looking for column " << column << ", found " << current_frame->column << std::endl;
-    }
     if ((current_frame->valid)) {
       if(rid.first_rid_page == current_frame->first_rid_page && column == current_frame->column){
         return current_frame;
@@ -182,7 +177,7 @@ void BufferPool::insert_new_page(const RID& rid, const int& column, const int& v
   pin(rid, column);
 
 
-  if(rid.id >= 20000){
+  if(rid.id >= 15000){
 
     std::cout << "before update age " << std::endl;
     std::cout << "frame " << frame << std::endl;
@@ -196,7 +191,7 @@ void BufferPool::insert_new_page(const RID& rid, const int& column, const int& v
     int i = 0;
     while(current_frame != nullptr){ //iterate through entire bufferpool
       i++;
-      std::cout << i << " " << current_frame << "\n";
+      std::cout << i << " " << current_frame << " first_rid_page:" << current_frame->first_rid_page << " column:" << current_frame->column << "\n";
       current_frame = current_frame->next;
     }
   }
@@ -206,9 +201,9 @@ void BufferPool::insert_new_page(const RID& rid, const int& column, const int& v
   frame->dirty = true; //make sure data will be written back to disk
   update_ages(frame, hash_vector[hash_fun(rid.first_rid_page)]);
 
-  if(rid.id >= 20000){
+  if(rid.id >= 15000){
 
-    std::cout << "before update age " << std::endl;
+    std::cout << "after update age " << std::endl;
     std::cout << "frame " << frame << std::endl;
     std::cout << "hash_vector[hash_fun(rid.first_rid_page)] " << hash_vector[hash_fun(rid.first_rid_page)] << std::endl;
     std::cout << "hash_vector[hash_fun(rid.first_rid_page)]->prev " << hash_vector[hash_fun(rid.first_rid_page)]->prev << std::endl;
@@ -220,7 +215,7 @@ void BufferPool::insert_new_page(const RID& rid, const int& column, const int& v
     int i = 0;
     while(current_frame != nullptr){ //iterate through entire bufferpool
       i++;
-      std::cout << i << " " << current_frame << "\n";
+      std::cout << i << " " << current_frame << " first_rid_page:" << current_frame->first_rid_page << " column:" << current_frame->column << "\n";
       current_frame = current_frame->next;
     }
   }
@@ -243,9 +238,6 @@ Frame* BufferPool::evict(const RID& rid){ //return the frame that was evicted
       }
       frame_directory[hash]--;
       current_frame->valid = false; //frame is now empty
-      if(rid.id == 32769){
-        std::cout << "Evicted " << std::endl;
-      }
       return current_frame;
     }
     current_frame = current_frame->prev;
