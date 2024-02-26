@@ -139,8 +139,8 @@ void BufferPool::update_ages(Frame*& just_accessed, Frame*& range_begin){ //chan
   std::cout << "just_accessed->prev " << just_accessed->prev << std::endl;
   std::cout << "just_accessed->next " << just_accessed->next << std::endl;
     std::cout << "Printing the whole bufferpool: \n";
-  Frame* current_frame = head;
-  int i = 0;
+  current_frame = head;
+  i = 0;
   while(current_frame != nullptr){ //iterate through entire bufferpool
     i++;
     std::cout << i << " " << current_frame << "\n";
