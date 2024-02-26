@@ -98,6 +98,9 @@ Frame* BufferPool::search(const RID& rid, const int& column){
 
 void BufferPool::update_ages(Frame*& just_accessed, Frame*& range_begin){ //change ages and reorder linked list
   if(just_accessed != range_begin){ //if not already the range beginning / most recently accessed
+    if(just_accessed == tail){
+      tail = just_accessed->prev;
+    }
     (just_accessed)->prev->next = (just_accessed)->next; //close gap where just_accessed used to be
     if((just_accessed)->next != nullptr){ //if just accessed was not tail
       (just_accessed)->next->prev = (just_accessed)->prev;
@@ -105,6 +108,9 @@ void BufferPool::update_ages(Frame*& just_accessed, Frame*& range_begin){ //chan
     (just_accessed)->prev = (range_begin)->prev; //just_accessed becomes the new range beginning
     (just_accessed)->next = range_begin;
     (range_begin)->prev = just_accessed;
+    if(range_begin == head){
+      head = just_accessed;
+    }
     range_begin = just_accessed;
   }
   return;
@@ -171,12 +177,13 @@ void BufferPool::insert_new_page(const RID& rid, const int& column, const int& v
     std::cout << "Inserting " << rid.first_rid_page << std::endl;
     std::cout << "Inserting column " << column << std::endl;
     if(rid.id == 32769){
-    std::cout << "hash: " << hash_fun(rid.first_rid_page) << '\n';
-    std::cout << "hash + 1: " << hash_fun(rid.first_rid_page) + 1 << '\n';
+    std::cout << "range begin: " << hash_vector[hash_fun(rid.first_rid_page)] << '\n';
+    std::cout << "range end: " << hash_vector[hash_fun(rid.first_rid_page) + 1] << '\n';
     Frame* range_begin = hash_vector[hash_fun(rid.first_rid_page)];
     Frame* range_end = hash_vector[hash_fun(rid.first_rid_page) + 1];
     std::cout << "hash range before insert:\n";
     while(!(*range_begin == *range_end)){
+      std::cout << "current frame: " << range_begin << '\n';
       std::cout << "rid: " << range_begin->first_rid_page << " column: " << range_begin->column << "\n";
       range_begin = range_begin->next;
     }}
