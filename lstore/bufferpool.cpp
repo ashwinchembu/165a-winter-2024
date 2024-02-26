@@ -291,5 +291,5 @@ Frame::Frame () {}
 Frame::~Frame () {}
 
 bool Frame::operator==(const Frame& rhs) {
-  return ((first_rid_page_range == rhs.first_rid_page_range) && (first_rid_page == rhs.first_rid_page) && (column == rhs.column))
+  return ((first_rid_page_range == rhs.first_rid_page_range) && (first_rid_page == rhs.first_rid_page) && (column == rhs.column));
 }
