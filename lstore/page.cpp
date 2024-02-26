@@ -224,6 +224,8 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
     // If tail_last and base_last is equal, that means there are no tail page created.
     std::cout << "Pagerange 3" << std::endl;
     if (tail_last_wasfull) {
+            std::cout << "Pagerange 3.2" << std::endl;
+
         rid_new.offset = 0;
         rid_new.first_rid_page = rid_new.id;
         base_last_wasfull = false;
@@ -253,6 +255,8 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
         num_slot_used_tail = 1;
         pages.push_back(rid_new);
     } else {
+            std::cout << "Pagerange 3.7" << std::endl;
+
         rid_new.first_rid_page = pages.back().first_rid_page;
         rid_new.offset = num_slot_used_tail;
         std::cout << "Pagerange 4" << std::endl;
