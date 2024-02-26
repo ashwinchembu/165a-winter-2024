@@ -112,7 +112,7 @@ void BufferPool::update_ages(Frame*& just_accessed, Frame*& range_begin){ //chan
       std::cout << "tail before" << tail << '\n';
       tail = just_accessed->prev;
       std::cout << "tail after" << tail << '\n';
-    } else if (range_begin-prev = nullptr) {
+    } else if (range_begin->prev == nullptr) {
       std::cout << "head before" << head << '\n';
       head = just_accessed;
       std::cout << "head after" << head << '\n';
