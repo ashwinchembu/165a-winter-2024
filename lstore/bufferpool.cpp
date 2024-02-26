@@ -68,7 +68,8 @@ void BufferPool::set (const RID& rid, const int& column, int value){
   if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
     found = load(rid, column);
   }
-  found->page->write(value);
+  // found->page->write(value);
+  *(found->page->data + rid.offset) = value;
   found->dirty = true; //the page has been modified
   update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
   unpin(rid, column);
@@ -176,8 +177,8 @@ Frame* BufferPool::insert_into_frame(const RID& rid, const int& column, Page* pa
 void BufferPool::insert_new_page(const RID& rid, const int& column, const int& value) {
 
   Page* page = new Page();
-  page->write(value);
-  // *(page->data + rid.offset) = value;
+  // page->write(value);
+  *(page->data + rid.offset) = value;
 
   Frame* frame = insert_into_frame(rid, column, page); //insert the page into a frame in the bufferpool
   pin(rid, column);
