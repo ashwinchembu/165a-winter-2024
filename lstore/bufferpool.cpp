@@ -52,8 +52,9 @@ BufferPool::~BufferPool () {
   write_back_all(); //make sure all unsaved data gets back to disk
   Frame* current_frame = head;
   while(current_frame != nullptr){ //iterate through entire bufferpool
+    Frame* old = current_frame;
     current_frame = current_frame->next;
-    delete current_frame->prev;
+    delete old;
   }
 }
 
@@ -106,22 +107,22 @@ Frame* BufferPool::search(const RID& rid, const int& column){
 }
 
 void BufferPool::update_ages(Frame*& just_accessed, Frame*& range_begin){ //change ages and reorder linked list
-  if(just_accessed != range_begin){ //if not already the range beginning / most recently accessed
-    if(just_accessed == tail){
-      tail = just_accessed->prev;
-    }
-    (just_accessed)->prev->next = (just_accessed)->next; //close gap where just_accessed used to be
-    if((just_accessed)->next != nullptr){ //if just accessed was not tail
-      (just_accessed)->next->prev = (just_accessed)->prev;
-    }
-    (just_accessed)->prev = (range_begin)->prev; //just_accessed becomes the new range beginning
-    (just_accessed)->next = range_begin;
-    (range_begin)->prev = just_accessed;
-    if(range_begin == head){
-      head = just_accessed;
-    }
-    range_begin = just_accessed;
-  }
+  // if(just_accessed != range_begin){ //if not already the range beginning / most recently accessed
+  //   if(just_accessed == tail){
+  //     tail = just_accessed->prev;
+  //   }
+  //   (just_accessed)->prev->next = (just_accessed)->next; //close gap where just_accessed used to be
+  //   if((just_accessed)->next != nullptr){ //if just accessed was not tail
+  //     (just_accessed)->next->prev = (just_accessed)->prev;
+  //   }
+  //   (just_accessed)->prev = (range_begin)->prev; //just_accessed becomes the new range beginning
+  //   (just_accessed)->next = range_begin;
+  //   (range_begin)->prev = just_accessed;
+  //   if(range_begin == head){
+  //     head = just_accessed;
+  //   }
+  //   range_begin = just_accessed;
+  // }
   return;
 }
 
@@ -151,11 +152,11 @@ Frame* BufferPool::insert_into_frame(const RID& rid, const int& column, Page* pa
   Frame* frame = nullptr;
   size_t hash = hash_fun(rid.first_rid_page); //determine correct hash range
 
-  if(frame_directory[hash] == bufferpool_size / NUM_BUFFERPOOL_HASH_PARTITIONS){ //if hash range is full
+  if(frame_directory[hash] == (bufferpool_size / NUM_BUFFERPOOL_HASH_PARTITIONS)){ //if hash range is full
     frame = evict(rid);
   } else{ //find empty frame to fill
     Frame* range_begin = hash_vector[hash]; //beginning of hash range
-    Frame* range_end = hash == hash_vector.size() - 1 ? tail : hash_vector[hash + 1]->prev; //end of hash range
+    Frame* range_end = hash == (hash_vector.size() - 1) ? tail : hash_vector[hash + 1]->prev; //end of hash range
     Frame* current_frame = range_begin; //iterate through range
     while(current_frame != range_end->next){
       if(!current_frame->valid){ //frame is empty
@@ -228,7 +229,7 @@ void BufferPool::insert_new_page(const RID& rid, const int& column, const int& v
 Frame* BufferPool::evict(const RID& rid){ //return the frame that was evicted
   size_t hash = hash_fun(rid.first_rid_page); //determine correct hash range
   Frame* range_begin = hash_vector[hash]; //beginning of hash range
-  Frame* range_end = (hash == hash_vector.size() - 1) ? tail : hash_vector[hash + 1]->prev; //end of hash range
+  Frame* range_end = (hash == (hash_vector.size() - 1)) ? tail : hash_vector[hash + 1]->prev; //end of hash range
 
   Frame* current_frame = range_end; //iterate through range
   while(true){ //search until a page with no pins is found
