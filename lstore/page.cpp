@@ -234,13 +234,13 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
         buffer_pool.insert_new_page(rid_new, TIMESTAMP_COLUMN, 0);
         buffer_pool.insert_new_page(rid_new, BASE_RID_COLUMN, rid.id);
         buffer_pool.insert_new_page(rid_new, TPS, 0);
-        for (int i = 0; i < num_column; i++) {
+        for (int i = NUM_METADATA_COLUMNS; i < num_column; i++) {
             if (std::isnan(columns[i - NUM_METADATA_COLUMNS]) || columns[i-NUM_METADATA_COLUMNS] < -2147480000) { // Wrapper changes None to smallest integer possible
                 // If there are no update, we write the value from latest update
-                buffer_pool.insert_new_page(rid_new, NUM_METADATA_COLUMNS + i, buffer_pool.get(latest_rid, NUM_METADATA_COLUMNS + i));
+                buffer_pool.insert_new_page(rid_new, i, buffer_pool.get(latest_rid, i));
             } else {
                 // If there are update, we write the new value and update the schema encoding.
-                buffer_pool.insert_new_page(rid_new, NUM_METADATA_COLUMNS + i, columns[i - NUM_METADATA_COLUMNS]);
+                buffer_pool.insert_new_page(rid_new, i, columns[i - NUM_METADATA_COLUMNS]);
                 schema_encoding = schema_encoding | (0b1 << (num_column - i - 1));
             }
         }
@@ -255,15 +255,15 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
         buffer_pool.set(rid_new, TIMESTAMP_COLUMN, 0);
         buffer_pool.set(rid_new, BASE_RID_COLUMN, rid.id);
         buffer_pool.set(rid_new, TPS, 0);
-        for (int i = 0; i < num_column; i++) {
-            buffer_pool.set(rid_new, NUM_METADATA_COLUMNS + i, columns[i]);
+        for (int i = NUM_METADATA_COLUMNS; i < num_column; i++) {
+            buffer_pool.set(rid_new, i, columns[i - NUM_METADATA_COLUMNS]);
 
             if (std::isnan(columns[i - NUM_METADATA_COLUMNS]) || columns[i-NUM_METADATA_COLUMNS] < -2147480000) { // Wrapper changes None to smallest integer possible
                 // If there are no update, we write the value from latest update
-                buffer_pool.set(rid_new, NUM_METADATA_COLUMNS + i, buffer_pool.get(latest_rid, NUM_METADATA_COLUMNS + i));
+                buffer_pool.set(rid_new, i, buffer_pool.get(latest_rid, i));
             } else {
                 // If there are update, we write the new value and update the schema encoding.
-                buffer_pool.set(rid_new, NUM_METADATA_COLUMNS + i, columns[i - NUM_METADATA_COLUMNS]);
+                buffer_pool.set(rid_new, i, columns[i - NUM_METADATA_COLUMNS]);
                 schema_encoding = schema_encoding | (0b1 << (num_column - i - 1));
             }
         }
