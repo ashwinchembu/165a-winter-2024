@@ -30,7 +30,7 @@ public:
     virtual ~BufferPool ();
     Frame* head;
     Frame* tail;
-    int hash_fun(int x);
+    int hash_fun(unsigned int x);
     int get (const RID& rid, const int& column); // given a rid and column, returns the value in that location
     void set (const RID& rid, const int& column, int value); // given a rid and column, changes the value in that location
     Frame* load (const RID& rid, const int& column); //from disk into bufferpool
