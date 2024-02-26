@@ -11,6 +11,7 @@ class Frame {
 public:
     Frame ();
     virtual ~Frame ();
+    bool operator==(const Frame& rhs);
     Page* page = nullptr;
     int first_rid_page = 0; //first rid in the page
     std::string table_name = "";

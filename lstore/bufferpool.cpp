@@ -187,7 +187,7 @@ void BufferPool::insert_new_page(const RID& rid, const int& column, const int& v
   Frame* range_begin = hash_vector[hash_fun(rid.first_rid_page)];
   Frame* range_end = hash_vector[hash_fun(rid.first_rid_page) + 1];
   std::cout << "hash range before age update:\n";
-  while(range_begin != range_end){
+  while(!(*range_begin == *range_end)){
     std::cout << "rid: " << range_begin->first_rid_page << " column: " << range_begin->column << "\n";
     range_begin = range_begin->next;
   }
@@ -198,7 +198,7 @@ void BufferPool::insert_new_page(const RID& rid, const int& column, const int& v
   Frame* range_begin = hash_vector[hash_fun(rid.first_rid_page)];
   Frame* range_end = hash_vector[hash_fun(rid.first_rid_page) + 1];
   std::cout << "hash range after:\n";
-  while(range_begin != range_end){
+  while(!(*range_begin == *range_end)){
     std::cout << "rid: " << range_begin->first_rid_page << " column: " << range_begin->column << "\n";
     range_begin = range_begin->next;
   }}
@@ -289,3 +289,7 @@ void BufferPool::set_path (const std::string& path_rhs) {
 Frame::Frame () {}
 
 Frame::~Frame () {}
+
+bool Frame::operator==(const Frame& rhs) {
+  return ((first_rid_page_range == rhs.first_rid_page_range) && (first_rid_page == rhs.first_rid_page) && (column == rhs.column))
+}
