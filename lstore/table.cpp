@@ -409,7 +409,7 @@ int Table::merge() {
 
 void Table::PrintData() {
 	std::cout << "--Page Directory--" << std::endl;
-		for(auto& e: indices){
+		for(auto& e: page_directory){
 			std::cout << "Key: " << e.first << ", Value.id: " << e.second.id << std::endl;
 		}
 }
