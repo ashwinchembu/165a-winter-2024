@@ -254,7 +254,7 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 			}
 			std::vector<Frame*> insert_to_queue = mergeBufferPool->hash_vector;
 			merge_queue.push(insert_to_queue);
-			delete mergeBufferPool;
+			//delete mergeBufferPool;
 	}
 
 	// int err = (page_range[i].get())->update(rid, rid_id, columns);
@@ -401,6 +401,6 @@ int Table::merge() {
 	for (const auto& to_evict : mergeBufferPool->hash_vector){
 		mergeBufferPool->evict(to_evict->first_rid_page);
 	}
-		delete mergeBufferPool;
+		//delete mergeBufferPool;
     return -1;
 }
