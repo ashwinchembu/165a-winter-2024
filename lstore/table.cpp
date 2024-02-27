@@ -254,12 +254,11 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 			}
 			std::vector<Frame*> insert_to_queue = mergeBufferPool->hash_vector;
 			merge_queue.push(insert_to_queue);
-
+			delete mergeBufferPool;
 	}
 
 	// int err = (page_range[i].get())->update(rid, rid_id, columns);
 	page_directory.insert({rid_id, new_rid});
-	delete mergeBufferPool;
     return new_rid;
 }
 
