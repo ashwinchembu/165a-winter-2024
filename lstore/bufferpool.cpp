@@ -249,7 +249,7 @@ void BufferPool::write_back_all (){
 
 void BufferPool::pin (const RID& rid, const int& column) {
   Frame* found = search(rid, column);
-    std::cout << found << std::endl;
+    // std::cout << found << std::endl;
 
     // std::cout << "Pin : first_rid_page: "<< found->first_rid_page << " column: " << found->column << " pin: " << found->pin << std::endl;
 
