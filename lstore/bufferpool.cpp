@@ -137,8 +137,8 @@ Frame* BufferPool::load (const RID& rid, const int& column){ //return the frame 
   }
   Frame* frame = nullptr;
   Page* p = new Page();
-  int e = fread(&(p->num_rows), 1, sizeof(int), fp);
-  e = fread(p->data, p->num_rows, sizeof(int), fp);
+  int e = fread(&(p->num_rows), sizeof(int), 1, fp);
+  e = fread(p->data, sizeof(int), p->num_rows, fp);
   std::cout << "File at " << data_path << '\n';
   std::cout << "numrow " << p->num_rows << '\n';
   fclose(fp);
@@ -231,8 +231,8 @@ void BufferPool::write_back(Frame* frame){
   if (!fp) {
     throw std::invalid_argument("Couldn't open file " + data_path);
   }
-  fwrite(&(frame->page->num_rows), 1, sizeof(int), fp);
-  fwrite(frame->page->data, frame->page->num_rows, sizeof(int), fp);
+  fwrite(&(frame->page->num_rows), sizeof(int), 1, fp);
+  fwrite(frame->page->data, sizeof(int), frame->page->num_rows, fp);
   fclose(fp);
   delete frame->page;
 }

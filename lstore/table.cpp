@@ -296,8 +296,6 @@ int Table::read(FILE* fp) {
 		int num_element = num_insert + num_columns;
 		RID value;
 		int key;
-		std::cout << num_columns << '\n';
-		std::cout << num_update + num_insert << '\n';
 		for(int i = 0; i < num_element; i++){
 			e = e + fread(&key, sizeof(int), 1, fp);
 			value.read(fp);
