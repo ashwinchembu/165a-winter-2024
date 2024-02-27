@@ -113,6 +113,7 @@ Database::Database() {
 }
 
 Database::~Database() {
+	std::cout << "expr" << std::endl;
 	// Causing seg fault
 	// buffer_pool.~BufferPool();
 	// for(auto& t : tables){
@@ -147,9 +148,7 @@ void Database::close() {
 	// 	itr->second.merge();
 	// }
 	write();
-	std::cout << "expr" << std::endl;
 	buffer_pool.write_back_all();
-	std::cout << "expr" << std::endl;
 };
 
 void Database::read(const std::string& path){
