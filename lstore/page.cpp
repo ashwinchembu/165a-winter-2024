@@ -252,7 +252,7 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
         buffer_pool.set(rid_new, BASE_RID_COLUMN, rid.id, true);
         buffer_pool.set(rid_new, TPS, 0, true);
         for (int i = NUM_METADATA_COLUMNS; i < num_column; i++) {
-            buffer_pool.set(rid_new, i, columns[i - NUM_METADATA_COLUMNS], true);
+          //  buffer_pool.set(rid_new, i, columns[i - NUM_METADATA_COLUMNS], true);
 
             if (std::isnan(columns[i - NUM_METADATA_COLUMNS]) || columns[i-NUM_METADATA_COLUMNS] < -2147480000) { // Wrapper changes None to smallest integer possible
                 // If there are no update, we write the value from latest update
