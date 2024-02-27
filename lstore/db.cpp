@@ -168,12 +168,9 @@ void Database::read(const std::string& path){
 		e = fread(&nameBuffer,128,1,fp);
 		Table t;
 		t.read(fp);
-		std::cout << "Error 0\n";
 		tables.insert({{nameBuffer},t});
-		std::cout << "Error 1\n";
 	}
 	fclose(fp);
-	std::cout << "Error 2\n";
 	return;
 }
 
@@ -248,9 +245,12 @@ void Database::drop_table(const std::string& name){
  *
  */
 Table Database::get_table(const std::string& name){
+	std::cout << "Error 0" << std::endl;
   std::map<std::string, Table>::iterator table = tables.find(name);
+	std::cout << "Error 1" << std::endl;
   if(table == tables.end()){
     throw std::invalid_argument("No table with that name was located.");
   }
+	std::cout << "Error 2" << std::endl;
   return table->second;
 }
