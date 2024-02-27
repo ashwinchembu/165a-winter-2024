@@ -275,6 +275,7 @@ int Table::write(FILE* fp) {
     for(std::map<int, RID>::iterator iter=page_directory.begin(); iter!=page_directory.end(); iter++){
         fwrite(&(iter->first), sizeof(int), 1, fp);
         iter->second.write(fp);
+				std::cout << iter->first << ", " << iter->second.id << '\n';
     }
 
     // index->write(fp);
@@ -299,6 +300,7 @@ int Table::read(FILE* fp) {
 		int num_element = num_insert + num_columns;
 		RID value;
 		int key;
+		std::cout << name << '\n';
 		std::cout << num_element << '\n';
 		for(int i = 0; i < num_element; i++){
 			e = e + fread(&key, sizeof(int), 1, fp);
