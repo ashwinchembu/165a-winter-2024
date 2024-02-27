@@ -263,9 +263,11 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 
 int Table::write(FILE* fp) {
     fwrite(&key, sizeof(int), 1, fp);
+		fwrite(&num_columns, sizeof(int), 1, fp);
     fwrite(&num_update, sizeof(int), 1, fp);
     fwrite(&num_insert, sizeof(int), 1, fp);
-    fwrite(&num_columns, sizeof(int), 1, fp);
+		int test = 200;
+		fwrite(&test, sizeof(int), 1, fp);
 		std::cout << "num update " << num_update << std::endl;
 		std::cout << "num insert " << num_insert << std::endl;
     char nameBuffer[128];
@@ -289,9 +291,14 @@ int Table::write(FILE* fp) {
 
 int Table::read(FILE* fp) {
     size_t e = fread(&key, sizeof(int), 1, fp);
+		e = e + fread(&num_columns, sizeof(int), 1, fp);
     e = e + fread(&num_update, sizeof(int), 1, fp);
     e = e + fread(&num_insert, sizeof(int), 1, fp);
-    e = e + fread(&num_columns, sizeof(int), 1, fp);
+		int test = 0;
+		fread(&test, sizeof(int), 1, fp);
+		if (test != 200) {
+			std::cout << "Something is off" << '\n';
+		}
     char nameBuffer[128];
     e = e + fread(nameBuffer,128,1,fp);
     name = std::string(nameBuffer);
