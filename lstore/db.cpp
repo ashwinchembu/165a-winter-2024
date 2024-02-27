@@ -145,11 +145,8 @@ void Database::close() {
 	// for (std::map<std::string, Table>::iterator itr = tables.begin(); itr != tables.end(); itr++) {
 	// 	itr->second.merge();
 	// }
-	std::cout << "Segfault1?" << std::endl;
 	write();
-	std::cout << "Segfault2?" << std::endl;
 	buffer_pool.write_back_all();
-	std::cout << "Segfault3?" << std::endl;
 };
 
 void Database::read(const std::string& path){

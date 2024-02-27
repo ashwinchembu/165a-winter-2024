@@ -214,29 +214,29 @@ def correctness_tester():
     query.insert(*records[1])
     # Test if correct columns are returned 
     result = query.select(1, 0, [1,0,1,0,0])
-    # print(len(result))
-    # print(result[0].columns)
+    print(len(result))
+    print(result[0].columns)
     if len(result) == 1 and len(result[0].columns) == 2 and result[0].columns[1] == records[1][2]:
-        print("[0] pass")
         score += 5
+        print("[0] pass")
     elif len(result) == 1 and result[0].columns[0] == 1 and result[0].columns[2] == 1 and\
         result[0].columns[3] == None and result[0].columns[4] == None and result[0].columns[1] == None:
-        print("[0] pass")
         score += 5
+        print("[0] pass")
     # Test if insertion with existing primary_key is not allowed
     query.insert(*records[2])
     result = query.select(1, 0, [1,1,1,1,1])
-    # print(len(result))
+    print(len(result))
     print(0, result[0].columns, records[1])
     if len(result) == 1 and len(result[0].columns) == 5 and result[0].columns[1] == records[1][1]\
         and result[0].columns[2] == records[1][2] and result[0].columns[3] == records[1][3]\
         and result[0].columns[4] == records[1][4]:
-        print("[1] pass")
         score += 5
+        print("[1] pass")
     result = query.sum(1, 1, 1)
     if result == 1:
-        print("[2] pass")
         score += 5
+        print("[2] pass")
     # Test if updated record with existing primary_key is not allowed
     query.insert(*records[3])
     query.update(2, *records[4])
@@ -244,12 +244,12 @@ def correctness_tester():
         result = query.select(1, 0, [1,0,1,0,0])
         print(1, result[0].columns, records[1])
         if len(result) == 1 and len(result[0].columns) == 2 and result[0].columns[1] == records[1][2]:
-            print("[3] pass")
             score += 5
+            print("[3] pass")
         elif len(result) == 1 and result[0].columns[0] == 1 and result[0].columns[2] == 1 and\
         result[0].columns[3] == None and result[0].columns[4] == None and result[0].columns[1] == None:
-            print("[3] pass")
             score += 5
+            print("[3] pass")
     except Exception as e:
         print("Something went wrong during update")
         print(e)
@@ -260,8 +260,8 @@ def correctness_tester():
     if len(result) == 1 and len(result[0].columns) == 5 and result[0].columns[1] == records[3][1]\
         and result[0].columns[2] == records[3][2] and result[0].columns[3] == records[3][3]\
         and result[0].columns[4] == records[3][4]:
-        print("[4] pass")
         score += 5
+        print("[4] pass")
 
 from timeit import default_timer as timer
 from decimal import Decimal
