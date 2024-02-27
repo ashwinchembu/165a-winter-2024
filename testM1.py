@@ -211,7 +211,6 @@ def correctness_tester():
     records[2] = [1, 2, 2, 2, 2]
     records[3] = [2, 3, 3, 3, 3]
     records[4] = [1, 2, 2, 2, 2]
-    print(records[1]);
     query.insert(*records[1])
     print(records[1]);
     # Test if correct columns are returned 
