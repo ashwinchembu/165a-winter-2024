@@ -208,9 +208,9 @@ def correctness_tester():
     # dictionary for records to test the database: test directory
     records = {}
     records[1] = [1, 1, 1, 1, 1]
-    records[2] = [1, 2, 2, 2, 2]
-    records[3] = [2, 3, 3, 3, 3]
-    records[4] = [1, 2, 2, 2, 2]
+    records[2] = [2, 2, 2, 2, 2]
+    records[3] = [3, 3, 3, 3, 3]
+    records[4] = [4, 2, 2, 2, 2]
     query.insert(*records[1])
     # Test if correct columns are returned 
     result = query.select(1, 0, [1,0,1,0,0])
