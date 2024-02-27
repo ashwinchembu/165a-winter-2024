@@ -296,16 +296,18 @@ int Table::read(FILE* fp) {
     char nameBuffer[128];
     e = e + fread(nameBuffer,128,1,fp);
     name = std::string(nameBuffer);
-	int num_element = num_insert + num_columns;
-	RID value;
-	int key;
-    for(int i = 0; i < num_element; i++){
-		e = e + fread(&key, sizeof(int), 1, fp);
-		value.read(fp);
-		value.table_name = name;
-		page_directory[key] = value;
+		int num_element = num_insert + num_columns;
+		RID value;
+		int key;
+		std::cout << num_element << '\n';
+		for(int i = 0; i < num_element; i++){
+			e = e + fread(&key, sizeof(int), 1, fp);
+			std::cout << key << '\n';
+			value.read(fp);
+			value.table_name = name;
+			page_directory[key] = value;
 
-    }
+		}
 
     //index->read(fp);
 	page_range.clear();
