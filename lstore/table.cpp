@@ -178,7 +178,7 @@ Table::~Table() {
 		}
 	}
 	//delete index;
-	// std::cout << "Table destructor" << std::endl;
+	std::cout << "Table destructor" << std::endl;
 }
 
 /***
