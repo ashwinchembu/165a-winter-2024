@@ -291,13 +291,13 @@ int Table::write(FILE* fp) {
 
 
 int Table::read(FILE* fp) {
-    fread(&key, sizeof(int), 1, fp);
-    fread(&num_update, sizeof(int), 1, fp);
-    fread(&num_insert, sizeof(int), 1, fp);
-    fread(&num_columns, sizeof(int), 1, fp);
+    size_t e = fread(&key, sizeof(int), 1, fp);
+    e = fread(&num_update, sizeof(int), 1, fp);
+    e = fread(&num_insert, sizeof(int), 1, fp);
+    e = fread(&num_columns, sizeof(int), 1, fp);
 
     char nameBuffer[128];
-    fread(nameBuffer,128,1,fp);
+    e = fread(nameBuffer,128,1,fp);
     name = std::string(nameBuffer);
 
 	int num_element = num_insert + num_columns;
@@ -305,7 +305,7 @@ int Table::read(FILE* fp) {
 	int key;
 
     for(int i = 0; i < num_element; i++){
-		fread(&key, sizeof(int), 1, fp);
+		e = fread(&key, sizeof(int), 1, fp);
 		value.read(fp);
 		value.table_name = name;
 		page_directory[key] = value;
@@ -315,7 +315,7 @@ int Table::read(FILE* fp) {
 
 	page_range.clear();
 	int num_page_range = 0;
-	fread(&(num_page_range), sizeof(int), 1, fp);
+	e = fread(&(num_page_range), sizeof(int), 1, fp);
 	for (int i = 0; i < num_page_range; i++) {
 		std::shared_ptr<PageRange>newPageRange{new PageRange()};
 		newPageRange.get()->read(fp);

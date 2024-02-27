@@ -133,12 +133,12 @@ void Database::read(const std::string& path){
 	}
 
 	int numTables;
-	fread(&numTables,sizeof(int),1,fp);
+	size_t e = fread(&numTables,sizeof(int),1,fp);
 
 	char nameBuffer[128];
 
 	for(int i = 0;i < numTables;i++){
-		fread(&nameBuffer,128,1,fp);
+		e = fread(&nameBuffer,128,1,fp);
 
 		Table t;
 		t.read(fp);

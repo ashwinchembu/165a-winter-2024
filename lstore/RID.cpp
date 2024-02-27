@@ -96,9 +96,9 @@ int RID::write(FILE* fp) {
 	return 0;
 }
 int RID::read(FILE* fp) {
-	fread(&id, sizeof(int), 1, fp);
-	fread(&first_rid_page, sizeof(int), 1, fp);
-	fread(&first_rid_page_range, sizeof(int), 1, fp);
-	fread(&offset, sizeof(int), 1, fp);
+	size_t e = fread(&id, sizeof(int), 1, fp);
+	e = fread(&first_rid_page, sizeof(int), 1, fp);
+	e = fread(&first_rid_page_range, sizeof(int), 1, fp);
+	e = fread(&offset, sizeof(int), 1, fp);
 	return 0;
 }

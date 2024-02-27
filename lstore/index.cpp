@@ -245,22 +245,22 @@ int Index::write(FILE* fp){
 
 int Index::read(FILE* fp){
 	int totalIndices;
-	fread(&totalIndices,sizeof(int),1,fp);
+	size_t e = fread(&totalIndices,sizeof(int),1,fp);
 
 	for(int i=0;i<totalIndices;i++){
 		std::unordered_multimap<int, int>nextMap;
 
 		int index;
-		fread(&index,sizeof(int),1,fp);
+		e = fread(&index,sizeof(int),1,fp);
 
 		int mapPairs;
-		fread(&mapPairs,sizeof(int),1,fp);
+		e = fread(&mapPairs,sizeof(int),1,fp);
 
 		for(int j=0;j<mapPairs;j++){
 			int value;
 			int id;
-			fread(&value,sizeof(int),1,fp);
-			fread(&id,sizeof(int),1,fp);
+			e = fread(&value,sizeof(int),1,fp);
+			e = fread(&id,sizeof(int),1,fp);
 
 			nextMap.insert({value,id});
 		}
