@@ -214,9 +214,9 @@ def correctness_tester():
     query.insert(*records[1])
     # Test if correct columns are returned 
     result = query.select(1, 0, [1,0,1,0,0])
-    print(len(result))
-    print(result[0].columns)
-    if len(result) == 1 and len(result[0].columns) == 2 and result[0].columns[1] == records[1][2]:
+    # print(len(result))
+    # print(result[0].columns)
+    if len(result) == 1 and len(result[0].columns) == 2 and result[0].columns[2] == records[1][2]:
         score += 5
         print("[0] pass")
     elif len(result) == 1 and result[0].columns[0] == 1 and result[0].columns[2] == 1 and\
@@ -226,7 +226,7 @@ def correctness_tester():
     # Test if insertion with existing primary_key is not allowed
     query.insert(*records[2])
     result = query.select(1, 0, [1,1,1,1,1])
-    print(len(result))
+    # print(len(result))
     print(0, result[0].columns, records[1])
     if len(result) == 1 and len(result[0].columns) == 5 and result[0].columns[1] == records[1][1]\
         and result[0].columns[2] == records[1][2] and result[0].columns[3] == records[1][3]\
