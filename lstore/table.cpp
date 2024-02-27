@@ -289,28 +289,29 @@ int Table::write(FILE* fp) {
 
 
 int Table::read(FILE* fp) {
+	std::cout << "Error 0\n";
     size_t e = fread(&key, sizeof(int), 1, fp);
     e = e + fread(&num_update, sizeof(int), 1, fp);
     e = e + fread(&num_insert, sizeof(int), 1, fp);
     e = e + fread(&num_columns, sizeof(int), 1, fp);
-
+std::cout << "Error 2\n";
     char nameBuffer[128];
     e = e + fread(nameBuffer,128,1,fp);
     name = std::string(nameBuffer);
-
+std::cout << "Error 3\n";
 	int num_element = num_insert + num_columns;
 	RID value;
 	int key;
-
+std::cout << "Error 4\n";
     for(int i = 0; i < num_element; i++){
 		e = e + fread(&key, sizeof(int), 1, fp);
 		value.read(fp);
 		value.table_name = name;
 		page_directory[key] = value;
     }
-
+std::cout << "Error 5\n";
     index->read(fp);
-
+std::cout << "Error 6\n";
 	page_range.clear();
 	int num_page_range = 0;
 	e = e + fread(&(num_page_range), sizeof(int), 1, fp);
