@@ -266,10 +266,6 @@ int Table::write(FILE* fp) {
 		fwrite(&num_columns, sizeof(int), 1, fp);
     fwrite(&num_update, sizeof(int), 1, fp);
     fwrite(&num_insert, sizeof(int), 1, fp);
-		int test = 200;
-		fwrite(&test, sizeof(int), 1, fp);
-		std::cout << "num update " << num_update << std::endl;
-		std::cout << "num insert " << num_insert << std::endl;
     char nameBuffer[128];
     strcpy(nameBuffer,name.c_str());
     fwrite(nameBuffer,128,1,fp);
@@ -294,20 +290,13 @@ int Table::read(FILE* fp) {
 		e = e + fread(&num_columns, sizeof(int), 1, fp);
     e = e + fread(&num_update, sizeof(int), 1, fp);
     e = e + fread(&num_insert, sizeof(int), 1, fp);
-		int test = 0;
-		fread(&test, sizeof(int), 1, fp);
-		if (test != 200) {
-			std::cout << "Something is off" << '\n';
-		}
     char nameBuffer[128];
     e = e + fread(nameBuffer,128,1,fp);
     name = std::string(nameBuffer);
 		int num_element = num_insert + num_columns;
 		RID value;
 		int key;
-		std::cout << num_columns << '\n';
-		std::cout << num_update + num_insert << '\n';
-		for(int i = 0; i < num_element + num_insert - num_columns; i++){
+		for(int i = 0; i < num_element; i++){
 			e = e + fread(&key, sizeof(int), 1, fp);
 			value.read(fp);
 			value.table_name = name;
