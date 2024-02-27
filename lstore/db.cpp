@@ -163,16 +163,18 @@ void Database::read(const std::string& path){
 	fseek(fp, 0, SEEK_SET);
 	int numTables;
 	size_t e = fread(&numTables,sizeof(int),1,fp);
-	std::cout << "Error 6\n";
+	std::cout << "Error before\n";
 	char nameBuffer[128];
 	for(int i = 0;i < numTables;i++){
 		e = fread(&nameBuffer,128,1,fp);
-		std::cout << "Error " << i << '\n';
+		std::cout << "Error 1\n";
 		Table t;
 		t.read(fp);
+		std::cout << "Error 2\n";
 		tables.insert({{nameBuffer},t});
+		std::cout << "Error 3\n";
 	}
-	std::cout << "Error 7\n";
+	std::cout << "Error after\n";
 	fclose(fp);
 }
 
