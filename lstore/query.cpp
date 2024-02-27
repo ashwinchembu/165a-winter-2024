@@ -111,8 +111,9 @@ std::vector<Record> Query::select_version(const int& search_key, const int& sear
         RID rid = table->page_directory.find(rids[i])->second;
         if(rid.id != 0){
             for(int j = 0; j <= relative_version; j++){ //go through indirection to get to correct version
+							std::cout << "get called from query select\n";
                 rid = table->page_directory.find((buffer_pool.get(rid, INDIRECTION_COLUMN)))->second; //go one step further in indirection
-                
+
                 if(rid.id > 0){
                     break;
                 }
@@ -132,9 +133,11 @@ std::vector<Record> Query::select_version(const int& search_key, const int& sear
 /// @TODO Adopt to the change in RID
 bool Query::update(const int& primary_key, const std::vector<int>& columns) {
     RID base_rid = table->page_directory.find(table->index->locate(table->key, primary_key)[0])->second; //locate base RID of record to be updated
-    RID last_update = table->page_directory.find(buffer_pool.get(base_rid, INDIRECTION_COLUMN))->second; //locate the previous update
+		std::cout << "get called from query update\n";
+		RID last_update = table->page_directory.find(buffer_pool.get(base_rid, INDIRECTION_COLUMN))->second; //locate the previous update
     RID update_rid = table->update(base_rid, columns); // insert update into the table
     std::vector<int> old_columns;
+
     std::vector<int> new_columns;
     for(int i = 0; i < table->num_columns; i++){ // fill old_columns with the contents of previous update
         old_columns.push_back(buffer_pool.get(last_update, i + NUM_METADATA_COLUMNS));
@@ -162,6 +165,7 @@ unsigned long int Query::sum_version(const int& start_range, const int& end_rang
     unsigned long int sum = 0;
     std::vector<int> rids = table->index->locate_range(start_range, end_range, table->key);
     int num_add = 0;
+		std::cout << "get called from query sum\n";
     for (size_t i = 0; i < rids.size(); i++) { //for each of the rids, find the old value and sum
         RID rid = table->page_directory.find(rids[i])->second;
         if (rid.id != 0) { //If RID is valid i.e. not deleted
@@ -194,7 +198,7 @@ bool Query::increment(const int& key, const int& column) {
     if (rids.size() == 0 || rid.id == 0) { // if none found or deleted
         return false;
     }
-
+		std::cout << "get called from query increment\n";
     int value = buffer_pool.get(rid, NUM_METADATA_COLUMNS+column);
     (buffer_pool.set(rid, NUM_METADATA_COLUMNS+column, value++)); //increment the column in record
 
