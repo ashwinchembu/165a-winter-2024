@@ -40,6 +40,7 @@ BufferPool::BufferPool (const int& num_pages) : bufferpool_size(num_pages){
 }
 
 BufferPool::~BufferPool () {
+  std::cout << "Bufferpool destructor In" << std::endl;
   write_back_all(); //make sure all unsaved data gets back to disk
   Frame* current_frame = head;
   while(current_frame != nullptr){ //iterate through entire bufferpool
@@ -47,6 +48,7 @@ BufferPool::~BufferPool () {
     current_frame = current_frame->next;
     delete old;
   }
+  std::cout << "Bufferpool destructor Out" << std::endl;
 }
 
 int BufferPool::hash_fun(unsigned int x) {
