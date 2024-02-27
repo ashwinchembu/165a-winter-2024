@@ -135,8 +135,11 @@ Frame* BufferPool::load (const RID& rid, const int& column){ //return the frame 
   }
   Frame* frame = nullptr;
   Page* p = new Page();
-  size_t e = fread(&(p->num_rows), 1, sizeof(int), fp);
-  e = fread(p->data, p->num_rows, sizeof(int), fp);
+  size_t e = fread(&(p->num_rows), sizeof(int), 1, fp);
+  e = e +fread(p->data, sizeof(int), p->num_rows, fp);
+  if (e != p->num_rows + 1 ) {
+    std::cout << "reading error?" << std::endl;
+  }
   fclose(fp);
   frame = insert_into_frame(rid, column, p); //insert the page into a frame in the bufferpool
   frame->dirty = false; //frame has not yet been modified

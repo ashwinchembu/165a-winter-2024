@@ -251,16 +251,16 @@ int Index::read(FILE* fp){
 		std::unordered_multimap<int, int>nextMap;
 
 		int index;
-		e = fread(&index,sizeof(int),1,fp);
+		e = e + fread(&index,sizeof(int),1,fp);
 
 		int mapPairs;
-		e = fread(&mapPairs,sizeof(int),1,fp);
+		e = e + fread(&mapPairs,sizeof(int),1,fp);
 
 		for(int j=0;j<mapPairs;j++){
 			int value;
 			int id;
-			e = fread(&value,sizeof(int),1,fp);
-			e = fread(&id,sizeof(int),1,fp);
+			e = e + fread(&value,sizeof(int),1,fp);
+			e = e + fread(&id,sizeof(int),1,fp);
 
 			nextMap.insert({value,id});
 		}
@@ -268,7 +268,7 @@ int Index::read(FILE* fp){
 		indices.insert({index,nextMap});
 	}
 
-	return 0;
+	return e;
 }
 
 void Index::setTable(Table* t){
