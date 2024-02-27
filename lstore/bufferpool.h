@@ -49,7 +49,7 @@ public:
     std::vector<Frame*> hash_vector; //the starting frame of each hash range
     std::vector<int> frame_directory; //keep track of how many open frames in each hash range
     int bufferpool_size;
-    std::string path = "./DB_DATA/Disk/";
+    std::string path = "./ECS165/";
 
 };
 

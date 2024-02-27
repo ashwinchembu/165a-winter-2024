@@ -99,15 +99,16 @@ COMPILER_SYMBOL void parse_table(int* databaseObject, char* tableName){
 BufferPool buffer_pool(BUFFER_POOL_SIZE);
 
 Database::Database() {
-	std::string pathWhenOpenIsntUsed = "./ECS165";
+	// Variable file_path is for this.
+	// std::string pathWhenOpenIsntUsed = "./ECS165";
 
-	buffer_pool.set_path(pathWhenOpenIsntUsed);
+	buffer_pool.set_path(file_path);
 
 	struct stat checkDir;
 
-	if(stat(pathWhenOpenIsntUsed.c_str(),&checkDir)!=0
+	if(stat(file_path.c_str(),&checkDir)!=0
 			|| !S_ISDIR(checkDir.st_mode)){
-		mkdir(pathWhenOpenIsntUsed.c_str(),0777);
+		mkdir(file_path.c_str(),0777);
 	}
 }
 
