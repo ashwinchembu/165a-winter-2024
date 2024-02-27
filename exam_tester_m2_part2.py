@@ -18,7 +18,7 @@ records = {}
 number_of_records = 1000
 number_of_aggregates = 100
 number_of_updates = 1
-
+print("Made query and loaded everything")
 seed(3562901)
 for i in range(0, number_of_records):
     key = 92106429 + i
