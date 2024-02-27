@@ -41,13 +41,11 @@ COMPILER_SYMBOL int* Query_select(int* obj, const int search_key,
 
 COMPILER_SYMBOL int* Query_select_version(int* obj, const int search_key, const int search_key_index,
 		int* projected_columns_index, const int relative_version){
-			std::cout << "meowe" << std::endl;
 
 	std::vector<int>* proj_columns = (std::vector<int>*)projected_columns_index;
 	Query* ref = (Query*)obj;
 
 	std::vector<Record> ret = ref->select_version(search_key,search_key_index,*proj_columns,relative_version);
-	std::cout << "meow" << std::endl;
 	return (int*)(new std::vector<Record>(ret));
 }
 
@@ -108,8 +106,8 @@ std::vector<Record> Query::select(const int& search_key, const int& search_key_i
 
 /// @TODO Adopt to the change in RID
 std::vector<Record> Query::select_version(const int& search_key, const int& search_key_index, const std::vector<int>& projected_columns_index, const int& _relative_version) {
+	std::cout << "Select version in" << std::endl;
     const int relative_version = _relative_version * (-1);
-		std::cout << "Select version in" << std::endl;
     std::vector<Record> records;
     std::vector<int> rids = table->index->locate(search_key_index, search_key); //this returns the RIDs of the base pages
     // std::cout << "1" << std::endl;
@@ -136,8 +134,6 @@ std::vector<Record> Query::select_version(const int& search_key, const int& sear
             records.push_back(Record(rids[i], search_key, record_columns)); //add a record with RID of base page, value of primary key, and contents of desired version
         }
     }
-		std::cout << "Select version out" << std::endl;
-
     // std::cout << "6" << std::endl;
     return records;
 }
