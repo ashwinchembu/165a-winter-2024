@@ -234,7 +234,7 @@ void BufferPool::write_back(Frame* frame){
   fwrite(&(frame->page->num_rows), sizeof(int), 1, fp);
   fwrite(frame->page->data, sizeof(int), frame->page->num_rows, fp);
   std::cout << "What should go in: num rows: " << frame->page->num_rows << std::endl;
-  std::cout << "page: " << frame->page << std::endl;
+  std::cout << "page: " << *(frame->page) << std::endl;
   fclose(fp);
   delete frame->page;
 }
