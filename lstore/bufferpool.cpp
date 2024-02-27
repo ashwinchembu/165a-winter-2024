@@ -249,7 +249,7 @@ void BufferPool::write_back_all (){
 
 void BufferPool::pin (const RID& rid, const int& column) {
   Frame* found = search(rid, column);
-    std::cout << found << std::endl;
+    // std::cout << found << std::endl;
 
     // std::cout << "Pin : first_rid_page: "<< found->first_rid_page << " column: " << found->column << " pin: " << found->pin << std::endl;
 
@@ -264,7 +264,7 @@ void BufferPool::pin (const RID& rid, const int& column) {
 
 void BufferPool::unpin (const RID& rid, const int& column) {
   Frame* found = search(rid, column);
-  std::cout << found << std::endl;
+  // std::cout << found << std::endl;
   // std::cout << "Unpin : first_rid_page: "<< found->first_rid_page << " column: " << found->column << " pin: " << found->pin << std::endl;
   if(found == nullptr || !found->valid){ //if not in the bufferpool
     throw std::invalid_argument("Attempt to unpin record that was not already pinned (No record found)");
@@ -273,7 +273,7 @@ void BufferPool::unpin (const RID& rid, const int& column) {
   // std::cout << "Unpin2 : first_rid_page: "<< found->first_rid_page << " column: " << found->column << " pin: " << found->pin << std::endl;
   if(found->pin < 0){ //if pin count gets below 0
     (found->pin) = 0;
-    std::cout << rid.id << std::endl;
+    // std::cout << rid.id << std::endl;
     throw std::invalid_argument("Attempt to unpin record that was not already pinned (Pin negative value)");
   }
   return;
