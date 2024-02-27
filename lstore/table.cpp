@@ -359,7 +359,7 @@ int Table::merge() {
 		int page_rid = currentFrame->first_rid_page;
 		//determine that we dont visit same logical set twice
 		auto pos = visited_rids.find(page_rid);
- 
+
 		
 		if (pos != visited_rids.end()){
 			continue;
@@ -384,27 +384,22 @@ int Table::merge() {
 							for (int j = 0; j < num_columns; j++) { //indirection place stuff
 								int value = mergeBufferPool->get(currentRID, j);
 								merge_vals.push_back(value);
-								}
-						latest_update[baseRID].second = merge_vals;
+							}
+							latest_update[baseRID].second = merge_vals;
+						}
 					}
-
-
-		}
-
+				}
 			}
 		}
-
-
-	}
 	}
 	for (const auto& pair : latest_update) {
-        int latest_base_rid = pair.first;
-        const std::vector<int>& values = pair.second.second;
+		int latest_base_rid = pair.first;
+		const std::vector<int>& values = pair.second.second;
 
 		for (int col = 0; col < num_columns; col++){
-        mergeBufferPool->set (latest_base_rid, col, values[col]);
+			mergeBufferPool->set (latest_base_rid, col, values[col]);
 		}
-    }
+	}
 	for (const auto& to_evict : mergeBufferPool->hash_vector){
 		mergeBufferPool->evict(to_evict->first_rid_page);
 	}
