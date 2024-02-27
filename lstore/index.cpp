@@ -126,7 +126,6 @@ std::vector<int> Index::locate (const int& column_number, const int& value) {
     for(auto iter = range.first; iter != range.second; iter++){
         matching_records.push_back(iter->second);
     }
-
     return matching_records;
 }
 
@@ -277,6 +276,7 @@ void Index::setTable(Table* t){
     create_index(table->key);
 }
 
+/*
 void Index::printData(){
 	for(auto& e: indices){
 		printf("---Column %d:---\n\n",e.first);
@@ -285,4 +285,4 @@ void Index::printData(){
 			std::cout << j.second << std::endl;
 		}
 	}
-}
+}*/

@@ -320,7 +320,7 @@ int Table::read(FILE* fp) {
 	delete index;
 	index = new Index();
 	index->setTable(this);
-	index->printData();
+	//index->printData();
 	return e;
 }
 
