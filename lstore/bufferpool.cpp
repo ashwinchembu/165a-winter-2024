@@ -246,6 +246,8 @@ void BufferPool::write_back_all (){
   while(current_frame != nullptr){ //iterate through entire bufferpool
     if(current_frame->dirty && current_frame->valid){
       write_back(current_frame);
+    } else {
+      current_frame ->valid = false;
     }
     current_frame = current_frame->next;
   }
