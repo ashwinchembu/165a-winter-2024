@@ -206,7 +206,6 @@ RID Table::insert(const std::vector<int>& columns) {
     }
 
     page_directory.insert({rid_id, record});
-		std::cout << "size of page_directory is " << page_directory.size() << std::endl;
     return record;
 }
 
@@ -260,7 +259,6 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 
 	// int err = (page_range[i].get())->update(rid, rid_id, columns);
 	page_directory.insert({rid_id, new_rid});
-	std::cout << "size of page_directory is " << page_directory.size() << std::endl;
     return new_rid;
 }
 
@@ -270,6 +268,8 @@ int Table::write(FILE* fp) {
     fwrite(&num_insert, sizeof(int), 1, fp);
     fwrite(&num_columns, sizeof(int), 1, fp);
 		std::cout << "size of page_directory is " << page_directory.size() << std::endl;
+		std::cout << "num update " << num_update << std::endl;
+		std::cout << "num insert " << num_insert << std::endl;
     char nameBuffer[128];
     strcpy(nameBuffer,name.c_str());
     fwrite(nameBuffer,128,1,fp);
