@@ -208,7 +208,7 @@ bool Query::increment(const int& key, const int& column) {
         return false;
     }
     int value = buffer_pool.get(rid, NUM_METADATA_COLUMNS+column);
-    (buffer_pool.set(rid, NUM_METADATA_COLUMNS+column, value++)); //increment the column in record
+    (buffer_pool.set(rid, NUM_METADATA_COLUMNS+column, value++, false)); //increment the column in record
 
     // void Index::update_index(RID rid, std::vector<int>columns, std::vector<int>old_columns){
     std::vector<int> columns;

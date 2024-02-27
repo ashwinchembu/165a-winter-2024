@@ -183,14 +183,14 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
     } else {
         new_rid.offset = num_slot_used_base;
         new_rid.first_rid_page = pages[base_last].id;
-        buffer_pool.set(new_rid, INDIRECTION_COLUMN, new_rid.id);
-        buffer_pool.set(new_rid, RID_COLUMN, new_rid.id);
-        buffer_pool.set(new_rid, TIMESTAMP_COLUMN, 0);
-        buffer_pool.set(new_rid, SCHEMA_ENCODING_COLUMN, 0);
-        buffer_pool.set(new_rid, BASE_RID_COLUMN, new_rid.id);
-        buffer_pool.set(new_rid, TPS, 0);
+        buffer_pool.set(new_rid, INDIRECTION_COLUMN, new_rid.id, true);
+        buffer_pool.set(new_rid, RID_COLUMN, new_rid.id, true);
+        buffer_pool.set(new_rid, TIMESTAMP_COLUMN, 0, true);
+        buffer_pool.set(new_rid, SCHEMA_ENCODING_COLUMN, 0, true);
+        buffer_pool.set(new_rid, BASE_RID_COLUMN, new_rid.id, true);
+        buffer_pool.set(new_rid, TPS, 0, true);
         for (int i = NUM_METADATA_COLUMNS; i < num_column; i++) {
-            buffer_pool.set(new_rid, i, columns[i - NUM_METADATA_COLUMNS]);
+            buffer_pool.set(new_rid, i, columns[i - NUM_METADATA_COLUMNS], true);
         }
         num_slot_used_base++;
     }
@@ -214,7 +214,7 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
 
     buffer_pool.pin(rid, INDIRECTION_COLUMN);
     RID latest_rid = page_directory.find(buffer_pool.get(rid, INDIRECTION_COLUMN))->second;
-    buffer_pool.set(rid, INDIRECTION_COLUMN, rid_new.id);
+    buffer_pool.set(rid, INDIRECTION_COLUMN, rid_new.id, false);
     buffer_pool.unpin(rid, INDIRECTION_COLUMN);
     // Create new tail pages if there are no space left or tail page does not exist.
     int schema_encoding = 0;
@@ -246,30 +246,30 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
     } else {
         rid_new.first_rid_page = pages.back().first_rid_page;
         rid_new.offset = num_slot_used_tail;
-        buffer_pool.set(rid_new, INDIRECTION_COLUMN, rid.id);
-        buffer_pool.set(rid_new, RID_COLUMN, rid_new.id);
-        buffer_pool.set(rid_new, TIMESTAMP_COLUMN, 0);
-        buffer_pool.set(rid_new, BASE_RID_COLUMN, rid.id);
-        buffer_pool.set(rid_new, TPS, 0);
+        buffer_pool.set(rid_new, INDIRECTION_COLUMN, rid.id, true);
+        buffer_pool.set(rid_new, RID_COLUMN, rid_new.id, true);
+        buffer_pool.set(rid_new, TIMESTAMP_COLUMN, 0, true);
+        buffer_pool.set(rid_new, BASE_RID_COLUMN, rid.id, true);
+        buffer_pool.set(rid_new, TPS, 0, true);
         for (int i = NUM_METADATA_COLUMNS; i < num_column; i++) {
-            buffer_pool.set(rid_new, i, columns[i - NUM_METADATA_COLUMNS]);
+            buffer_pool.set(rid_new, i, columns[i - NUM_METADATA_COLUMNS], true);
 
             if (std::isnan(columns[i - NUM_METADATA_COLUMNS]) || columns[i-NUM_METADATA_COLUMNS] < -2147480000) { // Wrapper changes None to smallest integer possible
                 // If there are no update, we write the value from latest update
-                buffer_pool.set(rid_new, i, buffer_pool.get(latest_rid, i));
+                buffer_pool.set(rid_new, i, buffer_pool.get(latest_rid, i), true);
             } else {
                 // If there are update, we write the new value and update the schema encoding.
-                buffer_pool.set(rid_new, i, columns[i - NUM_METADATA_COLUMNS]);
+                buffer_pool.set(rid_new, i, columns[i - NUM_METADATA_COLUMNS], true);
                 schema_encoding = schema_encoding | (0b1 << (num_column - (i - NUM_METADATA_COLUMNS) - 1));
             }
         }
-        buffer_pool.set(rid_new, SCHEMA_ENCODING_COLUMN, schema_encoding);
+        buffer_pool.set(rid_new, SCHEMA_ENCODING_COLUMN, schema_encoding, true);
         num_slot_used_tail++;
     }
 
     // Updating indirection column and schema encoding column for the base page
     buffer_pool.pin(rid, SCHEMA_ENCODING_COLUMN);
-    buffer_pool.set(rid, SCHEMA_ENCODING_COLUMN, buffer_pool.get(rid, SCHEMA_ENCODING_COLUMN) | schema_encoding);
+    buffer_pool.set(rid, SCHEMA_ENCODING_COLUMN, buffer_pool.get(rid, SCHEMA_ENCODING_COLUMN) | schema_encoding, false);
     buffer_pool.unpin(rid, SCHEMA_ENCODING_COLUMN);
     tail_last_wasfull = (num_slot_used_tail == PAGE_SIZE);
     // Setting the new RID to be representation of the page if the page was newly created

@@ -394,7 +394,7 @@ int Table::merge() {
 		const std::vector<int>& values = pair.second.second;
 
 		for (int col = 0; col < num_columns; col++){
-			mergeBufferPool->set (latest_base_rid, col, values[col]);
+			mergeBufferPool->set (latest_base_rid, col, values[col], false);
 		}
 	}
 	for (const auto& to_evict : mergeBufferPool->hash_vector){
