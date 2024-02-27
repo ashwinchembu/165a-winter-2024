@@ -132,6 +132,7 @@ std::vector<Record> Query::select_version(const int& search_key, const int& sear
             records.push_back(Record(rids[i], search_key, record_columns)); //add a record with RID of base page, value of primary key, and contents of desired version
         }
     }
+		std::cout << "SIze @ query select version" << table->page_directory.size() << '\n';
     return records;
 }
 
