@@ -84,6 +84,7 @@ Database::Database() {
 }
 
 Database::~Database() {
+	// Causing seg fault
 	// buffer_pool.~BufferPool();
 	// for(auto& t : tables){
 	// 	delete t.second.index;
