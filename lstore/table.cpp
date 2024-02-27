@@ -316,11 +316,11 @@ int Table::read(FILE* fp) {
 		newPageRange.get()->read(fp);
 		page_range.push_back(newPageRange);
 	}
-	std::cout << "Error 7\n";
+
 	delete index;
 	index = new Index();
 	index->setTable(this);
-std::cout << "Error 8\n";
+
 	return e;
 }
 

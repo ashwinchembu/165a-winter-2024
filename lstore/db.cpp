@@ -168,9 +168,13 @@ void Database::read(const std::string& path){
 		e = fread(&nameBuffer,128,1,fp);
 		Table t;
 		t.read(fp);
+		std::cout << "Error 0\n";
 		tables.insert({{nameBuffer},t});
+		std::cout << "Error 1\n";
 	}
 	fclose(fp);
+	std::cout << "Error 2\n";
+	return;
 }
 
 void Database::write(){
