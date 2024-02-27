@@ -140,7 +140,9 @@ void Database::open(const std::string& path) {
 }
 
 void Database::close() {
-	std::cout << "Size @ close" << tables["Grades"]->second->page_directory.size() << '\n';
+	for(auto& t : tables){
+		std::cout << "Size @ close" << t.second->page_directory.size() << '\n';
+	}
 
 	// Comment out until merge is done.
 	// for (std::map<std::string, Table>::iterator itr = tables.begin(); itr != tables.end(); itr++) {
