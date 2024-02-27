@@ -48,12 +48,6 @@ COMPILER_SYMBOL int getRecordBufferElement(const int i){
 COMPILER_SYMBOL void fillRecordBuffer(int* obj){
 	std::vector<Record>* records = (std::vector<Record>*)obj;
 
-	if(records->size()==0){
-		delete records;
-
-		return;
-	}
-
 	sizeOfRecords = (*records)[0].columns.size() + 2;
 
 	recordBuffer = std::vector<int>(sizeOfRecords * records->size());
