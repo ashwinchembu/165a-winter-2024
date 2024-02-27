@@ -168,7 +168,6 @@ void Database::read(const std::string& path){
 }
 
 void Database::write(){
-	std::cout << "DB write" << std::endl;
 	FILE* fp = fopen((file_path + "/ProgramState.dat").c_str(),"w");
 
 	if(!fp){
