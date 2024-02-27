@@ -99,6 +99,11 @@ COMPILER_SYMBOL void Index_print_data(int* IndexObj){
 }
 
 
+Index::~Index() {
+    std::cout << "Index destructor" << std::endl;
+}
+
+
 /***
  *
  * returns the location of all records with the given value in the indexed column

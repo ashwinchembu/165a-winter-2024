@@ -40,9 +40,9 @@ COMPILER_SYMBOL int* Database_constructor(){
 }
 
 COMPILER_SYMBOL void Database_destructor(int* obj){
-	std::cout << "dest" << std::endl;
+	std::cout << "db destructor in" << std::endl;
 	delete ((Database*)obj);
-	std::cout << "dest" << std::endl;
+	std::cout << "db destructor out" << std::endl;
 }
 
 COMPILER_SYMBOL int* Database_create_table(int*obj,char* name, const int num_columns,  const int key_index){

@@ -5,13 +5,14 @@
 #include <utility>
 #include <ctime>
 #include <string>
-// #include "index.h"
-// #include "page.h"
 #include "RID.h"
 #include <memory>
 #include <queue>
 #include "config.h"
-#include "bufferpool.h"
+// Avoid recursive include
+// #include "index.h"
+// #include "page.h"
+// #include "bufferpool.h"
 
 class Frame;
 
@@ -27,6 +28,7 @@ public:
     std::vector<int> columns;
 };
 
+class Frame;
 class Index;
 class PageRange;
 
