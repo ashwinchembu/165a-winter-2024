@@ -146,8 +146,8 @@ void Database::close() {
 	// for (std::map<std::string, Table>::iterator itr = tables.begin(); itr != tables.end(); itr++) {
 	// 	itr->second.merge();
 	// }
-	write();
 	buffer_pool.write_back_all();
+	write();
 };
 
 void Database::read(const std::string& path){
@@ -157,15 +157,15 @@ void Database::read(const std::string& path){
 		return;
 	}
 // Comment out for test
-	// fseek(fp, 0, SEEK_END);
- //
-	// // Get the current position of the file pointer, which is the file size
-	// long fileSize = ftell(fp);
- //
-	// if(!fileSize){//database hasn't been used yet
-	// 	fclose(fp);
-	// 	return;
-	// }
+	fseek(fp, 0, SEEK_END);
+
+	// Get the current position of the file pointer, which is the file size
+	long fileSize = ftell(fp);
+
+	if(!fileSize){//database hasn't been used yet
+		fclose(fp);
+		return;
+	}
 
 	int numTables;
 	size_t e = fread(&numTables,sizeof(int),1,fp);
