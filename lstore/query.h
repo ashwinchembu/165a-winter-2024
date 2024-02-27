@@ -11,7 +11,9 @@ class Query {
 public:
     Table* table;
 
-    explicit Query(Table* _table) : table(_table) {};
+    explicit Query(Table* _table) : table(_table) {
+      std::cout << table->page_directory.size() << '\n';
+    }
     ~Query();
     bool deleteRecord(const int& primary_key);
     bool insert(const std::vector<int>& columns);

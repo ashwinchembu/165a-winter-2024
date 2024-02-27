@@ -266,7 +266,6 @@ int Table::write(FILE* fp) {
     fwrite(&num_update, sizeof(int), 1, fp);
     fwrite(&num_insert, sizeof(int), 1, fp);
     fwrite(&num_columns, sizeof(int), 1, fp);
-		std::cout << "size of page_directory is " << page_directory.size() << std::endl;
 		std::cout << "num update " << num_update << std::endl;
 		std::cout << "num insert " << num_insert << std::endl;
     char nameBuffer[128];
@@ -323,7 +322,7 @@ int Table::read(FILE* fp) {
 	index = new Index();
 	index->setTable(this);
 	//index->printData();
-	PrintData();
+	// PrintData();
 	return e;
 }
 

@@ -21,7 +21,6 @@ class Frame;
 // param key: int             #Index of table key in columns
 class Record {
 public:
-    Record(){}// For error
     Record(int rid_in, int key_in, std::vector<int> columns_in) : rid(rid_in), key(key_in), columns(columns_in) {};
     ~Record(){}
     int rid;
