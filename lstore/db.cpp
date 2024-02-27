@@ -167,6 +167,8 @@ void Database::read(const std::string& path){
 		return;
 	}
 
+	fseek(fp, 0, SEEK_SET);
+
 	int numTables;
 	size_t e = fread(&numTables,sizeof(int),1,fp);
 
