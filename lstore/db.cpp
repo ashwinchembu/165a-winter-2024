@@ -141,7 +141,6 @@ void Database::open(const std::string& path) {
 
 void Database::close() {
 	for(auto& t : tables){
-		std::cout << "Size @ close" << t.second->page_directory.size() << '\n';
 	}
 
 	// Comment out until merge is done.

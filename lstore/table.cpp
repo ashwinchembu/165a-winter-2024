@@ -178,7 +178,6 @@ Table::~Table() {
 		}
 	}
 	//delete index;
-	std::cout << "Table destructor" << std::endl;
 }
 
 /***
@@ -274,7 +273,6 @@ int Table::write(FILE* fp) {
     strcpy(nameBuffer,name.c_str());
     fwrite(nameBuffer,128,1,fp);
     for(std::map<int, RID>::iterator iter=page_directory.begin(); iter!=page_directory.end(); iter++){
-			std::cout << iter->first << ", " << iter->second.id << '\n';
         fwrite(&(iter->first), sizeof(int), 1, fp);
         iter->second.write(fp);
     }
@@ -302,12 +300,10 @@ int Table::read(FILE* fp) {
 		RID value;
 		int key;
 		std::cout << name << '\n';
-		std::cout << num_element << '\n';
+		std::cout << num_element + num_insert << '\n';
 		for(int i = 0; i < num_element; i++){
 			e = e + fread(&key, sizeof(int), 1, fp);
-			std::cout << key << ", ";
 			value.read(fp);
-			std::cout << value.id << '\n';
 			value.table_name = name;
 			page_directory[key] = value;
 
