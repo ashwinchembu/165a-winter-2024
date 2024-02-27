@@ -148,7 +148,7 @@ bool PageRange::base_has_capacity () const {
 }
 
 PageRange::~PageRange(){
-    std::cout << "PageRange Destructor" << std::endl;
+    // std::cout << "PageRange destructor" << std::endl;
 }
 
 /***
@@ -322,9 +322,9 @@ Page::Page() {
 }
 
 Page::~Page() {
-    std::cout << "Page destructor In" << std::endl;
+    // std::cout << "Page destructor In" << std::endl;
     delete data;
-    std::cout << "Page destructor Out" << std::endl;
+    // std::cout << "Page destructor Out" << std::endl;
 }
 
 /***

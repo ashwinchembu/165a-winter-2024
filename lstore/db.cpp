@@ -118,7 +118,7 @@ Database::~Database() {
 	// for(auto& t : tables){
 	// 	delete t.second.index;
 	// }
-	std::cout << "Database destructor" << std::endl;
+	// std::cout << "Database destructor" << std::endl;
 }
 
 void Database::open(const std::string& path) {
