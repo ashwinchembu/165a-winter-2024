@@ -60,7 +60,7 @@ public:
     int merge();
     int write(FILE* fp);
     int read(FILE* fp);
-
+    void PrintData();
 };
 
 #endif
