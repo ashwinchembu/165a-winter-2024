@@ -262,7 +262,7 @@ void BufferPool::unpin (const RID& rid, const int& column) {
   (found->pin)--;
   if(found->pin < 0){ //if pin count gets below 0
     (found->pin) = 0;
-    std::cout << rid.id << std::endl;
+    std::cout << rid.id << " " << column << std::endl;
     throw std::invalid_argument("Attempt to unpin record that was not already pinned (Pin negative value)");
   }
   return;
