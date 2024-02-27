@@ -228,7 +228,7 @@ void Database::drop_table(const std::string& name){
   if(tables.find(name) == tables.end()){
     throw std::invalid_argument("No table with that name was located. The table was not dropped.");
   }
-	delete tables.find(name).second;
+	delete tables.find(name)->second;
   tables.erase(name);
   return;
 }
@@ -249,5 +249,5 @@ Table Database::get_table(const std::string& name){
   if(table == tables.end()){
     throw std::invalid_argument("No table with that name was located.");
   }
-  return table->second;
+  return *(table->second);
 }
