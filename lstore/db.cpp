@@ -191,7 +191,6 @@ void Database::write(){
 	for(auto& t : tables){
 		strcpy(nameBuffer,t.first.c_str());
 		fwrite(nameBuffer,128,1,fp);
-		std::cout << "Calling table save?" << '\n';
 		t.second.write(fp);
 	}
 

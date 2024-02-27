@@ -267,15 +267,14 @@ int Table::write(FILE* fp) {
     fwrite(&num_update, sizeof(int), 1, fp);
     fwrite(&num_insert, sizeof(int), 1, fp);
     fwrite(&num_columns, sizeof(int), 1, fp);
-
+		cout << "size of page_directory is" << page_directory.size() << std::endl;
     char nameBuffer[128];
     strcpy(nameBuffer,name.c_str());
     fwrite(nameBuffer,128,1,fp);
-
     for(std::map<int, RID>::iterator iter=page_directory.begin(); iter!=page_directory.end(); iter++){
+			std::cout << iter->first << ", " << iter->second.id << '\n';
         fwrite(&(iter->first), sizeof(int), 1, fp);
         iter->second.write(fp);
-				std::cout << iter->first << ", " << iter->second.id << '\n';
     }
 
     // index->write(fp);
