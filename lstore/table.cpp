@@ -277,7 +277,7 @@ int Table::write(FILE* fp) {
         iter->second.write(fp);
     }
 
-    index->write(fp);
+    // index->write(fp);
 	int num_page_range = page_range.size();
 	fwrite(&(num_page_range), sizeof(int), 1, fp);
 	for (int i = 0; i < num_page_range; i++) {
@@ -308,9 +308,11 @@ std::cout << "Error 4\n";
 		value.read(fp);
 		value.table_name = name;
 		page_directory[key] = value;
+
     }
+
 std::cout << "Error 5\n";
-    index->read(fp);
+    //index->read(fp);
 std::cout << "Error 6\n";
 	page_range.clear();
 	int num_page_range = 0;
@@ -320,6 +322,7 @@ std::cout << "Error 6\n";
 		newPageRange.get()->read(fp);
 		page_range.push_back(newPageRange);
 	}
+	index->setTable(this);
 
 	return e;
 }
