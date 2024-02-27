@@ -41,12 +41,13 @@ COMPILER_SYMBOL int* Query_select(int* obj, const int search_key,
 
 COMPILER_SYMBOL int* Query_select_version(int* obj, const int search_key, const int search_key_index,
 		int* projected_columns_index, const int relative_version){
+			std::cout << "meowe" << std::endl;
 
 	std::vector<int>* proj_columns = (std::vector<int>*)projected_columns_index;
 	Query* ref = (Query*)obj;
 
 	std::vector<Record> ret = ref->select_version(search_key,search_key_index,*proj_columns,relative_version);
-
+	std::cout << "meow" << std::endl;
 	return (int*)(new std::vector<Record>(ret));
 }
 
