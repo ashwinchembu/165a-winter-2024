@@ -30,6 +30,12 @@ get_from_buffer_vector.argtypes = [c_int]
 
 erase_buffer_vector=DB.erase_buffer_vector
 
+get_table_buffer = DB.get_table_buffer
+get_table_buffer.restype = POINTER(c_int)
+
+get_string_buffer = DB.get_string_buffer
+get_string_buffer.restype = POINTER(c_char)
+
 Database_constructor = DB.Database_constructor
 Database_constructor.restype = POINTER(c_int)
 
@@ -56,6 +62,9 @@ Database_open.argtypes=[POINTER(c_int),POINTER(c_char)]
 
 Database_close = DB.Database_close
 Database_close.argtypes=[POINTER(c_int)]
+
+parse_table = DB.parse_table
+parse_table.argtypes=[POINTER(c_int),POINTER(c_char)]
 
 # Functions from index.cpp
 
