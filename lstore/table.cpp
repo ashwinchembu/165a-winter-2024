@@ -321,6 +321,7 @@ int Table::read(FILE* fp) {
 	index = new Index();
 	index->setTable(this);
 	//index->printData();
+	printData();
 	return e;
 }
 
