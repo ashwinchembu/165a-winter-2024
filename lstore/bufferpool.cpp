@@ -242,7 +242,7 @@ void BufferPool::write_back_all (){
       write_back(current_frame);
     } else {
       current_frame->valid = false;
-      //delete current_frame->page;
+      delete current_frame->page;
     }
     current_frame = current_frame->next;
   }
