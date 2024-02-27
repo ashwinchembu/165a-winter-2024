@@ -318,8 +318,8 @@ int Table::read(FILE* fp) {
 	}
 	std::cout << "Error 7\n";
 	delete index;
-	index->setTable(this);
 	index = new Index();
+	index->setTable(this);
 std::cout << "Error 8\n";
 	return e;
 }
