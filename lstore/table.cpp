@@ -191,7 +191,7 @@ RID Table::insert(const std::vector<int>& columns) {
 	record.table_name = name;
 	record.id = rid_id;
 
-    if (page_range.size() == 0 || !(page_range.back()->base_has_capacity())) {
+    if (page_range.size() == 0 || !(page_range.back().get()->base_has_capacity())) {
 	std::cout << 1 << std::endl;
 
     	std::shared_ptr<PageRange>newPageRange{new PageRange(record, columns)};

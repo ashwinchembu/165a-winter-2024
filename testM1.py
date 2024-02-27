@@ -195,7 +195,6 @@ def speed_tester2():
         score = score + 5
         print("Something went wrong during sum")
         print(e)
-    db.close()
 
 def correctness_tester():
     global score
