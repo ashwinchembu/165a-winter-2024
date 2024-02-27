@@ -166,7 +166,6 @@ void Index::create_index(const int& column_number) {
             RID rid = table->page_directory.find(loc->second.id)->second;
 
             int value;
-						std::cout << "get called from index create\n";
             int indirection_num = buffer_pool.get(rid, INDIRECTION_COLUMN);
 
             if ((buffer_pool.get(rid, SCHEMA_ENCODING_COLUMN) >> (column_number - 1)) & (0b1)) { // If the column of the record at loc is updated

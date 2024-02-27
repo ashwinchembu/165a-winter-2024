@@ -213,7 +213,6 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
     // Get the latest update of the record. Accessing the indirection column.
 
     buffer_pool.pin(rid, INDIRECTION_COLUMN);
-    std::cout << "get called from page update\n";
     RID latest_rid = page_directory.find(buffer_pool.get(rid, INDIRECTION_COLUMN))->second;
     buffer_pool.set(rid, INDIRECTION_COLUMN, rid_new.id);
     buffer_pool.unpin(rid, INDIRECTION_COLUMN);
@@ -222,7 +221,6 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
     // If tail_last and base_last is equal, that means there are no tail page created.
 
     if (tail_last_wasfull) {
-      std::cout << "get called from query update (tail_last_wasfull)\n";
         rid_new.offset = 0;
         rid_new.first_rid_page = rid_new.id;
         base_last_wasfull = false;
