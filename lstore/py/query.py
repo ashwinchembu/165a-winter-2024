@@ -68,7 +68,6 @@ class Query:
         
         for i in projected_columns_index:
             add_to_buffer_vector(c_int(i))
-            
     
         recordsPtr = Query_select_version(self.selfPtr,search_key,
                 search_key_index,get_buffer_vector(),relative_version)
@@ -93,9 +92,12 @@ class Query:
             columns=[]
              
             for j in range(2,recordSize):
-                columns.append(getRecordBufferElement(offset + j))
+                if projected_columns_index[j - 2] == 0:
+                    columns.append(None)
+                else:
+                    columns.append(getRecordBufferElement(offset + j))
                 
-            
+
             nextRecord = Record(rid,key,columns)
             returnRecords.append(nextRecord)
         
