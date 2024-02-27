@@ -252,7 +252,11 @@ void BufferPool::pin (const RID& rid, const int& column) {
   if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
     found = load(rid, column);
   }
+      std::cout << "Pin2 : first_rid_page: "<< found->first_rid_page << " column: " <<column << " pin: " << found->pin << std::endl;
+
   (found->pin)++;
+    std::cout << "Pin3 : first_rid_page: "<< found->first_rid_page << " column: " <<column << " pin: " << found->pin << std::endl;
+
   return;
 }
 
