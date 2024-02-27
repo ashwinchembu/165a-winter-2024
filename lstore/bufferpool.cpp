@@ -89,6 +89,7 @@ Frame* BufferPool::search(const RID& rid, const int& column){
       }
     }
     current_frame = current_frame->next;
+     std::cout << "search : " <<current_frame << " current frame->next: " << current_frame->next << std::endl;
   }
   // std::cout << "miss!" << std::endl;
   return nullptr; //if not found in the range
