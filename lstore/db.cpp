@@ -14,6 +14,8 @@
 #include "../DllConfig.h"
 
 std::vector<int>bufferVector;
+Table* tableBuffer = nullptr;
+char stringBuffer[128];
 
 COMPILER_SYMBOL void add_to_buffer_vector(const int element){
 	bufferVector.push_back(element);
@@ -29,6 +31,14 @@ COMPILER_SYMBOL int get_from_buffer_vector(const int i){
 
 COMPILER_SYMBOL void erase_buffer_vector(){
 	bufferVector.clear();
+}
+
+COMPILER_SYMBOL int* get_table_buffer(){
+	return (int*)tableBuffer;
+}
+
+COMPILER_SYMBOL char* get_string_buffer(){
+	return stringBuffer;
 }
 
 /*
@@ -75,6 +85,15 @@ COMPILER_SYMBOL void Database_open(int* obj,char* path){
 
 COMPILER_SYMBOL void Database_close(int* obj){
 	((Database*)obj)->close();
+}
+
+COMPILER_SYMBOL void parse_table(int* databaseObject, char* tableName){
+	tableBuffer = (Table*)Database_get_table(databaseObject, tableName);
+
+	strcpy(stringBuffer, tableName);
+	erase_buffer_vector();
+	bufferVector.push_back(tableBuffer->num_columns);
+	bufferVector.push_back(tableBuffer->key);
 }
 
 BufferPool buffer_pool(BUFFER_POOL_SIZE);
@@ -150,7 +169,7 @@ void Database::read(const std::string& path){
 	}
 
 	int numTables;
-	int e = fread(&numTables,sizeof(int),1,fp);
+	size_t e = fread(&numTables,sizeof(int),1,fp);
 
 	char nameBuffer[128];
 
@@ -161,10 +180,6 @@ void Database::read(const std::string& path){
 		t.read(fp);
 
 		tables.insert({{nameBuffer},t});
-	}
-
-	if (e != numTables + 1) {
-		std::cout << "error?" << std::endl;
 	}
 
 	fclose(fp);
@@ -228,6 +243,8 @@ void Database::drop_table(const std::string& name){
   tables.erase(name);
   return;
 }
+
+
 
 /***
  *
