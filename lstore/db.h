@@ -17,7 +17,7 @@ class Database{
     void drop_table(const std::string& name);
     Table get_table(const std::string& name);
     std::string file_path = "./ECS165";
-    std::map<std::string, Table> tables;
+    std::map<std::string, Table*> tables;
 
     void read(const std::string& path);
     void write();

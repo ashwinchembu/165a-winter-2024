@@ -166,8 +166,8 @@ void Database::read(const std::string& path){
 	char nameBuffer[128];
 	for(int i = 0;i < numTables;i++){
 		e = fread(&nameBuffer,128,1,fp);
-		Table t;
-		t.read(fp);
+		Table t = new Table();
+		t->read(fp);
 		tables.insert({{nameBuffer},t});
 	}
 	fclose(fp);
@@ -191,7 +191,7 @@ void Database::write(){
 	for(auto& t : tables){
 		strcpy(nameBuffer,t.first.c_str());
 		fwrite(nameBuffer,128,1,fp);
-		t.second.write(fp);
+		t.second->write(fp);
 	}
 
 	fclose(fp);
@@ -208,9 +208,9 @@ void Database::write(){
  * @return Table Return the newly created table
  *
  */
-Table Database::create_table(const std::string& name, const int& num_columns, const int& key_index){
-  Table table(name, num_columns, key_index);
-  auto insert = tables.insert(std::make_pair(name, table));
+Table* Database::create_table(const std::string& name, const int& num_columns, const int& key_index){
+  Table* table = new Table(name, num_columns, key_index);
+  auto insert = tables->insert(std::make_pair(name, table));
   if (insert.second == false) {
     throw std::invalid_argument("A table with this name already exists in the database. The table was not added.");
   }
@@ -228,6 +228,7 @@ void Database::drop_table(const std::string& name){
   if(tables.find(name) == tables.end()){
     throw std::invalid_argument("No table with that name was located. The table was not dropped.");
   }
+	delete tables.find(name).second;
   tables.erase(name);
   return;
 }
