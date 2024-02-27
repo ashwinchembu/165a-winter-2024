@@ -213,7 +213,7 @@ def correctness_tester():
     query.insert(*records[1])
     print(records[1]);
     # Test if correct columns are returned 
-    result = query.select(1, 0, [1,1,1,0,0])
+    result = query.select(1, 0, [1,0,1,0,0])
     print(len(result))
     print(result[0].columns)
     if len(result) == 1 and len(result[0].columns) == 2 and result[0].columns[1] == records[1][2]:

@@ -141,6 +141,12 @@ std::vector<Record> Query::select_version(const int& search_key, const int& sear
 
 /// @TODO Adopt to the change in RID
 bool Query::update(const int& primary_key, const std::vector<int>& columns) {
+
+    if (primary_key != columns[table->key] && table->page_directory.find(columns[table->key]) != table->page_directory.end()) {
+        std::cout << "Record with the primary key you are trying to update already exists" << std::endl;
+        return false;
+    }
+
     RID base_rid = table->page_directory.find(table->index->locate(table->key, primary_key)[0])->second; //locate base RID of record to be updated
 		RID last_update = table->page_directory.find(buffer_pool.get(base_rid, INDIRECTION_COLUMN))->second; //locate the previous update
     RID update_rid = table->update(base_rid, columns); // insert update into the table
