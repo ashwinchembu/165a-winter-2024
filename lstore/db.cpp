@@ -160,6 +160,10 @@ void Database::read(const std::string& path){
 		tables.insert({{nameBuffer},t});
 	}
 
+	if (e != numTables + 1) {
+		std::cout << "error?" << std::endl;
+	}
+
 	fclose(fp);
 }
 
