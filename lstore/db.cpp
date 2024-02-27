@@ -113,7 +113,6 @@ Database::Database() {
 }
 
 Database::~Database() {
-	std::cout << "expr" << std::endl;
 	// Causing seg fault
 	// buffer_pool.~BufferPool();
 	// for(auto& t : tables){
@@ -134,7 +133,6 @@ void Database::open(const std::string& path) {
 	if(stat(file_path.c_str(),&checkDir)!=0
 			|| !S_ISDIR(checkDir.st_mode)){
 		mkdir(file_path.c_str(),0777);
-
 	} else {
 		read(path);
 	}
@@ -154,6 +152,7 @@ void Database::close() {
 void Database::read(const std::string& path){
 	FILE* fp = fopen((path + "/ProgramState.dat").c_str(),"r");
 	if (!fp) {
+		fclose(fp);
 		return;
 	}
 
