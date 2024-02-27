@@ -176,7 +176,6 @@ Table::~Table() {
 		if (page_range[i].unique()) {
 			page_range[i].reset();
 		}
-		delete mergeBufferPool;
 	}
 	//delete index;
 	// std::cout << "Table destructor" << std::endl;
@@ -260,6 +259,7 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 
 	// int err = (page_range[i].get())->update(rid, rid_id, columns);
 	page_directory.insert({rid_id, new_rid});
+	delete mergeBufferPool;
     return new_rid;
 }
 
@@ -402,6 +402,6 @@ int Table::merge() {
 	for (const auto& to_evict : mergeBufferPool->hash_vector){
 		mergeBufferPool->evict(to_evict->first_rid_page);
 	}
-
+		delete mergeBufferPool;
     return -1;
 }
