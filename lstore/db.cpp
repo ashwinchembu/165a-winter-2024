@@ -189,6 +189,7 @@ void Database::write(){
 	char nameBuffer[128];
 
 	for(auto& t : tables){
+		std::cout << "Size @ write" << t.second->page_directory.size() << '\n';
 		strcpy(nameBuffer,t.first.c_str());
 		fwrite(nameBuffer,128,1,fp);
 		t.second->write(fp);
