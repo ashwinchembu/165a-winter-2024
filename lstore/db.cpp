@@ -178,7 +178,7 @@ void Database::write(){
 	FILE* fp = fopen((file_path + "/ProgramState.dat").c_str(),"w");
 
 	if(!fp){
-		creat((file_path + "/ProgramState.dat").c_str(),0666);
+		create((file_path + "/ProgramState.dat").c_str(),0666);
 		fp = fopen((file_path + "/ProgramState.dat").c_str(),"w");
 	}
 
