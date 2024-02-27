@@ -210,7 +210,7 @@ void Database::write(){
  */
 Table Database::create_table(const std::string& name, const int& num_columns, const int& key_index){
   Table* table = new Table(name, num_columns, key_index);
-  auto insert = tables->insert(std::make_pair(name, table));
+  auto insert = tables.insert(std::make_pair(name, table));
   if (insert.second == false) {
     throw std::invalid_argument("A table with this name already exists in the database. The table was not added.");
   }
