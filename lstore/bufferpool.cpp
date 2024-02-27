@@ -184,10 +184,12 @@ void BufferPool::insert_new_page(const RID& rid, const int& column, const int& v
   *(page->data + rid.offset) = value;
 
   Frame* frame = insert_into_frame(rid, column, page); //insert the page into a frame in the bufferpool
+  std::cout << "Insert New Page pin" << std::endl;
   pin(rid, column);
   frame->dirty = true; //make sure data will be written back to disk
   update_ages(frame, hash_vector[hash_fun(rid.first_rid_page)]);
   unpin(rid, column);
+  std::cout << "Insert New Page unpin" << std::endl;
 
   return;
 }
@@ -247,6 +249,8 @@ void BufferPool::write_back_all (){
 
 void BufferPool::pin (const RID& rid, const int& column) {
   Frame* found = search(rid, column);
+    std::cout << found << std::endl;
+
     std::cout << "Pin : first_rid_page: "<< found->first_rid_page << " column: " <<column << " pin: " << found->pin << std::endl;
 
   if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
@@ -262,11 +266,13 @@ void BufferPool::pin (const RID& rid, const int& column) {
 
 void BufferPool::unpin (const RID& rid, const int& column) {
   Frame* found = search(rid, column);
+  std::cout << found << std::endl;
   std::cout << "Unpin : first_rid_page: "<< found->first_rid_page << " column: " <<column << " pin: " << found->pin << std::endl;
   if(found == nullptr || !found->valid){ //if not in the bufferpool
     throw std::invalid_argument("Attempt to unpin record that was not already pinned (No record found)");
   }
   (found->pin)--;
+  std::cout << "Unpin2 : first_rid_page: "<< found->first_rid_page << " column: " <<column << " pin: " << found->pin << std::endl;
   if(found->pin < 0){ //if pin count gets below 0
     (found->pin) = 0;
     std::cout << rid.id << " " << column << std::endl;
