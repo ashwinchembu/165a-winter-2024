@@ -147,7 +147,9 @@ void Database::close() {
 	// 	itr->second.merge();
 	// }
 	write();
+	std::cout << "expr" << std::endl;
 	buffer_pool.write_back_all();
+	std::cout << "expr" << std::endl;
 };
 
 void Database::read(const std::string& path){
