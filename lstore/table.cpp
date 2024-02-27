@@ -405,3 +405,10 @@ int Table::merge() {
 		delete mergeBufferPool;
     return -1;
 }
+
+void Table::PrintData() {
+	std::cout << "--Page Directory--" << std::endl;
+		for(auto& e: indices){
+			std::cout << "Key: " << e.first << ", Value.id: " << e.second.id << std::endl;
+		}
+}

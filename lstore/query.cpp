@@ -111,6 +111,7 @@ std::vector<Record> Query::select_version(const int& search_key, const int& sear
     std::vector<int> rids = table->index->locate(search_key_index, search_key); //this returns the RIDs of the base pages
 		if(rids.size() == 0){
 			std::cout << "Didn't find anything" << std::endl;
+			return records;
 		}
     for(size_t i = 0; i < rids.size(); i++){ //go through each matching RID that was returned from index
         RID rid = table->page_directory.find(rids[i])->second;
