@@ -241,7 +241,8 @@ void BufferPool::write_back_all (){
     if(current_frame->dirty && current_frame->valid){
       write_back(current_frame);
     } else {
-      current_frame ->valid = false;
+      current_frame->valid = false;
+      delete frame->page;
     }
     current_frame = current_frame->next;
   }

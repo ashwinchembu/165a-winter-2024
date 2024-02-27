@@ -176,6 +176,7 @@ Table::~Table() {
 		if (page_range[i].unique()) {
 			page_range[i].reset();
 		}
+		delete mergeBufferPool;
 	}
 	//delete index;
 	// std::cout << "Table destructor" << std::endl;
@@ -239,7 +240,7 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 	if (page_range_update[i] >= MAX_PAGE_RANGE_UPDATES){
 		// Make a deep copy of page_range[i]
 		std::shared_ptr<PageRange> deep_copy = std::make_shared<PageRange>(*(page_range[i].get()));
-		
+
 		// use bufferpool to get all the pages within a page range
 		auto pool_size = deep_copy->pages.size()*num_columns*2; // change to actual - temp
 		BufferPool* mergeBufferPool = new BufferPool(pool_size);
@@ -256,7 +257,7 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 			merge_queue.push(insert_to_queue);
 
 	}
-	
+
 	// int err = (page_range[i].get())->update(rid, rid_id, columns);
 	page_directory.insert({rid_id, new_rid});
     return new_rid;
@@ -358,7 +359,7 @@ int Table::merge() {
 		//determine that we dont visit same logical set twice
 		auto pos = visited_rids.find(page_rid);
 
-		
+
 		if (pos != visited_rids.end()){
 			continue;
 		}
@@ -401,6 +402,6 @@ int Table::merge() {
 	for (const auto& to_evict : mergeBufferPool->hash_vector){
 		mergeBufferPool->evict(to_evict->first_rid_page);
 	}
-	
+
     return -1;
 }
