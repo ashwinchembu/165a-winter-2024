@@ -140,6 +140,8 @@ void Database::open(const std::string& path) {
 }
 
 void Database::close() {
+	std::cout << "Size @ close" << tables["Grades"].second->page_directory.size() << '\n';
+
 	// Comment out until merge is done.
 	// for (std::map<std::string, Table>::iterator itr = tables.begin(); itr != tables.end(); itr++) {
 	// 	itr->second.merge();
@@ -189,7 +191,6 @@ void Database::write(){
 	char nameBuffer[128];
 
 	for(auto& t : tables){
-		std::cout << "Size @ write" << t.second->page_directory.size() << '\n';
 		strcpy(nameBuffer,t.first.c_str());
 		fwrite(nameBuffer,128,1,fp);
 		t.second->write(fp);
