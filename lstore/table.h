@@ -13,6 +13,7 @@
 #include "config.h"
 #include "bufferpool.h"
 
+class Frame;
 
 // param name: string         #Table name
 // param num_columns: int     #Number of Columns: all columns are integer
