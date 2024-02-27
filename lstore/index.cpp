@@ -279,6 +279,10 @@ void Index::setTable(Table* t){
 
 void Index::printData(){
 	for(auto& e: indices){
-		std::cout << e.second << std::endl;
+		printf("---Column %d:---\n\n",e.first);
+		printf("%lu\n\n", e.second.size());
+		for(auto& j : e.second){
+			std::cout << j.second << std::endl;
+		}
 	}
 }
