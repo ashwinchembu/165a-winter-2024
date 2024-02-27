@@ -106,7 +106,6 @@ std::vector<Record> Query::select(const int& search_key, const int& search_key_i
 
 /// @TODO Adopt to the change in RID
 std::vector<Record> Query::select_version(const int& search_key, const int& search_key_index, const std::vector<int>& projected_columns_index, const int& _relative_version) {
-	std::cout << "Select version in" << std::endl;
     const int relative_version = _relative_version * (-1);
     std::vector<Record> records;
     std::vector<int> rids = table->index->locate(search_key_index, search_key); //this returns the RIDs of the base pages
