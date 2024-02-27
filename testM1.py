@@ -126,6 +126,7 @@ def speed_tester2():
             key = 92106429 + randint(0, number_of_records)
 
         records[key] = [key, randint(0, 20), randint(0, 20), randint(0, 20), randint(0, 20)]
+        print(records[key])
         query.insert(*records[key])
         #print('inserted', records[key])
     print("Insert finished")
