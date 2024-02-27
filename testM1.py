@@ -38,7 +38,6 @@ def speed_tester1():
 
         records[key] = [key, randint(0, 20), randint(0, 20), randint(0, 20), randint(0, 20)]
         query.insert(*records[key])
-    print("Insert finished")
 
     # Check inserted records using select query
     for key in records:
@@ -214,6 +213,7 @@ def correctness_tester():
     records[3] = [2, 3, 3, 3, 3]
     records[4] = [1, 2, 2, 2, 2]
     query.insert(*records[1])
+    print("inserting " records[1])
     # Test if correct columns are returned 
     result = query.select(1, 0, [1,0,1,0,0])
     print(len(result))
