@@ -14,7 +14,7 @@ public:
     std::unordered_map<int, std::unordered_multimap<int, int> > indices; //column, (value, rid id)
 
     Index (){};
-    virtual ~Index () {};
+    virtual ~Index ();
     std::vector<int> locate(const int& column_number, const int& value);
     std::vector<int> locate_range(const int& begin, const int& end, const int& column_number);
     void create_index(const int& column_number);

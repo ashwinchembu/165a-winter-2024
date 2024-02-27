@@ -74,6 +74,9 @@ COMPILER_SYMBOL int* Query_table(int* obj){
 	return (int*)(&(((Query*)obj)->table));
 }
 
+Query::~Query () {
+    std::cout << "Query destructor" << std::endl;
+}
 
 bool Query::deleteRecord(const int& primary_key) {
     // Return true if successful, false otherwise

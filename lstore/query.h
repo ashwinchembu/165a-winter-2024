@@ -12,6 +12,7 @@ public:
     Table* table;
 
     explicit Query(Table* _table) : table(_table) {};
+    ~Query();
     bool deleteRecord(const int& primary_key);
     bool insert(const std::vector<int>& columns);
     std::vector<Record> select(const int& search_key, const int& search_key_index, const std::vector<int>& projected_columns_index);

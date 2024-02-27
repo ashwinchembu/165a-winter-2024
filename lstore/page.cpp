@@ -147,7 +147,9 @@ bool PageRange::base_has_capacity () const {
     // Lazy evaluation
 }
 
-PageRange::~PageRange(){}
+PageRange::~PageRange(){
+    std::cout << "PageRange Destructor" << std::endl;
+}
 
 /***
  *
@@ -320,7 +322,9 @@ Page::Page() {
 }
 
 Page::~Page() {
+    std::cout << "Page destructor in" << std::endl;
     delete data;
+    std::cout << "Page destructor out" << std::endl;
 }
 
 /***
