@@ -214,6 +214,7 @@ Frame* BufferPool::evict(const RID& rid){ //return the frame that was evicted
 }
 
 void BufferPool::write_back(Frame* frame){
+  std::cout << "Write back all called" << std::endl;
   int frp = frame->first_rid_page;
   std::string frp_s = std::to_string(frame->first_rid_page);
   if (frp < 0) {
