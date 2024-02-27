@@ -1,6 +1,8 @@
 #include <map>
 #include <string>
-#include <filesystem>
+#include<fcntl.h>
+#include<unistd.h>
+#include<sys/stat.h>
 #include <stdexcept>
 #include <cstdio>
 #include "table.h"
@@ -76,10 +78,17 @@ COMPILER_SYMBOL void Database_close(int* obj){
 }
 
 BufferPool buffer_pool(BUFFER_POOL_SIZE);
+
 Database::Database() {
-	buffer_pool.set_path(file_path + "/Disk/");
-	if (!std::filesystem::is_directory(file_path) || !std::filesystem::exists(file_path)) { // Check if src folder exists
-		std::filesystem::create_directories(file_path + "/Disk/"); // create src folder
+	std::string pathWhenOpenIsntUsed = "./ECS165";
+
+	buffer_pool.set_path(pathWhenOpenIsntUsed);
+
+	struct stat checkDir;
+
+	if(stat(pathWhenOpenIsntUsed.c_str(),&checkDir)!=0
+			|| !S_ISDIR(checkDir.st_mode)){
+		mkdir(pathWhenOpenIsntUsed.c_str(),0777);
 	}
 }
 
@@ -95,15 +104,20 @@ void Database::open(const std::string& path) {
 //	// path is relative to parent directory of this file
 //	std::cout<<"call87";
 //	BufferPool buffer_pool(BUFFER_POOL_SIZE);
-
 	file_path = path;
-	buffer_pool.set_path(file_path + "/Disk/");
 
-	if (!std::filesystem::is_directory(file_path) || !std::filesystem::exists(file_path)) { // Check if src folder exists
-		std::filesystem::create_directories(file_path + "/Disk/"); // create src folder
+	buffer_pool.set_path(file_path);
+
+	struct stat checkDir;
+
+	if(stat(file_path.c_str(),&checkDir)!=0
+			|| !S_ISDIR(checkDir.st_mode)){
+		mkdir(file_path.c_str(),0777);
+
 	} else {
 		read(path);
 	}
+
 //	// If the directory is empty then make new database.
 };
 
@@ -133,7 +147,7 @@ void Database::read(const std::string& path){
 	}
 
 	int numTables;
-	int e = fread(&numTables,sizeof(int),1,fp);
+	size_t e = fread(&numTables,sizeof(int),1,fp);
 
 	char nameBuffer[128];
 
@@ -145,15 +159,18 @@ void Database::read(const std::string& path){
 
 		tables.insert({{nameBuffer},t});
 	}
-	if (e != numTables + 1) {
-		std::cout << "error?" << std::endl;
-	}
 
 	fclose(fp);
 }
 
 void Database::write(){
 	FILE* fp = fopen((file_path + "/ProgramState.dat").c_str(),"w");
+
+	if(!fp){
+		creat((file_path + "/ProgramState.dat").c_str(),0666);
+		fp = fopen((file_path + "/ProgramState.dat").c_str(),"w");
+	}
+
 	size_t numTables = tables.size();
 
 	fwrite(&numTables,sizeof(int),1,fp);
