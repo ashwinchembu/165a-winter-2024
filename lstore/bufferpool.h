@@ -7,6 +7,8 @@
 #include <vector>
 #include <fstream>
 
+class Page;
+
 class Frame {
 public:
     Frame ();
