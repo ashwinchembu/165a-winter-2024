@@ -40,7 +40,6 @@ BufferPool::BufferPool (const int& num_pages) : bufferpool_size(num_pages){
 }
 
 BufferPool::~BufferPool () {
-  std::cout << "Bufferpool destructor?" << std::endl;
   write_back_all(); //make sure all unsaved data gets back to disk
   Frame* current_frame = head;
   while(current_frame != nullptr){ //iterate through entire bufferpool
@@ -55,8 +54,6 @@ int BufferPool::hash_fun(unsigned int x) {
 }
 
 int BufferPool::get (const RID& rid, const int& column) {
-  std::cout << "search call from get" << std::endl;
-
   Frame* found = search(rid, column);
   if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
     found = load(rid, column);
@@ -67,7 +64,6 @@ int BufferPool::get (const RID& rid, const int& column) {
 
 void BufferPool::set (const RID& rid, const int& column, int value){
   pin(rid, column);
-  std::cout << "search call from set" << std::endl;
   Frame* found = search(rid, column);
   if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
     found = load(rid, column);
@@ -75,8 +71,8 @@ void BufferPool::set (const RID& rid, const int& column, int value){
   // found->page->write(value);
   *(found->page->data + rid.offset) = value;
   found->dirty = true; //the page has been modified
-  update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
   unpin(rid, column);
+  update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
   return;
 }
 
@@ -192,8 +188,8 @@ void BufferPool::insert_new_page(const RID& rid, const int& column, const int& v
   Frame* frame = insert_into_frame(rid, column, page); //insert the page into a frame in the bufferpool
   pin(rid, column);
   frame->dirty = true; //make sure data will be written back to disk
-  update_ages(frame, hash_vector[hash_fun(rid.first_rid_page)]);
   unpin(rid, column);
+  update_ages(frame, hash_vector[hash_fun(rid.first_rid_page)]);
 
   return;
 }
@@ -252,8 +248,6 @@ void BufferPool::write_back_all (){
 }
 
 void BufferPool::pin (const RID& rid, const int& column) {
-    std::cout << "search call from pin" << std::endl;
-
   Frame* found = search(rid, column);
     std::cout << found << std::endl;
 
@@ -269,8 +263,6 @@ void BufferPool::pin (const RID& rid, const int& column) {
 }
 
 void BufferPool::unpin (const RID& rid, const int& column) {
-      std::cout << "search call from unpin" << std::endl;
-
   Frame* found = search(rid, column);
   std::cout << found << std::endl;
   std::cout << "Unpin : first_rid_page: "<< found->first_rid_page << " column: " << found->column << " pin: " << found->pin << std::endl;
