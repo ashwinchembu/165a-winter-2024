@@ -302,7 +302,7 @@ int Table::read(FILE* fp) {
 		std::cout << num_element << '\n';
 		for(int i = 0; i < num_element; i++){
 			e = e + fread(&key, sizeof(int), 1, fp);
-			std::cout << key << ', ';
+			std::cout << key << ", ";
 			value.read(fp);
 			std::cout << value.id << '\n';
 			value.table_name = name;
