@@ -276,7 +276,7 @@ void Index::setTable(Table* t){
     create_index(table->key);
 }
 
-/*
+
 void Index::printData(){
 	for(auto& e: indices){
 		printf("---Column %d:---\n\n",e.first);
@@ -285,4 +285,4 @@ void Index::printData(){
 			std::cout << j.second << std::endl;
 		}
 	}
-}*/
+}
