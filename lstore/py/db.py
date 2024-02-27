@@ -46,9 +46,13 @@ class Database():
     # Returns table with the passed name
     """
     def get_table(self, name):
-        if self.tables[name]:
+        if name in self.tables:
             return self.tables[name]
         else:
-            return None
-        
-        
+            parse_table(self.selfPtr,name.encode())
+            
+            self.tables[name] = Table(get_table_buffer(),
+                    name, get_from_buffer_vector(0),
+                    get_from_buffer_vector(1))
+            
+            return self.tables[name]
