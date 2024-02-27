@@ -149,52 +149,30 @@ void Database::close() {
 }
 
 void Database::read(const std::string& path){
-	std::cout << "Error 0\n";
-
 	FILE* fp = fopen((path + "/ProgramState.dat").c_str(),"r");
 	if (!fp) {
-		std::cout << "Error 0.5\n";
-
-		// fclose(fp);
 		return;
 	}
-	std::cout << "Error 1\n";
-
-// Comment out for test
 	fseek(fp, 0, SEEK_END);
-	std::cout << "Error 2\n";
-
 	// Get the current position of the file pointer, which is the file size
 	long fileSize = ftell(fp);
-	std::cout << "Error 3\n";
-
 	if(!fileSize){//database hasn't been used yet
-	std::cout << "Error 3.5\n";
-
 		fclose(fp);
 		return;
 	}
-	std::cout << "Error 4\n";
-
 	fseek(fp, 0, SEEK_SET);
-	std::cout << "Error 5\n";
-
 	int numTables;
 	size_t e = fread(&numTables,sizeof(int),1,fp);
 	std::cout << "Error 6\n";
-
 	char nameBuffer[128];
-
 	for(int i = 0;i < numTables;i++){
 		e = fread(&nameBuffer,128,1,fp);
-
+		std::cout << "Error " << i << '\n';
 		Table t;
 		t.read(fp);
-
 		tables.insert({{nameBuffer},t});
 	}
 	std::cout << "Error 7\n";
-
 	fclose(fp);
 }
 
