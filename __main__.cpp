@@ -14,7 +14,7 @@
 
 Database _db;
 
-Table _grades_table = _db.create_table("Grades",5,0);
+Table _grades_table = *(_db.create_table("Grades",5,0));
 
 Query _query = Query(&_grades_table);
 
@@ -121,4 +121,3 @@ void test(){
     std::cout << "testDelete() starting" << std::endl;
     _testDelete();
 }
-
