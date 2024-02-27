@@ -55,6 +55,8 @@ int BufferPool::hash_fun(unsigned int x) {
 }
 
 int BufferPool::get (const RID& rid, const int& column) {
+  std::cout << "search call from get" << std::endl;
+
   Frame* found = search(rid, column);
   if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
     found = load(rid, column);
@@ -65,6 +67,7 @@ int BufferPool::get (const RID& rid, const int& column) {
 
 void BufferPool::set (const RID& rid, const int& column, int value){
   pin(rid, column);
+  std::cout << "search call from set" << std::endl;
   Frame* found = search(rid, column);
   if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
     found = load(rid, column);
@@ -249,6 +252,8 @@ void BufferPool::write_back_all (){
 }
 
 void BufferPool::pin (const RID& rid, const int& column) {
+    std::cout << "search call from pin" << std::endl;
+
   Frame* found = search(rid, column);
     std::cout << found << std::endl;
 
@@ -264,6 +269,8 @@ void BufferPool::pin (const RID& rid, const int& column) {
 }
 
 void BufferPool::unpin (const RID& rid, const int& column) {
+      std::cout << "search call from unpin" << std::endl;
+
   Frame* found = search(rid, column);
   std::cout << found << std::endl;
   std::cout << "Unpin : first_rid_page: "<< found->first_rid_page << " column: " << found->column << " pin: " << found->pin << std::endl;
