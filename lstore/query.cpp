@@ -111,25 +111,31 @@ std::vector<Record> Query::select_version(const int& search_key, const int& sear
 
     std::vector<Record> records;
     std::vector<int> rids = table->index->locate(search_key_index, search_key); //this returns the RIDs of the base pages
+    std::cout << "1" << std::endl;
     for(size_t i = 0; i < rids.size(); i++){ //go through each matching RID that was returned from index
         RID rid = table->page_directory.find(rids[i])->second;
         if(rid.id != 0){
+    std::cout << "2" << std::endl;
             for(int j = 0; j <= relative_version; j++){ //go through indirection to get to correct version
                 rid = table->page_directory.find((buffer_pool.get(rid, INDIRECTION_COLUMN)))->second; //go one step further in indirection
 
                 if(rid.id > 0){
+    std::cout << "3" << std::endl;
                     break;
                 }
             }
             std::vector<int> record_columns(table->num_columns);
+    std::cout << "4" << std::endl;
             for(int j = 0; j < table->num_columns; j++){ //transfer columns from desired version into record object
                 if(projected_columns_index[j]){
                     record_columns[j] = buffer_pool.get(rid, j + NUM_METADATA_COLUMNS);
                 }
+    std::cout << "5" << std::endl;
             }
             records.push_back(Record(rids[i], search_key, record_columns)); //add a record with RID of base page, value of primary key, and contents of desired version
         }
     }
+    std::cout << "6" << std::endl;
     return records;
 }
 
