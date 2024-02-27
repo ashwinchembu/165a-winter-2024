@@ -166,7 +166,7 @@ void Database::read(const std::string& path){
 	char nameBuffer[128];
 	for(int i = 0;i < numTables;i++){
 		e = fread(&nameBuffer,128,1,fp);
-		Table t = new Table();
+		Table* t = new Table();
 		t->read(fp);
 		tables.insert({{nameBuffer},t});
 	}
@@ -245,7 +245,7 @@ void Database::drop_table(const std::string& name){
  *
  */
 Table Database::get_table(const std::string& name){
-  std::map<std::string, Table>::iterator table = tables.find(name);
+  std::map<std::string, Table*>::iterator table = tables.find(name);
   if(table == tables.end()){
     throw std::invalid_argument("No table with that name was located.");
   }
