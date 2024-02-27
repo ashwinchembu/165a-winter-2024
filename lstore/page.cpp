@@ -322,9 +322,7 @@ Page::Page() {
 }
 
 Page::~Page() {
-    std::cout << "Page destructor in" << std::endl;
     delete data;
-    std::cout << "Page destructor out" << std::endl;
 }
 
 /***

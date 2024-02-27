@@ -40,9 +40,7 @@ COMPILER_SYMBOL int* Database_constructor(){
 }
 
 COMPILER_SYMBOL void Database_destructor(int* obj){
-	std::cout << "db destructor in" << std::endl;
 	delete ((Database*)obj);
-	std::cout << "db destructor out" << std::endl;
 }
 
 COMPILER_SYMBOL int* Database_create_table(int*obj,char* name, const int num_columns,  const int key_index){
@@ -74,10 +72,7 @@ COMPILER_SYMBOL void Database_open(int* obj,char* path){
 }
 
 COMPILER_SYMBOL void Database_close(int* obj){
-		std::cout << "close" << std::endl;
-
 	((Database*)obj)->close();
-		std::cout << "close" << std::endl;
 }
 
 BufferPool buffer_pool(BUFFER_POOL_SIZE);
@@ -89,7 +84,7 @@ Database::Database() {
 }
 
 Database::~Database() {
-	buffer_pool.~BufferPool();
+	// buffer_pool.~BufferPool();
 	// for(auto& t : tables){
 	// 	delete t.second.index;
 	// }
