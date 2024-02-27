@@ -147,7 +147,7 @@ void Database::read(const std::string& path){
 	}
 
 	int numTables;
-	size_t e = fread(&numTables,sizeof(int),1,fp);
+	int e = fread(&numTables,sizeof(int),1,fp);
 
 	char nameBuffer[128];
 
@@ -158,6 +158,10 @@ void Database::read(const std::string& path){
 		t.read(fp);
 
 		tables.insert({{nameBuffer},t});
+	}
+
+	if (e != numTables + 1) {
+		std::cout << "error?" << std::endl;
 	}
 
 	fclose(fp);
