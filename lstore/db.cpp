@@ -152,19 +152,19 @@ void Database::close() {
 void Database::read(const std::string& path){
 	FILE* fp = fopen((path + "/ProgramState.dat").c_str(),"r");
 	if (!fp) {
-		fclose(fp);
+		// fclose(fp);
 		return;
 	}
-
-	fseek(fp, 0, SEEK_END);
-
-	// Get the current position of the file pointer, which is the file size
-	long fileSize = ftell(fp);
-
-	if(!fileSize){//database hasn't been used yet
-		fclose(fp);
-		return;
-	}
+// Comment out for test
+	// fseek(fp, 0, SEEK_END);
+ //
+	// // Get the current position of the file pointer, which is the file size
+	// long fileSize = ftell(fp);
+ //
+	// if(!fileSize){//database hasn't been used yet
+	// 	fclose(fp);
+	// 	return;
+	// }
 
 	int numTables;
 	size_t e = fread(&numTables,sizeof(int),1,fp);
