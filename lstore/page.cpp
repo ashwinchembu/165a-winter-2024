@@ -114,6 +114,7 @@ PageRange::PageRange (RID& new_rid, const std::vector<int>& columns) {
     buffer_pool.insert_new_page(new_rid, RID_COLUMN, new_rid.id);
     buffer_pool.insert_new_page(new_rid, TIMESTAMP_COLUMN, 0);
     buffer_pool.insert_new_page(new_rid, SCHEMA_ENCODING_COLUMN, 0);
+    std::cout << "new rid" << new_rid.id << std::endl;
     buffer_pool.insert_new_page(new_rid, BASE_RID_COLUMN, new_rid.id);
     buffer_pool.insert_new_page(new_rid, TPS, 0);
     for (int i = 0; i < num_column; i++) {
@@ -223,6 +224,7 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
         buffer_pool.insert_new_page(rid_new, RID_COLUMN, rid_new.id);
         buffer_pool.insert_new_page(rid_new, TIMESTAMP_COLUMN, 0);
         buffer_pool.insert_new_page(rid_new, BASE_RID_COLUMN, rid.id);
+        std::cout << "rid.id" << rid.id << std::endl;
         buffer_pool.insert_new_page(rid_new, TPS, 0);
         for (int i = NUM_METADATA_COLUMNS; i < num_column; i++) {
             if (std::isnan(columns[i - NUM_METADATA_COLUMNS]) || columns[i-NUM_METADATA_COLUMNS] < -2147480000) { // Wrapper changes None to smallest integer possible

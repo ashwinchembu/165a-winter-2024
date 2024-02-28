@@ -62,6 +62,7 @@ int BufferPool::get (const RID& rid, const int& column) {
     found = load(rid, column);
   }
   update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
+  std::cout << "base is returning" << *(found->page->data + rid.offset) << std::endl;
   return *(found->page->data + rid.offset); //return the value we want
 }
 
@@ -75,8 +76,11 @@ Frame* BufferPool::get_page(const RID& rid, const int& column){
 }
 
 void BufferPool::set (const RID& rid, const int& column, const int& value, const bool& is_new){
+  std::cout << "hello1" << rid.id << std::endl;
   pin(rid, column);
+  std::cout << "hello2" << std::endl;
   Frame* found = search(rid, column);
+  std::cout << "hello3" << std::endl;
   if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
     found = load(rid, column);
   }
@@ -86,6 +90,7 @@ void BufferPool::set (const RID& rid, const int& column, const int& value, const
   }
   found->dirty = true; //the page has been modified
   unpin(rid, column);
+  std::cout << "hello4" << std::endl;
   update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
   return;
 }
@@ -113,6 +118,7 @@ Frame* BufferPool::search(const RID& rid, const int& column){
         std::cout << "we are looking at " << current_frame->first_rid_page << " and " << current_frame->column << std::endl;
       }
       if(rid.first_rid_page == current_frame->first_rid_page && column == current_frame->column){
+        std::cout << "found and exititing" << std::endl;
         return current_frame;
       }
     }
