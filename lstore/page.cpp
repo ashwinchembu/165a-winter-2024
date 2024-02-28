@@ -104,7 +104,6 @@
 //}
 
 PageRange::PageRange (RID& new_rid, const std::vector<int>& columns) {
-  std::cout << "Page range constructed" << '\n';
     new_rid.offset = 0;
     num_column = columns.size();
 
@@ -307,15 +306,10 @@ int PageRange::read(FILE* fp) {
 
 Page::Page() {
     data = new int[PAGE_SIZE * 4];
-    std::cout << "page constructor in, pointer for data ->" << data << std::endl;
-    std::cout << "Pointer for page ->" << this << std::endl;
 }
 
 Page::~Page() {
-  std::cout << "page destructor in, pointer for data ->" << data << std::endl;
-  std::cout << "Pointer for page ->" << this << std::endl;
     delete[] data;
-      std::cout << "page destructor out" << std::endl;
 }
 
 /***
