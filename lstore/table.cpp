@@ -360,7 +360,8 @@ int Table::merge() {
 
 	int TPS = 0;
 	Frame* first_frame = to_merge[0];
-	int latest_tail_id = mergeBufferPool->get(first_frame->first_rid_page, TPS);
+	RID last_tail_rid(0, first_frame->first_rid_page_range, first_frame->first_rid_page, 0, name);
+	int latest_tail_id = mergeBufferPool->get(last_tail_rid, TPS);
 
 	std::map<int, std::pair<int, std::vector<int>>> latest_update; //<latest base RID: <tailRID, values>>
 	std::set<int> visited_rids;
