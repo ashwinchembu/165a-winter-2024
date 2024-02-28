@@ -418,10 +418,7 @@ int Table::merge() {
 					// 	tail_rid_last = currentRID;
 					// }
 				}
-				std::cout << "Error 2" << std::endl;
-				// The page gets deleted on this scope
 			}
-			std::cout << "Error 1" << std::endl;
 		}
 	}
 	//std::cout << "kdljflkadklfdsjfkjds " << latest_update.size() << std::endl;
@@ -449,10 +446,10 @@ int Table::merge() {
 
 	 mergeBufferPool->write_back_all();
 
-	delete mergeBufferPool;
-	for (size_t i = 0; i < to_merge.size(); i++) {
-		delete to_merge[i];
-	}
+	// delete mergeBufferPool;
+	// for (size_t i = 0; i < to_merge.size(); i++) {
+	// 	delete to_merge[i];
+	// }
     return -1;
 }
 
