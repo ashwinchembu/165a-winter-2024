@@ -340,7 +340,7 @@ int Table::merge() {
 	std::vector<Frame*> to_merge = merge_queue.front();
 
 	merge_queue.pop();
-	auto pool_size = to_merge.size()*2*sizeof(int); // change to actual - temp
+	auto pool_size = to_merge.size()*PAGE_SIZE*2*sizeof(int); // change to actual - temp
 	BufferPool* mergeBufferPool = new BufferPool(pool_size);
 
 // 	Frame* cur_frame = mergeBufferPool->head; //create number of frames according to bufferpool size
@@ -359,10 +359,11 @@ int Table::merge() {
 			name
 		);
 		Frame* frame = mergeBufferPool->insert_into_frame(new_rid, to_merge[i]->column, to_merge[i]->page);
+		std::cout << "Merge size: " << to_merge.size() << " RID: " << new_rid.id << " " << to_merge[i]->first_rid_page_range << " frame: " << frame->first_rid_page_range << std::endl;
 		frame->dirty = true;
 	}
 	//set last frame
-	*(mergeBufferPool->tail) = *(to_merge[to_merge.size() - 1]);
+	//*(mergeBufferPool->tail) = *(to_merge[to_merge.size() - 1]);
 
 	std::map<int, std::pair<int, std::vector<int>>> latest_update; //<latest base RID: <tailRID, values>>
 	std::set<int> visited_rids;
@@ -419,6 +420,9 @@ int Table::merge() {
 	}
 	//std::cout << "kdljflkadklfdsjfkjds " << latest_update.size() << std::endl;
 	for (const auto& pair : latest_update) {
+		if (pair.first == 0) {
+			continue;
+		}
 		std::cout << "kdljflkadklfdsjfkjds " << pair.first << std::endl;
 		RID latest_base_rid = page_directory.find(pair.first)->second;
 		std::cout << "kdljflkadklfdsjfkjds" << std::endl;

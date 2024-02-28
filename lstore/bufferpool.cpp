@@ -67,13 +67,9 @@ Frame* BufferPool::get_page(const RID& rid, const int& column){
 }
 
 void BufferPool::set (const RID& rid, const int& column, const int& value, const bool& is_new){
-  std::cout << "?????????" << std::endl;
   pin(rid, column);
-  std::cout << "---------------" << std::endl;
   Frame* found = search(rid, column);
-  std::cout << "kdajfldksjfksajfkjdslkfjds" << std::endl;
   if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
-    std::cout << rid.id << ": " << found->table_name << std::endl;
     found = load(rid, column);
   }
   *(found->page->data + rid.offset) = value;
