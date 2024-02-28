@@ -317,8 +317,8 @@ int Table::read(FILE* fp) {
 	delete index;
 	index = new Index();
 	index->setTable(this);
-	index->printData();
-	// PrintData();
+//	index->printData();
+ 	PrintData();
 	return e;
 }
 
