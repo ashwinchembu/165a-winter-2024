@@ -292,7 +292,7 @@ void BufferPool::write_back(Frame* frame){
   fwrite(&(frame->page->num_rows), sizeof(int), 1, fp);
   fwrite(frame->page->data, sizeof(int), frame->page->num_rows, fp);
   fclose(fp);
-/*
+
   if(frame->page != nullptr){
     //std::cout << "null" << std::endl;
     delete frame->page;
