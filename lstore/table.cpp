@@ -354,6 +354,7 @@ int Table::merge() {
 	mergeBufferPool->head->dirty = true;
 	mergeBufferPool->head->valid = true;
 
+std::cout << "to_merge_size is " << to_merge.size() << std::endl;
 	for (int i = 1; i < to_merge.size(); i++) {
 		//for(int j = 0; j < num_columns; )
 		RID new_rid(i,
