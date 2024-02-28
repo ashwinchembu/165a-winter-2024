@@ -406,6 +406,8 @@ std::cout << "to_merge_size is " << to_merge.size() << std::endl;
 			if (currentFrame->page){
 				//valid page
 				currentFrame = mergeBufferPool->search(page_rid, RID_COLUMN);
+				std::cout << "0 The head is " << mergeBufferPool->head << std::endl;
+				std::cout << "0 range begin is " << mergeBufferPool->hash_vector[0] << std::endl;
 				Page currentPage = *(currentFrame->page);
 				for (int tail_iterator = (currentPage.num_rows-1)*sizeof(int); tail_iterator >= 0; tail_iterator -= sizeof(int) ){
 					RID currentRID(*(tail_iterator + currentPage.data),
