@@ -113,6 +113,7 @@ Database::Database() {
 }
 
 Database::~Database() {
+	std::cout << "DB destructor" << '\n';
 }
 
 void Database::open(const std::string& path) {

@@ -240,7 +240,6 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 	if (page_range_update[i] >= MAX_PAGE_RANGE_UPDATES){
 		// Make a deep copy of page_range[i]
 		std::shared_ptr<PageRange> deep_copy = std::make_shared<PageRange>(*(page_range[i].get()));
-
 		// use bufferpool to get all the pages within a page range
 //		auto pool_size = deep_copy->pages.size()*num_columns*2; // change to actual - temp
 		//BufferPool* mergeBufferPool = new BufferPool(pool_size);
