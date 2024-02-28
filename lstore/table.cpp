@@ -388,9 +388,9 @@ int Table::merge() {
 			if (currentFrame->page){
 				//valid page
 				currentFrame = mergeBufferPool->search(page_rid, RID_COLUMN);
-				Page currentPage = *(currentFrame->page);
-				for (int tail_iterator = (currentPage.num_rows-1)*sizeof(int); tail_iterator >= 0; tail_iterator -= sizeof(int) ){
-					RID currentRID(*(tail_iterator + currentPage.data),
+				Page* currentPage = currentFrame->page;
+				for (int tail_iterator = (currentPage->num_rows-1)*sizeof(int); tail_iterator >= 0; tail_iterator -= sizeof(int) ){
+					RID currentRID(*(tail_iterator + currentPage->data),
 						to_merge[i]->first_rid_page_range, to_merge[i]->first_rid_page, tail_iterator, name);
 
 					if (currentRID.id > latest_tail_id) {
@@ -417,16 +417,14 @@ int Table::merge() {
 					// if (currentRID < tail_rid_last) {
 					// 	tail_rid_last = currentRID;
 					// }
-					std::cout << "Error 4" << std::endl;
 				}
-				std::cout << "Error 3" << std::endl;
+				std::cout << "Error 2" << std::endl;
+				// The page gets deleted on this scope
 			}
-			std::cout << "Error 2" << std::endl;
+			std::cout << "Error 1" << std::endl;
 		}
-		std::cout << "Error 1" << std::endl;
 	}
 	//std::cout << "kdljflkadklfdsjfkjds " << latest_update.size() << std::endl;
-	std::cout << "Error 0" << std::endl;
 	for (const auto& pair : latest_update) {
 		if (pair.first == 0) {
 			continue;
