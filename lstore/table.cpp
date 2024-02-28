@@ -345,7 +345,7 @@ int Table::merge() {
 		read it until TPS < tail ID
 	page directory is updated to point to the new pages
 
-	*/	
+	*/
 	std::cout << "entered merge" << std::endl;
 	std::vector<Frame*> to_merge = merge_queue.front();
 	//std::cout << "to merge size: " << to_merge.size() << std::endl;
@@ -353,6 +353,7 @@ int Table::merge() {
 	merge_queue.pop();
 	auto pool_size = to_merge.size()*2*sizeof(int); // change to actual - temp
 	BufferPool* mergeBufferPool = new BufferPool(pool_size);
+	mergeBufferPool->set_path("./MergeTemp");
 	//mergeBufferPool->hash_vector = to_merge;
 
 	//set first frame
@@ -364,7 +365,7 @@ int Table::merge() {
 	// 	mergeBufferPool->hash_vector[i]->prev = mergeBufferPool->hash_vector[i - 1];
 	// 	mergeBufferPool->hash_vector[i]->next = mergeBufferPool->hash_vector[i + 1];
 	// }
-	
+
 	Frame* cur_frame = mergeBufferPool->head; //create number of frames according to bufferpool size
   	for(int i = 0; i < (to_merge.size() - 1); i++){
 		*(cur_frame) = *(to_merge[i]);
@@ -395,9 +396,9 @@ int Table::merge() {
 	for (int i = to_merge.size() - 1; i >= 0; i--) {
 		Frame* currentFrame = to_merge[i];
 		int page_rid = currentFrame->first_rid_page;
-		
+
 		//std::cout << page_rid << std::endl;
-		
+
 		//determine that we dont visit same logical set twice
 		auto pos = visited_rids.find(page_rid);
 
@@ -413,7 +414,7 @@ int Table::merge() {
 			// if (page_rid > last_update_rid) {
 			// 	continue;
 			// }
-			
+
 			//std::cout << "is tail page" << std::endl;
 			//std::cout << "--------got to here" << std::endl;
 			if (currentFrame->page){
