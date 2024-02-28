@@ -339,7 +339,6 @@ int Table::merge() {
 
 	*/
 
-	std::cout << "entered merge" << std::endl;
 	std::vector<Frame*> to_merge = merge_queue.front();
 	merge_queue.pop();
 
