@@ -356,7 +356,8 @@ int Table::merge() {
 			0,
 			name
 		);
-		mergeBufferPool->insert_into_frame(new_rid, to_merge[i]->column, to_merge[i]->page);
+		Frame* frame = mergeBufferPool->insert_into_frame(new_rid, to_merge[i]->column, to_merge[i]->page);
+		frame->dirty = true;
 	}
 
 	//set last frame
@@ -426,7 +427,7 @@ int Table::merge() {
 		// mergeBufferPool->set (latest_base_rid, TPS, tail_rid_last, false);
 	}
 
-	//mergeBufferPool->write_back_all();
+	mergeBufferPool->write_back_all();
 	delete mergeBufferPool;
 
     return -1;
