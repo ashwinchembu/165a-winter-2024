@@ -367,7 +367,7 @@ int Table::merge() {
 Frame* current_frame = mergeBufferPool->head;
 while(current_frame != nullptr){ //iterate through entire bufferpool
 	if(current_frame->page != nullptr){
-		std::cout << "first ride page: " << first_rid_page.id << std::endl;
+		std::cout << "first ride page: " << current_frame->first_rid_page.id << std::endl;
 	}
 	current_frame = current_frame->next;
 }
