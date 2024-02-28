@@ -162,6 +162,7 @@ void Index::create_index(const int& column_number) {
 		std::cout << "num insert is " << table->num_insert << std::endl;
     for (int i = 1; i <= table->num_insert; i++) {
         auto loc = table->page_directory.find(i); // Find RID for every rows
+				std::cout << "i: " << i << std::endl;
         if (loc != table->page_directory.end()) { // if RID ID exist ie. not deleted
             RID rid = table->page_directory.find(loc->second.id)->second;
 
