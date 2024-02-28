@@ -54,13 +54,13 @@ int BufferPool::get (const RID& rid, const int& column) {
   Frame* found = search(rid, column);
   if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
     //std::cout << "Couldn't find it :(" << std::endl;
-    Frame* current_frame = head;
-    while(current_frame != nullptr){ //iterate through entire bufferpool
-    // if(current_frame->page != nullptr){
-    //   std::cout << "first rid page is " << current_frame->first_rid_page << " column is " << current_frame->column << std::endl;
-    // }
-    current_frame = current_frame->next;
-  }
+  //   Frame* current_frame = head;
+  //   while(current_frame != nullptr){ //iterate through entire bufferpool
+  //   // if(current_frame->page != nullptr){
+  //   //   std::cout << "first rid page is " << current_frame->first_rid_page << " column is " << current_frame->column << std::endl;
+  //   // }
+  //   current_frame = current_frame->next;
+  // }
     found = load(rid, column);
   }
   std::cout << "Update ages" << std::endl;
@@ -110,10 +110,10 @@ Frame* BufferPool::search(const RID& rid, const int& column){
   // if(path == "./ECS165/Merge"){
   //   std::cout << "we are looking for rid " << rid.first_rid_page << " and " << column << std::endl;
   // }
-  std::cout << "we are looking for rid " << rid.first_rid_page << " and " << column << std::endl;
+  // std::cout << "we are looking for rid " << rid.first_rid_page << " and " << column << std::endl;
   size_t hash = hash_fun(rid.first_rid_page); //perform hash on rid
   Frame* range_begin = hash_vector[hash]; //beginning of hash range
-  std::cout << "0 range begin is " << range_begin << ", rid " << range_begin->first_rid_page << ", column " << range_begin->column << std::endl;
+  // std::cout << "0 range begin is " << range_begin << ", rid " << range_begin->first_rid_page << ", column " << range_begin->column << std::endl;
   // if(path == "./ECS165/Merge"){
   //  std::cout << "hash for " << rid.first_rid_page << " is " << hash << std::endl;
   //  std::cout << "1 range begin is " << hash_vector[0] << std::endl;
@@ -121,21 +121,21 @@ Frame* BufferPool::search(const RID& rid, const int& column){
   // }
 //  std::cout << "1 head is" << head << std::endl;
   Frame* range_end = (hash == hash_vector.size() - 1) ? tail : hash_vector[hash + 1]->prev; //end of hash range
-  std::cout << "0 range end is " << range_end << ", rid " << range_end->first_rid_page << ", column " << range_end->column << std::endl;
+  // std::cout << "0 range end is " << range_end << ", rid " << range_end->first_rid_page << ", column " << range_end->column << std::endl;
   Frame* current_frame = range_begin; //iterate through range
   while(current_frame != range_end->next){
     if ((current_frame->valid)) {
       // if(path == "./ECS165/Merge"){
-        std::cout << "we are looking at " << current_frame->first_rid_page << " and " << current_frame->column << std::endl;
+        // std::cout << "we are looking at " << current_frame->first_rid_page << " and " << current_frame->column << std::endl;
       // }
       if(rid.first_rid_page == current_frame->first_rid_page && column == current_frame->column){
-        std::cout << "found and exititing" << std::endl;
+        // std::cout << "found and exititing" << std::endl;
         return current_frame;
       }
     }
     current_frame = current_frame->next;
   }
-  std::cout << "Miss" << std::endl;
+  // std::cout << "Miss" << std::endl;
   return nullptr; //if not found in the range
 }
 
