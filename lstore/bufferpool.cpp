@@ -51,6 +51,7 @@ int BufferPool::hash_fun(unsigned int x) {
 int BufferPool::get (const RID& rid, const int& column) {
   Frame* found = search(rid, column);
   if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
+    std::cout << "Couldn't find it :(" << std::endl;
     found = load(rid, column);
   }
   update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
@@ -60,6 +61,7 @@ int BufferPool::get (const RID& rid, const int& column) {
 Frame* BufferPool::get_page(const RID& rid, const int& column){
   Frame* found = search(rid, column);
   if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
+    std::cout << "Couldn't find it :(" << std::endl;
     found = load(rid, column);
   }
   update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
@@ -103,6 +105,7 @@ Frame* BufferPool::search(const RID& rid, const int& column){
 
 Frame* BufferPool::search(const RID& rid, const int& column, std::string merge){
   Frame* current_frame = head; //iterate through range
+  std::cout << "we are looking for rid " << rid.first_rid_page << " and " << column << std::endl;
   while(current_frame != nullptr){
     if ((current_frame->valid)) {
       if(rid.first_rid_page == current_frame->first_rid_page && column == current_frame->column){
