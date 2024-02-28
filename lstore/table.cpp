@@ -397,7 +397,7 @@ int Table::merge() {
 						to_merge[i]->first_rid_page_range, to_merge[i]->first_rid_page, tail_iterator, name);
 
 					int baseRID = mergeBufferPool->get(currentRID, BASE_RID_COLUMN);
-					if (latest_update.find(baseRID) != latest_update.end()){
+					if (latest_update.find(baseRID) == latest_update.end()){
 						if (latest_update[baseRID].first > currentRID.id){
 							latest_update[baseRID].first = currentRID.id;
 							std::vector<int> merge_vals;
@@ -406,6 +406,7 @@ int Table::merge() {
 								merge_vals.push_back(value);
 							}
 							latest_update[baseRID].second = merge_vals;
+							//std::cout << latest_update.size() << std::endl;
 						}
 					}
 					// if (currentRID < tail_rid_last) {
@@ -415,9 +416,13 @@ int Table::merge() {
 			}
 		}
 	}
+	//std::cout << "kdljflkadklfdsjfkjds " << latest_update.size() << std::endl;
 	for (const auto& pair : latest_update) {
-		int latest_base_rid = pair.first;
+		std::cout << "kdljflkadklfdsjfkjds " << pair.first << std::endl;
+		RID latest_base_rid = page_directory.find(pair.first)->second;
+		std::cout << "kdljflkadklfdsjfkjds" << std::endl;
 		const std::vector<int>& values = pair.second.second;
+		std::cout << "kdljflkadklfdsjfkjds" << std::endl;
 
 		for (int col = 0; col < num_columns; col++){
 			//mergeBufferPool->set (latest_base_rid, col, values[col], false);
@@ -427,8 +432,8 @@ int Table::merge() {
 		// mergeBufferPool->set (latest_base_rid, TPS, tail_rid_last, false);
 	}
 
-	mergeBufferPool->write_back_all();
-	delete mergeBufferPool;
+	// mergeBufferPool->write_back_all();
+	// delete mergeBufferPool;
 
     return -1;
 }
