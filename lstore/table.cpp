@@ -239,7 +239,7 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 		std::shared_ptr<PageRange> deep_copy = std::make_shared<PageRange>(*(page_range[i].get()));
 
 		// use bufferpool to get all the pages within a page range
-		auto pool_size = deep_copy->pages.size()*num_columns*2; // change to actual - temp
+//		auto pool_size = deep_copy->pages.size()*num_columns*2; // change to actual - temp
 		//BufferPool* mergeBufferPool = new BufferPool(pool_size);
 		//std::cout << "size: " << deep_copy->pages.size() << std::endl;
 		std::vector<Frame*> insert_to_queue;
@@ -365,7 +365,7 @@ int Table::merge() {
 	std::map<int, std::pair<int, std::vector<int>>> latest_update; //<latest base RID: <tailRID, values>>
 	std::set<int> visited_rids;
 	
-	int tail_rid_last = 0;
+//	int tail_rid_last = 0;
 	//load copy of all base pages in each page range
 	for (int i = to_merge.size() - 1; i >= 0; i--) {
 		Frame* currentFrame = to_merge[i];
