@@ -222,10 +222,10 @@ void Query::performDeleteOnColumnReferences(RID base_rid){
 
     		RIDJoin ridJoin = table->getJoin(base_rid,col);
 
-    		if(ridJoin.modificationPolicy == DELETE_NULL){
+    		if(ridJoin.modificationPolicy == -1){//supposed to be DELETE_NULL, had to change for now
     			deleteWithinJoin(ridJoin);
 
-    		} else if(ridJoin.modificationPolicy == DELETE_CASCADE){
+    		} else if(ridJoin.modificationPolicy == -1){//supposed to be DELETE_CASCADE, had to change for now
     			std::vector<RIDJoin> allJoins;
 
     			RIDJoin currentJoin = ridJoin;
