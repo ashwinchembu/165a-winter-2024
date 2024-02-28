@@ -168,11 +168,13 @@ void Index::create_index(const int& column_number) {
             int indirection_num = buffer_pool.get(rid, INDIRECTION_COLUMN);
 
             if ((buffer_pool.get(rid, SCHEMA_ENCODING_COLUMN) >> (column_number - 1)) & (0b1)) { // If the column of the record at loc is updated
-                RID update_rid = table->page_directory.find(indirection_num)->second;
+								std::cout << "This should print" << std::endl;
+								RID update_rid = table->page_directory.find(indirection_num)->second;
                 value = buffer_pool.get(update_rid, column_number + NUM_METADATA_COLUMNS);
             } else {
                 value = buffer_pool.get(rid, column_number + NUM_METADATA_COLUMNS);
             }
+						std::cout << "Insert into index rid " << rid.id << " and value " << value << std::endl;
             index.insert({value, rid.id});
         }
     }
@@ -278,7 +280,7 @@ void Index::setTable(Table* t){
 
 void Index::printData(){
 	for(auto& e: indices){
-		printf("---Column %d:---\n\n",e.first);
+		printf("---Column %d:---\n\n", e.first);
 		printf("%lu\n\n", e.second.size());
 		for(auto& j : e.second){
 			std::cout << j.second << std::endl;
