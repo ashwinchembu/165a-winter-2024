@@ -468,6 +468,9 @@ std::cout << "bufferpool num is " << sum << std::endl;
 		const std::vector<int>& values = pair.second.second;
 		std::cout << "kdljflkadklfdsjfkjds" << std::endl;
 
+		int tail_id = latest_update.at(pair.first).first;
+		mergeBufferPool->set (latest_base_rid, INDIRECTION_COLUMN, tail_id, false);
+
 		for (int col = 0; col < num_columns; col++){
 			//mergeBufferPool->set (latest_base_rid, col, values[col], false);
 			std::cout << "latest base_rid: " << latest_base_rid.id << " col :" << col << std::endl;
