@@ -93,9 +93,9 @@ void BufferPool::set (const RID& rid, const int& column, const int& value, const
 Frame* BufferPool::search(const RID& rid, const int& column){
   //std::cout << "we are looking for rid " << rid.first_rid_page << " and " << column << std::endl;
   size_t hash = hash_fun(rid.first_rid_page); //perform hash on rid
-  std::cout << "1hash vector: " << mergeBufferPool->hash_vector[0] << " " << mergeBufferPool->hash_vector[1] << " " << mergeBufferPool->hash_vector[2] << " " << mergeBufferPool->hash_vector[3] << " " << std::endl;
+  std::cout << "1hash vector: " << hash_vector[0] << " " << hash_vector[1] << " " << hash_vector[2] << " " << hash_vector[3] << " " << std::endl;
   Frame* range_begin = hash_vector[hash]; //beginning of hash range
-  std::cout << "2hash vector: " << mergeBufferPool->hash_vector[0] << " " << mergeBufferPool->hash_vector[1] << " " << mergeBufferPool->hash_vector[2] << " " << mergeBufferPool->hash_vector[3] << " " << std::endl;
+  std::cout << "2hash vector: " << hash_vector[0] << " " << hash_vector[1] << " " << hash_vector[2] << " " << hash_vector[3] << " " << std::endl;
 //  std::cout << "range begin is " << range_begin << std::endl;
 //  std::cout << "head is" << head << std::endl;
   Frame* range_end = (hash == hash_vector.size() - 1) ? tail : hash_vector[hash + 1]->prev; //end of hash range
