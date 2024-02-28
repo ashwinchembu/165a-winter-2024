@@ -34,6 +34,7 @@ public:
     Frame* tail;
     int hash_fun(unsigned int x);
     int get (const RID& rid, const int& column); // given a rid and column, returns the value in that location
+    Page* get_page (const RID& rid, const int& column); // given a rid and column, returns the page that holds it
     void set (const RID& rid, const int& column, const int& value, const bool& is_new); // given a rid and column, changes the value in that location
     Frame* load (const RID& rid, const int& column); //from disk into bufferpool
     Frame* search(const RID& rid, const int& column); //search in specific hash range

@@ -57,6 +57,15 @@ int BufferPool::get (const RID& rid, const int& column) {
   return *(found->page->data + rid.offset); //return the value we want
 }
 
+Page* get_page (const RID& rid, const int& column){
+  Frame* found = search(rid, column);
+  if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
+    found = load(rid, column);
+  }
+  update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
+  return found->page; //return the value we want
+}
+
 void BufferPool::set (const RID& rid, const int& column, const int& value, const bool& is_new){
   pin(rid, column);
   Frame* found = search(rid, column);
