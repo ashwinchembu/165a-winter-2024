@@ -291,8 +291,10 @@ void BufferPool::write_back(Frame* frame){
     if (!fp) {
       throw std::invalid_argument("Couldn't open file " + data_path);
     }
-    fwrite(&(frame->page->num_rows), sizeof(int), 1, fp);
-    fwrite(frame->page->data, sizeof(int), frame->page->num_rows, fp);
+    if (frame->page != nullptr) {
+      fwrite(&(frame->page->num_rows), sizeof(int), 1, fp);
+      fwrite(frame->page->data, sizeof(int), frame->page->num_rows, fp);
+    }
     fclose(fp);
     if (frame != nullptr && frame->page != nullptr) {
       delete frame->page;
