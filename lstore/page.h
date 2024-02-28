@@ -10,10 +10,7 @@
 
 class Page {
 public:
-    /// @TODO Move this to config file
-    // const int NUM_SLOTS = PAGE_SIZE; // bytes
     int num_rows = 0;
-    // int availability[NUM_SLOTS] = {0}; // 0 is empty, 1 is occupied, 2 is deleted.
     Page ();
     virtual ~Page ();
     const bool has_capacity() const;
@@ -24,10 +21,6 @@ public:
 
 class PageRange {
 public:
-    /* data */
-    /// @TODO Move this to config file
-    // const int PAGE_SIZE = 4096;
-    // const int LOGICAL_PAGE = 8;
     const int NUM_SLOTS = 4096*LOGICAL_PAGE;
     int num_slot_left = NUM_SLOTS;
     int num_slot_used_base = 0;
@@ -40,7 +33,6 @@ public:
     std::vector<RID> pages;
     PageRange () {} // Never use this outside of loading saved data
     PageRange (RID& new_rid, const std::vector<int>& columns);
-    // PageRange(const PageRange& other);
     ~PageRange();
     int insert(RID& new_rid, const std::vector<int>& columns);
     int update(RID& rid, RID& rid_new, const std::vector<int>& columns, const std::map<int, RID>& page_directory);

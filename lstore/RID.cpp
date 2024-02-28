@@ -45,40 +45,6 @@
 //}
 //
 
-
-
-// /***
-//  *
-//  * Given a column number, this will check if the schema encoding of corresponding digit is 1 or not
-//  *
-//  * @param int column_num Column number to check schema encoding on.
-//  * @return Return 1 if schema encoding is 1, and return 0 if schema encoding is 0.
-//  *
-//  */
-// const bool RID::check_schema (const int& column_num) const {
-//     const int bin = 0b1 & (schema_encoding >> (column_num - 1));
-//     return bin;
-// }
-
-// /***
-//  *
-//  * Return corresponding column number of which has 1 in schema encoding. Will return right most 1 only if multiple.
-//  *
-//  * Deprecated
-//  * @return Return column number, excluding metadata columns if 1 is found within the range. Otherwise return -1.
-//  *
-//  */
-// const int RID::column_with_one () const {
-//     int _schema_encoding = schema_encoding;
-//     for (int i = 0; i < 32; i++) {
-//         if (0b1 & _schema_encoding) {
-//             return num_elements - i;
-//         }
-//         _schema_encoding = _schema_encoding >> 1;
-//     }
-//     return -1;
-// }
-
 RID::RID (const RID& rhs) {
 	id = rhs.id;
     first_rid_page_range = rhs.first_rid_page_range;

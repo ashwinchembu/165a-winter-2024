@@ -9,9 +9,8 @@ class Table;
 
 class Index {
 public:
-    /* data */
     Table* table = nullptr;
-    std::unordered_map<int, std::unordered_multimap<int, int> > indices; //column, (value, rid id)
+    std::unordered_map<int, std::unordered_multimap<int, int>> indices; //column, (value, rid id)
 
     Index (){};
     virtual ~Index ();

@@ -125,10 +125,6 @@ PageRange::PageRange (RID& new_rid, const std::vector<int>& columns) {
     num_slot_used_base++;
 }
 
-// PageRange::PageRange(const PageRange& other) {
-//     this->page_range = other.page_range;
-// }
-//
 // PageRange::~PageRange () {
 //     for (size_t i = 0; i < page_range.size(); i++) {
 //         delete page_range[i].second;
@@ -148,7 +144,6 @@ bool PageRange::base_has_capacity () const {
 }
 
 PageRange::~PageRange(){
-    // std::cout << "PageRange destructor" << std::endl;
 }
 
 /***
@@ -195,7 +190,6 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
         num_slot_used_base++;
     }
     base_last_wasfull = (num_slot_used_base == PAGE_SIZE);
-    // Inserted.
     return 0;
 }
 
@@ -252,8 +246,6 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
         buffer_pool.set(rid_new, BASE_RID_COLUMN, rid.id, true);
         buffer_pool.set(rid_new, TPS, 0, true);
         for (int i = NUM_METADATA_COLUMNS; i < num_column; i++) {
-          //  buffer_pool.set(rid_new, i, columns[i - NUM_METADATA_COLUMNS], true);
-
             if (std::isnan(columns[i - NUM_METADATA_COLUMNS]) || columns[i-NUM_METADATA_COLUMNS] < -2147480000) { // Wrapper changes None to smallest integer possible
                 // If there are no update, we write the value from latest update
                 buffer_pool.set(rid_new, i, buffer_pool.get(latest_rid, i), true);
@@ -284,8 +276,6 @@ int PageRange::write(FILE* fp) {
     fwrite(&num_slot_used_tail, sizeof(int), 1, fp);
     fwrite(&base_last, sizeof(int), 1, fp);
     fwrite(&tail_last, sizeof(int), 1, fp);
-    // Will break. Look for alternative of string.
-    // fwrite(pages.data(), sizeof(pages[0]), tail_last, fp);
     for (int i = 0; i <tail_last; i++) {
         pages[i].write(fp);
     }
@@ -302,8 +292,6 @@ int PageRange::read(FILE* fp) {
     e = e + fread(&num_slot_used_tail, sizeof(int), 1, fp);
     e = e + fread(&base_last, sizeof(int), 1, fp);
     e = e + fread(&tail_last, sizeof(int), 1, fp);
-    // Will break. Look for alternative of string.
-    // fread(pages.data(), sizeof(pages[0]), tail_last, fp);
     pages.resize(tail_last);
     for (int i = 0; i <tail_last; i++) {
         pages[i].read(fp);
@@ -316,15 +304,10 @@ int PageRange::read(FILE* fp) {
 
 Page::Page() {
     data = new int[PAGE_SIZE * 4];
-    // for (int i = 0; i < PAGE_SIZE; i++) {
-    //     availability[i] = 0;
-    // }
 }
 
 Page::~Page() {
-    // std::cout << "Page destructor In" << std::endl;
     delete[] data;
-    // std::cout << "Page destructor Out" << std::endl;
 }
 
 /***
@@ -347,17 +330,6 @@ const bool Page::has_capacity() const {
  */
 int Page::write(const int& value) {
     int* insert = nullptr;
-    // num_rows++;
-    // for (int location = 0; location < PAGE_SIZE; location++) {
-    //     if (availability[location] == 0) {
-    //         //insert on location
-    //         int offset = location * sizeof(int); // Bytes from top of the page
-    //         insert = data + offset;
-    //         *insert = value;
-    //         availability[location] = 1;
-    //         break;
-    //     }
-    // }
     insert = data + num_rows;
     *insert = value;
     num_rows++;

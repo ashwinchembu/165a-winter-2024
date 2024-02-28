@@ -100,7 +100,6 @@ COMPILER_SYMBOL void Index_print_data(int* IndexObj){
 
 
 Index::~Index() {
-    // std::cout << "Destructor" << std::endl;
 }
 
 
