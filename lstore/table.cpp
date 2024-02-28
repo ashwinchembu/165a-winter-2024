@@ -344,7 +344,7 @@ int Table::merge() {
 	std::vector<Frame*> to_merge = merge_queue.front();
 
 	merge_queue.pop();
-	auto pool_size = to_merge.size()*PAGE_SIZE*2*sizeof(int); // change to actual - temp
+	auto pool_size = to_merge.size()*2; // change to actual - temp
 	BufferPool* mergeBufferPool = new BufferPool(pool_size);
 	mergeBufferPool->set_path("./ECS165/Merge");
 	struct stat checkDir;

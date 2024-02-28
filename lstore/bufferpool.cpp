@@ -315,14 +315,10 @@ void BufferPool::write_back_all (){
   std::cout << current_frame << std::endl;
   while(current_frame != nullptr){ //iterate through entire bufferpool
     if(current_frame != nullptr && current_frame->dirty && current_frame->valid){
-      std::cout << "one" << std::endl;
       write_back(current_frame);
-      std::cout << "done" << std::endl;
     } else {
-      std::cout << "two" << std::endl;
       current_frame->valid = false;
       if(current_frame->page != nullptr){
-        std::cout << "three" << std::endl;
         delete current_frame->page;
         //current_frame->page = nullptr;
 
