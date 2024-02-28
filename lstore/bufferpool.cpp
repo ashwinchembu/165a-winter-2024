@@ -36,12 +36,14 @@ BufferPool::BufferPool (const int& num_pages) : bufferpool_size(num_pages){
 }
 
 BufferPool::~BufferPool () {
+  std::cout << "destructor in " << std::endl;
   Frame* current_frame = head;
   while(current_frame != nullptr){ //iterate through entire bufferpool
     Frame* old = current_frame;
     current_frame = current_frame->next;
     delete old;
   }
+  std::cout << "destructor out " << std::endl;
 }
 
 int BufferPool::hash_fun(unsigned int x) {
@@ -293,7 +295,7 @@ void BufferPool::write_back(Frame* frame){
 
   if(frame->page != nullptr){
     //std::cout << "null" << std::endl;
-    //delete frame->page;
+    delete frame->page;
   }
 }
 
@@ -303,10 +305,10 @@ void BufferPool::write_back_all (){
     if(current_frame->dirty && current_frame->valid){
       write_back(current_frame);
     } else {
-      current_frame->valid = false;/*
+      current_frame->valid = false;
       if(current_frame->page != nullptr){
         delete current_frame->page;
-      }*/
+      }
     }
     current_frame = current_frame->next;
   }
