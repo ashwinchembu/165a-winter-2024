@@ -378,6 +378,7 @@ int Table::merge() {
 	while(current_frame != nullptr){ //iterate through entire bufferpool
 	if(current_frame->page != nullptr){
 		std::cout << "frame in linked list is" << current_frame << std::endl;
+		std::cout << "this should be equal to ^ " << mergeBufferPool->hash_vector[0] << std::endl;
 	}
 	current_frame = current_frame->next;
 }
