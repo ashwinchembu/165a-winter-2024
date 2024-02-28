@@ -1,4 +1,3 @@
-// #include <bits/types/FILE.h>
 #include <vector>
 #include <stdio.h>
 #include <string>
@@ -8,14 +7,11 @@
 #include <cmath>
 #include <stdexcept> // Throwing errors
 #include <iostream>
-// #include <unistd.h>
 
 #include "page.h"
 #include "config.h"
 #include "bufferpool.h"
 #include "../Toolkit.h"
-
-// BufferPool buffer_pool(BUFFER_POOL_SIZE);
 
 BufferPool::BufferPool (const int& num_pages) : bufferpool_size(num_pages){
   head = new Frame; //create head
@@ -94,11 +90,10 @@ Frame* BufferPool::search(const RID& rid, const int& column){
 }
 
 void BufferPool::update_ages(Frame*& just_accessed, Frame*& range_begin){ //change ages and reorder linked list
-
   if(just_accessed != range_begin){ //if not already the range beginning / most recently accessed
-    if(just_accessed->next == nullptr ){
+    if(just_accessed->next == nullptr ){ //if just_accessed is the tail
       tail = just_accessed->prev;
-    } else if (range_begin->prev == nullptr) {
+    } else if (range_begin->prev == nullptr) { //if range_begin is the head
       head = just_accessed;
     }
 
@@ -179,7 +174,6 @@ Frame* BufferPool::insert_into_frame(const RID& rid, const int& column, Page* pa
 void BufferPool::insert_new_page(const RID& rid, const int& column, const int& value) {
 
   Page* page = new Page();
-  // page->write(value);
   *(page->data + rid.offset) = value;
   page->num_rows++;
 

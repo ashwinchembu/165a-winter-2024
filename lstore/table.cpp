@@ -177,7 +177,6 @@ Table::~Table() {
 			page_range[i].reset();
 		}
 	}
-	//delete index;
 }
 
 /***
@@ -256,7 +255,6 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 			delete mergeBufferPool;
 	}
 
-	// int err = (page_range[i].get())->update(rid, rid_id, columns);
 	page_directory.insert({rid_id, new_rid});
     return new_rid;
 }
@@ -274,7 +272,6 @@ int Table::write(FILE* fp) {
         iter->second.write(fp);
     }
 
-    // index->write(fp);
 	int num_page_range = page_range.size();
 	fwrite(&(num_page_range), sizeof(int), 1, fp);
 	for (int i = 0; i < num_page_range; i++) {
@@ -303,8 +300,6 @@ int Table::read(FILE* fp) {
 			page_directory.insert({key, value});
 
 		}
-
-    //index->read(fp);
 	page_range.clear();
 	int num_page_range = 0;
 	e = e + fread(&(num_page_range), sizeof(int), 1, fp);

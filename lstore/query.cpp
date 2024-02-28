@@ -98,13 +98,10 @@ bool Query::insert(const std::vector<int>& columns) {
 }
 
 std::vector<Record> Query::select(const int& search_key, const int& search_key_index, const std::vector<int>& projected_columns_index) {
-    // Placeholder for select logic
     // Populate records based on the search criteria
       return select_version(search_key, search_key_index, projected_columns_index, 0);
 }
 
-
-/// @TODO Adopt to the change in RID
 std::vector<Record> Query::select_version(const int& search_key, const int& search_key_index, const std::vector<int>& projected_columns_index, const int& _relative_version) {
     const int relative_version = _relative_version * (-1);
     std::vector<Record> records;
@@ -131,7 +128,6 @@ std::vector<Record> Query::select_version(const int& search_key, const int& sear
     return records;
 }
 
-/// @TODO Adopt to the change in RID
 bool Query::update(const int& primary_key, const std::vector<int>& columns) {
 
     if (primary_key != columns[table->key] && table->page_directory.find(columns[table->key]) != table->page_directory.end()) {
@@ -164,9 +160,7 @@ unsigned long int Query::sum(const int& start_range, const int& end_range, const
     return sum_version(start_range, end_range, aggregate_column_index, 0);
 }
 
-/// @TODO Adopt to the change in RID
 unsigned long int Query::sum_version(const int& start_range, const int& end_range, const int& aggregate_column_index, const int& _relative_version) {
-    // Placeholder for sum_version logic
     const int relative_version = _relative_version * (-1);
     unsigned long int sum = 0;
     std::vector<int> rids = table->index->locate_range(start_range, end_range, table->key);
@@ -192,12 +186,7 @@ unsigned long int Query::sum_version(const int& start_range, const int& end_rang
     return sum;
 }
 
-/// @TODO Adopt to the change in RID
 bool Query::increment(const int& key, const int& column) {
-    // Placeholder for increment logic
-    // Use select to find the record, then update to increment the column
-    // Return true if successful, false otherwise
-
     std::vector<int> rids = table->index->locate(table->key, key); //find key in primary key column
     RID rid = table->page_directory.find(rids[0])->second;
     if (rids.size() == 0 || rid.id == 0) { // if none found or deleted
