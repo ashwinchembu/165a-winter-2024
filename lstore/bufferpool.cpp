@@ -287,19 +287,19 @@ void BufferPool::write_back(Frame* frame){
     + "_" + std::to_string(frame->first_rid_page_range)
     + "_" + frp_s
     + "_" + std::to_string(frame->column) + ".dat";
-  FILE* fp = fopen((data_path).c_str(),"w");
-  if (!fp) {
-    throw std::invalid_argument("Couldn't open file " + data_path);
-  }
-  fwrite(&(frame->page->num_rows), sizeof(int), 1, fp);
-  fwrite(frame->page->data, sizeof(int), frame->page->num_rows, fp);
-  fclose(fp);
-  if (frame != nullptr && frame->page != nullptr) {
-    delete frame->page;
-    // frame->page = nullptr;
-    // std::cout << frame << std::endl;
+    FILE* fp = fopen((data_path).c_str(),"w");
+    if (!fp) {
+      throw std::invalid_argument("Couldn't open file " + data_path);
+    }
+    fwrite(&(frame->page->num_rows), sizeof(int), 1, fp);
+    fwrite(frame->page->data, sizeof(int), frame->page->num_rows, fp);
+    fclose(fp);
+    if (frame != nullptr && frame->page != nullptr) {
+      // delete frame->page;
+      // frame->page = nullptr;
+      // std::cout << frame << std::endl;
 
-}
+    }
 }
 
 void BufferPool::write_back_all (){
