@@ -339,12 +339,9 @@ int Table::merge() {
 
 	std::cout << "entered merge" << std::endl;
 	std::vector<Frame*> to_merge = merge_queue.front();
-	std::cout << "Error 1" << std::endl;
 	merge_queue.pop();
-	std::cout << "Error 2" << std::endl;
 
 	auto pool_size = to_merge.size()*2; // change to actual - temp
-	std::cout << "Error 3" << std::endl;
 	BufferPool* mergeBufferPool = new BufferPool(pool_size);
 	std::cout << "Error 4" << std::endl;
 	mergeBufferPool->set_path("./ECS165/Merge");
@@ -352,17 +349,20 @@ int Table::merge() {
 	if(stat(mergeBufferPool->path.c_str(),&checkDir)!=0 || !S_ISDIR(checkDir.st_mode)){
 		mkdir(mergeBufferPool->path.c_str(),0777);
 	}
+	std::cout << "Error 3" << std::endl;
 
 	for (int i = 0; i < to_merge.size(); i++) {
 		RID new_rid(i, to_merge[i]->first_rid_page_range, to_merge[i]->first_rid_page, 0,	name);
 		 Frame* frame = mergeBufferPool->insert_into_frame(new_rid, to_merge[i]->column, to_merge[i]->page);
 		frame->dirty = true;
 	}
+	std::cout << "Error 2" << std::endl;
 
 	int TPS = 0;
     Frame* first_frame = to_merge[0];
     RID last_tail_rid(0, first_frame->first_rid_page_range, first_frame->first_rid_page, 0 ,name);
     int latest_tail_id = mergeBufferPool->get(last_tail_rid, TPS);
+		std::cout << "Error 1" << std::endl;
 
 	std::map<int, std::pair<int, std::vector<int>>> latest_update; //<latest base RID: <tailRID, values>>
 	std::set<int> visited_rids;
