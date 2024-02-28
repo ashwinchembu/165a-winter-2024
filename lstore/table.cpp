@@ -173,11 +173,13 @@ Table::Table(const std::string& name, const int& num_columns, const int& key): n
 };
 
 Table::~Table() {
+	std::cout << "Table destructor In" << std::endl;
 	for (size_t i = 0; i <page_range.size(); i++) {
 		if (page_range[i].unique()) {
 			page_range[i].reset();
 		}
 	}
+	std::cout << "Table destructor Out" << std::endl;
 }
 
 /***

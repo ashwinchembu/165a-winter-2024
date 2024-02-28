@@ -206,15 +206,12 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
  */
 int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, const std::map<int, RID>& page_directory) {
     // Get the latest update of the record. Accessing the indirection column.
-    std::cout << "In0" << std::endl;
     buffer_pool.pin(rid, INDIRECTION_COLUMN);
     std::cout << "In1" << std::endl;
     RID latest_rid = page_directory.find(buffer_pool.get(rid, INDIRECTION_COLUMN))->second;
     std::cout << "In2" << std::endl;
     buffer_pool.set(rid, INDIRECTION_COLUMN, rid_new.id, false);
-    std::cout << "In3" << std::endl;
     buffer_pool.unpin(rid, INDIRECTION_COLUMN);
-    std::cout << "In4" << std::endl;
     // Create new tail pages if there are no space left or tail page does not exist.
     int schema_encoding = 0;
     // If tail_last and base_last is equal, that means there are no tail page created.
