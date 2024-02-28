@@ -346,17 +346,10 @@ int Table::merge() {
 	mergeBufferPool->set_path("./ECS165/Merge");
 
 	for (int i = 0; i < to_merge.size(); i++) {
-		RID new_rid(i,
-			to_merge[i]->first_rid_page_range,
-			to_merge[i]->first_rid_page,
-			0,
-			name
-		);
+		RID new_rid(i, to_merge[i]->first_rid_page_range, to_merge[i]->first_rid_page, 0,	name);
 		 Frame* frame = mergeBufferPool->insert_into_frame(new_rid, to_merge[i]->column, to_merge[i]->page);
 		frame->dirty = true;
 	}
-
-//	*(mergeBufferPool->head) = *(to_merge[0]);
 
 	int TPS = 0;
 	Frame* first_frame = to_merge[0];
