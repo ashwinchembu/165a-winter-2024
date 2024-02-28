@@ -351,6 +351,9 @@ int Table::merge() {
 //   }
 
 	*(mergeBufferPool->head) = *(to_merge[0]);
+	mergeBufferPool->head->dirty = true;
+	mergeBufferPool->head->valid = true;
+
 	for (int i = 1; i < to_merge.size(); i++) {
 		//for(int j = 0; j < num_columns; )
 		RID new_rid(i,
@@ -365,7 +368,7 @@ int Table::merge() {
 		std::cout << "put into frame" << frame->first_rid_page << std::endl;
 	//	std::cout << "value in page" << *(to_merge[i]->page->data) << std::endl;
 
-		
+
 		frame->dirty = true;
 	}
 	//set last frame

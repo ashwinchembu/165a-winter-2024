@@ -316,3 +316,15 @@ Frame::~Frame () {}
 bool Frame::operator==(const Frame& rhs) {
   return ((first_rid_page_range == rhs.first_rid_page_range) && (first_rid_page == rhs.first_rid_page) && (column == rhs.column));
 }
+
+void Frame::operator=(const Frame& rhs)
+    {
+      page = rhs.page;
+      first_rid_page = rhs.first_rid_page; //first rid in the page
+      table_name = rhs.table_name;
+      first_rid_page_range = rhs.first_rid_page_range; //first rid in the page range
+      column = rhs.column;
+      valid = rhs.valid; //whether the frame contains data
+      pin = rhs.pin; //how many transactions have pinned the page
+      dirty = rhs.dirty; //whether the page was modified
+    }
