@@ -208,10 +208,7 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
     // Get the latest update of the record. Accessing the indirection column.
     buffer_pool.pin(rid, INDIRECTION_COLUMN);
     RID latest_rid;
-    std::cout << "/* message */" << buffer_pool.get(rid, INDIRECTION_COLUMN) << std::endl;
-    std::cout << "/* message */" << (page_directory.find(buffer_pool.get(rid, INDIRECTION_COLUMN))->second).id << std::endl;
     latest_rid = page_directory.find(buffer_pool.get(rid, INDIRECTION_COLUMN))->second;
-    std::cout << "In2" << std::endl;
     buffer_pool.set(rid, INDIRECTION_COLUMN, rid_new.id, false);
     buffer_pool.unpin(rid, INDIRECTION_COLUMN);
     // Create new tail pages if there are no space left or tail page does not exist.

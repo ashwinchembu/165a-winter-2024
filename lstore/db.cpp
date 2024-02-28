@@ -113,11 +113,9 @@ Database::Database() {
 }
 
 Database::~Database() {
-	std::cout << "DB destructor" << '\n';
 }
 
 void Database::open(const std::string& path) {
-	std::cout << "DB opened with " << path << '\n';
 //	// path is relative to parent directory of this file
 	file_path = path;
 
@@ -156,13 +154,16 @@ void Database::read(const std::string& path){
 	}
 	fseek(fp, 0, SEEK_SET);
 	int numTables;
-	size_t e = fread(&numTables,sizeof(int),1,fp);
+	int e = fread(&numTables,sizeof(int),1,fp);
 	char nameBuffer[128];
 	for(int i = 0;i < numTables;i++){
 		e = fread(&nameBuffer,128,1,fp);
 		Table* t = new Table();
 		t->read(fp);
 		tables.insert({{nameBuffer},t});
+	}
+	if (e != 1+numTables) {
+		std::cout << "error" << '\n';
 	}
 	fclose(fp);
 	return;
