@@ -52,18 +52,25 @@ int BufferPool::hash_fun(unsigned int x) {
 
 int BufferPool::get (const RID& rid, const int& column) {
   Frame* found = search(rid, column);
+  std::cout << "Error 1" << std::endl;
   if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
+    std::cout << "Error 2" << std::endl;
     //std::cout << "Couldn't find it :(" << std::endl;
     Frame* current_frame = head;
+    std::cout << "Error 3" << std::endl;
     while(current_frame != nullptr){ //iterate through entire bufferpool
     // if(current_frame->page != nullptr){
     //   std::cout << "first rid page is " << current_frame->first_rid_page << " column is " << current_frame->column << std::endl;
     // }
+    std::cout << "Error 4" << std::endl;
     current_frame = current_frame->next;
   }
+  std::cout << "Error 5" << std::endl;
     found = load(rid, column);
+    std::cout << "Error 6" << std::endl;
   }
   update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
+  std::cout << "Error 7" << std::endl;
   //std::cout << "base is returning" << *(found->page->data + rid.offset) << std::endl;
   return *(found->page->data + rid.offset); //return the value we want
 }
