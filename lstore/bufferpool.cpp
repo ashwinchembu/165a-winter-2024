@@ -301,7 +301,7 @@ void BufferPool::write_back(Frame* frame){
   if(frame->page != nullptr && frame->page){
     //std::cout << "null" << std::endl;
     std::cout << "1.5" << std::endl;
-    delete frame->page;
+  //  delete frame->page;
     std::cout << "1.6" << std::endl;
   }
 }
@@ -319,7 +319,7 @@ void BufferPool::write_back_all (){
       current_frame->valid = false;
       if(current_frame->page != nullptr){
         std::cout << "three" << std::endl;
-        delete current_frame->page;
+      //  delete current_frame->page;
       }
     }
     current_frame = current_frame->next;
