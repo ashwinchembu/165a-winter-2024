@@ -246,7 +246,7 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 		for (int i = deep_copy->pages.size() - 1; i > 0; i--) {
 			RID rid = deep_copy->pages[i];
 			// load all of the pages in pagerange into bufferpool
-			for (int to_load_tail_page_col = 0; to_load_tail_page_col < num_columns; to_load_tail_page_col++){
+			for (int to_load_tail_page_col = 0; to_load_tail_page_col < num_columns + NUM_METADATA_COLUMNS; to_load_tail_page_col++){
 				Frame* new_frame = buffer_pool.get_page(rid, to_load_tail_page_col);
 				insert_to_queue.push_back(new_frame);
 			}
@@ -398,14 +398,18 @@ int Table::merge() {
 						to_merge[i]->first_rid_page_range, to_merge[i]->first_rid_page, tail_iterator, name);
 
 					int baseRID = mergeBufferPool->get(currentRID, BASE_RID_COLUMN);
+					std::cout << "baseRID: " << baseRID <<" currentRID:" << currentRID.id << std::endl;
 					if (latest_update.find(baseRID) == latest_update.end()){
 						if (latest_update[baseRID].first > currentRID.id){
 							latest_update[baseRID].first = currentRID.id;
 							std::vector<int> merge_vals;
-							for (int j = 0; j < num_columns; j++) { //indirection place stuff
+							for (int j = 0; j < num_columns + NUM_METADATA_COLUMNS; j++) { //indirection place stuff
 								int value = mergeBufferPool->get(currentRID, j);
+								std::cout << ":)" << std::endl;
 								merge_vals.push_back(value);
+								std::cout << "lkajdflkasjdfkljaskl" << std::endl;
 							}
+							std::cout << ":(" << std::endl;
 							latest_update[baseRID].second = merge_vals;
 							//std::cout << latest_update.size() << std::endl;
 						}
@@ -417,18 +421,19 @@ int Table::merge() {
 			}
 		}
 	}
-	//std::cout << "kdljflkadklfdsjfkjds " << latest_update.size() << std::endl;
+	std::cout << "kdljflkadklfdsjfkjds " << latest_update.size() << std::endl;
 	for (const auto& pair : latest_update) {
-		std::cout << "kdljflkadklfdsjfkjds " << pair.first << std::endl;
+		if (pair.first == 0) {
+			continue;
+		}
 		RID latest_base_rid = page_directory.find(pair.first)->second;
-		std::cout << "kdljflkadklfdsjfkjds" << std::endl;
 		const std::vector<int>& values = pair.second.second;
-		std::cout << "kdljflkadklfdsjfkjds" << std::endl;
+		std::cout << "kdljflkadklfdsjfkjds " << latest_update.size() << std::endl;
 
-		for (int col = 0; col < num_columns; col++){
+		for (int col = 0; col < num_columns + NUM_METADATA_COLUMNS; col++){
 			//mergeBufferPool->set (latest_base_rid, col, values[col], false);
-			//std::cout << "setting value to 0" << std::endl;
-			mergeBufferPool->set (latest_base_rid, col, 0, false);
+			std::cout << "setting value to 0" << std::endl;
+			mergeBufferPool->set(latest_base_rid, col, 0, false);
 		}
 		// mergeBufferPool->set (latest_base_rid, TPS, tail_rid_last, false);
 	}
