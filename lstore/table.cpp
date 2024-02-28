@@ -336,6 +336,7 @@ int Table::merge() {
 	page directory is updated to point to the new pages
 
 	*/
+
 	std::cout << "entered merge" << std::endl;
 	std::vector<Frame*> to_merge = merge_queue.front();
 
@@ -381,7 +382,6 @@ int Table::merge() {
 
 
 	//set last frame
-//	*(mergeBufferPool->tail) = *(to_merge[to_merge.size() - 1]);
 	Frame* current_frame2 = mergeBufferPool->head;
 	int sum = 0;
 	while(current_frame2 != nullptr){ //iterate through entire bufferpool
@@ -391,6 +391,10 @@ int Table::merge() {
 	current_frame2 = current_frame2->next;
 }
 std::cout << "bufferpool num is " << sum << std::endl;
+
+	int TPS = 0;
+	Frame* first_frame = to_merge[0];
+	int latest_tail_id = mergeBufferPool->get(first_frame->first_rid_page, TPS);
 
 	std::map<int, std::pair<int, std::vector<int>>> latest_update; //<latest base RID: <tailRID, values>>
 	std::set<int> visited_rids;
@@ -424,6 +428,14 @@ std::cout << "bufferpool num is " << sum << std::endl;
 				for (int tail_iterator = (currentPage.num_rows-1)*sizeof(int); tail_iterator >= 0; tail_iterator -= sizeof(int) ){
 					RID currentRID(*(tail_iterator + currentPage.data),
 						to_merge[i]->first_rid_page_range, to_merge[i]->first_rid_page, tail_iterator, name);
+
+					if (currentRID.id > latest_tail_id) {
+						continue;
+					}
+
+					if (currentRID.id < TPS) {
+						TPS = currentRID.id;
+					}
 
 					int baseRID = mergeBufferPool->get(currentRID, BASE_RID_COLUMN);
 					if (latest_update.find(baseRID) == latest_update.end()){
