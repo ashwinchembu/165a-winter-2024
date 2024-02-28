@@ -350,15 +350,7 @@ int Table::merge() {
 // 		cur_frame = cur_frame->next;
 //   }
 
-	Frame* current_frame = mergeBufferPool->head;
-	for (int i = 0; i < to_merge.size(); i++) { //iterate through entire bufferpool
-		*(current_frame) = *(to_merge[i]);
-		current_frame->dirty = true;
-		current_frame->valid = true;
-	current_frame = current_frame->next;
-	}
-//	std::cout << "size of to merge: " << to_merge.size() << std::endl;
-/*
+	*(mergeBufferPool->head) = *(to_merge[0]);
 	for (int i = 1; i < to_merge.size(); i++) {
 		//for(int j = 0; j < num_columns; )
 		RID new_rid(i,
@@ -374,22 +366,20 @@ int Table::merge() {
 	//	std::cout << "value in page" << *(to_merge[i]->page->data) << std::endl;
 
 		frame->dirty = true;
-	}*/
+	}
 	//set last frame
 	//*(mergeBufferPool->tail) = *(to_merge[to_merge.size() - 1]);
 
 
 	//set last frame
 //	*(mergeBufferPool->tail) = *(to_merge[to_merge.size() - 1]);
-	Frame* current_frame2 = mergeBufferPool->head;
-	int sum = 0;
-	while(current_frame2 != nullptr){ //iterate through entire bufferpool
-	if(current_frame2->page != nullptr){
-		sum++;
+	Frame* current_frame = mergeBufferPool->head;
+	while(current_frame != nullptr){ //iterate through entire bufferpool
+	if(current_frame->page != nullptr){
+		std::cout << "first rid page is " << current_frame->first_rid_page << std::endl;
 	}
-	current_frame2 = current_frame2->next;
+	current_frame = current_frame->next;
 }
-std::cout << "bufferpool num is " << sum << std::endl;
 
 	std::map<int, std::pair<int, std::vector<int>>> latest_update; //<latest base RID: <tailRID, values>>
 	std::set<int> visited_rids;
