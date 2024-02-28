@@ -304,8 +304,8 @@ void BufferPool::write_back(Frame* frame){
   if (frame != nullptr && frame->page != nullptr) {
     std::cout << "1.5" << std::endl;
     delete frame->page;
-    frame->page = nullptr;
-    std::cout << frame << std::endl;
+    // frame->page = nullptr;
+    // std::cout << frame << std::endl;
 
 }
 }

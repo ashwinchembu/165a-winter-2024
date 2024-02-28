@@ -430,11 +430,11 @@ int Table::merge() {
 		if (pair.first == 0) {
 			continue;
 		}
-		std::cout << "kdljflkadklfdsjfkjds " << pair.first << std::endl;
+		// std::cout << "kdljflkadklfdsjfkjds " << pair.first << std::endl;
 		RID latest_base_rid = page_directory.find(pair.first)->second;
-		std::cout << "kdljflkadklfdsjfkjds" << std::endl;
+		// std::cout << "kdljflkadklfdsjfkjds" << std::endl;
 		const std::vector<int>& values = pair.second.second;
-		std::cout << "kdljflkadklfdsjfkjds" << std::endl;
+		// std::cout << "kdljflkadklfdsjfkjds" << std::endl;
 
 		int tail_id = latest_update.at(pair.first).first;
 		mergeBufferPool->set (latest_base_rid, INDIRECTION_COLUMN, tail_id, false);
