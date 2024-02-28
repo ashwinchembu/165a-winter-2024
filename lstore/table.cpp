@@ -221,6 +221,7 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
     num_update++;
 	if (num_update >= MAX_TABLE_UPDATES){
 		merge();
+		std::cout << "Merge out" << std::endl;
 	}
 	const int rid_id = num_update * -1;
 	size_t i = 0;
@@ -446,7 +447,7 @@ int Table::merge() {
 
 	 mergeBufferPool->write_back_all();
 
-	// delete mergeBufferPool;
+	delete mergeBufferPool;
 	for (size_t i = 0; i < to_merge.size(); i++) {
 		delete to_merge[i];
 	}
