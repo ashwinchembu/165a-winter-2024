@@ -372,7 +372,7 @@ int Table::merge() {
 			0,
 			name
 		);
-		// Frame* frame = mergeBufferPool->insert_into_frame(new_rid, to_merge[i]->column, to_merge[i]->page);
+		 Frame* frame = mergeBufferPool->insert_into_frame(new_rid, to_merge[i]->column, to_merge[i]->page);
 	//	std::cout << "Merge size: " << to_merge.size() << " RID: " << new_rid.id << " " << to_merge[i]->first_rid_page << " frame: " << frame->first_rid_page << std::endl;
 
 		std::cout << "put into frame" << frame->first_rid_page << std::endl;
