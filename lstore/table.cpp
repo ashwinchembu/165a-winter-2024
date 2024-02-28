@@ -365,7 +365,7 @@ std::cout << "to_merge_size is " << to_merge.size() << std::endl;
 		);
 		 Frame* frame = mergeBufferPool->insert_into_frame(new_rid, to_merge[i]->column, to_merge[i]->page);
 		frame->dirty = true;
-		mergeBufferPool->update_ages(frame, mergeBufferPool->hash_vector[mergeBufferPool->hash_fun(new_rid.first_rid_page)]);
+		//mergeBufferPool->update_ages(frame, mergeBufferPool->hash_vector[mergeBufferPool->hash_fun(new_rid.first_rid_page)]);
 	}
 
 	Frame* current_frame = mergeBufferPool->head;

@@ -227,10 +227,10 @@ Frame* BufferPool::evict(const RID& rid){ //return the frame that was evicted
   while(true){ //search until a page with no pins is found
     if(current_frame->pin == 0){ //if not pinned, we can evict
       if(current_frame->dirty && current_frame->valid){ //if dirty and valid write back to disk
-        if(path == "./ECS165/Merge"){
-          std::cout << "evict from merge " << current_frame->first_rid_page << " " << current_frame->column << std::endl;
-        }
         write_back(current_frame);
+      }
+      if(path == "./ECS165/Merge"){
+        std::cout << "evict from merge " << current_frame->first_rid_page << " " << current_frame->column << std::endl;
       }
       frame_directory[hash]--;
       current_frame->valid = false; //frame is now empty
