@@ -455,6 +455,9 @@ int Table::merge() {
     return -1;
 }
 
+/*
+ * checks if a rid is referenced by another rid over a column.
+ */
 bool Table::ridIsJoined(RID rid, int col){
 	if(referencesOut.find(col)!=referencesOut.end()){
 		return false;
@@ -471,6 +474,10 @@ bool Table::ridIsJoined(RID rid, int col){
 	return false;
 }
 
+/*
+ * Returns the relationship between the argument rid
+ * and another rid over a column.
+ */
 RIDJoin Table::getJoin(RID rid, int col){
 	std::vector<RIDJoin> joins = referencesOut.find(col)->second;
 
