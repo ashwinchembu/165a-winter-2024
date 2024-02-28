@@ -414,12 +414,16 @@ std::cout << "to_merge_size is " << to_merge.size() << std::endl;
 						to_merge[i]->first_rid_page_range, to_merge[i]->first_rid_page, tail_iterator, name);
 
 					int baseRID = mergeBufferPool->get(currentRID, BASE_RID_COLUMN);
+					std::cout << "1 The head is " << mergeBufferPool->head << std::endl;
+					std::cout << "1 range begin is " << mergeBufferPool->hash_vector[0] << std::endl;
 					if (latest_update.find(baseRID) == latest_update.end()){
 						if (latest_update[baseRID].first > currentRID.id){
 							latest_update[baseRID].first = currentRID.id;
 							std::vector<int> merge_vals;
 							for (int j = 0; j < num_columns; j++) { //indirection place stuff
 								int value = mergeBufferPool->get(currentRID, j);
+								std::cout << "2The head is " << mergeBufferPool->head << std::endl;
+								std::cout << "2range begin is " << mergeBufferPool->hash_vector[0] << std::endl;
 								merge_vals.push_back(value);
 							}
 							latest_update[baseRID].second = merge_vals;
