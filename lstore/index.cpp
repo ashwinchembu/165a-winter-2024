@@ -159,7 +159,6 @@ std::vector<int> Index::locate_range(const int& begin, const int& end, const int
 /// @TODO Adopt to the change in RID
 void Index::create_index(const int& column_number) {
     std::unordered_multimap<int, int> index;
-		std::cout << "size of page directory is " << table->page_directory.size() << std::endl;
     for (int i = 1; i <= table->num_insert; i++) {
         auto loc = table->page_directory.find(i); // Find RID for every rows
         if (loc != table->page_directory.end()) { // if RID ID exist ie. not deleted
@@ -169,13 +168,11 @@ void Index::create_index(const int& column_number) {
             int indirection_num = buffer_pool.get(rid, INDIRECTION_COLUMN);
 
             if ((buffer_pool.get(rid, SCHEMA_ENCODING_COLUMN) >> (column_number - 1)) & (0b1)) { // If the column of the record at loc is updated
-								std::cout << "This should print" << std::endl;
 								RID update_rid = table->page_directory.find(indirection_num)->second;
                 value = buffer_pool.get(update_rid, column_number + NUM_METADATA_COLUMNS);
             } else {
                 value = buffer_pool.get(rid, column_number + NUM_METADATA_COLUMNS);
             }
-						std::cout << "Insert into index rid " << rid.id << " and value " << value << std::endl;
             index.insert({value, rid.id});
         }
     }
