@@ -64,9 +64,8 @@ int BufferPool::get (const RID& rid, const int& column) {
     found = load(rid, column);
   }
   std::cout << "Update ages" << std::endl;
-  std::cout << "found first rid" << found->first_rid_page;
   update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
-  std::cout << "base is returning" << *(found->page->data + rid.offset) << std::endl;
+  std::cout << "page data" << found->page->num_rows << '\n';
   return *(found->page->data + rid.offset); //return the value we want
 }
 
@@ -155,42 +154,24 @@ Frame* BufferPool::search(const RID& rid, const int& column, std::string merge){
 }*/
 
 void BufferPool::update_ages(Frame*& just_accessed, Frame*& range_begin){ //change ages and reorder linked list
-  std::cout << "Error 1" << std::endl;
-  std::cout << just_accessed << std::endl;
-  std::cout << range_begin << std::endl;
   if(just_accessed != range_begin){ //if not already the range beginning / most recently accessed
-    std::cout << "Error 2" << std::endl;
     if(just_accessed->next == nullptr ){ //if just_accessed is the tail
-      std::cout << "Error 3" << std::endl;
       tail = just_accessed->prev;
-      std::cout << "Error 4" << std::endl;
     } else if (range_begin->prev == nullptr) { //if range_begin is the head
-      std::cout << "Error 5" << std::endl;
       head = just_accessed;
-      std::cout << "Error 6" << std::endl;
     }
-    std::cout << "Error 7" << std::endl;
 
     just_accessed->prev->next = just_accessed->next; //close gap where just_accessed used to be
-    std::cout << "Error 8" << std::endl;
     if(just_accessed->next != nullptr){ //if just accessed was not tail
-      std::cout << "Error 9" << std::endl;
       just_accessed->next->prev = just_accessed->prev;
-      std::cout << "Error 10" << std::endl;
     }
     just_accessed->prev = range_begin->prev; //just_accessed becomes the new range beginning
-    std::cout << "Error 11" << std::endl;
     just_accessed->next = range_begin;
-    std::cout << "Error 12" << std::endl;
     if (range_begin->prev != nullptr) {
-      std::cout << "Error 13" << std::endl;
       range_begin->prev->next = just_accessed;
-      std::cout << "Error 14" << std::endl;
     }
     range_begin->prev = just_accessed;
-    std::cout << "Error 15" << std::endl;
     range_begin = just_accessed;
-    std::cout << "Error 16" << std::endl;
   }
   return;
 }
