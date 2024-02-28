@@ -274,37 +274,50 @@ Frame* BufferPool::evict(const RID& rid){ //return the frame that was evicted
 }
 
 void BufferPool::write_back(Frame* frame){
+  std::cout << "1.1" << std::endl;
+  if (frame->page != nullptr){
+      std::cout << "yo" << std::endl;
+  }
   int frp = frame->first_rid_page;
   std::string frp_s = std::to_string(frame->first_rid_page);
   if (frp < 0) {
     frp_s = "M" + std::to_string(-1 * (frp));
   }
+  std::cout << "1.2" << std::endl;
   std::string data_path = path + "/" + frame->table_name
     + "_" + std::to_string(frame->first_rid_page_range)
     + "_" + frp_s
     + "_" + std::to_string(frame->column) + ".dat";
   FILE* fp = fopen((data_path).c_str(),"w");
+  std::cout << "1.3" << std::endl;
   if (!fp) {
     throw std::invalid_argument("Couldn't open file " + data_path);
   }
   fwrite(&(frame->page->num_rows), sizeof(int), 1, fp);
   fwrite(frame->page->data, sizeof(int), frame->page->num_rows, fp);
   fclose(fp);
-
-  if(frame->page != nullptr){
+  std::cout << "1.4" << std::endl;
+  if(frame->page != nullptr && frame->page){
     //std::cout << "null" << std::endl;
+    std::cout << "1.5" << std::endl;
     delete frame->page;
+    std::cout << "1.6" << std::endl;
   }
 }
 
 void BufferPool::write_back_all (){
   Frame* current_frame = head;
+  std::cout << current_frame << std::endl;
   while(current_frame != nullptr){ //iterate through entire bufferpool
-    if(current_frame->dirty && current_frame->valid){
+    if(current_frame != nullptr || (current_frame->dirty && current_frame->valid)){
+      std::cout << "one" << std::endl;
       write_back(current_frame);
+      std::cout << "done" << std::endl;
     } else {
+      std::cout << "two" << std::endl;
       current_frame->valid = false;
       if(current_frame->page != nullptr){
+        std::cout << "three" << std::endl;
         delete current_frame->page;
       }
     }
