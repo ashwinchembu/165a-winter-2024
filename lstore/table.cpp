@@ -359,12 +359,10 @@ int Table::merge() {
     Frame* first_frame = to_merge[0];
     RID last_tail_rid(0, first_frame->first_rid_page_range, first_frame->first_rid_page, 0 ,name);
     int latest_tail_id = mergeBufferPool->get(last_tail_rid, TPS);
-		std::cout << "Error 1" << std::endl;
 
 	std::map<int, std::pair<int, std::vector<int>>> latest_update; //<latest base RID: <tailRID, values>>
 	std::set<int> visited_rids;
 
-	std::cout << "Error 2" << std::endl;
 //	int tail_rid_last = 0;
 	//load copy of all base pages in each page range
 	for (int i = to_merge.size() - 1; i >= 0; i--) {
@@ -424,8 +422,8 @@ int Table::merge() {
 		}
 	}
 	//std::cout << "kdljflkadklfdsjfkjds " << latest_update.size() << std::endl;
-	std::cout << "Error 3" << std::endl;
 	for (const auto& pair : latest_update) {
+		std::cout << "Error 1" << '\n';
 		if (pair.first == 0) {
 			continue;
 		}
@@ -445,7 +443,9 @@ int Table::merge() {
 			//mergeBufferPool->set(latest_base_rid, col, 0, false);
 		}
 		// mergeBufferPool->set (latest_base_rid, TPS, tail_rid_last, false);
+		std::cout << "Error 2" << '\n';
 	}
+	std::cout << "Error 3" << std::endl;
 
 	 mergeBufferPool->write_back_all();
 
