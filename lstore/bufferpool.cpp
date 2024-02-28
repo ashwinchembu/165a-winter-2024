@@ -52,6 +52,13 @@ int BufferPool::get (const RID& rid, const int& column) {
   Frame* found = search(rid, column);
   if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
     std::cout << "Couldn't find it :(" << std::endl;
+    Frame* current_frame = head;
+    while(current_frame != nullptr){ //iterate through entire bufferpool
+    if(current_frame->page != nullptr){
+      std::cout << "first rid page is " << current_frame->first_rid_page << " column is " << current_frame->column << std::endl;
+    }
+    current_frame = current_frame->next;
+  }
     found = load(rid, column);
   }
   update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
@@ -61,7 +68,6 @@ int BufferPool::get (const RID& rid, const int& column) {
 Frame* BufferPool::get_page(const RID& rid, const int& column){
   Frame* found = search(rid, column);
   if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
-    std::cout << "Couldn't find it :(" << std::endl;
     found = load(rid, column);
   }
   update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
