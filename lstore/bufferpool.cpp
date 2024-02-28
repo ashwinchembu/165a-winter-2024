@@ -304,7 +304,7 @@ void BufferPool::write_back_all (){
   Frame* current_frame = head;
 std::cout << "1 error" << std::endl;
   while(current_frame != nullptr){ //iterate through entire bufferpool
-    if(current_frame->dirty && current_frame->valid){
+    if(current_frame != nullptr || (current_frame->dirty && current_frame->valid)){
       std::cout << "2 error" << std::endl;
       write_back(current_frame);
       std::cout << "3 error" << std::endl;

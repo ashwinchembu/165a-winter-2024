@@ -349,7 +349,7 @@ int Table::merge() {
 	std::vector<Frame*> to_merge = merge_queue.front();
 
 	merge_queue.pop();
-	auto pool_size = to_merge.size(); // change to actual - temp
+	auto pool_size = to_merge.size() * 2; // change to actual - temp
 	BufferPool* mergeBufferPool = new BufferPool(pool_size);
 	mergeBufferPool->set_path("./ECS165/Merge");
 	struct stat checkDir;
@@ -459,11 +459,11 @@ int Table::merge() {
 			mergeBufferPool->set (latest_base_rid, col, values[col], false);
 			// std::cout <<"values col!!!" << values[col] << std::endl;
 			//mergeBufferPool->set(latest_base_rid, col, 0, false);
-			// std::cout << ":)" << std::endl;
 		}
 		// mergeBufferPool->set (latest_base_rid, TPS, tail_rid_last, false);
 	}
 
+	std::cout << ":)" << std::endl;
 	mergeBufferPool->write_back_all();
 	// delete mergeBufferPool;
 
