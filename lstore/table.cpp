@@ -233,11 +233,8 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 	new_rid.table_name = name;
 	new_rid.first_rid_page_range = rid.first_rid_page_range;
 
-	std::cout << "Error 0" << std::endl;
 	(page_range[i].get())->update(rid, new_rid, columns, page_directory);
-	std::cout << "Error 1" << std::endl;
 	page_range_update[i]++;
-	std::cout << "Error 2" << std::endl;
 	if (page_range_update[i] >= MAX_PAGE_RANGE_UPDATES){
 		// Make a deep copy of page_range[i]
 		std::shared_ptr<PageRange> deep_copy = std::make_shared<PageRange>(*(page_range[i].get()));
