@@ -350,7 +350,7 @@ int Table::merge() {
 //   }
 	for (int i = 0; i < to_merge.size(); i++) {
 		//for(int j = 0; j < num_columns; )
-		RID new_rid(i, 
+		RID new_rid(i,
 			to_merge[i]->first_rid_page_range,
 			to_merge[i]->first_rid_page,
 			0,
@@ -364,7 +364,7 @@ int Table::merge() {
 
 	std::map<int, std::pair<int, std::vector<int>>> latest_update; //<latest base RID: <tailRID, values>>
 	std::set<int> visited_rids;
-	
+
 //	int tail_rid_last = 0;
 	//load copy of all base pages in each page range
 	for (int i = to_merge.size() - 1; i >= 0; i--) {
@@ -425,9 +425,9 @@ int Table::merge() {
 		}
 		// mergeBufferPool->set (latest_base_rid, TPS, tail_rid_last, false);
 	}
-		
+
 	mergeBufferPool->write_back_all();
-	delete mergeBufferPool;
+	//delete mergeBufferPool;
 
     return -1;
 }
