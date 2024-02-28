@@ -55,7 +55,7 @@ all: $(LIBRARY) #pre-build
 
 $(LIBRARY): $(SRC) $(DEPS)
 	mkdir -p $(OUTDIR)
-	$(CC) $(CFLAGS) $(INC) -o $(LIBRARY) $(SRC)
+	$(CC) $(CFLAGS) $(INC) -o $(LIBRARY) $(SRC) $(OPTIMIZATION)
 
 profiling: $(SRC) $(DEPS)
 	mkdir -p $(OUTDIR)
