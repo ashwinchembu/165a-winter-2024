@@ -113,18 +113,10 @@ Database::Database() {
 }
 
 Database::~Database() {
-	// Causing seg fault
-	// buffer_pool.~BufferPool();
-	// for(auto& t : tables){
-	// 	delete t.second.index;
-	// }
-	// std::cout << "Database destructor" << std::endl;
 }
 
 void Database::open(const std::string& path) {
 //	// path is relative to parent directory of this file
-//	std::cout<<"call87";
-//	BufferPool buffer_pool(BUFFER_POOL_SIZE);
 	file_path = path;
 
 	buffer_pool.set_path(file_path);
