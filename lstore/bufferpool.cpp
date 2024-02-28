@@ -295,22 +295,24 @@ void BufferPool::write_back(Frame* frame){
     throw std::invalid_argument("Couldn't open file " + data_path);
   }
   fwrite(&(frame->page->num_rows), sizeof(int), 1, fp);
+  std::cout << "1.35" << std::endl;
   fwrite(frame->page->data, sizeof(int), frame->page->num_rows, fp);
   fclose(fp);
   std::cout << "1.4" << std::endl;
-  if(frame->page != nullptr && frame->page){
-    //std::cout << "null" << std::endl;
+  if (frame != nullptr && frame->page != nullptr) {
     std::cout << "1.5" << std::endl;
     delete frame->page;
-    std::cout << "1.6" << std::endl;
-  }
+    frame->page = nullptr;
+    std::cout << frame << std::endl;
+
+}
 }
 
 void BufferPool::write_back_all (){
   Frame* current_frame = head;
   std::cout << current_frame << std::endl;
   while(current_frame != nullptr){ //iterate through entire bufferpool
-    if(current_frame != nullptr || (current_frame->dirty && current_frame->valid)){
+    if(current_frame != nullptr && current_frame->dirty && current_frame->valid){
       std::cout << "one" << std::endl;
       write_back(current_frame);
       std::cout << "done" << std::endl;
@@ -320,6 +322,8 @@ void BufferPool::write_back_all (){
       if(current_frame->page != nullptr){
         std::cout << "three" << std::endl;
         delete current_frame->page;
+        //current_frame->page = nullptr;
+
       }
     }
     current_frame = current_frame->next;
