@@ -370,8 +370,6 @@ int Table::merge() {
 	for (int i = to_merge.size() - 1; i >= 0; i--) {
 		Frame* currentFrame = to_merge[i];
 		RID page_rid = page_directory.find(currentFrame->first_rid_page)->second;
-		
-		//std::cout << page_rid << std::endl;
 
 		//determine that we dont visit same logical set twice
 		auto pos = visited_rids.find(page_rid.id);
@@ -389,23 +387,18 @@ int Table::merge() {
 			// 	continue;
 			// }
 
-			//std::cout << "is tail page" << std::endl;
-			//std::cout << "--------got to here" << std::endl;
 			if (currentFrame->page){
 				//valid page
 				currentFrame = mergeBufferPool->search(page_rid, RID_COLUMN);
-				std::cout << "--------search done" << currentFrame->first_rid_page_range << std::endl;
 				Page currentPage = *(currentFrame->page);
 				for (int tail_iterator = (currentPage.num_rows-1)*sizeof(int); tail_iterator >= 0; tail_iterator -= sizeof(int) ){
-					int currentRID = *(tail_iterator + currentPage.data);
-					std::cout << "--------got to here" << std::endl;
+					RID currentRID(*(tail_iterator + currentPage.data),
+						to_merge[i]->first_rid_page_range, to_merge[i]->first_rid_page, tail_iterator, name);
+
 					int baseRID = mergeBufferPool->get(currentRID, BASE_RID_COLUMN);
-					std::cout << "--------got to here" << std::endl;
 					if (latest_update.find(baseRID) != latest_update.end()){
-						std::cout << "--------got to here" << std::endl;
-						if (latest_update[baseRID].first > currentRID){
-							std::cout << "--------got to here" << std::endl;
-							latest_update[baseRID].first = currentRID;
+						if (latest_update[baseRID].first > currentRID.id){
+							latest_update[baseRID].first = currentRID.id;
 							std::vector<int> merge_vals;
 							for (int j = 0; j < num_columns; j++) { //indirection place stuff
 								int value = mergeBufferPool->get(currentRID, j);
@@ -426,9 +419,9 @@ int Table::merge() {
 		const std::vector<int>& values = pair.second.second;
 
 		for (int col = 0; col < num_columns; col++){
-			mergeBufferPool->set (latest_base_rid, col, values[col], false);
+			//mergeBufferPool->set (latest_base_rid, col, values[col], false);
 			//std::cout << "setting value to 0" << std::endl;
-			// mergeBufferPool->set (latest_base_rid, col, 0, false);
+			mergeBufferPool->set (latest_base_rid, col, 0, false);
 		}
 		// mergeBufferPool->set (latest_base_rid, TPS, tail_rid_last, false);
 	}
