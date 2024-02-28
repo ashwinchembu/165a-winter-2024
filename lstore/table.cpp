@@ -336,6 +336,7 @@ int Table::merge() {
 	page directory is updated to point to the new pages
 
 	*/
+
 	std::cout << "entered merge" << std::endl;
 	std::vector<Frame*> to_merge = merge_queue.front();
 
@@ -350,11 +351,15 @@ int Table::merge() {
 // 		cur_frame = cur_frame->next;
 //   }
 
-	*(mergeBufferPool->head) = *(to_merge[0]);
-	mergeBufferPool->head->dirty = true;
-	mergeBufferPool->head->valid = true;
-
-std::cout << "to_merge_size is " << to_merge.size() << std::endl;
+	Frame* current_frame = mergeBufferPool->head;
+	for (int i = 0; i < to_merge.size(); i++) { //iterate through entire bufferpool
+		*(current_frame) = *(to_merge[i]);
+		current_frame->dirty = true;
+		current_frame->valid = true;
+	current_frame = current_frame->next;
+	}
+//	std::cout << "size of to merge: " << to_merge.size() << std::endl;
+/*
 	for (int i = 1; i < to_merge.size(); i++) {
 		//for(int j = 0; j < num_columns; )
 		RID new_rid(i,
@@ -364,19 +369,32 @@ std::cout << "to_merge_size is " << to_merge.size() << std::endl;
 			name
 		);
 		 Frame* frame = mergeBufferPool->insert_into_frame(new_rid, to_merge[i]->column, to_merge[i]->page);
-		frame->dirty = true;
-		//mergeBufferPool->update_ages(frame, mergeBufferPool->hash_vector[mergeBufferPool->hash_fun(new_rid.first_rid_page)]);
-	}
+	//	std::cout << "Merge size: " << to_merge.size() << " RID: " << new_rid.id << " " << to_merge[i]->first_rid_page << " frame: " << frame->first_rid_page << std::endl;
 
-	std::cout << "The head is " << mergeBufferPool->head << std::endl;
-	std::cout << "range begin is " << mergeBufferPool->hash_vector[0] << std::endl;
-	Frame* current_frame = mergeBufferPool->head;
-	while(current_frame != nullptr){ //iterate through entire bufferpool
-	if(current_frame->page != nullptr){
-		std::cout << "first rid page is " << current_frame->first_rid_page << " column is " << current_frame->column << std::endl;
+		std::cout << "put into frame" << frame->first_rid_page << std::endl;
+	//	std::cout << "value in page" << *(to_merge[i]->page->data) << std::endl;
+
+		
+		frame->dirty = true;
+	}*/
+	//set last frame
+	//*(mergeBufferPool->tail) = *(to_merge[to_merge.size() - 1]);
+
+
+	//set last frame
+	Frame* current_frame2 = mergeBufferPool->head;
+	int sum = 0;
+	while(current_frame2 != nullptr){ //iterate through entire bufferpool
+	if(current_frame2->page != nullptr){
+		sum++;
 	}
-	current_frame = current_frame->next;
+	current_frame2 = current_frame2->next;
 }
+std::cout << "bufferpool num is " << sum << std::endl;
+
+	int TPS = 0;
+	Frame* first_frame = to_merge[0];
+	int latest_tail_id = mergeBufferPool->get(first_frame->first_rid_page, TPS);
 
 	std::map<int, std::pair<int, std::vector<int>>> latest_update; //<latest base RID: <tailRID, values>>
 	std::set<int> visited_rids;
@@ -406,28 +424,26 @@ std::cout << "to_merge_size is " << to_merge.size() << std::endl;
 			if (currentFrame->page){
 				//valid page
 				currentFrame = mergeBufferPool->search(page_rid, RID_COLUMN);
-				std::cout << "0 The head is " << mergeBufferPool->head << std::endl;
-				std::cout << "0 range begin is " << mergeBufferPool->hash_vector[0] << std::endl;
 				Page currentPage = *(currentFrame->page);
 				for (int tail_iterator = (currentPage.num_rows-1)*sizeof(int); tail_iterator >= 0; tail_iterator -= sizeof(int) ){
 					RID currentRID(*(tail_iterator + currentPage.data),
 						to_merge[i]->first_rid_page_range, to_merge[i]->first_rid_page, tail_iterator, name);
 
+					if (currentRID.id > latest_tail_id) {
+						continue;
+					}
+
+					if (currentRID.id < TPS) {
+						TPS = currentRID.id;
+					}
+
 					int baseRID = mergeBufferPool->get(currentRID, BASE_RID_COLUMN);
-					std::cout << "1 The head is " << mergeBufferPool->head << std::endl;
-					std::cout << "1 range begin is " << mergeBufferPool->hash_vector[0] << std::endl;
 					if (latest_update.find(baseRID) == latest_update.end()){
 						if (latest_update[baseRID].first > currentRID.id){
 							latest_update[baseRID].first = currentRID.id;
 							std::vector<int> merge_vals;
-							std::cout << "1.5 The head is " << mergeBufferPool->head << std::endl;
-							std::cout << "1.5 range begin is " << mergeBufferPool->hash_vector[0] << std::endl;
-							std::cout << "hash vector: " << mergeBufferPool->hash_vector[0] << " " << mergeBufferPool->hash_vector[1] << " " << mergeBufferPool->hash_vector[2] << " " << mergeBufferPool->hash_vector[3] << " " << std::endl;
-								std::cout << "range begin is " << mergeBufferPool->hash_vector[0] << std::endl;
 							for (int j = 0; j < num_columns; j++) { //indirection place stuff
 								int value = mergeBufferPool->get(currentRID, j);
-								std::cout << "2The head is " << mergeBufferPool->head << std::endl;
-								std::cout << "2range begin is " << mergeBufferPool->hash_vector[0] << std::endl;
 								merge_vals.push_back(value);
 							}
 							latest_update[baseRID].second = merge_vals;
