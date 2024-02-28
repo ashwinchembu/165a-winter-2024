@@ -12,6 +12,7 @@ class Page {
 public:
     int num_rows = 0;
     Page ();
+    Page(const Page& rhs);
     virtual ~Page ();
     const bool has_capacity() const;
     int write(const int& value);

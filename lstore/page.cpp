@@ -311,6 +311,12 @@ Page::Page() {
     data = new int[PAGE_SIZE * 4];
 }
 
+Page::Page(const Page& rhs) {
+    for (size_t i = 0; i < rhs.num_rows; i++) {
+      write(*(rhs.data + i));
+    }
+}
+
 Page::~Page() {
     delete[] data;
 }
