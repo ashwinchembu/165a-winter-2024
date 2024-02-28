@@ -51,18 +51,18 @@ int BufferPool::hash_fun(unsigned int x) {
 int BufferPool::get (const RID& rid, const int& column) {
   Frame* found = search(rid, column);
   if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
-    std::cout << "Couldn't find it :(" << std::endl;
+    //std::cout << "Couldn't find it :(" << std::endl;
     Frame* current_frame = head;
     while(current_frame != nullptr){ //iterate through entire bufferpool
-    if(current_frame->page != nullptr){
-      std::cout << "first rid page is " << current_frame->first_rid_page << " column is " << current_frame->column << std::endl;
-    }
+    // if(current_frame->page != nullptr){
+    //   std::cout << "first rid page is " << current_frame->first_rid_page << " column is " << current_frame->column << std::endl;
+    // }
     current_frame = current_frame->next;
   }
     found = load(rid, column);
   }
   update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
-  std::cout << "base is returning" << *(found->page->data + rid.offset) << std::endl;
+  //std::cout << "base is returning" << *(found->page->data + rid.offset) << std::endl;
   return *(found->page->data + rid.offset); //return the value we want
 }
 
@@ -76,18 +76,18 @@ Frame* BufferPool::get_page(const RID& rid, const int& column){
 }
 
 void BufferPool::set (const RID& rid, const int& column, const int& value, const bool& is_new){
-  std::cout << "hello1" << rid.id << std::endl;
+  //std::cout << "hello1" << rid.id << std::endl;
   pin(rid, column);
-  std::cout << "hello2" << std::endl;
+  //std::cout << "hello2" << std::endl;
   Frame* found = search(rid, column);
-  std::cout << "hello3" << std::endl;
+  //std::cout << "hello3" << std::endl;
   if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
-    std::cout << "Couldn't find it :(" << std::endl;
+    //std::cout << "Couldn't find it :(" << std::endl;
     Frame* current_frame = head;
     while(current_frame != nullptr){ //iterate through entire bufferpool
-    if(current_frame->page != nullptr){
-      std::cout << "first rid page is " << current_frame->first_rid_page << " column is " << current_frame->column << std::endl;
-    }
+    // if(current_frame->page != nullptr){
+    //   std::cout << "first rid page is " << current_frame->first_rid_page << " column is " << current_frame->column << std::endl;
+    // }
     current_frame = current_frame->next;
   }
     found = load(rid, column);
@@ -98,35 +98,35 @@ void BufferPool::set (const RID& rid, const int& column, const int& value, const
   }
   found->dirty = true; //the page has been modified
   unpin(rid, column);
-  std::cout << "hello4" << std::endl;
+  //std::cout << "hello4" << std::endl;
   update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
   return;
 }
 
 Frame* BufferPool::search(const RID& rid, const int& column){
-  if(path == "./ECS165/Merge"){
-    std::cout << "we are looking for rid " << rid.first_rid_page << " and " << column << std::endl;
-  }
+  // if(path == "./ECS165/Merge"){
+  //   std::cout << "we are looking for rid " << rid.first_rid_page << " and " << column << std::endl;
+  // }
   //std::cout << "we are looking for rid " << rid.first_rid_page << " and " << column << std::endl;
   //std::cout << "0 range begin is " << hash_vector[0] << std::endl;
 //  std::cout << "0 head is" << head << std::endl;
   size_t hash = hash_fun(rid.first_rid_page); //perform hash on rid
   Frame* range_begin = hash_vector[hash]; //beginning of hash range
-  if(path == "./ECS165/Merge"){
+  // if(path == "./ECS165/Merge"){
   //  std::cout << "hash for " << rid.first_rid_page << " is " << hash << std::endl;
   //  std::cout << "1 range begin is " << hash_vector[0] << std::endl;
   //  std::cout << "2 range begin is " << range_begin << std::endl;
-  }
+  // }
 //  std::cout << "1 head is" << head << std::endl;
   Frame* range_end = (hash == hash_vector.size() - 1) ? tail : hash_vector[hash + 1]->prev; //end of hash range
   Frame* current_frame = range_begin; //iterate through range
   while(current_frame != range_end->next){
     if ((current_frame->valid)) {
-      if(path == "./ECS165/Merge"){
+      // if(path == "./ECS165/Merge"){
         //std::cout << "we are looking at " << current_frame->first_rid_page << " and " << current_frame->column << std::endl;
-      }
+      // }
       if(rid.first_rid_page == current_frame->first_rid_page && column == current_frame->column){
-        std::cout << "found and exititing" << std::endl;
+        // std::cout << "found and exititing" << std::endl;
         return current_frame;
       }
     }
@@ -184,7 +184,7 @@ Frame* BufferPool::load (const RID& rid, const int& column){ //return the frame 
     + "_" + frp_s
     + "_" + std::to_string(column) + ".dat";
 
-        std::cout << "data path: " << data_path << std::endl;
+        //std::cout << "data path: " << data_path << std::endl;
 
   FILE* fp = fopen((data_path).c_str(),"r");
   if (!fp) {
@@ -197,9 +197,9 @@ Frame* BufferPool::load (const RID& rid, const int& column){ //return the frame 
   fclose(fp);
   frame = insert_into_frame(rid, column, p); //insert the page into a frame in the bufferpool
   frame->dirty = false; //frame has not yet been modified
-  if (e != 1 + p->num_rows) {
-    std::cout << "error?: " << e << std::endl;
-  }
+  // if (e != 1 + p->num_rows) {
+  //   std::cout << "error?: " << e << std::endl;
+  // }
   return frame;
 }
 
@@ -259,9 +259,9 @@ Frame* BufferPool::evict(const RID& rid){ //return the frame that was evicted
       if(current_frame->dirty && current_frame->valid){ //if dirty and valid write back to disk
         write_back(current_frame);
       }
-      if(path == "./ECS165/Merge"){
-        std::cout << "evict from merge " << current_frame->first_rid_page << " " << current_frame->column << std::endl;
-      }
+      // if(path == "./ECS165/Merge"){
+      //   std::cout << "evict from merge " << current_frame->first_rid_page << " " << current_frame->column << std::endl;
+      // }
       frame_directory[hash]--;
       current_frame->valid = false; //frame is now empty
       return current_frame;
@@ -315,9 +315,9 @@ void BufferPool::write_back_all (){
 
 void BufferPool::pin (const RID& rid, const int& column) {
   Frame* found = search(rid, column);
-  if (found == nullptr) {
-    std::cout << "sdlkafjlkadsjfkldsajfkldsajfkldsjklfsdklafhadsjlhfjksafhdjk" << std::endl;
-  }
+  // if (found == nullptr) {
+  //   std::cout << "sdlkafjlkadsjfkldsajfkldsajfkldsjklfsdklafhadsjlhfjksafhdjk" << std::endl;
+  // }
   //std::cout << "found: " << found << " validity: " << !found->valid;
   if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
     found = load(rid, column);

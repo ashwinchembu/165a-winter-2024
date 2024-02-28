@@ -114,7 +114,7 @@ PageRange::PageRange (RID& new_rid, const std::vector<int>& columns) {
     buffer_pool.insert_new_page(new_rid, RID_COLUMN, new_rid.id);
     buffer_pool.insert_new_page(new_rid, TIMESTAMP_COLUMN, 0);
     buffer_pool.insert_new_page(new_rid, SCHEMA_ENCODING_COLUMN, 0);
-    std::cout << "new rid" << new_rid.id << std::endl;
+    //std::cout << "new rid" << new_rid.id << std::endl;
     buffer_pool.insert_new_page(new_rid, BASE_RID_COLUMN, new_rid.id);
     buffer_pool.insert_new_page(new_rid, TPS, 0);
     for (int i = 0; i < num_column; i++) {
