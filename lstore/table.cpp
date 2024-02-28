@@ -8,7 +8,7 @@
 #include "table.h"
 #include <cstdio>
 #include <memory>
-#include<sys/stat.h>
+#include <sys/stat.h>
 #include "bufferpool.h"
 #include "config.h"
 #include <set>
@@ -345,7 +345,7 @@ int Table::merge() {
 	auto pool_size = to_merge.size()*PAGE_SIZE*2*sizeof(int); // change to actual - temp
 	BufferPool* mergeBufferPool = new BufferPool(pool_size);
 	mergeBufferPool->set_path("./ECS165/Merge");
-
+	struct stat checkDir;
 	if(stat(mergeBufferPool->path.c_str(),&checkDir)!=0 || !S_ISDIR(checkDir.st_mode)){
 		mkdir(mergeBufferPool->path.c_str(),0777);
 	}
