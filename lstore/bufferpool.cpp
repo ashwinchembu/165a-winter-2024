@@ -36,14 +36,12 @@ BufferPool::BufferPool (const int& num_pages) : bufferpool_size(num_pages){
 }
 
 BufferPool::~BufferPool () {
-  std::cout << "destructor in " << std::endl;
   Frame* current_frame = head;
   while(current_frame != nullptr){ //iterate through entire bufferpool
     Frame* old = current_frame;
     current_frame = current_frame->next;
     delete old;
   }
-  std::cout << "destructor out " << std::endl;
 }
 
 int BufferPool::hash_fun(unsigned int x) {
@@ -277,8 +275,9 @@ Frame* BufferPool::evict(const RID& rid){ //return the frame that was evicted
 
 void BufferPool::write_back(Frame* frame){
   std::cout << "1.1" << std::endl;
-  if (frame->page != nullptr){
-      std::cout << "yo" << std::endl;
+  if (frame != nullptr){
+      std::cout << "1.1" << std::endl;
+
   }
   int frp = frame->first_rid_page;
   std::string frp_s = std::to_string(frame->first_rid_page);
@@ -308,7 +307,6 @@ void BufferPool::write_back(Frame* frame){
 }
 
 void BufferPool::write_back_all (){
-  std::cout << "0 error" << std::endl;
   Frame* current_frame = head;
   std::cout << current_frame << std::endl;
   while(current_frame != nullptr){ //iterate through entire bufferpool
@@ -322,11 +320,9 @@ void BufferPool::write_back_all (){
       if(current_frame->page != nullptr){
         std::cout << "three" << std::endl;
         delete current_frame->page;
-        std::cout << "6 error" << std::endl;
       }
     }
     current_frame = current_frame->next;
-    std::cout << "7 error" << std::endl;
   }
   return;
 }
