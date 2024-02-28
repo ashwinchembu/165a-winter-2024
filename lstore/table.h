@@ -32,6 +32,12 @@ class Frame;
 class Index;
 class PageRange;
 
+extern const int DELETE_NONE;
+extern const int DELETE_CASCADE;
+extern const int DELETE_NULL;
+
+class RIDJoin;
+
 class Table {
 public:
     std::string name;
@@ -43,6 +49,8 @@ public:
     Index* index = nullptr;
     int num_update = 0;
     int num_insert = 0;
+
+    std::map<int,std::vector<RIDJoin>>referencesOut;
 
     int num_columns; //number of columns of actual data, excluding the metadata
 
@@ -59,6 +67,21 @@ public:
     int write(FILE* fp);
     int read(FILE* fp);
     void PrintData();
+
+    bool ridIsJoined(RID rid,int col);
+    RIDJoin getJoin(RID rid, int col);
+};
+
+class RIDJoin{
+	public:
+		RID ridSrc;
+		RID ridTarget;
+
+		int srcCol;
+		int targetCol;
+
+		int modificationPolicy;
+		Table* targetTable;
 };
 
 #endif
