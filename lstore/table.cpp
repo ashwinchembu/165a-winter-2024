@@ -329,8 +329,10 @@ int Table::read(FILE* fp) {
  */
 int Table::merge() {
 	if (!merge_queue.size()){
+		std::cout << "size is 0" << std::endl;
 		return 0;
 	}
+	std::cout << "after if statement" << std::endl;
 	/*
 	updating at page range level
 
@@ -346,9 +348,15 @@ int Table::merge() {
 	BufferPool* mergeBufferPool = new BufferPool(pool_size);
 	mergeBufferPool->hash_vector = to_merge;
 
+	std::cout << "--------got to here" << std::endl;
+
 	std::map<int, std::pair<int, std::vector<int>>> latest_update; //<latest base RID: <tailRID, values>>
 	std::set<int> visited_rids;
 	//load copy of all base pages in each page range
+
+	int tail_rid_last = 0;
+	int last_update_rid = mergeBufferPool->get(to_merge[0]->first_rid_page, TPS);
+
 	for (int i = to_merge.size() - 1; i >= 0; i--) {
 		Frame* currentFrame = to_merge[i];
 		int page_rid = currentFrame->first_rid_page;
@@ -365,6 +373,9 @@ int Table::merge() {
 		//determine frame holds tail page
 		if (page_rid < 0){
 			//holds tail page
+			// if (page_rid > last_update_rid) {
+			// 	continue;
+			// }
 			if (currentFrame->page){
 				//valid page
 				currentFrame = mergeBufferPool->search(page_rid, RID_COLUMN);
@@ -383,6 +394,9 @@ int Table::merge() {
 							latest_update[baseRID].second = merge_vals;
 						}
 					}
+					// if (currentRID < tail_rid_last) {
+					// 	tail_rid_last = currentRID;
+					// }
 				}
 			}
 		}
@@ -392,8 +406,11 @@ int Table::merge() {
 		const std::vector<int>& values = pair.second.second;
 
 		for (int col = 0; col < num_columns; col++){
-			mergeBufferPool->set (latest_base_rid, col, values[col], false);
+			//mergeBufferPool->set (latest_base_rid, col, values[col], false);
+			std::cout << "setting value to 0" << std::endl;
+			mergeBufferPool->set (latest_base_rid, col, 0, false);
 		}
+		// mergeBufferPool->set (latest_base_rid, TPS, tail_rid_last, false);
 	}
 	for (const auto& to_evict : mergeBufferPool->hash_vector){
 		mergeBufferPool->evict(to_evict->first_rid_page);
