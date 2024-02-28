@@ -128,7 +128,7 @@ Frame* BufferPool::search(const RID& rid, const int& column){
         std::cout << "we are looking at " << current_frame->first_rid_page << " and " << current_frame->column << std::endl;
       // }
       if(rid.first_rid_page == current_frame->first_rid_page && column == current_frame->column){
-        // std::cout << "found and exititing" << std::endl;
+        std::cout << "found and exititing" << std::endl;
         return current_frame;
       }
     }
