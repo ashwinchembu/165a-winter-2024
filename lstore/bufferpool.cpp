@@ -319,9 +319,9 @@ void BufferPool::write_back_all (){
     } else {
       current_frame->valid = false;
       if(current_frame->page != nullptr){
-        std::cout << "Delete called on " << current_frame->page << '\n';
+        std::cout << "Delete called on " << current_frame->page << std::endl;
         delete current_frame->page;
-        std::cout << "Deleted " << current_frame->page << '\n';
+        std::cout << "Deleted " << current_frame->page << std::endl;
         //current_frame->page = nullptr;
 
       }
