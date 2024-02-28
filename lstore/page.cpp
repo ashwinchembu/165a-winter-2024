@@ -312,7 +312,7 @@ Page::Page() {
 }
 
 Page::Page(const Page& rhs) {
-    for (size_t i = 0; i < rhs.num_rows; i++) {
+    for (int i = 0; i < rhs.num_rows; i++) {
       write(*(rhs.data + i));
     }
 }

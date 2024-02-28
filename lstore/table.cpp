@@ -350,7 +350,7 @@ int Table::merge() {
 		mkdir(mergeBufferPool->path.c_str(),0777);
 	}
 
-	for (int i = 0; i < to_merge.size(); i++) {
+	for (size_t i = 0; i < to_merge.size(); i++) {
 		RID new_rid(i, to_merge[i]->first_rid_page_range, to_merge[i]->first_rid_page, 0,	name);
 		 Frame* frame = mergeBufferPool->insert_into_frame(new_rid, to_merge[i]->column, new Page(*(to_merge[i]->page)));
 		frame->dirty = true;
@@ -451,6 +451,7 @@ int Table::merge() {
 	for (size_t i = 0; i < to_merge.size(); i++) {
 		delete to_merge[i];
 	}
+	std::cout << "merge out" << '\n';
     return -1;
 }
 
