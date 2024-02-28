@@ -365,6 +365,7 @@ int Table::merge() {
 		std::cout << "put into frame" << frame->first_rid_page << std::endl;
 	//	std::cout << "value in page" << *(to_merge[i]->page->data) << std::endl;
 
+		
 		frame->dirty = true;
 	}
 	//set last frame

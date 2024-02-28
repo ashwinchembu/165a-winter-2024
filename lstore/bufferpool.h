@@ -38,6 +38,7 @@ public:
     void set (const RID& rid, const int& column, const int& value, const bool& is_new); // given a rid and column, changes the value in that location
     Frame* load (const RID& rid, const int& column); //from disk into bufferpool
     Frame* search(const RID& rid, const int& column); //search in specific hash range
+    Frame* search(const RID& rid, const int& column, std::string merge);
     Frame* insert_into_frame(const RID& rid, const int& column, Page* page); //insert a page into a frame
     void insert_new_page(const RID& rid, const int& column, const int& value); //write new data to memory
     void update_ages(Frame*& just_accessed, Frame*& range_begin); // update all the ages in hash range based on which frame was just accessed

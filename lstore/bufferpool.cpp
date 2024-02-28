@@ -101,6 +101,19 @@ Frame* BufferPool::search(const RID& rid, const int& column){
   return nullptr; //if not found in the range
 }
 
+Frame* BufferPool::search(const RID& rid, const int& column, std::string merge){
+  Frame* current_frame = head; //iterate through range
+  while(current_frame != nullptr){
+    if ((current_frame->valid)) {
+      if(rid.first_rid_page == current_frame->first_rid_page && column == current_frame->column){
+        return current_frame;
+      }
+    }
+    current_frame = current_frame->next;
+  }
+  return nullptr; //if not found in the range
+}
+
 void BufferPool::update_ages(Frame*& just_accessed, Frame*& range_begin){ //change ages and reorder linked list
   if(just_accessed != range_begin){ //if not already the range beginning / most recently accessed
     if(just_accessed->next == nullptr ){ //if just_accessed is the tail
