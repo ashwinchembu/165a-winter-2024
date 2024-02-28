@@ -351,8 +351,20 @@ int Table::merge() {
 //   }
 
 	*(mergeBufferPool->head) = *(to_merge[0]);
+	mergeBufferPool->head->dirty = true;/*
+
+	while(current_frame != nullptr){ //iterate through entire bufferpool
+	if(current_frame->page != nullptr){
+		std::cout << "frame in linked list is" << current_frame << std::endl;
+		std::cout << "this should be equal to ^ " << mergeBufferPool->hash_vector[0] << std::endl;
+		std::cout << "the value in here is " << current_frame->first_rid_page << std::endl;
+		std::cout << "this should be equal to ^ " << to_merge[0]->first_rid_page << std::endl;
+	}
+	current_frame = current_frame->next;
+}*/
 //	std::cout << "size of to merge: " << to_merge.size() << std::endl;
-	for (int i = 0; i < to_merge.size(); i++) {
+
+	for (int i = 1; i < to_merge.size(); i++) {
 		//for(int j = 0; j < num_columns; )
 		RID new_rid(i,
 			to_merge[i]->first_rid_page_range,
@@ -360,7 +372,7 @@ int Table::merge() {
 			0,
 			name
 		);
-		Frame* frame = mergeBufferPool->insert_into_frame(new_rid, to_merge[i]->column, to_merge[i]->page);
+		// Frame* frame = mergeBufferPool->insert_into_frame(new_rid, to_merge[i]->column, to_merge[i]->page);
 	//	std::cout << "Merge size: " << to_merge.size() << " RID: " << new_rid.id << " " << to_merge[i]->first_rid_page << " frame: " << frame->first_rid_page << std::endl;
 
 		std::cout << "put into frame" << frame->first_rid_page << std::endl;
