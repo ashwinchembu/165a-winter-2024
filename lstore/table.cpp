@@ -363,24 +363,13 @@ int Table::merge() {
 			name
 		);
 		 Frame* frame = mergeBufferPool->insert_into_frame(new_rid, to_merge[i]->column, to_merge[i]->page);
-	//	std::cout << "Merge size: " << to_merge.size() << " RID: " << new_rid.id << " " << to_merge[i]->first_rid_page << " frame: " << frame->first_rid_page << std::endl;
-
-		std::cout << "put into frame" << frame->first_rid_page << std::endl;
-	//	std::cout << "value in page" << *(to_merge[i]->page->data) << std::endl;
-
-
 		frame->dirty = true;
 	}
-	//set last frame
-	//*(mergeBufferPool->tail) = *(to_merge[to_merge.size() - 1]);
 
-
-	//set last frame
-//	*(mergeBufferPool->tail) = *(to_merge[to_merge.size() - 1]);
 	Frame* current_frame = mergeBufferPool->head;
 	while(current_frame != nullptr){ //iterate through entire bufferpool
 	if(current_frame->page != nullptr){
-		std::cout << "first rid page is " << current_frame->first_rid_page << std::endl;
+		std::cout << "first rid page is " << current_frame->first_rid_page << " column is " << current_frame->column << std::endl;
 	}
 	current_frame = current_frame->next;
 }
