@@ -344,6 +344,7 @@ int Table::merge() {
 	std::vector<Frame*> to_merge = merge_queue.front();
 
 	merge_queue.pop();
+
 	auto pool_size = to_merge.size()*2; // change to actual - temp
 	BufferPool* mergeBufferPool = new BufferPool(pool_size);
 	mergeBufferPool->set_path("./ECS165/Merge");
@@ -450,8 +451,11 @@ int Table::merge() {
 	}
 
 	 mergeBufferPool->write_back_all();
-	// delete mergeBufferPool;
 
+	// delete mergeBufferPool;
+	for (size_t i = 0; i < to_merge.size(); i++) {
+		delete to_merge[i];
+	}
     return -1;
 }
 
