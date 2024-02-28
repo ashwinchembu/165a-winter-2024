@@ -13,5 +13,5 @@ const int LOGICAL_PAGE = 8;
 const int BUFFER_POOL_SIZE = 128;
 const int NUM_BUFFERPOOL_HASH_PARTITIONS = 4; //make sure this divides BUFFER_POOL_SIZE evenly
 const int MAX_PAGE_RANGE_UPDATES = 100*PAGE_SIZE;
-const int MAX_TABLE_UPDATES = 1000;
+const int MAX_TABLE_UPDATES = 10000;
 const std::string file_path = "/Data/";
