@@ -67,7 +67,6 @@ void BufferPool::set (const RID& rid, const int& column, const int& value, const
   if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
     found = load(rid, column);
   }
-  // found->page->write(value);
   *(found->page->data + rid.offset) = value;
   if(is_new){
     found->page->num_rows++;
@@ -83,18 +82,14 @@ Frame* BufferPool::search(const RID& rid, const int& column){
   Frame* range_begin = hash_vector[hash]; //beginning of hash range
   Frame* range_end = (hash == hash_vector.size() - 1) ? tail : hash_vector[hash + 1]->prev; //end of hash range
   Frame* current_frame = range_begin; //iterate through range
-    // std::cout << "searching : " << rid.first_rid_page << ", " << column << std::endl;
   while(current_frame != range_end->next){
-    // std::cout << "search : " <<current_frame << " current frame->next: " << current_frame->next << " first_rid_page: " << current_frame->first_rid_page << " column: " << current_frame->column << " pin: " << current_frame->pin << std::endl;
     if ((current_frame->valid)) {
       if(rid.first_rid_page == current_frame->first_rid_page && column == current_frame->column){
         return current_frame;
       }
     }
     current_frame = current_frame->next;
-     // std::cout << "search : " <<current_frame << " current frame->next: " << current_frame->next << std::endl;
   }
-  // std::cout << "miss!" << std::endl;
   return nullptr; //if not found in the range
 }
 
@@ -255,31 +250,22 @@ void BufferPool::write_back_all (){
 
 void BufferPool::pin (const RID& rid, const int& column) {
   Frame* found = search(rid, column);
-    // std::cout << found << std::endl;
-
-    // std::cout << "Pin : first_rid_page: "<< found->first_rid_page << " column: " << found->column << " pin: " << found->pin << std::endl;
-
   if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
     found = load(rid, column);
   }
   (found->pin)++;
-    // std::cout << "Pin3 : first_rid_page: "<< found->first_rid_page << " column: " << found->column << " pin: " << found->pin << std::endl;
 
   return;
 }
 
 void BufferPool::unpin (const RID& rid, const int& column) {
   Frame* found = search(rid, column);
-  // std::cout << found << std::endl;
-  // std::cout << "Unpin : first_rid_page: "<< found->first_rid_page << " column: " << found->column << " pin: " << found->pin << std::endl;
   if(found == nullptr || !found->valid){ //if not in the bufferpool
     throw std::invalid_argument("Attempt to unpin record that was not already pinned (No record found)");
   }
   (found->pin)--;
-  // std::cout << "Unpin2 : first_rid_page: "<< found->first_rid_page << " column: " << found->column << " pin: " << found->pin << std::endl;
   if(found->pin < 0){ //if pin count gets below 0
     (found->pin) = 0;
-    // std::cout << rid.id << std::endl;
     throw std::invalid_argument("Attempt to unpin record that was not already pinned (Pin negative value)");
   }
   return;
