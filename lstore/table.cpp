@@ -426,8 +426,8 @@ int Table::merge() {
 		// mergeBufferPool->set (latest_base_rid, TPS, tail_rid_last, false);
 	}
 
-	mergeBufferPool->write_back_all();
-	//delete mergeBufferPool;
+	//mergeBufferPool->write_back_all();
+	delete mergeBufferPool;
 
     return -1;
 }
