@@ -339,11 +339,14 @@ int Table::merge() {
 
 	std::cout << "entered merge" << std::endl;
 	std::vector<Frame*> to_merge = merge_queue.front();
-
+	std::cout << "Error 1" << std::endl;
 	merge_queue.pop();
+	std::cout << "Error 2" << std::endl;
 
 	auto pool_size = to_merge.size()*2; // change to actual - temp
+	std::cout << "Error 3" << std::endl;
 	BufferPool* mergeBufferPool = new BufferPool(pool_size);
+	std::cout << "Error 4" << std::endl;
 	mergeBufferPool->set_path("./ECS165/Merge");
 	struct stat checkDir;
 	if(stat(mergeBufferPool->path.c_str(),&checkDir)!=0 || !S_ISDIR(checkDir.st_mode)){
