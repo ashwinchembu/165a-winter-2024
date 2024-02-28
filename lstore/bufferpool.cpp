@@ -300,7 +300,9 @@ void BufferPool::write_back(Frame* frame){
 }
 
 void BufferPool::write_back_all (){
+  std::cout << "0 error" << std::endl;
   Frame* current_frame = head;
+  std::cout << "1 error" << std::endl;
   while(current_frame != nullptr){ //iterate through entire bufferpool
     if(current_frame->dirty && current_frame->valid){
       std::cout << "2 error" << std::endl;
