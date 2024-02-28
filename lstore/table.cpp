@@ -343,20 +343,17 @@ int Table::merge() {
 
 	auto pool_size = to_merge.size()*2; // change to actual - temp
 	BufferPool* mergeBufferPool = new BufferPool(pool_size);
-	std::cout << "Error 4" << std::endl;
 	mergeBufferPool->set_path("./ECS165/Merge");
 	struct stat checkDir;
 	if(stat(mergeBufferPool->path.c_str(),&checkDir)!=0 || !S_ISDIR(checkDir.st_mode)){
 		mkdir(mergeBufferPool->path.c_str(),0777);
 	}
-	std::cout << "Error 3" << std::endl;
 
 	for (int i = 0; i < to_merge.size(); i++) {
 		RID new_rid(i, to_merge[i]->first_rid_page_range, to_merge[i]->first_rid_page, 0,	name);
 		 Frame* frame = mergeBufferPool->insert_into_frame(new_rid, to_merge[i]->column, to_merge[i]->page);
 		frame->dirty = true;
 	}
-	std::cout << "Error 2" << std::endl;
 
 	int TPS = 0;
     Frame* first_frame = to_merge[0];
@@ -367,6 +364,7 @@ int Table::merge() {
 	std::map<int, std::pair<int, std::vector<int>>> latest_update; //<latest base RID: <tailRID, values>>
 	std::set<int> visited_rids;
 
+	std::cout << "Error 2" << std::endl;
 //	int tail_rid_last = 0;
 	//load copy of all base pages in each page range
 	for (int i = to_merge.size() - 1; i >= 0; i--) {
@@ -426,6 +424,7 @@ int Table::merge() {
 		}
 	}
 	//std::cout << "kdljflkadklfdsjfkjds " << latest_update.size() << std::endl;
+	std::cout << "Error 3" << std::endl;
 	for (const auto& pair : latest_update) {
 		if (pair.first == 0) {
 			continue;
@@ -450,6 +449,7 @@ int Table::merge() {
 
 	 mergeBufferPool->write_back_all();
 
+	 std::cout << "Error 4" << std::endl;
 	delete mergeBufferPool;
 	for (size_t i = 0; i < to_merge.size(); i++) {
 		delete to_merge[i];
