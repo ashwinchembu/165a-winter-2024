@@ -51,6 +51,14 @@ int BufferPool::hash_fun(unsigned int x) {
 int BufferPool::get (const RID& rid, const int& column) {
   Frame* found = search(rid, column);
   if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
+    std::cout << "Couldn't find it :(" << std::endl;
+    Frame* current_frame = head;
+    while(current_frame != nullptr){ //iterate through entire bufferpool
+    if(current_frame->page != nullptr){
+      std::cout << "first rid page is " << current_frame->first_rid_page << " column is " << current_frame->column << std::endl;
+    }
+    current_frame = current_frame->next;
+  }
     found = load(rid, column);
   }
   update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
@@ -83,24 +91,30 @@ void BufferPool::set (const RID& rid, const int& column, const int& value, const
 }
 
 Frame* BufferPool::search(const RID& rid, const int& column){
+  //std::cout << "we are looking for rid " << rid.first_rid_page << " and " << column << std::endl;
   size_t hash = hash_fun(rid.first_rid_page); //perform hash on rid
+  std::cout << "1hash vector: " << hash_vector[0] << " " << hash_vector[1] << " " << hash_vector[2] << " " << hash_vector[3] << " " << std::endl;
   Frame* range_begin = hash_vector[hash]; //beginning of hash range
+  std::cout << "2hash vector: " << hash_vector[0] << " " << hash_vector[1] << " " << hash_vector[2] << " " << hash_vector[3] << " " << std::endl;
+//  std::cout << "range begin is " << range_begin << std::endl;
+//  std::cout << "head is" << head << std::endl;
   Frame* range_end = (hash == hash_vector.size() - 1) ? tail : hash_vector[hash + 1]->prev; //end of hash range
   Frame* current_frame = range_begin; //iterate through range
   while(current_frame != range_end->next){
+if(path == "./ECS165/Merge"){
+  std::cout << "we are looking at " << current_frame->first_rid_page << " and " << current_frame->column << std::endl;
+}
     if ((current_frame->valid)) {
-      // std::cout << "if valid" << std::endl;
       if(rid.first_rid_page == current_frame->first_rid_page && column == current_frame->column){
-        // std::cout << "if other thing" << std::endl;
         return current_frame;
       }
     }
-    // std::cout << "not valid" << std::endl;
     current_frame = current_frame->next;
   }
   return nullptr; //if not found in the range
 }
 
+/*
 Frame* BufferPool::search(const RID& rid, const int& column, std::string merge){
   Frame* current_frame = head; //iterate through range
   while(current_frame != nullptr){
@@ -112,7 +126,7 @@ Frame* BufferPool::search(const RID& rid, const int& column, std::string merge){
     current_frame = current_frame->next;
   }
   return nullptr; //if not found in the range
-}
+}*/
 
 void BufferPool::update_ages(Frame*& just_accessed, Frame*& range_begin){ //change ages and reorder linked list
   if(just_accessed != range_begin){ //if not already the range beginning / most recently accessed
@@ -171,7 +185,6 @@ Frame* BufferPool::load (const RID& rid, const int& column){ //return the frame 
 Frame* BufferPool::insert_into_frame(const RID& rid, const int& column, Page* page){ //return the frame that the page was placed into
   Frame* frame = nullptr;
   size_t hash = hash_fun(rid.first_rid_page); //determine correct hash range
-  std::cout << "put into hash range " << hash << std::endl;
   if(frame_directory[hash] == (bufferpool_size / NUM_BUFFERPOOL_HASH_PARTITIONS)){ //if hash range is full
     frame = evict(rid);
   } else{ //find empty frame to fill
@@ -196,7 +209,6 @@ Frame* BufferPool::insert_into_frame(const RID& rid, const int& column, Page* pa
   frame->column = column;
   frame->valid = true;
   frame_directory[hash]++; //a frame has been filled
-  std::cout << "place into frame " << frame << std::endl;
   return frame;
 }
 
@@ -225,6 +237,9 @@ Frame* BufferPool::evict(const RID& rid){ //return the frame that was evicted
     if(current_frame->pin == 0){ //if not pinned, we can evict
       if(current_frame->dirty && current_frame->valid){ //if dirty and valid write back to disk
         write_back(current_frame);
+      }
+      if(path == "./ECS165/Merge"){
+        std::cout << "evict from merge " << current_frame->first_rid_page << " " << current_frame->column << std::endl;
       }
       frame_directory[hash]--;
       current_frame->valid = false; //frame is now empty
@@ -316,3 +331,15 @@ Frame::~Frame () {}
 bool Frame::operator==(const Frame& rhs) {
   return ((first_rid_page_range == rhs.first_rid_page_range) && (first_rid_page == rhs.first_rid_page) && (column == rhs.column));
 }
+
+void Frame::operator=(const Frame& rhs)
+    {
+      page = rhs.page;
+      first_rid_page = rhs.first_rid_page; //first rid in the page
+      table_name = rhs.table_name;
+      first_rid_page_range = rhs.first_rid_page_range; //first rid in the page range
+      column = rhs.column;
+      valid = rhs.valid; //whether the frame contains data
+      pin = rhs.pin; //how many transactions have pinned the page
+      dirty = rhs.dirty; //whether the page was modified
+    }
