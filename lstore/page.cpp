@@ -308,6 +308,8 @@ int PageRange::read(FILE* fp) {
 
 Page::Page() {
     data = new int[PAGE_SIZE * 4];
+    std::cout << "page constructor in, pointer for data ->" << data << std::endl;
+    std::cout << "Pointer for page ->" << this << std::endl;
 }
 
 Page::~Page() {

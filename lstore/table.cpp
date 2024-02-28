@@ -173,13 +173,11 @@ Table::Table(const std::string& name, const int& num_columns, const int& key): n
 };
 
 Table::~Table() {
-	  std::cout << "table destructor in" << std::endl;
 	for (size_t i = 0; i <page_range.size(); i++) {
 		if (page_range[i].unique()) {
 			page_range[i].reset();
 		}
 	}
-	  std::cout << "table destructor out" << std::endl;
 }
 
 /***
@@ -440,9 +438,7 @@ int Table::merge() {
 
 		for (int col = 0; col < num_columns; col++){
 			//mergeBufferPool->set (latest_base_rid, col, values[col], false);
-			std::cout << "latest base_rid: " << latest_base_rid.id << " col :" << col << std::endl;
 			mergeBufferPool->get(latest_base_rid, col);
-			std::cout << "get :)" << std::endl;
 			mergeBufferPool->set (latest_base_rid, col, values[col], false);
 			//mergeBufferPool->set(latest_base_rid, col, 0, false);
 		}
