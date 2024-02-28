@@ -417,25 +417,25 @@ int Table::merge() {
 					// if (currentRID < tail_rid_last) {
 					// 	tail_rid_last = currentRID;
 					// }
+					std::cout << "Error 4" << std::endl;
 				}
+				std::cout << "Error 3" << std::endl;
 			}
+			std::cout << "Error 2" << std::endl;
 		}
+		std::cout << "Error 1" << std::endl;
 	}
 	//std::cout << "kdljflkadklfdsjfkjds " << latest_update.size() << std::endl;
 	std::cout << "Error 0" << std::endl;
 	for (const auto& pair : latest_update) {
-		std::cout << "Error 1" << std::endl;
 		if (pair.first == 0) {
 			continue;
 		}
-		std::cout << "Error 2" << std::endl;
 		// std::cout << "kdljflkadklfdsjfkjds " << pair.first << std::endl;
 		RID latest_base_rid = page_directory.find(pair.first)->second;
 		// std::cout << "kdljflkadklfdsjfkjds" << std::endl;
-		std::cout << "Error 3" << std::endl;
 		const std::vector<int>& values = pair.second.second;
 		// std::cout << "kdljflkadklfdsjfkjds" << std::endl;
-		std::cout << "Error 4" << std::endl;
 
 		int tail_id = latest_update.at(pair.first).first;
 		mergeBufferPool->set (latest_base_rid, INDIRECTION_COLUMN, tail_id, false);
