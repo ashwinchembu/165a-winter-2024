@@ -341,7 +341,7 @@ int Table::merge() {
 
 	merge_queue.pop();
 	auto pool_size = to_merge.size()*2*sizeof(int); // change to actual - temp
-	BufferPool* mergeBufferPool = new BufferPool(pool_size);
+	BufferPool* mergeBufferPool = new BufferPool(100);
 	mergeBufferPool->set_path("./ECS165/Merge");
 
 // 	Frame* cur_frame = mergeBufferPool->head; //create number of frames according to bufferpool size
