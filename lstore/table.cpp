@@ -222,24 +222,22 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 	if (num_update >= MAX_TABLE_UPDATES){
 		merge();
 	}
-	std::cout << "Error 0" << std::endl;
 	const int rid_id = num_update * -1;
 	size_t i = 0;
-	std::cout << "Error 1" << std::endl;
 	for (; i < page_range.size(); i++) {
 		if ((page_range[i].get())->pages[0].first_rid_page_range == rid.first_rid_page_range) {
 			break;
 		}
 	}
-	std::cout << "Error 2" << std::endl;
 	RID new_rid(rid_id);
 	new_rid.table_name = name;
 	new_rid.first_rid_page_range = rid.first_rid_page_range;
 
-	std::cout << "Error 3" << std::endl;
+	std::cout << "Error 0" << std::endl;
 	(page_range[i].get())->update(rid, new_rid, columns, page_directory);
+	std::cout << "Error 1" << std::endl;
 	page_range_update[i]++;
-	std::cout << "Error 4" << std::endl;
+	std::cout << "Error 2" << std::endl;
 	if (page_range_update[i] >= MAX_PAGE_RANGE_UPDATES){
 		// Make a deep copy of page_range[i]
 		std::shared_ptr<PageRange> deep_copy = std::make_shared<PageRange>(*(page_range[i].get()));

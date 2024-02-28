@@ -206,7 +206,7 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
  */
 int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, const std::map<int, RID>& page_directory) {
     // Get the latest update of the record. Accessing the indirection column.
-
+    std::cout << "In" << std::endl;
     buffer_pool.pin(rid, INDIRECTION_COLUMN);
     RID latest_rid = page_directory.find(buffer_pool.get(rid, INDIRECTION_COLUMN))->second;
     buffer_pool.set(rid, INDIRECTION_COLUMN, rid_new.id, false);
@@ -267,6 +267,7 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
     buffer_pool.unpin(rid, SCHEMA_ENCODING_COLUMN);
     tail_last_wasfull = (num_slot_used_tail == PAGE_SIZE);
     // Setting the new RID to be representation of the page if the page was newly created
+    std::cout << "Out" << std::endl;
     return 0;
 }
 
