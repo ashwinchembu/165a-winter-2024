@@ -100,7 +100,7 @@ void BufferPool::set (const RID& rid, const int& column, const int& value, const
 
 Frame* BufferPool::search(const RID& rid, const int& column){
   if(path == "./ECS165/Merge"){
-    //std::cout << "we are looking for rid " << rid.first_rid_page << " and " << column << std::endl;
+    std::cout << "we are looking for rid " << rid.first_rid_page << " and " << column << std::endl;
   }
   //std::cout << "we are looking for rid " << rid.first_rid_page << " and " << column << std::endl;
   //std::cout << "0 range begin is " << hash_vector[0] << std::endl;
