@@ -448,9 +448,9 @@ int Table::merge() {
 	 mergeBufferPool->write_back_all();
 
 	delete mergeBufferPool;
-	for (size_t i = 0; i < to_merge.size(); i++) {
-		delete to_merge[i];
-	}
+	// for (size_t i = 0; i < to_merge.size(); i++) {
+	// 	delete to_merge[i];
+	// }
 	std::cout << "merge out" << '\n';
     return -1;
 }
