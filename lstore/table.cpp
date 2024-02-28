@@ -173,11 +173,13 @@ Table::Table(const std::string& name, const int& num_columns, const int& key): n
 };
 
 Table::~Table() {
+	  std::cout << "table destructor in" << std::endl;
 	for (size_t i = 0; i <page_range.size(); i++) {
 		if (page_range[i].unique()) {
 			page_range[i].reset();
 		}
 	}
+	  std::cout << "table destructor out" << std::endl;
 }
 
 /***
@@ -252,13 +254,6 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 				insert_to_queue.push_back(new_frame);
 			}
 		}
-
-		// std::cout << "-----------------insert-queue-size" << insert_to_queue.size() << std::endl;
-		// for (int i = 0; i < insert_to_queue.size(); i++) {
-		// 	std::cout << insert_to_queue[i]->first_rid_page << " ";
-		// }
-		// std::cout << std::endl;
-
 		merge_queue.push(insert_to_queue);
 	}
 
@@ -344,7 +339,7 @@ int Table::merge() {
 
 	*/
 
-	// std::cout << "entered merge" << std::endl;
+	std::cout << "entered merge" << std::endl;
 	std::vector<Frame*> to_merge = merge_queue.front();
 
 	merge_queue.pop();
@@ -356,16 +351,16 @@ int Table::merge() {
 		mkdir(mergeBufferPool->path.c_str(),0777);
 	}
 
-	for (size_t i = 0; i < to_merge.size(); i++) {
+	for (int i = 0; i < to_merge.size(); i++) {
 		RID new_rid(i, to_merge[i]->first_rid_page_range, to_merge[i]->first_rid_page, 0,	name);
 		 Frame* frame = mergeBufferPool->insert_into_frame(new_rid, to_merge[i]->column, to_merge[i]->page);
 		frame->dirty = true;
 	}
 
 	int TPS = 0;
-	Frame* first_frame = to_merge[0];
-	RID last_tail_rid(0, first_frame->first_rid_page_range, first_frame->first_rid_page, 0 ,name);
-	int latest_tail_id = mergeBufferPool->get(last_tail_rid, TPS);
+    Frame* first_frame = to_merge[0];
+    RID last_tail_rid(0, first_frame->first_rid_page_range, first_frame->first_rid_page, 0 ,name);
+    int latest_tail_id = mergeBufferPool->get(last_tail_rid, TPS);
 
 	std::map<int, std::pair<int, std::vector<int>>> latest_update; //<latest base RID: <tailRID, values>>
 	std::set<int> visited_rids;
@@ -433,30 +428,21 @@ int Table::merge() {
 		if (pair.first == 0) {
 			continue;
 		}
-		// std::cout << "tailRID " << pair.first << pair.second.first << std::endl;
-
+		std::cout << "kdljflkadklfdsjfkjds " << pair.first << std::endl;
 		RID latest_base_rid = page_directory.find(pair.first)->second;
-		// std::cout << latest_base_rid.id << std::endl;
-		// std::cout << "kdljflkadklfdsjfkjds" << std::endl;
+		std::cout << "kdljflkadklfdsjfkjds" << std::endl;
 		const std::vector<int>& values = pair.second.second;
-		// std::cout << "kdljflkadklfdsjfkjds" << std::endl;
-		// std::cout << "_________|__" << values.size() << std::endl;
+		std::cout << "kdljflkadklfdsjfkjds" << std::endl;
 
-
-		int tail_id = pair.second.first;
-		mergeBufferPool->set(latest_base_rid, INDIRECTION_COLUMN, tail_id, false);
-
-		// std::cout << "kdljflkadklfdsjfkjds" << std::endl;
+		int tail_id = latest_update.at(pair.first).first;
+		mergeBufferPool->set (latest_base_rid, INDIRECTION_COLUMN, tail_id, false);
 
 		for (int col = 0; col < num_columns; col++){
 			//mergeBufferPool->set (latest_base_rid, col, values[col], false);
-			//std::cout << "latest base_rid: " << latest_base_rid.id << " col :" << col << std::endl;
+			std::cout << "latest base_rid: " << latest_base_rid.id << " col :" << col << std::endl;
 			mergeBufferPool->get(latest_base_rid, col);
-			//std::cout << "get :)" << std::endl;
-			//std::cout << latest_base_rid.id << std::endl;
-			// std::cout <<"values col" << values[col] << std::endl;
+			std::cout << "get :)" << std::endl;
 			mergeBufferPool->set (latest_base_rid, col, values[col], false);
-			// std::cout <<"values col!!!" << values[col] << std::endl;
 			//mergeBufferPool->set(latest_base_rid, col, 0, false);
 		}
 		// mergeBufferPool->set (latest_base_rid, TPS, tail_rid_last, false);
@@ -467,6 +453,39 @@ int Table::merge() {
 	delete mergeBufferPool;
 
     return -1;
+}
+
+/*
+ * checks if a rid is referenced by another rid over a column.
+ */
+bool Table::ridIsJoined(RID rid, int col){
+	if(referencesOut.find(col)!=referencesOut.end()){
+		return false;
+	}
+
+	std::vector<RIDJoin> joins = referencesOut.find(col)->second;
+
+	for(RIDJoin& j : joins){
+		if(j.ridSrc.id == rid.id){
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/*
+ * Returns the relationship between the argument rid
+ * and another rid over a column.
+ */
+RIDJoin Table::getJoin(RID rid, int col){
+	std::vector<RIDJoin> joins = referencesOut.find(col)->second;
+
+	for(RIDJoin& j : joins){
+		if(j.ridSrc.id == rid.id){
+			return j;
+		}
+	}
 }
 
 void Table::PrintData() {
