@@ -159,7 +159,6 @@ std::vector<int> Index::locate_range(const int& begin, const int& end, const int
 /// @TODO Adopt to the change in RID
 void Index::create_index(const int& column_number) {
     std::unordered_multimap<int, int> index;
-		std::cout << "num insert is " << table->num_insert << std::endl;
 		std::cout << "size of page directory is " << table->page_directory.size() << std::endl;
     for (int i = 1; i <= table->num_insert; i++) {
         auto loc = table->page_directory.find(i); // Find RID for every rows

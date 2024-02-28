@@ -300,7 +300,7 @@ int Table::read(FILE* fp) {
 			e = e + fread(&key, sizeof(int), 1, fp);
 			value.read(fp);
 			value.table_name = name;
-			page_directory[key] = value;
+			page_directory.insert({key, value});
 
 		}
 
