@@ -293,7 +293,7 @@ void BufferPool::write_back(Frame* frame){
 
   if(frame->page != nullptr){
     //std::cout << "null" << std::endl;
-    delete frame->page;
+    //delete frame->page;
   }
 }
 
