@@ -368,6 +368,8 @@ Frame* current_frame = mergeBufferPool->head;
 while(current_frame != nullptr){ //iterate through entire bufferpool
 	if(current_frame->page != nullptr){
 		std::cout << "first rid page: " << current_frame->first_rid_page << std::endl;
+	} else {
+		std::cout << "nullptr" << std::endl;
 	}
 	current_frame = current_frame->next;
 }
