@@ -368,6 +368,8 @@ std::cout << "to_merge_size is " << to_merge.size() << std::endl;
 		//mergeBufferPool->update_ages(frame, mergeBufferPool->hash_vector[mergeBufferPool->hash_fun(new_rid.first_rid_page)]);
 	}
 
+	std::cout << "The head is " << mergeBufferPool->head << std::endl;
+	std::cout << "range begin is " << mergeBufferPool->hash_vector[0] << std::endl;
 	Frame* current_frame = mergeBufferPool->head;
 	while(current_frame != nullptr){ //iterate through entire bufferpool
 	if(current_frame->page != nullptr){
