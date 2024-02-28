@@ -350,7 +350,7 @@ int Table::merge() {
 // 		cur_frame = cur_frame->next;
 //   }
 
-	*(mergeBufferPool->head) = *(to_merge[0]);
+	//*(mergeBufferPool->head) = *(to_merge[0]);
 //	std::cout << "size of to merge: " << to_merge.size() << std::endl;
 	for (int i = 0; i < to_merge.size(); i++) {
 		//for(int j = 0; j < num_columns; )
@@ -379,6 +379,8 @@ int Table::merge() {
 	if(current_frame->page != nullptr){
 		std::cout << "frame in linked list is" << current_frame << std::endl;
 		std::cout << "this should be equal to ^ " << mergeBufferPool->hash_vector[0] << std::endl;
+		std::cout << "the value in here is " << current_frame->first_rid_page << std::endl;
+		std::cout << "this should be equal to ^ " << to_merge[0]->first_rid_page << std::endl;
 	}
 	current_frame = current_frame->next;
 }
