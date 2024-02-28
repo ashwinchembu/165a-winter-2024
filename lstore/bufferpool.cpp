@@ -239,7 +239,10 @@ void BufferPool::write_back(Frame* frame){
   fwrite(&(frame->page->num_rows), sizeof(int), 1, fp);
   fwrite(frame->page->data, sizeof(int), frame->page->num_rows, fp);
   fclose(fp);
-  delete frame->page;
+  /*
+  if(frame->page != nullptr){
+    delete frame->page;
+  }*/
 }
 
 void BufferPool::write_back_all (){
@@ -249,7 +252,9 @@ void BufferPool::write_back_all (){
       write_back(current_frame);
     } else {
       current_frame->valid = false;
-      delete current_frame->page;
+      if(current_frame->page != nullptr){
+        delete current_frame->page;
+      }
     }
     current_frame = current_frame->next;
   }
