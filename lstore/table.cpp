@@ -300,7 +300,7 @@ int Table::read(FILE* fp) {
 			e = e + fread(&key, sizeof(int), 1, fp);
 			value.read(fp);
 			value.table_name = name;
-			std::cout << "Insert into page directory " << key << " " << value << std::endl;
+			std::cout << "Insert into page directory " << key << " " << value.id << std::endl;
 			page_directory.insert({key, value});
 
 		}
