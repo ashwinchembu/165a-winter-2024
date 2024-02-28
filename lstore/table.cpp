@@ -363,7 +363,14 @@ int Table::merge() {
 		frame->dirty = true;
 	}
 	//set last frame
-	*(mergeBufferPool->tail) = *(to_merge[to_merge.size() - 1]);
+//	*(mergeBufferPool->tail) = *(to_merge[to_merge.size() - 1]);
+Frame* current_frame = mergeBufferPool->head;
+while(current_frame != nullptr){ //iterate through entire bufferpool
+	if(current_frame->page != nullptr){
+		std::cout << "first ride page: " << first_rid_page << std::endl;
+	}
+	current_frame = current_frame->next;
+}
 
 	std::map<int, std::pair<int, std::vector<int>>> latest_update; //<latest base RID: <tailRID, values>>
 	std::set<int> visited_rids;
