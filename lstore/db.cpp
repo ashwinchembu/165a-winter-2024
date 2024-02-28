@@ -157,7 +157,7 @@ void Database::read(const std::string& path){
 	int e = fread(&numTables,sizeof(int),1,fp);
 	char nameBuffer[128];
 	for(int i = 0;i < numTables;i++){
-		e = fread(&nameBuffer,128,1,fp);
+		e = e + fread(&nameBuffer,128,1,fp);
 		Table* t = new Table();
 		t->read(fp);
 		tables.insert({{nameBuffer},t});
