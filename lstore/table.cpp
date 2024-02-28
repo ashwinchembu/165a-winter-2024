@@ -293,7 +293,7 @@ int Table::read(FILE* fp) {
     char nameBuffer[128];
     e = e + fread(nameBuffer,128,1,fp);
     name = std::string(nameBuffer);
-		int num_element = num_insert + num_columns;
+		int num_element = num_insert + num_update;
 		RID value;
 		int key;
 		for(int i = 0; i < num_element; i++){
