@@ -422,16 +422,20 @@ int Table::merge() {
 		}
 	}
 	//std::cout << "kdljflkadklfdsjfkjds " << latest_update.size() << std::endl;
+	std::cout << "Error 0" << std::endl;
 	for (const auto& pair : latest_update) {
-		std::cout << "Error 1" << '\n';
+		std::cout << "Error 1" << std::endl;
 		if (pair.first == 0) {
 			continue;
 		}
+		std::cout << "Error 2" << std::endl;
 		// std::cout << "kdljflkadklfdsjfkjds " << pair.first << std::endl;
 		RID latest_base_rid = page_directory.find(pair.first)->second;
 		// std::cout << "kdljflkadklfdsjfkjds" << std::endl;
+		std::cout << "Error 3" << std::endl;
 		const std::vector<int>& values = pair.second.second;
 		// std::cout << "kdljflkadklfdsjfkjds" << std::endl;
+		std::cout << "Error 4" << std::endl;
 
 		int tail_id = latest_update.at(pair.first).first;
 		mergeBufferPool->set (latest_base_rid, INDIRECTION_COLUMN, tail_id, false);
@@ -443,13 +447,10 @@ int Table::merge() {
 			//mergeBufferPool->set(latest_base_rid, col, 0, false);
 		}
 		// mergeBufferPool->set (latest_base_rid, TPS, tail_rid_last, false);
-		std::cout << "Error 2" << '\n';
 	}
-	std::cout << "Error 3" << std::endl;
 
 	 mergeBufferPool->write_back_all();
 
-	 std::cout << "Error 4" << std::endl;
 	delete mergeBufferPool;
 	for (size_t i = 0; i < to_merge.size(); i++) {
 		delete to_merge[i];
