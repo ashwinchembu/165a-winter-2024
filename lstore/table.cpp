@@ -335,7 +335,7 @@ int Table::merge() {
 		read it until TPS < tail ID
 	page directory is updated to point to the new pages
 
-	*/	
+	*/
 	std::cout << "entered merge" << std::endl;
 	std::vector<Frame*> to_merge = merge_queue.front();
 
@@ -372,7 +372,7 @@ int Table::merge() {
 		RID page_rid = page_directory.find(currentFrame->first_rid_page)->second;
 		
 		//std::cout << page_rid << std::endl;
-		
+
 		//determine that we dont visit same logical set twice
 		auto pos = visited_rids.find(page_rid.id);
 
@@ -388,7 +388,7 @@ int Table::merge() {
 			// if (page_rid > last_update_rid) {
 			// 	continue;
 			// }
-			
+
 			//std::cout << "is tail page" << std::endl;
 			//std::cout << "--------got to here" << std::endl;
 			if (currentFrame->page){
