@@ -422,6 +422,8 @@ std::cout << "to_merge_size is " << to_merge.size() << std::endl;
 							std::vector<int> merge_vals;
 							std::cout << "1.5 The head is " << mergeBufferPool->head << std::endl;
 							std::cout << "1.5 range begin is " << mergeBufferPool->hash_vector[0] << std::endl;
+							std::cout << "hash vector: " << mergeBufferPool->hash_vector[0] << " " << mergeBufferPool->hash_vector[1] << " " << mergeBufferPool->hash_vector[2] << " " << mergeBufferPool->hash_vector[3] << " " << std::endl;
+								std::cout << "range begin is " << mergeBufferPool->hash_vector[0] << std::endl;
 							for (int j = 0; j < num_columns; j++) { //indirection place stuff
 								int value = mergeBufferPool->get(currentRID, j);
 								std::cout << "2The head is " << mergeBufferPool->head << std::endl;
