@@ -224,7 +224,16 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
         buffer_pool.insert_new_page(rid_new, RID_COLUMN, rid_new.id);
         buffer_pool.insert_new_page(rid_new, TIMESTAMP_COLUMN, 0);
         buffer_pool.insert_new_page(rid_new, BASE_RID_COLUMN, rid.id);
+<<<<<<< HEAD
         std::cout << "rid.id" << rid.id << std::endl;
+=======
+        std::cout << "------------------------ID: " << rid_new.id << " BASE_RID_COL: " << rid.id << std::endl;
+        for (int i = 0; i < pages.size(); i++) {
+            std::cout << pages[i].id << " ";
+        }
+        std::cout << std::endl;
+        
+>>>>>>> 244ce70b1a2fd5507c4e98bbebb374cac9df1b21
         buffer_pool.insert_new_page(rid_new, TPS, 0);
         for (int i = NUM_METADATA_COLUMNS; i < num_column; i++) {
             if (std::isnan(columns[i - NUM_METADATA_COLUMNS]) || columns[i-NUM_METADATA_COLUMNS] < -2147480000) { // Wrapper changes None to smallest integer possible

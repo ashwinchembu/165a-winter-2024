@@ -82,6 +82,14 @@ void BufferPool::set (const RID& rid, const int& column, const int& value, const
   Frame* found = search(rid, column);
   std::cout << "hello3" << std::endl;
   if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
+    std::cout << "Couldn't find it :(" << std::endl;
+    Frame* current_frame = head;
+    while(current_frame != nullptr){ //iterate through entire bufferpool
+    if(current_frame->page != nullptr){
+      std::cout << "first rid page is " << current_frame->first_rid_page << " column is " << current_frame->column << std::endl;
+    }
+    current_frame = current_frame->next;
+  }
     found = load(rid, column);
   }
   *(found->page->data + rid.offset) = value;
@@ -115,7 +123,7 @@ Frame* BufferPool::search(const RID& rid, const int& column){
   while(current_frame != range_end->next){
     if ((current_frame->valid)) {
       if(path == "./ECS165/Merge"){
-        std::cout << "we are looking at " << current_frame->first_rid_page << " and " << current_frame->column << std::endl;
+        //std::cout << "we are looking at " << current_frame->first_rid_page << " and " << current_frame->column << std::endl;
       }
       if(rid.first_rid_page == current_frame->first_rid_page && column == current_frame->column){
         std::cout << "found and exititing" << std::endl;
