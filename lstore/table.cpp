@@ -342,6 +342,7 @@ int Table::merge() {
 	merge_queue.pop();
 	auto pool_size = to_merge.size()*2*sizeof(int); // change to actual - temp
 	BufferPool* mergeBufferPool = new BufferPool(pool_size);
+	mergeBufferPool
 
 // 	Frame* cur_frame = mergeBufferPool->head; //create number of frames according to bufferpool size
 //   	for(int i = 0; i < (to_merge.size() - 1); i++){

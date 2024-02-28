@@ -228,7 +228,7 @@ void BufferPool::write_back(Frame* frame){
   if (frp < 0) {
     frp_s = "M" + std::to_string(-1 * (frp));
   }
-  std::string data_path = path + "/" + frame->table_name
+  std::string data_path = path + frame->table_name
     + "_" + std::to_string(frame->first_rid_page_range)
     + "_" + frp_s
     + "_" + std::to_string(frame->column) + ".dat";
