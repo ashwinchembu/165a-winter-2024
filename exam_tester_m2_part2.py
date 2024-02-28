@@ -36,6 +36,7 @@ keys = sorted(list(records.keys()))
 
 # Check records that were presisted in part 1
 for key in keys:
+    print(records[key])
     record = query.select_version(key, 0, [1, 1, 1, 1, 1], -1)[0]
     print(record)
     error = False
