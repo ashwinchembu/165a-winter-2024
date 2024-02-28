@@ -313,7 +313,10 @@ Page::Page() {
 Page::~Page() {
   std::cout << "page destructor in, pointer for data ->" << data << std::endl;
   std::cout << "Pointer for page ->" << this << std::endl;
+  if (data != nullptr) {
     delete[] data;
+    data = nullptr;
+  }
       std::cout << "page destructor out" << std::endl;
 }
 
