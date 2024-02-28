@@ -92,6 +92,7 @@ Frame* BufferPool::search(const RID& rid, const int& column){
   Frame* current_frame = range_begin; //iterate through range
   while(current_frame != range_end->next){
     if ((current_frame->valid)) {
+      std::cout << "we are looking at " << current_frame->first_rid_page << " and " << current_frame->column << std::endl;
       // std::cout << "if valid" << std::endl;
       if(rid.first_rid_page == current_frame->first_rid_page && column == current_frame->column){
         // std::cout << "if other thing" << std::endl;
