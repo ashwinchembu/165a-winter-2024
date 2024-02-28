@@ -204,6 +204,20 @@ RID Table::insert(const std::vector<int>& columns) {
     }
 
     page_directory.insert({rid_id, record});
+	 rid_id = num_update * -1;
+	size_t i = 0;
+	for (; i < page_range.size(); i++) {
+		if ((page_range[i].get())->pages[0].first_rid_page_range == record.first_rid_page_range) {
+			break;
+		}
+	}
+
+	RID new_rid(rid_id);
+	new_rid.table_name = name;
+	new_rid.first_rid_page_range = record.first_rid_page_range;
+
+	(page_range[i].get())->update(record, new_rid, columns, page_directory);
+	page_directory.insert({rid_id, new_rid});
     return record;
 }
 
@@ -394,7 +408,10 @@ std::cout << "bufferpool num is " << sum << std::endl;
 
 	int TPS = 0;
 	Frame* first_frame = to_merge[0];
-	int latest_tail_id = mergeBufferPool->get(first_frame->first_rid_page, TPS);
+	int latest_tail_id;
+	if (first_frame->first_rid_page){
+	latest_tail_id = mergeBufferPool->get(first_frame->first_rid_page, TPS);
+	}
 
 	std::map<int, std::pair<int, std::vector<int>>> latest_update; //<latest base RID: <tailRID, values>>
 	std::set<int> visited_rids;
@@ -423,6 +440,7 @@ std::cout << "bufferpool num is " << sum << std::endl;
 
 			if (currentFrame->page){
 				//valid page
+				if (page_rid.id != 0){
 				currentFrame = mergeBufferPool->search(page_rid, RID_COLUMN);
 				Page currentPage = *(currentFrame->page);
 				for (int tail_iterator = (currentPage.num_rows-1)*sizeof(int); tail_iterator >= 0; tail_iterator -= sizeof(int) ){
@@ -436,7 +454,7 @@ std::cout << "bufferpool num is " << sum << std::endl;
 					if (currentRID.id < TPS) {
 						TPS = currentRID.id;
 					}
-
+					if (currentRID.id != 0){
 					int baseRID = mergeBufferPool->get(currentRID, BASE_RID_COLUMN);
 					if (latest_update.find(baseRID) == latest_update.end()){
 						if (latest_update[baseRID].first > currentRID.id){
@@ -453,6 +471,8 @@ std::cout << "bufferpool num is " << sum << std::endl;
 					// if (currentRID < tail_rid_last) {
 					// 	tail_rid_last = currentRID;
 					// }
+				}
+				}
 				}
 			}
 		}
