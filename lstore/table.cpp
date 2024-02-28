@@ -352,7 +352,7 @@ int Table::merge() {
 
 	*(mergeBufferPool->head) = *(to_merge[0]);
 //	std::cout << "size of to merge: " << to_merge.size() << std::endl;
-	for (int i = 1; i < to_merge.size(); i++) {
+	for (int i = 0; i < to_merge.size(); i++) {
 		//for(int j = 0; j < num_columns; )
 		RID new_rid(i,
 			to_merge[i]->first_rid_page_range,
