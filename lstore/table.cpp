@@ -246,7 +246,7 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 		for (int i = deep_copy->pages.size() - 1; i > 0; i--) {
 			RID rid = deep_copy->pages[i];
 			// load all of the pages in pagerange into bufferpool
-			for (int to_load_tail_page_col = 0; to_load_tail_page_col < num_columns; to_load_tail_page_col++){
+			for (int to_load_tail_page_col = 0; to_load_tail_page_col < num_columns + NUM_METADATA_COLUMNS; to_load_tail_page_col++){
 				Frame* new_frame = buffer_pool.get_page(rid, to_load_tail_page_col);
 				insert_to_queue.push_back(new_frame);
 			}
@@ -361,7 +361,7 @@ int Table::merge() {
 			name
 		);
 		Frame* frame = mergeBufferPool->insert_into_frame(new_rid, to_merge[i]->column, to_merge[i]->page);
-		std::cout << "Merge size: " << to_merge.size() << " RID: " << new_rid.id << " " << to_merge[i]->first_rid_page_range << " frame: " << frame->first_rid_page_range << std::endl;
+		std::cout << "Merge size: " << to_merge.size() << " RID: " << new_rid.id << " " << to_merge[i]->first_rid_page << " frame: " << frame->first_rid_page << std::endl;
 		
 		std::cout << "put into frame" << frame->first_rid_page << std::endl;
 		std::cout << "value in page" << *(to_merge[i]->page->data) << std::endl;
