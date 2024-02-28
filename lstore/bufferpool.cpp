@@ -100,6 +100,7 @@ Frame* BufferPool::search(const RID& rid, const int& column){
   size_t hash = hash_fun(rid.first_rid_page); //perform hash on rid
   Frame* range_begin = hash_vector[hash]; //beginning of hash range
   if(path == "./ECS165/Merge"){
+    std::cout << "hash for " << rid.first_rid_page << " is " << hash << std::endl;
     std::cout << "1 range begin is " << hash_vector[0] << std::endl;
     std::cout << "2 range begin is " << range_begin << std::endl;
   }
