@@ -350,12 +350,8 @@ int Table::merge() {
 // 		cur_frame = cur_frame->next;
 //   }
 
-	*(mergeBufferPool->head) = *(to_merge[0]);
-	mergeBufferPool->head->dirty = true;
-	mergeBufferPool->head->valid = true;
-
 	Frame* current_frame = mergeBufferPool->head;
-	for (int i = 1; i < to_merge.size(); i++) { //iterate through entire bufferpool
+	for (int i = 0; i < to_merge.size(); i++) { //iterate through entire bufferpool
 		*(current_frame) = *(to_merge[i]);
 		current_frame->dirty = true;
 		current_frame->valid = true;
