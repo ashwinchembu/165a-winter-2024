@@ -360,6 +360,7 @@ int Table::merge() {
 			name
 		);
 		Frame* frame = mergeBufferPool->insert_into_frame(new_rid, to_merge[i]->column, to_merge[i]->page);
+		std::cout << "value in page" << to_merge[i]->page->data;
 		frame->dirty = true;
 	}
 	//set last frame
