@@ -36,12 +36,14 @@ BufferPool::BufferPool (const int& num_pages) : bufferpool_size(num_pages){
 }
 
 BufferPool::~BufferPool () {
+  std::cout << "bufferpool destructor in" << std::endl;
   Frame* current_frame = head;
   while(current_frame != nullptr){ //iterate through entire bufferpool
     Frame* old = current_frame;
     current_frame = current_frame->next;
     delete old;
   }
+  std::cout << "bufferpool destructor out" << std::endl;
 }
 
 int BufferPool::hash_fun(unsigned int x) {
@@ -365,7 +367,10 @@ void BufferPool::set_path (const std::string& path_rhs) {
 
 Frame::Frame () {}
 
-Frame::~Frame () {}
+Frame::~Frame () {
+  std::cout << "frame destructor in" << std::endl;
+  std::cout << "frame destructor out" << std::endl;
+}
 
 bool Frame::operator==(const Frame& rhs) {
   return ((first_rid_page_range == rhs.first_rid_page_range) && (first_rid_page == rhs.first_rid_page) && (column == rhs.column));

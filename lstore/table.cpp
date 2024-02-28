@@ -173,11 +173,13 @@ Table::Table(const std::string& name, const int& num_columns, const int& key): n
 };
 
 Table::~Table() {
+	  std::cout << "table destructor in" << std::endl;
 	for (size_t i = 0; i <page_range.size(); i++) {
 		if (page_range[i].unique()) {
 			page_range[i].reset();
 		}
 	}
+	  std::cout << "table destructor out" << std::endl;
 }
 
 /***
@@ -244,7 +246,7 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 		//BufferPool* mergeBufferPool = new BufferPool(pool_size);
 		//std::cout << "size: " << deep_copy->pages.size() << std::endl;
 		std::vector<Frame*> insert_to_queue;
-		for (int i = deep_copy->pages.size() - 1; i >= 0; i--) {
+		for (int i = deep_copy->pages.size() - 1; i > 0; i--) {
 			RID rid = deep_copy->pages[i];
 			// load all of the pages in pagerange into bufferpool
 			for (int to_load_tail_page_col = 0; to_load_tail_page_col < num_columns + NUM_METADATA_COLUMNS; to_load_tail_page_col++){
@@ -252,13 +254,6 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 				insert_to_queue.push_back(new_frame);
 			}
 		}
-
-		// std::cout << "-----------------insert-queue-size" << insert_to_queue.size() << std::endl;
-		// for (int i = 0; i < insert_to_queue.size(); i++) {
-		// 	std::cout << insert_to_queue[i]->first_rid_page << " ";
-		// }
-		// std::cout << std::endl;
-
 		merge_queue.push(insert_to_queue);
 	}
 
@@ -345,29 +340,29 @@ int Table::merge() {
 
 	*/
 
-	// std::cout << "entered merge" << std::endl;
+	std::cout << "entered merge" << std::endl;
 	std::vector<Frame*> to_merge = merge_queue.front();
 
 	merge_queue.pop();
-	auto pool_size = to_merge.size(); // change to actual - temp
+	auto pool_size = to_merge.size()*PAGE_SIZE*2*sizeof(int); // change to actual - temp
 	BufferPool* mergeBufferPool = new BufferPool(pool_size);
 	mergeBufferPool->set_path("./ECS165/Merge");
 	struct stat checkDir;
 	if(stat(mergeBufferPool->path.c_str(),&checkDir)!=0 || !S_ISDIR(checkDir.st_mode)){
 		mkdir(mergeBufferPool->path.c_str(),0777);
 	}
-	std::cout << "ONE" << std::endl;
-	for (size_t i = 0; i < to_merge.size(); i++) {
+
+	for (int i = 0; i < to_merge.size(); i++) {
 		RID new_rid(i, to_merge[i]->first_rid_page_range, to_merge[i]->first_rid_page, 0,	name);
 		 Frame* frame = mergeBufferPool->insert_into_frame(new_rid, to_merge[i]->column, to_merge[i]->page);
 		frame->dirty = true;
 	}
 
 	int TPS = 0;
-	Frame* first_frame = to_merge[0];
-	RID last_tail_rid(0, first_frame->first_rid_page_range, first_frame->first_rid_page, 0 ,name);
-	int latest_tail_id = mergeBufferPool->get(last_tail_rid, TPS);
-	std::cout << "TWO" << std::endl;
+    Frame* first_frame = to_merge[0];
+    RID last_tail_rid(0, first_frame->first_rid_page_range, first_frame->first_rid_page, 0 ,name);
+    int latest_tail_id = mergeBufferPool->get(last_tail_rid, TPS);
+
 	std::map<int, std::pair<int, std::vector<int>>> latest_update; //<latest base RID: <tailRID, values>>
 	std::set<int> visited_rids;
 
@@ -429,46 +424,32 @@ int Table::merge() {
 			}
 		}
 	}
-	std::cout << "THREE" << std::endl;
 	//std::cout << "kdljflkadklfdsjfkjds " << latest_update.size() << std::endl;
 	for (const auto& pair : latest_update) {
 		if (pair.first == 0) {
 			continue;
 		}
-		std::cout << "tailRID " << pair.first << " " << pair.second.first << std::endl;
-
+		std::cout << "kdljflkadklfdsjfkjds " << pair.first << std::endl;
 		RID latest_base_rid = page_directory.find(pair.first)->second;
-		// std::cout << latest_base_rid.id << std::endl;
-		// std::cout << "kdljflkadklfdsjfkjds" << std::endl;
+		std::cout << "kdljflkadklfdsjfkjds" << std::endl;
 		const std::vector<int>& values = pair.second.second;
-		// std::cout << "kdljflkadklfdsjfkjds" << std::endl;
-		// std::cout << "_________|__" << values.size() << std::endl;
+		std::cout << "kdljflkadklfdsjfkjds" << std::endl;
 
-			std::cout << "3.1" << std::endl;
-
-
-
-		int tail_id = pair.second.first;
-		mergeBufferPool->set(latest_base_rid, INDIRECTION_COLUMN, tail_id, false);
-
-		// std::cout << "kdljflkadklfdsjfkjds" << std::endl;
+		int tail_id = latest_update.at(pair.first).first;
+		mergeBufferPool->set (latest_base_rid, INDIRECTION_COLUMN, tail_id, false);
 
 		for (int col = 0; col < num_columns; col++){
 			//mergeBufferPool->set (latest_base_rid, col, values[col], false);
-			//std::cout << "latest base_rid: " << latest_base_rid.id << " col :" << col << std::endl;
+			std::cout << "latest base_rid: " << latest_base_rid.id << " col :" << col << std::endl;
 			mergeBufferPool->get(latest_base_rid, col);
-			//std::cout << "get :)" << std::endl;
-			//std::cout << latest_base_rid.id << std::endl;
-			// std::cout <<"values col" << values[col] << std::endl;
+			std::cout << "get :)" << std::endl;
 			mergeBufferPool->set (latest_base_rid, col, values[col], false);
-			//std::cout <<"values col!!!" << values[col] << std::endl;
 			//mergeBufferPool->set(latest_base_rid, col, 0, false);
-			// std::cout << ":)" << std::endl;
 		}
 		// mergeBufferPool->set (latest_base_rid, TPS, tail_rid_last, false);
 	}
-	std::cout << "FOUR" << std::endl;
-	mergeBufferPool->write_back_all();
+
+	 mergeBufferPool->write_back_all();
 	// delete mergeBufferPool;
 
     return -1;
