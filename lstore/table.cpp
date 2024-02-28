@@ -331,7 +331,6 @@ int Table::read(FILE* fp) {
  */
 int Table::merge() {
 	if (!merge_queue.size()){
-		//std::cout << "size is 0" << std::endl;
 		return 0;
 	}
 	//std::cout << "after if statement" << std::endl;
@@ -349,7 +348,7 @@ int Table::merge() {
 	std::vector<Frame*> to_merge = merge_queue.front();
 
 	merge_queue.pop();
-	auto pool_size = to_merge.size() * 2; // change to actual - temp
+	auto pool_size = to_merge.size() * 5; // change to actual - temp
 	BufferPool* mergeBufferPool = new BufferPool(pool_size);
 	mergeBufferPool->set_path("./ECS165/Merge");
 	struct stat checkDir;
@@ -371,7 +370,7 @@ int Table::merge() {
 	std::map<int, std::pair<int, std::vector<int>>> latest_update; //<latest base RID: <tailRID, values>>
 	std::set<int> visited_rids;
 
-//	int tail_rid_last = 0;
+	int tail_rid_last = 0;
 	//load copy of all base pages in each page range
 	for (int i = to_merge.size() - 1; i >= 0; i--) {
 		Frame* currentFrame = to_merge[i];
@@ -463,9 +462,9 @@ int Table::merge() {
 		// mergeBufferPool->set (latest_base_rid, TPS, tail_rid_last, false);
 	}
 
-	std::cout << ":)" << std::endl;
+// 	std::cout << ":)" << std::endl;
 	mergeBufferPool->write_back_all();
-	// delete mergeBufferPool;
+	delete mergeBufferPool;
 
     return -1;
 }

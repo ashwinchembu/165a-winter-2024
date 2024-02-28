@@ -276,26 +276,37 @@ Frame* BufferPool::evict(const RID& rid){ //return the frame that was evicted
 }
 
 void BufferPool::write_back(Frame* frame){
+  std::cout << "1.1" << std::endl;
   int frp = frame->first_rid_page;
   std::string frp_s = std::to_string(frame->first_rid_page);
+  std::cout << "1.2" << std::endl;
   if (frp < 0) {
     frp_s = "M" + std::to_string(-1 * (frp));
+    std::cout << "1.3" << std::endl;
   }
+  std::cout << "1.4" << std::endl;
   std::string data_path = path + "/" + frame->table_name
     + "_" + std::to_string(frame->first_rid_page_range)
     + "_" + frp_s
     + "_" + std::to_string(frame->column) + ".dat";
+    std::cout << "1.5" << std::endl;
   FILE* fp = fopen((data_path).c_str(),"w");
   if (!fp) {
     throw std::invalid_argument("Couldn't open file " + data_path);
   }
-  fwrite(&(frame->page->num_rows), sizeof(int), 1, fp);
-  fwrite(frame->page->data, sizeof(int), frame->page->num_rows, fp);
+  std::cout << "1.6" << std::endl;
+  if (frame->page != nullptr) {
+    fwrite(&(frame->page->num_rows), sizeof(int), 1, fp);
+    fwrite(frame->page->data, sizeof(int), frame->page->num_rows, fp);
+  }
   fclose(fp);
+
+  std::cout << "1.7" << std::endl;
 
   if(frame->page != nullptr){
     //std::cout << "null" << std::endl;
     delete frame->page;
+    std::cout << "1.8" << std::endl;
   }
 }
 
