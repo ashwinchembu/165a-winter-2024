@@ -148,7 +148,7 @@ Frame* BufferPool::load (const RID& rid, const int& column){ //return the frame 
   frame = insert_into_frame(rid, column, p); //insert the page into a frame in the bufferpool
   frame->dirty = false; //frame has not yet been modified
   if (e != 1 + p->num_rows) {
-    std::cout << "error?" << std::endl;
+    std::cout << "error?: " << e << std::endl;
   }
   return frame;
 }
