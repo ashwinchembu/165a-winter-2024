@@ -251,7 +251,7 @@ void BufferPool::write_back_all (){
       write_back(current_frame);
     } else {
       current_frame->valid = false;
-      if(frame->page != nullptr){
+      if(current_frame->page != nullptr){
         delete current_frame->page;
       }
     }
