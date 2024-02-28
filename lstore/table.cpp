@@ -245,23 +245,13 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 		std::vector<Frame*> insert_to_queue;
 		for (int i = deep_copy->pages.size() - 1; i > 0; i--) {
 			RID rid = deep_copy->pages[i];
-			// if (rid.id < 0){ //inside tail page
-				// load all of the pages in pagerange into bufferpool
-				//std::cout << "rid: " << rid.id << std::endl;
-					for (int to_load_tail_page_col = 0; to_load_tail_page_col < num_columns; to_load_tail_page_col++){
-						//std::cout << "for loop" << std::endl;
-						Frame* new_frame = buffer_pool.get_page(rid, to_load_tail_page_col);
-						insert_to_queue.push_back(new_frame);
-						//new_frame->first_rid_page = rid.id;
-						//std::cout << "new frame: " << new_frame->first_rid_page << " rid: " << rid.id << std::endl;
-						//mergeBufferPool
-					}
-			// }
+			// load all of the pages in pagerange into bufferpool
+			for (int to_load_tail_page_col = 0; to_load_tail_page_col < num_columns; to_load_tail_page_col++){
+				Frame* new_frame = buffer_pool.get_page(rid, to_load_tail_page_col);
+				insert_to_queue.push_back(new_frame);
 			}
-			//std::vector<Frame*> insert_to_queue = mergeBufferPool->hash_vector;
-			//std::cout << "insert queue size: " << insert_to_queue.size() << std::endl;
-			merge_queue.push(insert_to_queue);
-			//delete mergeBufferPool;
+		}
+		merge_queue.push(insert_to_queue);
 	}
 
 	page_directory.insert({rid_id, new_rid});
@@ -348,67 +338,52 @@ int Table::merge() {
 	*/	
 	std::cout << "entered merge" << std::endl;
 	std::vector<Frame*> to_merge = merge_queue.front();
-	//std::cout << "to merge size: " << to_merge.size() << std::endl;
 
 	merge_queue.pop();
 	auto pool_size = to_merge.size()*2*sizeof(int); // change to actual - temp
 	BufferPool* mergeBufferPool = new BufferPool(pool_size);
-	//mergeBufferPool->hash_vector = to_merge;
 
-	//set first frame
-	//mergeBufferPool->head = to_merge[0];
-	// mergeBufferPool->head->next = to_merge[1];
-	//Frame* cur_frame = mergeBufferPool->head;
-	//set middle frames
-	// for (int i = 1; i < to_merge.size() - 1; i++) {
-	// 	mergeBufferPool->hash_vector[i]->prev = mergeBufferPool->hash_vector[i - 1];
-	// 	mergeBufferPool->hash_vector[i]->next = mergeBufferPool->hash_vector[i + 1];
-	// }
-	
-	Frame* cur_frame = mergeBufferPool->head; //create number of frames according to bufferpool size
-  	for(int i = 0; i < (to_merge.size() - 1); i++){
-		*(cur_frame) = *(to_merge[i]);
-		cur_frame = cur_frame->next;
-		// cur_frame->next = new_frame;
-		// new_frame->prev = cur_frame;
-		// if(i % (to_merge.size() / NUM_BUFFERPOOL_HASH_PARTITIONS) == 0){ //check if the frame should be a hash range beginning
-		// 	mergeBufferPool->hash_vector.push_back(new_frame);
-		// 	frame_directory.push_back(0);
-		// }
-		// old_frame = new_frame;
-  }
+// 	Frame* cur_frame = mergeBufferPool->head; //create number of frames according to bufferpool size
+//   	for(int i = 0; i < (to_merge.size() - 1); i++){
+// 		*(cur_frame) = *(to_merge[i]);
+// 		cur_frame = cur_frame->next;
+//   }
+	for (int i = 0; i < to_merge.size(); i++) {
+		//for(int j = 0; j < num_columns; )
+		RID new_rid(i, 
+			to_merge[i]->first_rid_page_range,
+			to_merge[i]->first_rid_page,
+			0,
+			name
+		);
+		mergeBufferPool->insert_into_frame(new_rid, to_merge[i]->column, to_merge[i]->page);
+	}
 
 	//set last frame
 	*(mergeBufferPool->tail) = *(to_merge[to_merge.size() - 1]);
-	// mergeBufferPool->hash_vector[mergeBufferPool->hash_vector.size() - 1]->prev = mergeBufferPool->hash_vector[mergeBufferPool->hash_vector.size()-2];
 
 	std::map<int, std::pair<int, std::vector<int>>> latest_update; //<latest base RID: <tailRID, values>>
 	std::set<int> visited_rids;
-	//load copy of all base pages in each page range
-
-	//std::cout << "--------got to here" << std::endl;
+	
 	int tail_rid_last = 0;
-	//std::cout << to_merge[0]->first_rid_page <<std::endl;
-	//int last_update_rid = mergeBufferPool->get(to_merge[0]->first_rid_page, TPS);
-	//std::cout << "--------got to here" << std::endl;
-
+	//load copy of all base pages in each page range
 	for (int i = to_merge.size() - 1; i >= 0; i--) {
 		Frame* currentFrame = to_merge[i];
-		int page_rid = currentFrame->first_rid_page;
+		RID page_rid = page_directory.find(currentFrame->first_rid_page)->second;
 		
 		//std::cout << page_rid << std::endl;
 		
 		//determine that we dont visit same logical set twice
-		auto pos = visited_rids.find(page_rid);
+		auto pos = visited_rids.find(page_rid.id);
 
 		if (pos != visited_rids.end()){
 			continue;
 		}
 		else{
-			visited_rids.insert(page_rid);
+			visited_rids.insert(page_rid.id);
 		}
 		//determine frame holds tail page
-		if (page_rid < 0){
+		if (page_rid.id < 0){
 			//holds tail page
 			// if (page_rid > last_update_rid) {
 			// 	continue;
@@ -418,16 +393,18 @@ int Table::merge() {
 			//std::cout << "--------got to here" << std::endl;
 			if (currentFrame->page){
 				//valid page
-				std::cout << "--------got to here" << std::endl;
 				currentFrame = mergeBufferPool->search(page_rid, RID_COLUMN);
 				std::cout << "--------search done" << currentFrame->first_rid_page_range << std::endl;
 				Page currentPage = *(currentFrame->page);
-				std::cout << "--------got to here" << std::endl;
 				for (int tail_iterator = (currentPage.num_rows-1)*sizeof(int); tail_iterator >= 0; tail_iterator -= sizeof(int) ){
 					int currentRID = *(tail_iterator + currentPage.data);
+					std::cout << "--------got to here" << std::endl;
 					int baseRID = mergeBufferPool->get(currentRID, BASE_RID_COLUMN);
+					std::cout << "--------got to here" << std::endl;
 					if (latest_update.find(baseRID) != latest_update.end()){
+						std::cout << "--------got to here" << std::endl;
 						if (latest_update[baseRID].first > currentRID){
+							std::cout << "--------got to here" << std::endl;
 							latest_update[baseRID].first = currentRID;
 							std::vector<int> merge_vals;
 							for (int j = 0; j < num_columns; j++) { //indirection place stuff
@@ -455,10 +432,10 @@ int Table::merge() {
 		}
 		// mergeBufferPool->set (latest_base_rid, TPS, tail_rid_last, false);
 	}
-	for (const auto& to_evict : mergeBufferPool->hash_vector){
-		mergeBufferPool->evict(to_evict->first_rid_page);
-	}
-		delete mergeBufferPool;
+		
+	mergeBufferPool->write_back_all();
+	delete mergeBufferPool;
+
     return -1;
 }
 
