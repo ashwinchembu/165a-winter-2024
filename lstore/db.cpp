@@ -117,6 +117,7 @@ Database::~Database() {
 }
 
 void Database::open(const std::string& path) {
+	std::cout << "DB opened with " << path << '\n';
 //	// path is relative to parent directory of this file
 	file_path = path;
 

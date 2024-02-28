@@ -104,6 +104,7 @@
 //}
 
 PageRange::PageRange (RID& new_rid, const std::vector<int>& columns) {
+  std::cout << "Page range constructed" << '\n';
     new_rid.offset = 0;
     num_column = columns.size();
 
@@ -145,8 +146,6 @@ bool PageRange::base_has_capacity () const {
 }
 
 PageRange::~PageRange(){
-  std::cout << "pagerange destructor in" << std::endl;
-  std::cout << "pagerange destructor out" << std::endl;
 }
 
 /***
