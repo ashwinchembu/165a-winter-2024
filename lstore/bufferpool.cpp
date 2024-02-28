@@ -316,7 +316,7 @@ void BufferPool::write_back_all (){
       write_back(current_frame);
     } else {
       current_frame->valid = false;
-      if(current_frame->page != nullptr){
+      if(current_frame->column != -1){
         std::cout << "Delete called on " << current_frame->page << std::endl;
         delete current_frame->page;
         std::cout << "Deleted " << current_frame->page << std::endl;
