@@ -89,10 +89,13 @@ Frame* BufferPool::search(const RID& rid, const int& column){
   Frame* current_frame = range_begin; //iterate through range
   while(current_frame != range_end->next){
     if ((current_frame->valid)) {
+      // std::cout << "if valid" << std::endl;
       if(rid.first_rid_page == current_frame->first_rid_page && column == current_frame->column){
+        // std::cout << "if other thing" << std::endl;
         return current_frame;
       }
     }
+    // std::cout << "not valid" << std::endl;
     current_frame = current_frame->next;
   }
   return nullptr; //if not found in the range
@@ -132,6 +135,8 @@ Frame* BufferPool::load (const RID& rid, const int& column){ //return the frame 
     + "_" + std::to_string(rid.first_rid_page_range)
     + "_" + frp_s
     + "_" + std::to_string(column) + ".dat";
+
+        std::cout << "data path: " << data_path << std::endl;
 
   FILE* fp = fopen((data_path).c_str(),"r");
   if (!fp) {
