@@ -355,7 +355,6 @@ void BufferPool::set_path (const std::string& path_rhs) {
 Frame::Frame () {}
 
 Frame::~Frame () {
-  std::cout << "/* message */" << std::endl;
 }
 
 bool Frame::operator==(const Frame& rhs) {
