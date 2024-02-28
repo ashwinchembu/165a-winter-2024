@@ -141,7 +141,7 @@ Frame* BufferPool::load (const RID& rid, const int& column){ //return the frame 
   Frame* frame = nullptr;
   Page* p = new Page();
   int e = fread(&(p->num_rows), sizeof(int), 1, fp);
-  e = fread(p->data, sizeof(int), p->num_rows, fp);
+  e = e + fread(p->data, sizeof(int), p->num_rows, fp);
   std::cout << "File at " << data_path << '\n';
   std::cout << "Data inside: " << *(p) << std::endl;
   fclose(fp);
