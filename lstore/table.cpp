@@ -351,7 +351,8 @@ int Table::merge() {
 //   }
 
 	*(mergeBufferPool->head) = *(to_merge[0]);
-	mergeBufferPool->head->dirty = true;/*
+	mergeBufferPool->head->dirty = true;
+	mergeBufferPool->head->valid = true;/*
 
 	while(current_frame != nullptr){ //iterate through entire bufferpool
 	if(current_frame->page != nullptr){
