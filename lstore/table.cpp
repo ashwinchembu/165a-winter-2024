@@ -350,7 +350,7 @@ int Table::merge() {
 // 		cur_frame = cur_frame->next;
 //   }
 
-	*(mergeBufferPool->head) = *(to_merge[0]);
+	//*(mergeBufferPool->head) = *(to_merge[0]);
 	for (int i = 0; i < to_merge.size(); i++) {
 		//for(int j = 0; j < num_columns; )
 		RID new_rid(i,
@@ -367,7 +367,7 @@ int Table::merge() {
 Frame* current_frame = mergeBufferPool->head;
 while(current_frame != nullptr){ //iterate through entire bufferpool
 	if(current_frame->page != nullptr){
-		std::cout << "first ride page: " << current_frame->first_rid_page << std::endl;
+		std::cout << "first rid page: " << current_frame->first_rid_page << std::endl;
 	}
 	current_frame = current_frame->next;
 }
