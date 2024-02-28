@@ -85,14 +85,14 @@ void BufferPool::set (const RID& rid, const int& column, const int& value, const
 }
 
 Frame* BufferPool::search(const RID& rid, const int& column){
-  std::cout << "we are looking for rid " << rid.first_rid_page << " and " << column << std::endl;
+  //std::cout << "we are looking for rid " << rid.first_rid_page << " and " << column << std::endl;
   size_t hash = hash_fun(rid.first_rid_page); //perform hash on rid
   Frame* range_begin = hash_vector[hash]; //beginning of hash range
   Frame* range_end = (hash == hash_vector.size() - 1) ? tail : hash_vector[hash + 1]->prev; //end of hash range
   Frame* current_frame = range_begin; //iterate through range
   while(current_frame != range_end->next){
     if ((current_frame->valid)) {
-      std::cout << "we are looking at " << current_frame->first_rid_page << " and " << current_frame->column << std::endl;
+    //  std::cout << "we are looking at " << current_frame->first_rid_page << " and " << current_frame->column << std::endl;
       // std::cout << "if valid" << std::endl;
       if(rid.first_rid_page == current_frame->first_rid_page && column == current_frame->column){
         // std::cout << "if other thing" << std::endl;
@@ -227,6 +227,9 @@ Frame* BufferPool::evict(const RID& rid){ //return the frame that was evicted
   while(true){ //search until a page with no pins is found
     if(current_frame->pin == 0){ //if not pinned, we can evict
       if(current_frame->dirty && current_frame->valid){ //if dirty and valid write back to disk
+        if(path == "./ECS165/Merge"){
+          std::cout << "evict from merge " << current_frame->first_rid_page << " " << current_frame->column << std::endl;
+        }
         write_back(current_frame);
       }
       frame_directory[hash]--;
