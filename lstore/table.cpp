@@ -352,7 +352,8 @@ int Table::merge() {
 
 	for (size_t i = 0; i < to_merge.size(); i++) {
 		RID new_rid(i, to_merge[i]->first_rid_page_range, to_merge[i]->first_rid_page, 0,	name);
-		 Frame* frame = mergeBufferPool->insert_into_frame(new_rid, to_merge[i]->column, new Page(*(to_merge[i]->page)));
+		// Frame* frame = mergeBufferPool->insert_into_frame(new_rid, to_merge[i]->column, new Page(*(to_merge[i]->page)));
+		 Frame* frame = mergeBufferPool->insert_into_frame(new_rid, to_merge[i]->column, to_merge[i]->page);
 		frame->dirty = true;
 	}
 
