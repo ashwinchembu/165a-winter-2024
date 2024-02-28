@@ -342,6 +342,7 @@ int Table::merge() {
 	merge_queue.pop();
 	auto pool_size = to_merge.size()*PAGE_SIZE*2*sizeof(int); // change to actual - temp
 	BufferPool* mergeBufferPool = new BufferPool(pool_size);
+	mergeBufferPool->set_path("./ECS165/Merge");
 
 // 	Frame* cur_frame = mergeBufferPool->head; //create number of frames according to bufferpool size
 //   	for(int i = 0; i < (to_merge.size() - 1); i++){
@@ -350,6 +351,7 @@ int Table::merge() {
 //   }
 
 	*(mergeBufferPool->head) = *(to_merge[0]);
+	std::cout << "size of to merge: " << to_merge.size() << std::endl;
 	for (int i = 0; i < to_merge.size(); i++) {
 		//for(int j = 0; j < num_columns; )
 		RID new_rid(i,
@@ -360,10 +362,25 @@ int Table::merge() {
 		);
 		Frame* frame = mergeBufferPool->insert_into_frame(new_rid, to_merge[i]->column, to_merge[i]->page);
 		std::cout << "Merge size: " << to_merge.size() << " RID: " << new_rid.id << " " << to_merge[i]->first_rid_page_range << " frame: " << frame->first_rid_page_range << std::endl;
+		
+		std::cout << "put into frame" << frame->first_rid_page << std::endl;
+		std::cout << "value in page" << *(to_merge[i]->page->data) << std::endl;
+
 		frame->dirty = true;
 	}
 	//set last frame
 	//*(mergeBufferPool->tail) = *(to_merge[to_merge.size() - 1]);
+	
+	
+	//set last frame
+//	*(mergeBufferPool->tail) = *(to_merge[to_merge.size() - 1]);
+	Frame* current_frame = mergeBufferPool->head;
+	while(current_frame != nullptr){ //iterate through entire bufferpool
+	if(current_frame->page != nullptr){
+		std::cout << "first rid page: " << current_frame->first_rid_page << std::endl;
+	}
+	current_frame = current_frame->next;
+}
 
 	std::map<int, std::pair<int, std::vector<int>>> latest_update; //<latest base RID: <tailRID, values>>
 	std::set<int> visited_rids;
