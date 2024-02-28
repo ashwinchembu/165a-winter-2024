@@ -156,8 +156,8 @@ Frame* BufferPool::search(const RID& rid, const int& column, std::string merge){
 
 void BufferPool::update_ages(Frame*& just_accessed, Frame*& range_begin){ //change ages and reorder linked list
   std::cout << "Error 1" << std::endl;
-  std::cout << just_accessed->first_rid_page << std::endl;
-  std::cout << range_begin->first_rid_page << std::endl;
+  std::cout << just_accessed << std::endl;
+  std::cout << range_begin << std::endl;
   if(just_accessed != range_begin){ //if not already the range beginning / most recently accessed
     std::cout << "Error 2" << std::endl;
     if(just_accessed->next == nullptr ){ //if just_accessed is the tail
