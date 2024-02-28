@@ -374,7 +374,7 @@ bool Frame::operator==(const Frame& rhs) {
 
 void Frame::operator=(const Frame& rhs)
     {
-      page = rhs.page;
+      *(page) = *(rhs.page);
       first_rid_page = rhs.first_rid_page; //first rid in the page
       table_name = rhs.table_name;
       first_rid_page_range = rhs.first_rid_page_range; //first rid in the page range
