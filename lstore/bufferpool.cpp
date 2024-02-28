@@ -45,7 +45,7 @@ BufferPool::~BufferPool () {
 }
 
 int BufferPool::hash_fun(unsigned int x) {
-  return (x / 4096) % 4;
+  return (x / PAGE_SIZE) % NUM_BUFFERPOOL_HASH_PARTITIONS;
 }
 
 int BufferPool::get (const RID& rid, const int& column) {
