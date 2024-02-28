@@ -342,13 +342,14 @@ int Table::merge() {
 	merge_queue.pop();
 	auto pool_size = to_merge.size()*2*sizeof(int); // change to actual - temp
 	BufferPool* mergeBufferPool = new BufferPool(pool_size);
-	mergeBufferPool
 
 // 	Frame* cur_frame = mergeBufferPool->head; //create number of frames according to bufferpool size
 //   	for(int i = 0; i < (to_merge.size() - 1); i++){
 // 		*(cur_frame) = *(to_merge[i]);
 // 		cur_frame = cur_frame->next;
 //   }
+
+	*(mergeBufferPool->head) = *(to_merge[0]);
 	for (int i = 0; i < to_merge.size(); i++) {
 		//for(int j = 0; j < num_columns; )
 		RID new_rid(i,
@@ -360,7 +361,6 @@ int Table::merge() {
 		Frame* frame = mergeBufferPool->insert_into_frame(new_rid, to_merge[i]->column, to_merge[i]->page);
 		frame->dirty = true;
 	}
-
 	//set last frame
 	*(mergeBufferPool->tail) = *(to_merge[to_merge.size() - 1]);
 
@@ -432,8 +432,11 @@ int Table::merge() {
 
 		for (int col = 0; col < num_columns + NUM_METADATA_COLUMNS; col++){
 			//mergeBufferPool->set (latest_base_rid, col, values[col], false);
-			std::cout << "setting value to 0" << std::endl;
-			mergeBufferPool->set(latest_base_rid, col, 0, false);
+			std::cout << "latest base_rid: " << latest_base_rid.id << " col :" << col << std::endl;
+			mergeBufferPool->get(latest_base_rid, col);
+			std::cout << "get :)" << std::endl;
+			mergeBufferPool->set (latest_base_rid, col, values[col], false);
+			//mergeBufferPool->set(latest_base_rid, col, 0, false);
 		}
 		// mergeBufferPool->set (latest_base_rid, TPS, tail_rid_last, false);
 	}
