@@ -63,8 +63,9 @@ int BufferPool::get (const RID& rid, const int& column) {
   }
     found = load(rid, column);
   }
+  std::cout << "Update ages" << std::endl;
   update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
-  //std::cout << "base is returning" << *(found->page->data + rid.offset) << std::endl;
+  std::cout << "base is returning" << *(found->page->data + rid.offset) << std::endl;
   return *(found->page->data + rid.offset); //return the value we want
 }
 
