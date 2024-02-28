@@ -385,12 +385,12 @@ int Table::merge() {
 
 	//set last frame
 //	*(mergeBufferPool->tail) = *(to_merge[to_merge.size() - 1]);
-	Frame* current_frame = mergeBufferPool->head;
-	while(current_frame != nullptr){ //iterate through entire bufferpool
-	if(current_frame->page != nullptr){
-		std::cout << "the value in here is " << current_frame->first_rid_page << std::endl;
+	Frame* current_frame2 = mergeBufferPool->head;
+	while(current_frame2 != nullptr){ //iterate through entire bufferpool
+	if(current_frame2->page != nullptr){
+		std::cout << "the value in here is " << current_frame2->first_rid_page << std::endl;
 	}
-	current_frame = current_frame->next;
+	current_frame2 = current_frame2->next;
 }
 
 	std::map<int, std::pair<int, std::vector<int>>> latest_update; //<latest base RID: <tailRID, values>>
