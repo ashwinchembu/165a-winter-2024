@@ -292,17 +292,15 @@ void BufferPool::write_back(Frame* frame){
   fwrite(&(frame->page->num_rows), sizeof(int), 1, fp);
   fwrite(frame->page->data, sizeof(int), frame->page->num_rows, fp);
   fclose(fp);
-
+/*
   if(frame->page != nullptr){
     //std::cout << "null" << std::endl;
     delete frame->page;
-  }
+  }*/
 }
 
 void BufferPool::write_back_all (){
-  std::cout << "0 error" << std::endl;
   Frame* current_frame = head;
-std::cout << "1 error" << std::endl;
   while(current_frame != nullptr){ //iterate through entire bufferpool
     if(current_frame->dirty && current_frame->valid){
       std::cout << "2 error" << std::endl;
