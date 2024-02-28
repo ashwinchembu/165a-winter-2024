@@ -94,7 +94,7 @@ Frame* BufferPool::search(const RID& rid, const int& column){
   //std::cout << "we are looking for rid " << rid.first_rid_page << " and " << column << std::endl;
   size_t hash = hash_fun(rid.first_rid_page); //perform hash on rid
   Frame* range_begin = hash_vector[hash]; //beginning of hash range
-  //  std::cout << "range begin is " << range_begin->first_rid_page << " " << range_begin->column << std::endl;
+  std::cout << "range begin is " << range_begin->first_rid_page << " " << range_begin->column << std::endl;
   Frame* range_end = (hash == hash_vector.size() - 1) ? tail : hash_vector[hash + 1]->prev; //end of hash range
   Frame* current_frame = range_begin; //iterate through range
   while(current_frame != range_end->next){
