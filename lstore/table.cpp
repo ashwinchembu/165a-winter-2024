@@ -204,20 +204,7 @@ RID Table::insert(const std::vector<int>& columns) {
     }
 
     page_directory.insert({rid_id, record});
-	 rid_id = num_update * -1;
-	size_t i = 0;
-	for (; i < page_range.size(); i++) {
-		if ((page_range[i].get())->pages[0].first_rid_page_range == record.first_rid_page_range) {
-			break;
-		}
-	}
-
-	RID new_rid(rid_id);
-	new_rid.table_name = name;
-	new_rid.first_rid_page_range = record.first_rid_page_range;
-
-	(page_range[i].get())->update(record, new_rid, columns, page_directory);
-	page_directory.insert({rid_id, new_rid});
+	
     return record;
 }
 
