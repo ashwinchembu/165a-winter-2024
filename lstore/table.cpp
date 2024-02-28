@@ -350,7 +350,7 @@ int Table::merge() {
 // 		cur_frame = cur_frame->next;
 //   }
 
-	//*(mergeBufferPool->head) = *(to_merge[0]);
+	*(mergeBufferPool->head) = *(to_merge[0]);
 	for (int i = 0; i < to_merge.size(); i++) {
 		//for(int j = 0; j < num_columns; )
 		RID new_rid(i,
