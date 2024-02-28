@@ -351,7 +351,7 @@ int Table::merge() {
 //   }
 
 	*(mergeBufferPool->head) = *(to_merge[0]);
-	std::cout << "size of to merge: " << to_merge.size() << std::endl;
+//	std::cout << "size of to merge: " << to_merge.size() << std::endl;
 	for (int i = 0; i < to_merge.size(); i++) {
 		//for(int j = 0; j < num_columns; )
 		RID new_rid(i,
@@ -361,17 +361,17 @@ int Table::merge() {
 			name
 		);
 		Frame* frame = mergeBufferPool->insert_into_frame(new_rid, to_merge[i]->column, to_merge[i]->page);
-		std::cout << "Merge size: " << to_merge.size() << " RID: " << new_rid.id << " " << to_merge[i]->first_rid_page << " frame: " << frame->first_rid_page << std::endl;
-		
+	//	std::cout << "Merge size: " << to_merge.size() << " RID: " << new_rid.id << " " << to_merge[i]->first_rid_page << " frame: " << frame->first_rid_page << std::endl;
+
 		std::cout << "put into frame" << frame->first_rid_page << std::endl;
-		std::cout << "value in page" << *(to_merge[i]->page->data) << std::endl;
+	//	std::cout << "value in page" << *(to_merge[i]->page->data) << std::endl;
 
 		frame->dirty = true;
 	}
 	//set last frame
 	//*(mergeBufferPool->tail) = *(to_merge[to_merge.size() - 1]);
-	
-	
+
+
 	//set last frame
 //	*(mergeBufferPool->tail) = *(to_merge[to_merge.size() - 1]);
 	Frame* current_frame = mergeBufferPool->head;
