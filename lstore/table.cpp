@@ -420,6 +420,8 @@ std::cout << "to_merge_size is " << to_merge.size() << std::endl;
 						if (latest_update[baseRID].first > currentRID.id){
 							latest_update[baseRID].first = currentRID.id;
 							std::vector<int> merge_vals;
+							std::cout << "1.5 The head is " << mergeBufferPool->head << std::endl;
+							std::cout << "1.5 range begin is " << mergeBufferPool->hash_vector[0] << std::endl;
 							for (int j = 0; j < num_columns; j++) { //indirection place stuff
 								int value = mergeBufferPool->get(currentRID, j);
 								std::cout << "2The head is " << mergeBufferPool->head << std::endl;
