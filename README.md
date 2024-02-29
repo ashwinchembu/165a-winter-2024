@@ -13,8 +13,7 @@
 - [ ]General: Windows support
 - [ ]General: Use Array over Vector
 
-For milestone 3, we can use OpenMP for multithreading.
-https://learn.microsoft.com/en-us/cpp/parallel/openmp/reference/openmp-directives?view=msvc-170
+For milestone 3, we can use standard thread library.
 
 # Makefile usage
 ## No compiler optimization
