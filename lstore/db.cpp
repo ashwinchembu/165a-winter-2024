@@ -1,7 +1,7 @@
 #include <map>
 #include <string>
-#include<fcntl.h>
-#include<unistd.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include<sys/stat.h>
 #include <stdexcept>
 #include <cstdio>
@@ -157,10 +157,13 @@ void Database::read(const std::string& path){
 	size_t e = fread(&numTables,sizeof(int),1,fp);
 	char nameBuffer[128];
 	for(int i = 0;i < numTables;i++){
-		e = fread(&nameBuffer,128,1,fp);
+		e = e + fread(&nameBuffer,128,1,fp);
 		Table* t = new Table();
 		t->read(fp);
 		tables.insert({{nameBuffer},t});
+	}
+	if (e != numTables + 1) {
+		std::cout << "Possible error (Database open::Number of read does not match)" << std::endl;
 	}
 	fclose(fp);
 	return;

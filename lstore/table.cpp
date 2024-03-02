@@ -351,7 +351,7 @@ int Table::merge() {
 		mkdir(mergeBufferPool->path.c_str(),0777);
 	}
 
-	for (int i = 0; i < to_merge.size(); i++) {
+	for (size_t i = 0; i < to_merge.size(); i++) {
 		RID new_rid(i, to_merge[i]->first_rid_page_range, to_merge[i]->first_rid_page, 0,	name);
 		 Frame* frame = mergeBufferPool->insert_into_frame(new_rid, to_merge[i]->column, to_merge[i]->page);
 		frame->dirty = true;
@@ -365,7 +365,7 @@ int Table::merge() {
 	std::map<int, std::pair<int, std::vector<int>>> latest_update; //<latest base RID: <tailRID, values>>
 	std::set<int> visited_rids;
 
-	int tail_rid_last = 0;
+	// int tail_rid_last = 0;
 	//load copy of all base pages in each page range
 	for (int i = to_merge.size() - 1; i >= 0; i--) {
 		Frame* currentFrame = to_merge[i];
@@ -486,6 +486,7 @@ RIDJoin Table::getJoin(RID rid, int col){
 			return j;
 		}
 	}
+	return RIDJoin();
 }
 
 void Table::PrintData() {
