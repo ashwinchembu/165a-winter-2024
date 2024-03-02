@@ -47,10 +47,10 @@
 
 RID::RID (const RID& rhs) {
 	id = rhs.id;
-    first_rid_page_range = rhs.first_rid_page_range;
-    first_rid_page = rhs.first_rid_page;
-    offset = rhs.offset;
-    table_name = rhs.table_name;
+	first_rid_page_range = rhs.first_rid_page_range;
+	first_rid_page = rhs.first_rid_page;
+	offset = rhs.offset;
+	table_name = rhs.table_name;
 }
 
 

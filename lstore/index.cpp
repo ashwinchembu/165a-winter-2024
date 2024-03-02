@@ -117,8 +117,8 @@ std::vector<int> Index::locate (const int& column_number, const int& value) {
     std::vector<int> matching_records; //holds the records that match the value
     auto index = indices.find(column_number); //find index for specified column
     if(index == indices.end()){
-      create_index(column_number);
-      index = indices.find(column_number);
+        create_index(column_number);
+        index = indices.find(column_number);
     }
     auto range = (*index).second.equal_range(value); //check for all matching records in the index
     for(auto iter = range.first; iter != range.second; iter++){
@@ -139,11 +139,10 @@ std::vector<int> Index::locate (const int& column_number, const int& value) {
  *
  */
 std::vector<int> Index::locate_range(const int& begin, const int& end, const int& column_number) {
-    // std::vector<int> matching_records; //holds the records that match a value in the range
     std::vector<int> all_matching_records; //holds the matching records from the whole range
     for (int i = begin; i <= end; i++) {
-      std::vector<int> matching_records = locate(column_number, i); //locate for each value in the range
-      all_matching_records.insert(all_matching_records.end(), matching_records.begin(), matching_records.end());
+        std::vector<int> matching_records = locate(column_number, i); //locate for each value in the range
+        all_matching_records.insert(all_matching_records.end(), matching_records.begin(), matching_records.end());
     }
     return all_matching_records;
 }
@@ -167,7 +166,7 @@ void Index::create_index(const int& column_number) {
             int indirection_num = buffer_pool.get(rid, INDIRECTION_COLUMN);
 
             if ((buffer_pool.get(rid, SCHEMA_ENCODING_COLUMN) >> (column_number - 1)) & (0b1)) { // If the column of the record at loc is updated
-								RID update_rid = table->page_directory.find(indirection_num)->second;
+                RID update_rid = table->page_directory.find(indirection_num)->second;
                 value = buffer_pool.get(update_rid, column_number + NUM_METADATA_COLUMNS);
             } else {
                 value = buffer_pool.get(rid, column_number + NUM_METADATA_COLUMNS);
@@ -188,12 +187,12 @@ void Index::create_index(const int& column_number) {
  *
  */
 void Index::drop_index(const int& column_number) {
-  auto index = indices.find(column_number);
-  if(index == indices.end()){
-    throw std::invalid_argument("No index for that column was located. The index was not dropped.");
-  }
-  indices.erase(column_number);
-  return;
+    auto index = indices.find(column_number);
+    if(index == indices.end()){
+        throw std::invalid_argument("No index for that column was located. The index was not dropped.");
+    }
+    indices.erase(column_number);
+    return;
 }
 
 void Index::insert_index(int& rid, std::vector<int> columns) {
@@ -223,50 +222,50 @@ void Index::update_index(int& rid, std::vector<int> columns, std::vector<int> ol
 }
 
 int Index::write(FILE* fp){
-	int sz = indices.size();
-	fwrite(&sz,sizeof(int),1,fp);
+    int sz = indices.size();
+    fwrite(&sz,sizeof(int),1,fp);
 
-	for(auto& index : indices){
-		fwrite(&index.first,sizeof(int),1,fp);
+    for(auto& index : indices){
+        fwrite(&index.first,sizeof(int),1,fp);
 
-		sz = index.second.size();
-		fwrite(&sz,sizeof(int),1,fp);
+        sz = index.second.size();
+        fwrite(&sz,sizeof(int),1,fp);
 
-		for(auto& records : index.second){
-			fwrite(&records.first,sizeof(int),1,fp);
-			fwrite(&records.second,sizeof(int),1,fp);
-		}
-	}
+        for(auto& records : index.second){
+            fwrite(&records.first,sizeof(int),1,fp);
+            fwrite(&records.second,sizeof(int),1,fp);
+        }
+    }
 
-	return 0;
+    return 0;
 }
 
 int Index::read(FILE* fp){
-	int totalIndices;
-	size_t e = fread(&totalIndices,sizeof(int),1,fp);
+    int totalIndices;
+    size_t e = fread(&totalIndices,sizeof(int),1,fp);
 
-	for(int i=0;i<totalIndices;i++){
-		std::unordered_multimap<int, int>nextMap;
+    for(int i=0;i<totalIndices;i++){
+        std::unordered_multimap<int, int>nextMap;
 
-		int index;
-		e = e + fread(&index,sizeof(int),1,fp);
+        int index;
+        e = e + fread(&index,sizeof(int),1,fp);
 
-		int mapPairs;
-		e = e + fread(&mapPairs,sizeof(int),1,fp);
+        int mapPairs;
+        e = e + fread(&mapPairs,sizeof(int),1,fp);
 
-		for(int j=0;j<mapPairs;j++){
-			int value;
-			int id;
-			e = e + fread(&value,sizeof(int),1,fp);
-			e = e + fread(&id,sizeof(int),1,fp);
+        for(int j=0;j<mapPairs;j++){
+            int value;
+            int id;
+            e = e + fread(&value,sizeof(int),1,fp);
+            e = e + fread(&id,sizeof(int),1,fp);
 
-			nextMap.insert({value,id});
-		}
+            nextMap.insert({value,id});
+        }
 
-		indices.insert({index,nextMap});
-	}
+        indices.insert({index,nextMap});
+    }
 
-	return e;
+    return e;
 }
 
 void Index::setTable(Table* t){
@@ -276,11 +275,11 @@ void Index::setTable(Table* t){
 
 
 void Index::printData(){
-	for(auto& e: indices){
-		printf("---Column %d:---\n\n", e.first);
-		printf("%lu\n\n", e.second.size());
-		for(auto& j : e.second){
-			std::cout << j.second << std::endl;
-		}
-	}
+    for(auto& e: indices){
+        printf("---Column %d:---\n\n", e.first);
+        printf("%lu\n\n", e.second.size());
+        for(auto& j : e.second){
+            std::cout << j.second << std::endl;
+        }
+    }
 }

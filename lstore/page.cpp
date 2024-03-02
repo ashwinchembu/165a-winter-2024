@@ -126,12 +126,6 @@ PageRange::PageRange (RID& new_rid, const std::vector<int>& columns) {
     num_slot_used_base++;
 }
 
-// PageRange::~PageRange () {
-//     for (size_t i = 0; i < page_range.size(); i++) {
-//         delete page_range[i].second;
-//     }
-// }
-
 /***
  *
  * Return if there are more space to insert record or not
@@ -145,8 +139,6 @@ bool PageRange::base_has_capacity () const {
 }
 
 PageRange::~PageRange(){
-  std::cout << "pagerange destructor in" << std::endl;
-  std::cout << "pagerange destructor out" << std::endl;
 }
 
 /***
@@ -226,7 +218,6 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
         buffer_pool.insert_new_page(rid_new, RID_COLUMN, rid_new.id);
         buffer_pool.insert_new_page(rid_new, TIMESTAMP_COLUMN, 0);
         buffer_pool.insert_new_page(rid_new, BASE_RID_COLUMN, rid.id);
-        //std::cout << "rid.id" << rid.id << std::endl;
         buffer_pool.insert_new_page(rid_new, TPS, 0);
         for (int i = NUM_METADATA_COLUMNS; i < num_column; i++) {
             if (std::isnan(columns[i - NUM_METADATA_COLUMNS]) || columns[i-NUM_METADATA_COLUMNS] < -2147480000) { // Wrapper changes None to smallest integer possible
@@ -286,7 +277,7 @@ int PageRange::write(FILE* fp) {
     base_last_wasfull = (num_slot_used_base == PAGE_SIZE);
     tail_last_wasfull = (num_slot_used_tail == PAGE_SIZE);
     fwrite(&num_column, sizeof(int), 1, fp);
-	return 0;
+    return 0;
 }
 
 
@@ -303,7 +294,7 @@ int PageRange::read(FILE* fp) {
     base_last_wasfull = (num_slot_used_base == PAGE_SIZE);
     tail_last_wasfull = (num_slot_used_tail == PAGE_SIZE);
     e = e + fread(&num_column, sizeof(int), 1, fp);
-	return e;
+    return e;
 }
 
 Page::Page() {
@@ -311,9 +302,7 @@ Page::Page() {
 }
 
 Page::~Page() {
-  std::cout << "page destructor in" << std::endl;
     delete[] data;
-      std::cout << "page destructor out" << std::endl;
 }
 
 /***

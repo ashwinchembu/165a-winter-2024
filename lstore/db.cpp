@@ -99,24 +99,21 @@ COMPILER_SYMBOL void parse_table(int* databaseObject, char* tableName){
 BufferPool buffer_pool(BUFFER_POOL_SIZE);
 
 Database::Database() {
-	// Variable file_path is for this.
-	// std::string pathWhenOpenIsntUsed = "./ECS165";
-
 	buffer_pool.set_path(file_path);
 
 	struct stat checkDir;
 
 	if(stat(file_path.c_str(),&checkDir)!=0
-			|| !S_ISDIR(checkDir.st_mode)){
+		|| !S_ISDIR(checkDir.st_mode)){
 		mkdir(file_path.c_str(),0777);
-	}
+		}
 }
 
 Database::~Database() {
 }
 
 void Database::open(const std::string& path) {
-//	// path is relative to parent directory of this file
+	//	// path is relative to parent directory of this file
 	file_path = path;
 
 	buffer_pool.set_path(file_path);
@@ -128,7 +125,7 @@ void Database::open(const std::string& path) {
 		read(path);
 	}
 
-//	// If the directory is empty then make new database.
+	//	// If the directory is empty then make new database.
 }
 
 void Database::close() {
@@ -154,7 +151,7 @@ void Database::read(const std::string& path){
 	}
 	fseek(fp, 0, SEEK_SET);
 	int numTables;
-	size_t e = fread(&numTables,sizeof(int),1,fp);
+	int e = fread(&numTables,sizeof(int),1,fp);
 	char nameBuffer[128];
 	for(int i = 0;i < numTables;i++){
 		e = e + fread(&nameBuffer,128,1,fp);
@@ -163,7 +160,7 @@ void Database::read(const std::string& path){
 		tables.insert({{nameBuffer},t});
 	}
 	if (e != numTables + 1) {
-		std::cout << "Possible error (Database open::Number of read does not match)" << std::endl;
+		std::cout << "Possible error (Database open : Number of read does not match)" << std::endl;
 	}
 	fclose(fp);
 	return;
@@ -204,12 +201,12 @@ void Database::write(){
  *
  */
 Table* Database::create_table(const std::string& name, const int& num_columns, const int& key_index){
-  Table* table = new Table(name, num_columns, key_index);
-  auto insert = tables.insert(std::make_pair(name, table));
-  if (insert.second == false) {
-    throw std::invalid_argument("A table with this name already exists in the database. The table was not added. (Is old data removed?)");
-  }
-  return table;
+	Table* table = new Table(name, num_columns, key_index);
+	auto insert = tables.insert(std::make_pair(name, table));
+	if (insert.second == false) {
+		throw std::invalid_argument("A table with this name already exists in the database. The table was not added. (Is old data removed?)");
+	}
+	return table;
 }
 
 /***
@@ -220,12 +217,12 @@ Table* Database::create_table(const std::string& name, const int& num_columns, c
  *
  */
 void Database::drop_table(const std::string& name){
-  if(tables.find(name) == tables.end()){
-    throw std::invalid_argument("No table with that name was located. The table was not dropped.");
-  }
+	if(tables.find(name) == tables.end()){
+		throw std::invalid_argument("No table with that name was located. The table was not dropped.");
+	}
 	delete tables.find(name)->second;
-  tables.erase(name);
-  return;
+	tables.erase(name);
+	return;
 }
 
 
@@ -240,9 +237,9 @@ void Database::drop_table(const std::string& name){
  *
  */
 Table Database::get_table(const std::string& name){
-  std::map<std::string, Table*>::iterator table = tables.find(name);
-  if(table == tables.end()){
-    throw std::invalid_argument("No table with that name was located.");
-  }
-  return *(table->second);
+	std::map<std::string, Table*>::iterator table = tables.find(name);
+	if(table == tables.end()){
+		throw std::invalid_argument("No table with that name was located.");
+	}
+	return *(table->second);
 }

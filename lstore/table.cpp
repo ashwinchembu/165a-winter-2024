@@ -59,9 +59,9 @@ COMPILER_SYMBOL void fillRecordBuffer(int* obj){
 
 			recordBuffer[i*sizeOfRecords + j] =
 
-					j == 0 ? (*records)[i].rid :
-					j == 1 ? (*records)[i].key :
-					(*records)[i].columns[j - 2];
+			j == 0 ? (*records)[i].rid :
+			j == 1 ? (*records)[i].key :
+			(*records)[i].columns[j - 2];
 		}
 	}
 
@@ -168,18 +168,16 @@ COMPILER_SYMBOL int Table_num_columns(int* obj){
 }
 
 Table::Table(const std::string& name, const int& num_columns, const int& key): name(name), key(key), num_columns(num_columns) {
-    index = new Index();
-    index->setTable(this);
+	index = new Index();
+	index->setTable(this);
 };
 
 Table::~Table() {
-	  std::cout << "table destructor in" << std::endl;
 	for (size_t i = 0; i <page_range.size(); i++) {
 		if (page_range[i].unique()) {
 			page_range[i].reset();
 		}
 	}
-	  std::cout << "table destructor out" << std::endl;
 }
 
 /***
@@ -191,23 +189,23 @@ Table::~Table() {
  *
  */
 RID Table::insert(const std::vector<int>& columns) {
-    num_insert++;
-    int rid_id = num_insert;
-    RID record;
+	num_insert++;
+	int rid_id = num_insert;
+	RID record;
 	record.table_name = name;
 	record.id = rid_id;
 
-    if (page_range.size() == 0 || !(page_range.back().get()->base_has_capacity())) {
+	if (page_range.size() == 0 || !(page_range.back().get()->base_has_capacity())) {
 
-    	std::shared_ptr<PageRange>newPageRange{new PageRange(record, columns)};
-        page_range.push_back(newPageRange); // Make a base page with given record
-    } else { // If there are base page already, just insert it normally.
+		std::shared_ptr<PageRange>newPageRange{new PageRange(record, columns)};
+		page_range.push_back(newPageRange); // Make a base page with given record
+	} else { // If there are base page already, just insert it normally.
 		record.first_rid_page_range = (page_range.back().get())->pages[0].first_rid_page_range;
-        (page_range.back().get())->insert(record, columns);
-    }
+		(page_range.back().get())->insert(record, columns);
+	}
 
-    page_directory.insert({rid_id, record});
-    return record;
+	page_directory.insert({rid_id, record});
+	return record;
 }
 
 /***
@@ -220,7 +218,7 @@ RID Table::insert(const std::vector<int>& columns) {
  *
  */
 RID Table::update(RID& rid, const std::vector<int>& columns) {
-    num_update++;
+	num_update++;
 	if (num_update >= MAX_TABLE_UPDATES){
 		merge();
 	}
@@ -240,11 +238,6 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 	if (page_range_update[i] >= MAX_PAGE_RANGE_UPDATES){
 		// Make a deep copy of page_range[i]
 		std::shared_ptr<PageRange> deep_copy = std::make_shared<PageRange>(*(page_range[i].get()));
-
-		// use bufferpool to get all the pages within a page range
-//		auto pool_size = deep_copy->pages.size()*num_columns*2; // change to actual - temp
-		//BufferPool* mergeBufferPool = new BufferPool(pool_size);
-		//std::cout << "size: " << deep_copy->pages.size() << std::endl;
 		std::vector<Frame*> insert_to_queue;
 		for (int i = deep_copy->pages.size() - 1; i >= 0; i--) {
 			RID rid = deep_copy->pages[i];
@@ -258,21 +251,21 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 	}
 
 	page_directory.insert({rid_id, new_rid});
-    return new_rid;
+	return new_rid;
 }
 
 int Table::write(FILE* fp) {
-    fwrite(&key, sizeof(int), 1, fp);
-		fwrite(&num_columns, sizeof(int), 1, fp);
-    fwrite(&num_update, sizeof(int), 1, fp);
-    fwrite(&num_insert, sizeof(int), 1, fp);
-    char nameBuffer[128];
-    strcpy(nameBuffer,name.c_str());
-    fwrite(nameBuffer,128,1,fp);
-    for(std::map<int, RID>::iterator iter=page_directory.begin(); iter!=page_directory.end(); iter++){
-        fwrite(&(iter->first), sizeof(int), 1, fp);
-        iter->second.write(fp);
-    }
+	fwrite(&key, sizeof(int), 1, fp);
+	fwrite(&num_columns, sizeof(int), 1, fp);
+	fwrite(&num_update, sizeof(int), 1, fp);
+	fwrite(&num_insert, sizeof(int), 1, fp);
+	char nameBuffer[128];
+	strcpy(nameBuffer,name.c_str());
+	fwrite(nameBuffer,128,1,fp);
+	for(std::map<int, RID>::iterator iter=page_directory.begin(); iter!=page_directory.end(); iter++){
+		fwrite(&(iter->first), sizeof(int), 1, fp);
+		iter->second.write(fp);
+	}
 
 	int num_page_range = page_range.size();
 	fwrite(&(num_page_range), sizeof(int), 1, fp);
@@ -285,23 +278,23 @@ int Table::write(FILE* fp) {
 
 
 int Table::read(FILE* fp) {
-    size_t e = fread(&key, sizeof(int), 1, fp);
-		e = e + fread(&num_columns, sizeof(int), 1, fp);
-    e = e + fread(&num_update, sizeof(int), 1, fp);
-    e = e + fread(&num_insert, sizeof(int), 1, fp);
-    char nameBuffer[128];
-    e = e + fread(nameBuffer,128,1,fp);
-    name = std::string(nameBuffer);
-		int num_element = num_insert + num_update;
-		RID value;
-		int key;
-		for(int i = 0; i < num_element; i++){
-			e = e + fread(&key, sizeof(int), 1, fp);
-			value.read(fp);
-			value.table_name = name;
-			page_directory.insert({key, value});
+	size_t e = fread(&key, sizeof(int), 1, fp);
+	e = e + fread(&num_columns, sizeof(int), 1, fp);
+	e = e + fread(&num_update, sizeof(int), 1, fp);
+	e = e + fread(&num_insert, sizeof(int), 1, fp);
+	char nameBuffer[128];
+	e = e + fread(nameBuffer,128,1,fp);
+	name = std::string(nameBuffer);
+	int num_element = num_insert + num_update;
+	RID value;
+	int key;
+	for(int i = 0; i < num_element; i++){
+		e = e + fread(&key, sizeof(int), 1, fp);
+		value.read(fp);
+		value.table_name = name;
+		page_directory.insert({key, value});
 
-		}
+	}
 	page_range.clear();
 	int num_page_range = 0;
 	e = e + fread(&(num_page_range), sizeof(int), 1, fp);
@@ -330,14 +323,14 @@ int Table::merge() {
 	}
 	//std::cout << "after if statement" << std::endl;
 	/*
-	updating at page range level
-
-	load the a copy of all base pages of the selected range into memory
-	iterate over tail page and get most up to date for record for every record -> consolidated base page
-		read it until TPS < tail ID
-	page directory is updated to point to the new pages
-
-	*/
+	 *	updating at page range level
+	 *
+	 *	load the a copy of all base pages of the selected range into memory
+	 *	iterate over tail page and get most up to date for record for every record -> consolidated base page
+	 *		read it until TPS < tail ID
+	 *	page directory is updated to point to the new pages
+	 *
+	 */
 
 	std::cout << "entered merge" << std::endl;
 	std::vector<Frame*> to_merge = merge_queue.front();
@@ -353,14 +346,14 @@ int Table::merge() {
 
 	for (size_t i = 0; i < to_merge.size(); i++) {
 		RID new_rid(i, to_merge[i]->first_rid_page_range, to_merge[i]->first_rid_page, 0,	name);
-		 Frame* frame = mergeBufferPool->insert_into_frame(new_rid, to_merge[i]->column, to_merge[i]->page);
+		Frame* frame = mergeBufferPool->insert_into_frame(new_rid, to_merge[i]->column, to_merge[i]->page);
 		frame->dirty = true;
 	}
 
 	int TPS = 0;
-    Frame* first_frame = to_merge[0];
-    RID last_tail_rid(0, first_frame->first_rid_page_range, first_frame->first_rid_page, 0 ,name);
-    int latest_tail_id = mergeBufferPool->get(last_tail_rid, TPS);
+	Frame* first_frame = to_merge[0];
+	RID last_tail_rid(0, first_frame->first_rid_page_range, first_frame->first_rid_page, 0 ,name);
+	int latest_tail_id = mergeBufferPool->get(last_tail_rid, TPS);
 
 	std::map<int, std::pair<int, std::vector<int>>> latest_update; //<latest base RID: <tailRID, values>>
 	std::set<int> visited_rids;
@@ -393,7 +386,7 @@ int Table::merge() {
 				Page currentPage = *(currentFrame->page);
 				for (int tail_iterator = (currentPage.num_rows-1)*sizeof(int); tail_iterator >= 0; tail_iterator -= sizeof(int) ){
 					RID currentRID(*(tail_iterator + currentPage.data),
-						to_merge[i]->first_rid_page_range, to_merge[i]->first_rid_page, tail_iterator, name);
+								   to_merge[i]->first_rid_page_range, to_merge[i]->first_rid_page, tail_iterator, name);
 
 					if (currentRID.id > latest_tail_id) {
 						continue;
@@ -428,31 +421,26 @@ int Table::merge() {
 		if (pair.first == 0) {
 			continue;
 		}
-		std::cout << "kdljflkadklfdsjfkjds " << pair.first << std::endl;
 		RID latest_base_rid = page_directory.find(pair.first)->second;
-		std::cout << "kdljflkadklfdsjfkjds" << std::endl;
 		const std::vector<int>& values = pair.second.second;
-		std::cout << "kdljflkadklfdsjfkjds" << std::endl;
 
 		int tail_id = latest_update.at(pair.first).first;
 		mergeBufferPool->set (latest_base_rid, INDIRECTION_COLUMN, tail_id, false);
 
 		for (int col = 0; col < num_columns; col++){
 			//mergeBufferPool->set (latest_base_rid, col, values[col], false);
-			std::cout << "latest base_rid: " << latest_base_rid.id << " col :" << col << std::endl;
 			mergeBufferPool->get(latest_base_rid, col);
-			std::cout << "get :)" << std::endl;
 			mergeBufferPool->set (latest_base_rid, col, values[col], false);
 			//mergeBufferPool->set(latest_base_rid, col, 0, false);
 		}
 		// mergeBufferPool->set (latest_base_rid, TPS, tail_rid_last, false);
 	}
 
-// 	std::cout << ":)" << std::endl;
+	// 	std::cout << ":)" << std::endl;
 	mergeBufferPool->write_back_all();
 	delete mergeBufferPool;
 
-    return -1;
+	return -1;
 }
 
 /*
@@ -491,7 +479,7 @@ RIDJoin Table::getJoin(RID rid, int col){
 
 void Table::PrintData() {
 	std::cout << "--Page Directory--" << std::endl;
-		for(auto& e: page_directory){
-			std::cout << "Key: " << e.first << ", Value.id: " << e.second.id << std::endl;
-		}
+	for(auto& e: page_directory){
+		std::cout << "Key: " << e.first << ", Value.id: " << e.second.id << std::endl;
+	}
 }

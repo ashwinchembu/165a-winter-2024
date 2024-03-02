@@ -99,7 +99,7 @@ bool Query::insert(const std::vector<int>& columns) {
 
 std::vector<Record> Query::select(const int& search_key, const int& search_key_index, const std::vector<int>& projected_columns_index) {
     // Populate records based on the search criteria
-      return select_version(search_key, search_key_index, projected_columns_index, 0);
+    return select_version(search_key, search_key_index, projected_columns_index, 0);
 }
 
 std::vector<Record> Query::select_version(const int& search_key, const int& search_key_index, const std::vector<int>& projected_columns_index, const int& _relative_version) {
@@ -134,9 +134,9 @@ bool Query::update(const int& primary_key, const std::vector<int>& columns) {
         std::cout << "Record with the primary key you are trying to update already exists" << std::endl;
         return false;
     }
-    
+
     RID base_rid = table->page_directory.find(table->index->locate(table->key, primary_key)[0])->second; //locate base RID of record to be updated
-		RID last_update = table->page_directory.find(buffer_pool.get(base_rid, INDIRECTION_COLUMN))->second; //locate the previous update
+    RID last_update = table->page_directory.find(buffer_pool.get(base_rid, INDIRECTION_COLUMN))->second; //locate the previous update
     RID update_rid = table->update(base_rid, columns); // insert update into the table
     std::vector<int> old_columns;
 
@@ -218,97 +218,97 @@ void deleteWithinJoin(RIDJoin ridJoin);
  */
 void Query::performDeleteOnColumnReferences(RID base_rid){
     for(int col = 0; col < table->num_columns;col++){
-    	if(table->ridIsJoined(base_rid, col)){
+        if(table->ridIsJoined(base_rid, col)){
 
-    		RIDJoin ridJoin = table->getJoin(base_rid,col);
+            RIDJoin ridJoin = table->getJoin(base_rid,col);
 
-    		if(ridJoin.modificationPolicy == -1){//supposed to be DELETE_NULL, had to change for now
-    			deleteWithinJoin(ridJoin);
+            if(ridJoin.modificationPolicy == -1){//supposed to be DELETE_NULL, had to change for now
+                deleteWithinJoin(ridJoin);
 
-    		} else if(ridJoin.modificationPolicy == -1){//supposed to be DELETE_CASCADE, had to change for now
-    			std::vector<RIDJoin> allJoins;
+            } else if(ridJoin.modificationPolicy == -1){//supposed to be DELETE_CASCADE, had to change for now
+                std::vector<RIDJoin> allJoins;
 
-    			RIDJoin currentJoin = ridJoin;
+                RIDJoin currentJoin = ridJoin;
 
-    			allJoins.push_back(currentJoin);
+                allJoins.push_back(currentJoin);
 
-    			while(currentJoin.targetTable->ridIsJoined(currentJoin.ridTarget, currentJoin.targetCol)){
+                while(currentJoin.targetTable->ridIsJoined(currentJoin.ridTarget, currentJoin.targetCol)){
 
-    				allJoins.push_back(currentJoin);
-    				currentJoin = currentJoin.targetTable->getJoin(currentJoin.ridTarget, col);
-    			}
+                    allJoins.push_back(currentJoin);
+                    currentJoin = currentJoin.targetTable->getJoin(currentJoin.ridTarget, col);
+                }
 
-    			for(auto& j : allJoins){
-    				deleteWithinJoin(j);
-    			}
-    		}
-    	}
+                for(auto& j : allJoins){
+                    deleteWithinJoin(j);
+                }
+            }
+        }
     }
- }
+}
 
 /*
  * Makes one column of a table reference column of another table.
  *
  */
 void referenceOnColumns(Table* srcTable, Table* targetTable,
-		int srcCol, int targetCol, int modificationPolicy){
-	if(srcTable->page_directory.size() != targetTable->page_directory.size()){
-		return;
-	}
+                        int srcCol, int targetCol, int modificationPolicy){
+    if(srcTable->page_directory.size() != targetTable->page_directory.size()){
+        return;
+    }
 
-	auto srcRecords =  srcTable->page_directory.begin();
-	auto targetRecords = targetTable->page_directory.begin();
+    auto srcRecords =  srcTable->page_directory.begin();
+    auto targetRecords = targetTable->page_directory.begin();
 
-	for(;srcRecords != srcTable->page_directory.end(); srcRecords++, targetRecords++){
-		RIDJoin join;
+    for(;srcRecords != srcTable->page_directory.end(); srcRecords++, targetRecords++){
+        RIDJoin join;
 
-		join.ridSrc = srcRecords->second;
-		join.ridTarget = targetRecords->second;
+        join.ridSrc = srcRecords->second;
+        join.ridTarget = targetRecords->second;
 
-		join.srcCol = srcCol;
-		join.targetCol = targetCol;
+        join.srcCol = srcCol;
+        join.targetCol = targetCol;
 
-		join.targetTable = targetTable;
-		join.modificationPolicy = modificationPolicy;
+        join.targetTable = targetTable;
+        join.modificationPolicy = modificationPolicy;
 
-		if(srcTable->referencesOut.find(srcCol)!= srcTable->referencesOut.end()){
-			(srcTable->referencesOut.find(srcCol)->second).push_back(join);
+        if(srcTable->referencesOut.find(srcCol)!= srcTable->referencesOut.end()){
+            (srcTable->referencesOut.find(srcCol)->second).push_back(join);
 
-		} else {
-			srcTable->referencesOut.insert({srcCol,std::vector<RIDJoin>()});
-			srcTable->referencesOut.find(srcCol)->second.push_back(join);
-		}
-	}
-}
+        } else {
+            srcTable->referencesOut.insert({srcCol,std::vector<RIDJoin>()});
+            srcTable->referencesOut.find(srcCol)->second.push_back(join);
+        }
+    }
+                        }
 
-/*
- * Performs delete on referencing column
- */
-void deleteWithinJoin(RIDJoin ridJoin){
-	std::vector<int>targetCols;
-	int columns = ridJoin.targetTable->num_columns;
+                        /*
+                         * Performs delete on referencing column
+                         */
+                        void deleteWithinJoin(RIDJoin ridJoin){
+                            std::vector<int>targetCols;
+                            int columns = ridJoin.targetTable->num_columns;
 
-	buffer_pool.pin(ridJoin.ridTarget,INDIRECTION_COLUMN);
+                            buffer_pool.pin(ridJoin.ridTarget,INDIRECTION_COLUMN);
 
-	RID lastUpdateOtherTable
-			= ridJoin.targetTable->page_directory.find(buffer_pool.get(
-			ridJoin.ridTarget,INDIRECTION_COLUMN))->second;
+                            RID lastUpdateOtherTable
+                            = ridJoin.targetTable->page_directory.find(buffer_pool.get(
+                                ridJoin.ridTarget,INDIRECTION_COLUMN))->second;
 
-	buffer_pool.unpin(ridJoin.ridTarget,INDIRECTION_COLUMN);
+                                buffer_pool.unpin(ridJoin.ridTarget,INDIRECTION_COLUMN);
 
-	for(int c = 0; c < columns;c++){
+                                for(int c = 0; c < columns;c++){
 
-		buffer_pool.pin(lastUpdateOtherTable,NUM_METADATA_COLUMNS + c);
+                                    buffer_pool.pin(lastUpdateOtherTable,NUM_METADATA_COLUMNS + c);
 
-		targetCols.push_back(buffer_pool.get(lastUpdateOtherTable,NUM_METADATA_COLUMNS + c));
+                                    targetCols.push_back(buffer_pool.get(lastUpdateOtherTable,NUM_METADATA_COLUMNS + c));
 
-		buffer_pool.unpin(lastUpdateOtherTable,NUM_METADATA_COLUMNS + c);
-	}
+                                    buffer_pool.unpin(lastUpdateOtherTable,NUM_METADATA_COLUMNS + c);
+                                }
 
-	std::vector<int>oldTargetCols = targetCols;
+                                std::vector<int>oldTargetCols = targetCols;
 
-	targetCols[ridJoin.targetCol]=0;
+                                targetCols[ridJoin.targetCol]=0;
 
-	ridJoin.targetTable->update(ridJoin.ridTarget,targetCols);
-	ridJoin.targetTable->index->update_index(ridJoin.ridTarget.id,targetCols,oldTargetCols);
-}
+                                ridJoin.targetTable->update(ridJoin.ridTarget,targetCols);
+                                ridJoin.targetTable->index->update_index(ridJoin.ridTarget.id,targetCols,oldTargetCols);
+                        }
