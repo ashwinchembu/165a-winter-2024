@@ -70,6 +70,7 @@ public:
 
     bool ridIsJoined(RID rid,int col);
     RIDJoin getJoin(RID rid, int col);
+    int poolSizeRoundUp(int size);
 };
 
 class RIDJoin{

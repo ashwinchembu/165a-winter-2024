@@ -71,5 +71,6 @@ _profiled: $(SRC) $(DEPS)
 
 clean:
 	rm -rf bin
+	rm -r ECS165
 
 .PHONY: all clean #pre-build

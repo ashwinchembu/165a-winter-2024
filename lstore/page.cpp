@@ -145,8 +145,8 @@ bool PageRange::base_has_capacity () const {
 }
 
 PageRange::~PageRange(){
-  std::cout << "pagerange destructor in" << std::endl;
-  std::cout << "pagerange destructor out" << std::endl;
+  //std::cout << "pagerange destructor in" << std::endl;
+  //std::cout << "pagerange destructor out" << std::endl;
 }
 
 /***
@@ -208,9 +208,21 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
  */
 int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, const std::map<int, RID>& page_directory) {
     // Get the latest update of the record. Accessing the indirection column.
-
+    std::cout << "update start" << std::endl;
     buffer_pool.pin(rid, INDIRECTION_COLUMN);
+    std::cout << "update try to find page" << std::endl;
+    std::cout << "rid: " << rid.id << std::endl;
+
+
+    // std::cout << "found get value: "<< buffer_pool.get(rid, INDIRECTION_COLUMN) << std::endl;
+    if (buffer_pool.search(rid, INDIRECTION_COLUMN) == nullptr) {
+        std::cout << "WHYYYYYYYYYY????????????" << std::endl;
+    }
+    std::cout << "????????????" << std::endl;
+
     RID latest_rid = page_directory.find(buffer_pool.get(rid, INDIRECTION_COLUMN))->second;
+    std::cout << "update found page" << std::endl;
+
     buffer_pool.set(rid, INDIRECTION_COLUMN, rid_new.id, false);
     buffer_pool.unpin(rid, INDIRECTION_COLUMN);
     // Create new tail pages if there are no space left or tail page does not exist.
@@ -311,9 +323,9 @@ Page::Page() {
 }
 
 Page::~Page() {
-  std::cout << "page destructor in" << std::endl;
+  //std::cout << "page destructor in" << std::endl;
     delete[] data;
-      std::cout << "page destructor out" << std::endl;
+      //std::cout << "page destructor out" << std::endl;
 }
 
 /***
