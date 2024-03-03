@@ -1,5 +1,5 @@
 #include "config.h"
-
+#include <thread>
 
 const int INDIRECTION_COLUMN = 0;
 const int RID_COLUMN = 1;
@@ -20,3 +20,4 @@ const int MAX_TABLE_UPDATES = 100000000;
 // const int MAX_TABLE_UPDATES = 1*PAGE_SIZE;
 
 const std::string file_path = "/Data/";
+const size_t MAX_THREADS = std::thread::hardware_concurrency();
