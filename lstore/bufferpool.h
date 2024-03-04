@@ -4,6 +4,7 @@
 #include <string>
 #include "config.h"
 #include "page.h"
+#include "../Toolkit.h"
 #include <vector>
 #include <fstream>
 #include <mutex>
@@ -16,7 +17,7 @@ public:
     virtual ~Frame ();
     bool operator==(const Frame& rhs);
     void operator=(const Frame& rhs);
-    std::mutex mutex;
+    Toolkit::BasicSharedPtr<std::mutex>mutex = Toolkit::BasicSharedPtr<std::mutex>(new std::mutex());
     Page* page = nullptr;
     int first_rid_page = 0; //first rid in the page
     std::string table_name = "";

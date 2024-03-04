@@ -32,7 +32,7 @@ void TransactionWorker::run() {
 
 // call all the join function for the thread we have.
 void TransactionWorker::join() {
-    for (size_t i; i < threads.size(); i++) {
+    for (size_t i=0; i < threads.size(); i++) {
         if (threads[i].joinable()) {
             threads[i].join();
         }

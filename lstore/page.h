@@ -8,6 +8,7 @@
 #include "RID.h"
 #include "table.h"
 #include "config.h"
+#include "../Toolkit.h"
 
 class Page {
 public:
@@ -22,8 +23,9 @@ public:
 
 class PageRange {
 public:
-    std::mutex mutex_insert;
-    std::mutex mutex_update;
+    Toolkit::BasicSharedPtr<std::mutex>mutex_insert = Toolkit::BasicSharedPtr<std::mutex>(new std::mutex());
+    Toolkit::BasicSharedPtr<std::mutex>mutex_update = Toolkit::BasicSharedPtr<std::mutex>(new std::mutex());;
+
     const int NUM_SLOTS = 4096*LOGICAL_PAGE;
     int num_slot_left = NUM_SLOTS;
     int num_slot_used_base = 0;
