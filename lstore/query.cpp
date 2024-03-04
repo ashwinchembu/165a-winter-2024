@@ -10,68 +10,6 @@
 #include "../Toolkit.h"
 #include "../DllConfig.h"
 
-COMPILER_SYMBOL int* Query_constructor(int* table){
-	return (int*)new Query((Table*)table);
-}
-
-COMPILER_SYMBOL void Query_destructor(int* table){
-	delete (int*)((Table*)table);
-}
-
-COMPILER_SYMBOL bool Query_deleteRecord(int* obj, const int primary_key){
-	return ((Query*)obj)->deleteRecord(primary_key);
-}
-
-COMPILER_SYMBOL bool Query_insert(int* obj, int* columns){
-	std::vector<int>* cols = (std::vector<int>*)columns;
-
-	return ((Query*)obj)->insert(*cols);
-}
-
-COMPILER_SYMBOL int* Query_select(int* obj, const int search_key,
-		int search_key_index, int* projected_columns_index){
-	Query* ref = (Query*)obj;
-
-	std::vector<int>*projected_cols = (std::vector<int>*)projected_columns_index;
-
-	std::vector<Record> ret = ref->select(search_key,search_key_index,*projected_cols);
-
-	return (int*) (new std::vector<Record>(ret));
-}
-
-COMPILER_SYMBOL int* Query_select_version(int* obj, const int search_key, const int search_key_index,
-		int* projected_columns_index, const int relative_version){
-
-	std::vector<int>* proj_columns = (std::vector<int>*)projected_columns_index;
-	Query* ref = (Query*)obj;
-
-	std::vector<Record> ret = ref->select_version(search_key,search_key_index,*proj_columns,relative_version);
-	return (int*)(new std::vector<Record>(ret));
-}
-
-COMPILER_SYMBOL bool Query_update(int* obj, const int primary_key, int* columns){
-	std::vector<int>* cols = (std::vector<int>*)columns;
-
-	return ((Query*)obj)->update(primary_key,*cols);
-}
-
-COMPILER_SYMBOL unsigned long int Query_sum(int* obj, const int start_range, const int end_range, const int aggregate_column_index){
-	return ((Query*)obj)->sum(start_range,end_range,aggregate_column_index);
-}
-
-COMPILER_SYMBOL unsigned long int Query_sum_version(int* obj, const int start_range,  const int end_range,
-		int aggregate_column_index, int relative_version){
-
-	return ((Query*)obj)->sum_version(start_range,end_range,aggregate_column_index,relative_version);
-}
-
-COMPILER_SYMBOL bool Query_increment(int* obj, const int key, const int column){
-	return  ((Query*)obj)->increment(key,column);
-}
-
-COMPILER_SYMBOL int* Query_table(int* obj){
-	return (int*)(&(((Query*)obj)->table));
-}
 
 Query::~Query () {
 }
@@ -279,36 +217,99 @@ void referenceOnColumns(Table* srcTable, Table* targetTable,
             srcTable->referencesOut.find(srcCol)->second.push_back(join);
         }
     }
-                        }
+}
 
-                        /*
-                         * Performs delete on referencing column
-                         */
-                        void deleteWithinJoin(RIDJoin ridJoin){
-                            std::vector<int>targetCols;
-                            int columns = ridJoin.targetTable->num_columns;
+/*
+ * Performs delete on referencing column
+ */
+void deleteWithinJoin(RIDJoin ridJoin){
+	std::vector<int>targetCols;
+	int columns = ridJoin.targetTable->num_columns;
 
-                            buffer_pool.pin(ridJoin.ridTarget,INDIRECTION_COLUMN);
+	buffer_pool.pin(ridJoin.ridTarget,INDIRECTION_COLUMN);
 
-                            RID lastUpdateOtherTable
-                            = ridJoin.targetTable->page_directory.find(buffer_pool.get(
-                                ridJoin.ridTarget,INDIRECTION_COLUMN))->second;
+	RID lastUpdateOtherTable
+	= ridJoin.targetTable->page_directory.find(buffer_pool.get(
+		ridJoin.ridTarget,INDIRECTION_COLUMN))->second;
 
-                                buffer_pool.unpin(ridJoin.ridTarget,INDIRECTION_COLUMN);
+		buffer_pool.unpin(ridJoin.ridTarget,INDIRECTION_COLUMN);
 
-                                for(int c = 0; c < columns;c++){
+		for(int c = 0; c < columns;c++){
 
-                                    buffer_pool.pin(lastUpdateOtherTable,NUM_METADATA_COLUMNS + c);
+			buffer_pool.pin(lastUpdateOtherTable,NUM_METADATA_COLUMNS + c);
 
-                                    targetCols.push_back(buffer_pool.get(lastUpdateOtherTable,NUM_METADATA_COLUMNS + c));
+			targetCols.push_back(buffer_pool.get(lastUpdateOtherTable,NUM_METADATA_COLUMNS + c));
 
-                                    buffer_pool.unpin(lastUpdateOtherTable,NUM_METADATA_COLUMNS + c);
-                                }
+			buffer_pool.unpin(lastUpdateOtherTable,NUM_METADATA_COLUMNS + c);
+		}
 
-                                std::vector<int>oldTargetCols = targetCols;
+		std::vector<int>oldTargetCols = targetCols;
 
-                                targetCols[ridJoin.targetCol]=0;
+		targetCols[ridJoin.targetCol]=0;
 
-                                ridJoin.targetTable->update(ridJoin.ridTarget,targetCols);
-                                ridJoin.targetTable->index->update_index(ridJoin.ridTarget.id,targetCols,oldTargetCols);
-                        }
+		ridJoin.targetTable->update(ridJoin.ridTarget,targetCols);
+		ridJoin.targetTable->index->update_index(ridJoin.ridTarget.id,targetCols,oldTargetCols);
+}
+
+COMPILER_SYMBOL int* Query_constructor(int* table){
+	return (int*)new Query((Table*)table);
+}
+
+COMPILER_SYMBOL void Query_destructor(int* table){
+	delete (int*)((Table*)table);
+}
+
+COMPILER_SYMBOL bool Query_deleteRecord(int* obj, const int primary_key){
+	return ((Query*)obj)->deleteRecord(primary_key);
+}
+
+COMPILER_SYMBOL bool Query_insert(int* obj, int* columns){
+	std::vector<int>* cols = (std::vector<int>*)columns;
+
+	return ((Query*)obj)->insert(*cols);
+}
+
+COMPILER_SYMBOL int* Query_select(int* obj, const int search_key,
+		int search_key_index, int* projected_columns_index){
+	Query* ref = (Query*)obj;
+
+	std::vector<int>*projected_cols = (std::vector<int>*)projected_columns_index;
+
+	std::vector<Record> ret = ref->select(search_key,search_key_index,*projected_cols);
+
+	return (int*) (new std::vector<Record>(ret));
+}
+
+COMPILER_SYMBOL int* Query_select_version(int* obj, const int search_key, const int search_key_index,
+		int* projected_columns_index, const int relative_version){
+
+	std::vector<int>* proj_columns = (std::vector<int>*)projected_columns_index;
+	Query* ref = (Query*)obj;
+
+	std::vector<Record> ret = ref->select_version(search_key,search_key_index,*proj_columns,relative_version);
+	return (int*)(new std::vector<Record>(ret));
+}
+
+COMPILER_SYMBOL bool Query_update(int* obj, const int primary_key, int* columns){
+	std::vector<int>* cols = (std::vector<int>*)columns;
+
+	return ((Query*)obj)->update(primary_key,*cols);
+}
+
+COMPILER_SYMBOL unsigned long int Query_sum(int* obj, const int start_range, const int end_range, const int aggregate_column_index){
+	return ((Query*)obj)->sum(start_range,end_range,aggregate_column_index);
+}
+
+COMPILER_SYMBOL unsigned long int Query_sum_version(int* obj, const int start_range,  const int end_range,
+		int aggregate_column_index, int relative_version){
+
+	return ((Query*)obj)->sum_version(start_range,end_range,aggregate_column_index,relative_version);
+}
+
+COMPILER_SYMBOL bool Query_increment(int* obj, const int key, const int column){
+	return  ((Query*)obj)->increment(key,column);
+}
+
+COMPILER_SYMBOL int* Query_table(int* obj){
+	return (int*)(&(((Query*)obj)->table));
+}

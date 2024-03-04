@@ -13,89 +13,6 @@
 #include "config.h"
 #include "../DllConfig.h"
 
-std::vector<int>bufferVector;
-Table* tableBuffer = nullptr;
-char stringBuffer[128];
-
-COMPILER_SYMBOL void add_to_buffer_vector(const int element){
-	bufferVector.push_back(element);
-}
-
-COMPILER_SYMBOL int* get_buffer_vector(){
-	return(int*)(&(bufferVector));
-}
-
-COMPILER_SYMBOL int get_from_buffer_vector(const int i){
-	return bufferVector[i];
-}
-
-COMPILER_SYMBOL void erase_buffer_vector(){
-	bufferVector.clear();
-}
-
-COMPILER_SYMBOL int* get_table_buffer(){
-	return (int*)tableBuffer;
-}
-
-COMPILER_SYMBOL char* get_string_buffer(){
-	return stringBuffer;
-}
-
-/*
- * was having compiler issues with one of my makefiles
- * so I chucked the main here for now
- */
-int main(){}
-
-COMPILER_SYMBOL int* Database_constructor(){
-	return (int*)(new Database());
-}
-
-COMPILER_SYMBOL void Database_destructor(int* obj){
-	delete ((Database*)obj);
-}
-
-COMPILER_SYMBOL int* Database_create_table(int*obj,char* name, const int num_columns,  const int key_index){
-	Database* self = ((Database*)obj);
-	Table* ret = self->create_table({name},num_columns,key_index);
-
-
-	return (int*)ret;
-}
-
-COMPILER_SYMBOL void Database_drop_table(int* obj, char* name){
-	((Database*)(obj))->drop_table({name});
-}
-
-COMPILER_SYMBOL int* Database_get_table(int* obj,char* name){
-	Database* self = ((Database*)obj);
-	Table* ret = new Table(self->get_table({name}));
-
-	return (int*)ret;
-}
-
-COMPILER_SYMBOL int* Database_tables(int* obj){
-	Database* self = ((Database*)obj);
-	return(int*)(&(self->tables));
-}
-
-COMPILER_SYMBOL void Database_open(int* obj,char* path){
-	((Database*)obj)->open(path);
-}
-
-COMPILER_SYMBOL void Database_close(int* obj){
-	((Database*)obj)->close();
-}
-
-COMPILER_SYMBOL void parse_table(int* databaseObject, char* tableName){
-	tableBuffer = (Table*)Database_get_table(databaseObject, tableName);
-
-	strcpy(stringBuffer, tableName);
-	erase_buffer_vector();
-	bufferVector.push_back(tableBuffer->num_columns);
-	bufferVector.push_back(tableBuffer->key);
-}
-
 BufferPool buffer_pool(BUFFER_POOL_SIZE);
 
 Database::Database() {
@@ -243,4 +160,50 @@ Table Database::get_table(const std::string& name){
 	}
 
 	return *(table->second);
+}
+
+/*
+ * was having compiler issues with one of my makefiles
+ * so I chucked the main here for now
+ */
+int main(){}
+
+COMPILER_SYMBOL int* Database_constructor(){
+	return (int*)(new Database());
+}
+
+COMPILER_SYMBOL void Database_destructor(int* obj){
+	delete ((Database*)obj);
+}
+
+COMPILER_SYMBOL int* Database_create_table(int*obj,char* name, const int num_columns,  const int key_index){
+	Database* self = ((Database*)obj);
+	Table* ret = self->create_table({name},num_columns,key_index);
+
+
+	return (int*)ret;
+}
+
+COMPILER_SYMBOL void Database_drop_table(int* obj, char* name){
+	((Database*)(obj))->drop_table({name});
+}
+
+COMPILER_SYMBOL int* Database_get_table(int* obj,char* name){
+	Database* self = ((Database*)obj);
+	Table* ret = new Table(self->get_table({name}));
+
+	return (int*)ret;
+}
+
+COMPILER_SYMBOL int* Database_tables(int* obj){
+	Database* self = ((Database*)obj);
+	return(int*)(&(self->tables));
+}
+
+COMPILER_SYMBOL void Database_open(int* obj,char* path){
+	((Database*)obj)->open(path);
+}
+
+COMPILER_SYMBOL void Database_close(int* obj){
+	((Database*)obj)->close();
 }

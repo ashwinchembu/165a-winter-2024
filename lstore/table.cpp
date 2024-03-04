@@ -16,156 +16,7 @@
 
 
 #include "../DllConfig.h"
-
 #include "../Toolkit.h"
-
-std::vector<int>recordBuffer;
-int sizeOfRecords;
-int recordBufferIndex;
-
-COMPILER_SYMBOL void clearRecordBuffer(){
-	recordBuffer.clear();
-
-	sizeOfRecords = 0;
-	recordBufferIndex = 0;
-}
-
-COMPILER_SYMBOL int getRecordSize(){
-	return sizeOfRecords;
-}
-
-COMPILER_SYMBOL int numberOfRecordsInBuffer(){
-	if(recordBuffer.size() == 0){
-		return 0;
-	}
-
-	return recordBuffer.size() / sizeOfRecords;
-}
-
-COMPILER_SYMBOL int getRecordBufferElement(const int i){
-	return recordBuffer[i];
-}
-
-COMPILER_SYMBOL void fillRecordBuffer(int* obj){
-	std::vector<Record>* records = (std::vector<Record>*)obj;
-
-	sizeOfRecords = (*records)[0].columns.size() + 2;
-
-	recordBuffer = std::vector<int>(sizeOfRecords * records->size());
-
-	for(size_t i = 0; i < records->size(); i++){
-
-		for(int j = 0; j < sizeOfRecords;j++){
-
-			recordBuffer[i*sizeOfRecords + j] =
-
-			j == 0 ? (*records)[i].rid :
-			j == 1 ? (*records)[i].key :
-			(*records)[i].columns[j - 2];
-		}
-	}
-
-
-
-	delete records;
-}
-
-
-
-COMPILER_SYMBOL int* Record_constructor(const int rid_in, const int key_in, int* columns_in){
-	std::vector<int>* cols = (std::vector<int>*)columns_in;
-	return (int*)(new Record(rid_in,key_in,*cols));
-}
-
-COMPILER_SYMBOL void Record_destructor(int*obj){
-	delete ((Record*)(obj));
-}
-
-COMPILER_SYMBOL int Record_rid(int*obj){
-	return ((Record*)(obj))->rid;
-}
-
-COMPILER_SYMBOL int Record_key(int*obj){
-	return ((Record*)(obj))->key;
-}
-
-COMPILER_SYMBOL int* Record_columns(int* obj){
-	Record* ref = (Record*)obj;
-
-	return (int*)(&(ref->columns));
-}
-
-COMPILER_SYMBOL void Table_destructor(int* obj){
-	delete ((Table*)obj);
-}
-
-COMPILER_SYMBOL char* Table_name(int* obj){
-	char* buf = new char[256];
-	Table* ref = (Table*)obj;
-
-	strcpy(buf,ref->name.c_str());
-
-	return buf;
-}
-
-COMPILER_SYMBOL int Table_key(int* obj){
-	return ((Table*)obj)->key;
-}
-
-COMPILER_SYMBOL int* Table_page_directory(int* obj){
-	Table* ref = (Table*)obj;
-
-	return(int*)(&( ref->page_directory));
-}
-
-COMPILER_SYMBOL int* Table_page_range(int* obj){
-	Table* ref = (Table*)obj;
-	return(int*)(&( ref->page_range));
-}
-
-COMPILER_SYMBOL int* Table_index(int* obj){
-	Table* ref = (Table*)obj;
-	return(int*)(&( ref->index));
-}
-
-COMPILER_SYMBOL int Table_num_update(int* obj){
-	return ((Table*)obj)->num_update;
-}
-
-COMPILER_SYMBOL int Table_num_insert(int* obj){
-	return ((Table*)obj)->num_insert;
-}
-
-COMPILER_SYMBOL int* Table_constructor(char* name_in, const int num_columns_in, const int key_in){
-	return (int*)new Table({name_in},num_columns_in,key_in);
-}
-
-COMPILER_SYMBOL int* Table_insert(int* obj,int* columns){
-	std::vector<int>* cols = (std::vector<int>*)columns;
-
-	Table* ref = (Table*)obj;
-
-	return (int*)new RID((ref->insert(*cols)));
-
-}
-
-COMPILER_SYMBOL int* Table_update(int* obj,int* rid, int* columns){
-	std::vector<int>* cols = (std::vector<int>*)columns;
-
-	Table* ref = (Table*)obj;
-
-	RID* r = (RID*) rid;
-
-	return (int*)new RID(ref->update(*r,*cols));
-}
-
-COMPILER_SYMBOL int Table_merge(int* obj){
-	return ((Table*)obj)->merge();
-}
-
-COMPILER_SYMBOL int Table_num_columns(int* obj){
-	return ((Table*)obj)->num_columns;
-}
 
 Table::Table(const std::string& name, const int& num_columns, const int& key): name(name), key(key), num_columns(num_columns) {
 	index = new Index();
@@ -482,4 +333,100 @@ void Table::PrintData() {
 	for(auto& e: page_directory){
 		std::cout << "Key: " << e.first << ", Value.id: " << e.second.id << std::endl;
 	}
+}
+
+
+COMPILER_SYMBOL int* Record_constructor(const int rid_in, const int key_in, int* columns_in){
+	std::vector<int>* cols = (std::vector<int>*)columns_in;
+	return (int*)(new Record(rid_in,key_in,*cols));
+}
+
+COMPILER_SYMBOL void Record_destructor(int*obj){
+	delete ((Record*)(obj));
+}
+
+COMPILER_SYMBOL int Record_rid(int*obj){
+	return ((Record*)(obj))->rid;
+}
+
+COMPILER_SYMBOL int Record_key(int*obj){
+	return ((Record*)(obj))->key;
+}
+
+COMPILER_SYMBOL int* Record_columns(int* obj){
+	Record* ref = (Record*)obj;
+
+	return (int*)(&(ref->columns));
+}
+
+COMPILER_SYMBOL void Table_destructor(int* obj){
+	delete ((Table*)obj);
+}
+
+COMPILER_SYMBOL char* Table_name(int* obj){
+	char* buf = new char[256];
+	Table* ref = (Table*)obj;
+
+	strcpy(buf,ref->name.c_str());
+
+	return buf;
+}
+
+COMPILER_SYMBOL int Table_key(int* obj){
+	return ((Table*)obj)->key;
+}
+
+COMPILER_SYMBOL int* Table_page_directory(int* obj){
+	Table* ref = (Table*)obj;
+
+	return(int*)(&( ref->page_directory));
+}
+
+COMPILER_SYMBOL int* Table_page_range(int* obj){
+	Table* ref = (Table*)obj;
+	return(int*)(&( ref->page_range));
+}
+
+COMPILER_SYMBOL int* Table_index(int* obj){
+	Table* ref = (Table*)obj;
+	return(int*)(&( ref->index));
+}
+
+COMPILER_SYMBOL int Table_num_update(int* obj){
+	return ((Table*)obj)->num_update;
+}
+
+COMPILER_SYMBOL int Table_num_insert(int* obj){
+	return ((Table*)obj)->num_insert;
+}
+
+COMPILER_SYMBOL int* Table_constructor(char* name_in, const int num_columns_in, const int key_in){
+	return (int*)new Table({name_in},num_columns_in,key_in);
+}
+
+COMPILER_SYMBOL int* Table_insert(int* obj,int* columns){
+	std::vector<int>* cols = (std::vector<int>*)columns;
+
+	Table* ref = (Table*)obj;
+
+	return (int*)new RID((ref->insert(*cols)));
+
+}
+
+COMPILER_SYMBOL int* Table_update(int* obj,int* rid, int* columns){
+	std::vector<int>* cols = (std::vector<int>*)columns;
+
+	Table* ref = (Table*)obj;
+
+	RID* r = (RID*) rid;
+
+	return (int*)new RID(ref->update(*r,*cols));
+}
+
+COMPILER_SYMBOL int Table_merge(int* obj){
+	return ((Table*)obj)->merge();
+}
+
+COMPILER_SYMBOL int Table_num_columns(int* obj){
+	return ((Table*)obj)->num_columns;
 }

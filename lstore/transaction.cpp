@@ -1,53 +1,6 @@
 #include "transaction.h"
 #include "../DllConfig.h"
 
-COMPILER_SYMBOL void Transaction_add_query_insert(
-		int* self, int* query, int* table, int* columns){
-
-	((Transaction*)self)->add_query(*((Query*)query),*((Table*)table),
-			*((std::vector<int>*)columns));
-}
-
-COMPILER_SYMBOL void Transaction_add_query_update(
-		int* self,int* query, int* table, int key, int* columns){
-
-	((Transaction*)self)->add_query(*((Query*)query),*((Table*)table), key,
-			*((std::vector<int>*)columns));
-}
-
-COMPILER_SYMBOL void Transaction_add_query_select(
-		int* self,int* query, int* table, int key, int search_key_index,
-		int* projected_columns_index){
-
-	((Transaction*)self)->add_query(*((Query*)query),*((Table*)table), search_key_index,
-			*((std::vector<int>*)projected_columns_index));
-}
-
-COMPILER_SYMBOL void Transaction_add_query_select_version(
-		int* self, int* query, int* table, int key, int search_key_index,
-		int* projected_columns_index, int relative_version){
-
-	((Transaction*)self)->add_query(*((Query*)query),*((Table*)table), key, search_key_index,
-				*((std::vector<int>*)projected_columns_index),relative_version);
-}
-
-COMPILER_SYMBOL void Transaction_add_query_sum(
-		int* self, int* query, int* table, int start_range, int end_range,
-		int aggregate_column_index){
-
-	((Transaction*)self)->add_query(*((Query*)query),*((Table*)table), start_range,end_range,
-				aggregate_column_index);
-}
-
-COMPILER_SYMBOL void Transaction_add_query_sum_version(int* self, int* query,
-		int* table, int start_range, int end_range,
-		int aggregate_column_index, int relative_version){
-
-	((Transaction*)self)->add_query(*((Query*)query),*((Table*)table), start_range,end_range,
-				aggregate_column_index,relative_version);
-}
-
-
 bool QueryOperation::run() {
     switch (type) {
         case OpCode::NOTHING:
@@ -188,4 +141,58 @@ void Transaction::abort() {
 
 void Transaction::commit() {
     // Commit all the changes and clear off the queries vector
+}
+
+COMPILER_SYMBOL void Transaction_add_query_insert(
+		int* self, int* query, int* table, int* columns){
+
+	((Transaction*)self)->add_query(*((Query*)query),*((Table*)table),
+			*((std::vector<int>*)columns));
+}
+
+COMPILER_SYMBOL void Transaction_add_query_update(
+		int* self,int* query, int* table, int key, int* columns){
+
+	((Transaction*)self)->add_query(*((Query*)query),*((Table*)table), key,
+			*((std::vector<int>*)columns));
+}
+
+COMPILER_SYMBOL void Transaction_add_query_select(
+		int* self,int* query, int* table, int key, int search_key_index,
+		int* projected_columns_index){
+
+	((Transaction*)self)->add_query(*((Query*)query),*((Table*)table), search_key_index,
+			*((std::vector<int>*)projected_columns_index));
+}
+
+COMPILER_SYMBOL void Transaction_add_query_select_version(
+		int* self, int* query, int* table, int key, int search_key_index,
+		int* projected_columns_index, int relative_version){
+
+	((Transaction*)self)->add_query(*((Query*)query),*((Table*)table), key, search_key_index,
+				*((std::vector<int>*)projected_columns_index),relative_version);
+}
+
+COMPILER_SYMBOL void Transaction_add_query_sum(
+		int* self, int* query, int* table, int start_range, int end_range,
+		int aggregate_column_index){
+
+	((Transaction*)self)->add_query(*((Query*)query),*((Table*)table), start_range,end_range,
+				aggregate_column_index);
+}
+
+COMPILER_SYMBOL void Transaction_add_query_sum_version(int* self, int* query,
+		int* table, int start_range, int end_range,
+		int aggregate_column_index, int relative_version){
+
+	((Transaction*)self)->add_query(*((Query*)query),*((Table*)table), start_range,end_range,
+				aggregate_column_index,relative_version);
+}
+
+COMPILER_SYMBOL int* Transaction_constructor(){
+	return (int*)(new Transaction());
+}
+
+COMPILER_SYMBOL void Transaction_destructor(int* self){
+	delete ((Transaction*)self);
 }

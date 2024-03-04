@@ -17,87 +17,6 @@
 #include "bufferpool.h"
 #include <cmath>
 
-std::vector<int>ridBuffer;
-
-COMPILER_SYMBOL void clearRidBuffer(){
-	ridBuffer.clear();
-}
-
-COMPILER_SYMBOL int ridBufferSize(){
-	return ridBuffer.size();
-}
-
-COMPILER_SYMBOL void fillRidBuffer(int* obj){
-	ridBuffer.clear();
-
-	std::vector<int>* rids = (std::vector<int>*)obj;
-
-	for(size_t i = 0; i< rids->size();i++){
-		ridBuffer.push_back((*rids)[i]);
-	}
-}
-
-COMPILER_SYMBOL int getRidFromBuffer(const int i){
-	return ridBuffer[i];
-}
-
-
-
-
-
-COMPILER_SYMBOL int* Index_table(int* IndexObj){
-	return (int*) ((((Index*)IndexObj))->table);
-}
-
-COMPILER_SYMBOL int* Index_indices(int* IndexObj){
-	return (int*)(&(((Index*)IndexObj))->indices);
-}
-
-COMPILER_SYMBOL int* Index_constructor(){
-	return (int*)(new Index());
-}
-
-COMPILER_SYMBOL void Index_destructor(int* IndexObj){
-	delete ((Index*)IndexObj);
-}
-
-COMPILER_SYMBOL int* Index_locate(int* IndexObj, const int column_number, const int value){
-	return (int*)(new std::vector<int>(
-			((Index*)IndexObj)->locate(column_number,value)));
-}
-
-COMPILER_SYMBOL int* Index_locate_range(
-		int* IndexObj, const int begin, const int end, const int column_number){
-
-	return (int*)(new std::vector<int>(
-			((Index*)IndexObj)->locate_range(begin,end,column_number)));
-}
-
-COMPILER_SYMBOL void Index_create_index(int* IndexObj, const int column_number){
-	((Index*)IndexObj)->create_index(column_number);
-}
-
-COMPILER_SYMBOL void Index_drop_index(int* IndexObj, const int column_number){
-	((Index*)IndexObj)->drop_index(column_number);
-}
-
-COMPILER_SYMBOL void Index_setTable(int* IndexObj, int* TableObj){
-	((Index*)IndexObj)->setTable(((Table*)TableObj));
-}
-
-COMPILER_SYMBOL void Index_insert_index(int* IndexObj, int* rid, int* columns){
-	((Index*)IndexObj)->insert_index(*((int*)rid),*((std::vector<int>*)columns));
-}
-
-COMPILER_SYMBOL void Index_update_index(int* IndexObj, int* rid, int* columns, int* old_columns){
-	((Index*)IndexObj)->update_index(*((int*)rid),*((std::vector<int>*)columns),
-			*((std::vector<int>*)old_columns));
-}
-
-COMPILER_SYMBOL void Index_print_data(int* IndexObj){
-	((Index*)IndexObj)->printData();
-}
-
 
 Index::~Index() {
 }
@@ -282,4 +201,57 @@ void Index::printData(){
             std::cout << j.second << std::endl;
         }
     }
+}
+
+COMPILER_SYMBOL int* Index_table(int* IndexObj){
+	return (int*) ((((Index*)IndexObj))->table);
+}
+
+COMPILER_SYMBOL int* Index_indices(int* IndexObj){
+	return (int*)(&(((Index*)IndexObj))->indices);
+}
+
+COMPILER_SYMBOL int* Index_constructor(){
+	return (int*)(new Index());
+}
+
+COMPILER_SYMBOL void Index_destructor(int* IndexObj){
+	delete ((Index*)IndexObj);
+}
+
+COMPILER_SYMBOL int* Index_locate(int* IndexObj, const int column_number, const int value){
+	return (int*)(new std::vector<int>(
+			((Index*)IndexObj)->locate(column_number,value)));
+}
+
+COMPILER_SYMBOL int* Index_locate_range(
+		int* IndexObj, const int begin, const int end, const int column_number){
+
+	return (int*)(new std::vector<int>(
+			((Index*)IndexObj)->locate_range(begin,end,column_number)));
+}
+
+COMPILER_SYMBOL void Index_create_index(int* IndexObj, const int column_number){
+	((Index*)IndexObj)->create_index(column_number);
+}
+
+COMPILER_SYMBOL void Index_drop_index(int* IndexObj, const int column_number){
+	((Index*)IndexObj)->drop_index(column_number);
+}
+
+COMPILER_SYMBOL void Index_setTable(int* IndexObj, int* TableObj){
+	((Index*)IndexObj)->setTable(((Table*)TableObj));
+}
+
+COMPILER_SYMBOL void Index_insert_index(int* IndexObj, int* rid, int* columns){
+	((Index*)IndexObj)->insert_index(*((int*)rid),*((std::vector<int>*)columns));
+}
+
+COMPILER_SYMBOL void Index_update_index(int* IndexObj, int* rid, int* columns, int* old_columns){
+	((Index*)IndexObj)->update_index(*((int*)rid),*((std::vector<int>*)columns),
+			*((std::vector<int>*)old_columns));
+}
+
+COMPILER_SYMBOL void Index_print_data(int* IndexObj){
+	((Index*)IndexObj)->printData();
 }
