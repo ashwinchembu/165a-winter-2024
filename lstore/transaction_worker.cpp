@@ -1,6 +1,7 @@
 #include <thread>
 #include <iostream>
 #include "config.h"
+#include "DllConfig.h"
 #include "transaction_worker.h"
 
 
@@ -37,5 +38,28 @@ void TransactionWorker::join() {
             threads[i].join();
         }
     }
+
     threads.clear();
+}
+
+
+
+COMPILER_SYMBOL void TransactionWorker_add_transaction(int* obj,int* transaction){
+	((TransactionWorker*)obj)->add_transaction(*(Transaction*)transaction);
+}
+
+COMPILER_SYMBOL int* TransactionWorker_constructor(){
+	return (int*)(new TransactionWorker());
+}
+
+COMPILER_SYMBOL void TransactionWorker_destructor(int* obj){
+	delete ((TransactionWorker*)obj);
+}
+
+COMPILER_SYMBOL void TransactionWorker_run(int* obj){
+	((TransactionWorker*)obj)->run();
+}
+
+COMPILER_SYMBOL void TransactionWorker_join(int* obj){
+	((TransactionWorker*)obj)->join();
 }

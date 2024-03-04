@@ -196,3 +196,11 @@ COMPILER_SYMBOL int* Transaction_constructor(){
 COMPILER_SYMBOL void Transaction_destructor(int* self){
 	delete ((Transaction*)self);
 }
+
+COMPILER_SYMBOL void Transaction_abort(int* self){
+	((Transaction*)self)->abort();
+}
+
+COMPILER_SYMBOL void Transaction_commit(int* self){
+	((Transaction*)self)->commit();
+}
