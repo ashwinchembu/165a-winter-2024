@@ -414,7 +414,10 @@ int Table::merge() {
 	for (int i = 0; i < to_merge.size(); i++) {
 		if (to_merge[i]->first_rid_page_range != NULL) {
 			RID new_rid(to_merge[i]->first_rid_page, to_merge[i]->first_rid_page_range, to_merge[i]->first_rid_page, 0, name);
-		 	Frame* frame = mergeBufferPool->insert_into_frame(new_rid, to_merge[i]->column, to_merge[i]->page);
+			Page page_copy = *(to_merge[i]->page);
+			Page* page_pointer = new Page();
+			page_pointer = &page_copy;
+		 	Frame* frame = mergeBufferPool->insert_into_frame(new_rid, to_merge[i]->column, page_pointer);
 			frame->dirty = true;
 
 			//check bufferpool current size
