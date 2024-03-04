@@ -4,6 +4,7 @@
 #include <vector>
 #include <iostream>
 #include <cstdlib>
+#include <mutex>
 #include "RID.h"
 #include "table.h"
 #include "config.h"
@@ -21,6 +22,8 @@ public:
 
 class PageRange {
 public:
+    std::mutex mutex_insert;
+    std::mutex mutex_update;
     const int NUM_SLOTS = 4096*LOGICAL_PAGE;
     int num_slot_left = NUM_SLOTS;
     int num_slot_used_base = 0;

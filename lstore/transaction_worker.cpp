@@ -13,8 +13,9 @@ TransactionWorker::~TransactionWorker () {
 }
 
 // Append transaction t to the appropriate place.
+// Operation that happens on same place in same page goes to same place. Best effort model.
 void TransactionWorker::add_transaction(const Transaction& t) {
-
+    transactions[t.hash_key % MAX_THREADS].push_back(t);
 }
 
 // Start all the transactions. Create thread and run.

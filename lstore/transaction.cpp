@@ -19,36 +19,22 @@ bool QueryOperation::run() {
                 std::cerr << "Query with Not enough data : Update" << std::endl;
                 return 0;
             }
-        case OpCode::SELECT: /// TODO combine with select_ver
-            if (check_req()) {
-                select_result = q->select(*key, search_key_index, columns);
-                return select_result.size();
-            } else {
-                std::cerr << "Query with Not enough data : Select" << std::endl;
-                return 0;
-            }
+        case OpCode::SELECT:
         case OpCode::SELECT_VER:
             if (check_req()) {
                 select_result = q->select_version(*key, search_key_index, columns, relative_version);
                 return select_result.size();
             } else {
-                std::cerr << "Query with Not enough data : Select_ver" << std::endl;
+                std::cerr << "Query with Not enough data : Select or Select_ver" << std::endl;
                 return 0;
             }
-        case OpCode::SUM: /// TODO Combine with sum_version
-            if (check_req()) {
-                *sum_result = q->sum(*start_range, *end_range, aggregate_column_index);
-                return sum_result != nullptr;
-            } else {
-                std::cerr << "Query with Not enough data : Sum" << std::endl;
-                return 0;
-            }
+        case OpCode::SUM:
         case OpCode::SUM_VER:
             if (check_req()) {
                 *sum_result = q->sum_version(*start_range, *end_range, aggregate_column_index, relative_version);
                 return sum_result != nullptr;
             } else {
-                std::cerr << "Query with Not enough data : Sum_ver" << std::endl;
+                std::cerr << "Query with Not enough data : Sum or Sum_ver" << std::endl;
                 return 0;
             }
         default:
@@ -82,12 +68,14 @@ Transaction::~Transaction () {}
 // I believe wrapper can simplify these function pointers
 // Insert
 void Transaction::add_query(Query& q, Table& t, const std::vector<int>& columns) {
+    hash_key = columns[t.key];
     queries.push_back(QueryOperation(&q, INSERT, &t));
     num_queries++;
     queries[num_queries - 1].columns = columns;
 }
 // Update
 void Transaction::add_query(Query& q, Table& t, int& key, const std::vector<int>& columns) {
+    hash_key = key;
     queries.push_back(QueryOperation(&q, UPDATE, &t));
     num_queries++;
     queries[num_queries - 1].key = &key;
@@ -95,6 +83,7 @@ void Transaction::add_query(Query& q, Table& t, int& key, const std::vector<int>
 }
 // Select
 void Transaction::add_query(Query& q, Table& t, int& key, const int& search_key_index, const std::vector<int>& projected_columns_index) {
+    hash_key = key;
     queries.push_back(QueryOperation(&q, SELECT, &t));
     num_queries++;
     queries[num_queries - 1].key = &key;
@@ -104,6 +93,7 @@ void Transaction::add_query(Query& q, Table& t, int& key, const int& search_key_
 }
 // Select version
 void Transaction::add_query(Query& q, Table& t, int& key, const int& search_key_index, const std::vector<int>& projected_columns_index,  const int& relative_version) {
+    hash_key = key;
     queries.push_back(QueryOperation(&q, SELECT_VER, &t));
     num_queries++;
     queries[num_queries - 1].key = &key;
@@ -113,6 +103,7 @@ void Transaction::add_query(Query& q, Table& t, int& key, const int& search_key_
 }
 // Sum
 void Transaction::add_query(Query& q, Table& t, int& start_range, int& end_range, const int& aggregate_column_index) {
+    hash_key = start_range;
     queries.push_back(QueryOperation(&q, SUM, &t));
     num_queries++;
     queries[num_queries - 1].start_range = &start_range;
@@ -122,6 +113,7 @@ void Transaction::add_query(Query& q, Table& t, int& start_range, int& end_range
 }
 // Sum version
 void Transaction::add_query(Query& q, Table& t, int& start_range, int& end_range, const int& aggregate_column_index, const int& relative_version) {
+    hash_key = start_range;
     queries.push_back(QueryOperation(&q, SUM_VER, &t));
     num_queries++;
     queries[num_queries - 1].start_range = &start_range;
@@ -140,7 +132,8 @@ void Transaction::run() {
 }
 
 void Transaction::abort() {
-    // Revert all the changes that this made, I think
+    // Revert the changes that this made, I think
+    run();
 }
 
 void Transaction::commit() {

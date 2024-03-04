@@ -33,6 +33,7 @@ class Transaction {
 public:
     std::vector<QueryOperation> queries; // To hold onto queries for abort?
     int num_queries = 0;
+    int hash_key = 0;
     Transaction ();
     virtual ~Transaction ();
     // I believe wrapper can simplify these function pointers

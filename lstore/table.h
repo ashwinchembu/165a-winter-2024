@@ -8,6 +8,7 @@
 #include "RID.h"
 #include <memory>
 #include <queue>
+#include <mutex>
 #include "config.h"
 // Avoid recursive include
 // #include "index.h"
@@ -40,6 +41,8 @@ class RIDJoin;
 
 class Table {
 public:
+    std::mutex mutex_insert;
+    std::mutex mutex_update;
     std::string name;
     int key; //primary key
     std::map<int, RID> page_directory; //<RID.id, RID>
