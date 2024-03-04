@@ -40,7 +40,6 @@ COMPILER_SYMBOL char* get_string_buffer(){
 	return stringBuffer;
 }
 
-
 //Logic for database-specific buffers, used in wrapper
 
 Table* tableBuffer = nullptr;
@@ -207,8 +206,8 @@ std::vector<std::string>tokenize(
 	return {start,{}};
 }
 
-COMPILER_SYMBOL int cpp_min_signed_int(){
-	return std::numeric_limits<int>::min();
+COMPILER_SYMBOL int cpp_unreasonable_number(){
+	return std::numeric_limits<int>::min() + 1000;
 }
 
 }

@@ -43,8 +43,6 @@ for i in range(num_threads):
     transaction_workers.append(TransactionWorker())
 
 
-
-
 updated_records = {}
 # x update on every column
 for j in range(number_of_operations_per_record):
@@ -65,7 +63,6 @@ print("Update finished")
 # add trasactions to transaction workers  
 for i in range(number_of_transactions):
     transaction_workers[i % num_threads].add_transaction(transactions[i])
-
 
 
 # run transaction workers
