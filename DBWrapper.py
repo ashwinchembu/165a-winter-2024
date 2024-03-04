@@ -16,6 +16,27 @@ elif thePlatform == "Windows":
     #DB will be the windoows version
     pass
 
+#Transaction.h
+
+Transaction_add_query_insert = DB.Transaction_add_query_insert
+Transaction_add_query_insert.argtypes=[POINTER(c_int),POINTER(c_int),POINTER(c_int),POINTER(c_int)]
+
+Transaction_add_query_update = DB.Transaction_add_query_update
+Transaction_add_query_update.argtypes = [POINTER(c_int),POINTER(c_int),POINTER(c_int),c_int,POINTER(c_int)]
+
+Transaction_add_query_select = DB.Transaction_add_query_select
+Transaction_add_query_select.argtypes = [POINTER(c_int),POINTER(c_int),POINTER(c_int),c_int,c_int,POINTER(c_int)]
+
+Transaction_add_query_select_version = DB.Transaction_add_query_select_version
+Transaction_add_query_select_version.argtypes = [POINTER(c_int),POINTER(c_int),POINTER(c_int),c_int,c_int,POINTER(c_int),c_int]
+
+Transaction_add_query_sum = DB.Transaction_add_query_sum
+Transaction_add_query_sum.argtypes = [POINTER(c_int),POINTER(c_int),POINTER(c_int),c_int,c_int,c_int]
+
+Transaction_add_query_sum_version = DB.Transaction_add_query_sum_version
+Transaction_add_query_sum_version.argtypes=[POINTER(c_int),POINTER(c_int),POINTER(c_int),c_int,c_int,c_int,c_int]
+
+
 # Functions from db.cpp
 
 add_to_buffer_vector=DB.add_to_buffer_vector
