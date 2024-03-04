@@ -223,11 +223,22 @@ RID Table::insert(const std::vector<int>& columns) {
  */
 RID Table::update(RID& rid, const std::vector<int>& columns) {
     num_update++;
-	if (num_update >= MAX_TABLE_UPDATES){
+	if (num_update > MAX_TABLE_UPDATES){
 		merge();
 	}
 
 	std::cout << "right after merge" << std::endl;
+	std::cout << "printing bufferpool 1: " << std::endl;
+	Frame* cur = buffer_pool.head;
+	while (cur != nullptr) {
+		std::cout << cur->first_rid_page << " " << std::endl;
+		if (cur->first_rid_page == 1) {
+			std::cout << *(cur->page) << std::endl;
+			break;
+		}
+		cur = cur->next;
+	}
+	std::cout << std::endl;
 
 	const int rid_id = num_update * -1;
 	size_t i = 0;
@@ -240,16 +251,32 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 	std::cout << "first for loop end" << std::endl;
 
 	RID new_rid(rid_id);
+	std::cout << "new rid" << std::endl;
 	new_rid.table_name = name;
+	std::cout << "new name" << std::endl;
 	new_rid.first_rid_page_range = rid.first_rid_page_range;
+	std::cout << "new page range" << std::endl;
 
-	std::cout << "new rid id: " << new_rid.id << " table name: " << name << " rid page range: " << new_rid.first_rid_page_range << std::endl;
-	std::cout << "i: " << i << std::endl;
+	// std::cout << "new rid id: " << new_rid.id << " table name: " << name << " rid page range: " << new_rid.first_rid_page_range << std::endl;
+	// std::cout << "i: " << i << std::endl;
+	// std::cout << page_range[i].get()->pages[0].id << std::endl;
+
+	std::cout << "printing bufferpool 2: " << std::endl;
+	Frame* cur1 = buffer_pool.head;
+	while (cur1 != nullptr) {
+		std::cout << cur1->first_rid_page << " " << std::endl;
+		if (cur1->first_rid_page == 4097) {
+			std::cout << *(cur1->page) << std::endl;
+			break;
+		}
+		cur1 = cur1->next;
+	}
+	std::cout << std::endl;
 
 	(page_range[i].get())->update(rid, new_rid, columns, page_directory);
 	page_range_update[i]++;
 	
-	std::cout << "before if" << std::endl;
+	// std::cout << "before if" << std::endl;
 	if (page_range_update[i] >= MAX_PAGE_RANGE_UPDATES){
 		// Make a deep copy of page_range[i]
 		std::shared_ptr<PageRange> deep_copy = std::make_shared<PageRange>(*(page_range[i].get()));
@@ -372,7 +399,7 @@ int Table::merge() {
 	mergeBufferPool->set_path("./ECS165/Merge");
 	struct stat checkDir;
 	if(stat(mergeBufferPool->path.c_str(),&checkDir)!=0 || !S_ISDIR(checkDir.st_mode)){
-		mkdir(mergeBufferPool->path.c_str(), S_IRUSR | S_IWUSR);
+		mkdir(mergeBufferPool->path.c_str(), 0777);
 	}
 	//std::cout << "end of block 1" << std::endl;
 
@@ -461,8 +488,9 @@ int Table::merge() {
 						if (latest_update[baseRID].first > currentRID.id){
 							latest_update[baseRID].first = currentRID.id;
 							std::vector<int> merge_vals;
-							for (int j = 0; j < num_columns; j++) { //indirection place stuff
+							for (int j = NUM_METADATA_COLUMNS; j < num_columns + NUM_METADATA_COLUMNS; j++) { //indirection place stuff
 								int value = mergeBufferPool->get(currentRID, j);
+								std::cout << "VALUE BEFORE PUSH: " << value << std::endl;
 								merge_vals.push_back(value);
 							}
 							latest_update[baseRID].second = merge_vals;
@@ -477,6 +505,8 @@ int Table::merge() {
 		}
 	}
 
+	//for (int i)
+
 	for (auto itr = latest_update.begin(); itr != latest_update.end(); ++itr) {
 		if (itr->first == 0) {
 			continue;	
@@ -485,19 +515,26 @@ int Table::merge() {
 		const std::vector<int>& values = itr->second.second;
 
 		int tail_id = latest_update.at(itr->first).first;
-		mergeBufferPool->set (latest_base_rid, INDIRECTION_COLUMN, tail_id, false);
+		//mergeBufferPool->set (latest_base_rid, INDIRECTION_COLUMN, tail_id, false);
 
-		std::cout << "COLUMN VALUES: ";
-		for (int col = NUM_METADATA_COLUMNS + 1; col < num_columns + NUM_METADATA_COLUMNS; col++){
+		std::cout << "COLUMN VALUES: value.size: " << values.size() << " ";
+		for (int i = 0; i < values.size(); i++) {
+			std::cout << values[i] << " ";
+		}
+		std::cout << std::endl;
+
+		for (int col = NUM_METADATA_COLUMNS; col < num_columns + NUM_METADATA_COLUMNS; col++){
 			//mergeBufferPool->set (latest_base_rid, col, values[col], false);
 			//std::cout << "latest base_rid: " << latest_base_rid.id << " col :" << col << std::endl;
 			//mergeBufferPool->get(latest_base_rid, col);
 			//std::cout << "get :)" << std::endl;
-			mergeBufferPool->set (latest_base_rid, col, values[col], false);
+			
+			std::cout << "Index of val set to set: " << col - NUM_METADATA_COLUMNS << std::endl;
+			mergeBufferPool->set (latest_base_rid, col, values[col - NUM_METADATA_COLUMNS], false);
 			//mergeBufferPool->set(latest_base_rid, col, 0, false);
-			std::cout << latest_base_rid.id << " " << col << " " << mergeBufferPool->get(latest_base_rid, col) << " ";
+			//std::cout << latest_base_rid.id << " " << col << " " << mergeBufferPool->get(latest_base_rid, col) << " ";
 		}
-		std::cout << std::endl;
+		//std::cout << std::endl;
 
 		mergeBufferPool->set (latest_base_rid, TPS, tail_rid_last, false);
 	}
@@ -515,6 +552,19 @@ int Table::merge() {
 		// Move to the next frame
 		current = current->next;
 	}
+
+	std::cout << "before write back" << std::endl;
+	Frame* cur1 = buffer_pool.head;
+	while (cur1 != nullptr) {
+		std::cout << cur1->first_rid_page << " " << std::endl;
+		if (cur1->first_rid_page == 4097) {
+			std::cout << *(cur1->page) << std::endl;
+			break;
+		}
+		cur1 = cur1->next;
+	}
+	std::cout << std::endl;
+
 
 	std::cout << "1. :)" << std::endl;
 	mergeBufferPool->write_back_all();

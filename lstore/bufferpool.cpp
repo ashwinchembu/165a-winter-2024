@@ -53,6 +53,7 @@ int BufferPool::hash_fun(unsigned int x) {
 
 int BufferPool::get (const RID& rid, const int& column) {
   std::cout << "started get" << std::endl;
+  std::cout << path << std::endl;
   Frame* found = search(rid, column);
   if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
     std::cout << "Couldn't find it :(" << std::endl;
@@ -82,7 +83,8 @@ int BufferPool::get (const RID& rid, const int& column) {
     std::cout << "NO DATA THERE" << std::endl;
   }
   std::cout << "slkdfklsajf" <<std::endl;
-  std::cout << *(found->page->data) << std::endl; //page pointer is pointing to somewhere that is Segmentation faulting
+  // std::cout << "first rid of found" << found->first_rid_page << std::endl;
+  // std::cout << *(found->page->data) << std::endl; //page pointer is pointing to somewhere that is Segmentation faulting
   
   std::cout << "base is returning" << *(found->page->data + rid.offset) << std::endl;
   return *(found->page->data + rid.offset); //return the value we want
@@ -99,6 +101,7 @@ Frame* BufferPool::get_page(const RID& rid, const int& column){
 
 void BufferPool::set (const RID& rid, const int& column, const int& value, const bool& is_new){
   //std::cout << "hello1" << rid.id << std::endl;
+  std::cout << "-------------RID: " << rid.id << " VALUE BEING SET: " << value << std::endl;
   pin(rid, column);
   //std::cout << "hello2" << std::endl;
   Frame* found = search(rid, column);

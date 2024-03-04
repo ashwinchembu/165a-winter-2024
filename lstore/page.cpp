@@ -218,7 +218,9 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
     if (buffer_pool.search(rid, INDIRECTION_COLUMN) == nullptr) {
         std::cout << "WHYYYYYYYYYY????????????" << std::endl;
     }
-    std::cout << "????????????" << std::endl;
+    std::cout << "BUFFERPOOL SEARCH: " << std::endl;
+    std::cout << buffer_pool.search(rid, INDIRECTION_COLUMN)->first_rid_page << std::endl;
+    std::cout << "PAGE: " << *(buffer_pool.search(rid, 2)->page) << std::endl;
 
     RID latest_rid = page_directory.find(buffer_pool.get(rid, INDIRECTION_COLUMN))->second;
     std::cout << "update found page" << std::endl;
