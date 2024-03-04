@@ -9,8 +9,133 @@
 #include "DllConfig.h"
 #include <limits>
 
-COMPILER_SYMBOL int cpp_min_signed_int(){
-	return std::numeric_limits<int>::min();
+#include "lstore/table.h"
+#include "DllConfig.h"
+#include "db.h"
+
+COMPILER_SYMBOL int* Database_get_table(int* obj,char* name);
+
+//Logic for non-database-specific buffers, used in wrapper
+
+std::vector<int>bufferVector;
+char stringBuffer[128];
+
+COMPILER_SYMBOL void add_to_buffer_vector(const int element){
+	bufferVector.push_back(element);
+}
+
+COMPILER_SYMBOL int* get_buffer_vector(){
+	return(int*)(&(bufferVector));
+}
+
+COMPILER_SYMBOL int get_from_buffer_vector(const int i){
+	return bufferVector[i];
+}
+
+COMPILER_SYMBOL void erase_buffer_vector(){
+	bufferVector.clear();
+}
+
+COMPILER_SYMBOL char* get_string_buffer(){
+	return stringBuffer;
+}
+
+
+//Logic for database-specific buffers, used in wrapper
+
+Table* tableBuffer = nullptr;
+
+std::vector<int>ridBuffer;
+
+std::vector<int>recordBuffer;
+int sizeOfRecords;
+int recordBufferIndex;
+
+
+//table buffer logic
+
+COMPILER_SYMBOL int* get_table_buffer(){
+	return (int*)tableBuffer;
+}
+
+COMPILER_SYMBOL void parse_table(int* databaseObject, char* tableName){
+	tableBuffer = (Table*)Database_get_table(databaseObject, tableName);
+
+	strcpy(stringBuffer, tableName);
+	erase_buffer_vector();
+	bufferVector.push_back(tableBuffer->num_columns);
+	bufferVector.push_back(tableBuffer->key);
+}
+
+//rid buffer logic
+
+COMPILER_SYMBOL void clearRidBuffer(){
+	ridBuffer.clear();
+}
+
+COMPILER_SYMBOL int ridBufferSize(){
+	return ridBuffer.size();
+}
+
+COMPILER_SYMBOL void fillRidBuffer(int* obj){
+	ridBuffer.clear();
+
+	std::vector<int>* rids = (std::vector<int>*)obj;
+
+	for(size_t i = 0; i< rids->size();i++){
+		ridBuffer.push_back((*rids)[i]);
+	}
+}
+
+COMPILER_SYMBOL int getRidFromBuffer(const int i){
+	return ridBuffer[i];
+}
+
+//record buffer logic
+
+COMPILER_SYMBOL void clearRecordBuffer(){
+	recordBuffer.clear();
+
+	sizeOfRecords = 0;
+	recordBufferIndex = 0;
+}
+
+COMPILER_SYMBOL int getRecordSize(){
+	return sizeOfRecords;
+}
+
+COMPILER_SYMBOL int numberOfRecordsInBuffer(){
+	if(recordBuffer.size() == 0){
+		return 0;
+	}
+
+	return recordBuffer.size() / sizeOfRecords;
+}
+
+COMPILER_SYMBOL int getRecordBufferElement(const int i){
+	return recordBuffer[i];
+}
+
+COMPILER_SYMBOL void fillRecordBuffer(int* obj){
+	std::vector<Record>* records = (std::vector<Record>*)obj;
+
+	sizeOfRecords = (*records)[0].columns.size() + 2;
+
+	recordBuffer = std::vector<int>(sizeOfRecords * records->size());
+
+	for(size_t i = 0; i < records->size(); i++){
+
+		for(int j = 0; j < sizeOfRecords;j++){
+
+			recordBuffer[i*sizeOfRecords + j] =
+
+			j == 0 ? (*records)[i].rid :
+			j == 1 ? (*records)[i].key :
+			(*records)[i].columns[j - 2];
+		}
+	}
+
+	delete records;
 }
 
 namespace Toolkit {
@@ -80,6 +205,10 @@ std::vector<std::string>tokenize(
 	pattern,-1};
 
 	return {start,{}};
+}
+
+COMPILER_SYMBOL int cpp_min_signed_int(){
+	return std::numeric_limits<int>::min();
 }
 
 }

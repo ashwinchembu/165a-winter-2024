@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <string>
-
+#include <cstring>
 
 /*
  * Convenience methods for this library

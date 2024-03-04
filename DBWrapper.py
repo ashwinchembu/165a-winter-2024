@@ -36,26 +36,14 @@ Transaction_add_query_sum.argtypes = [POINTER(c_int),POINTER(c_int),POINTER(c_in
 Transaction_add_query_sum_version = DB.Transaction_add_query_sum_version
 Transaction_add_query_sum_version.argtypes=[POINTER(c_int),POINTER(c_int),POINTER(c_int),c_int,c_int,c_int,c_int]
 
+Transaction_constructor = DB.Transaction_constructor
+Transaction_constructor.restype= POINTER(c_int)
+
+Transaction_destructor = DB.Transaction_destructor
+Transaction_destructor.argtypes = [POINTER(c_int)]
+
 
 # Functions from db.cpp
-
-add_to_buffer_vector=DB.add_to_buffer_vector
-add_to_buffer_vector.argtypes = [c_int]
-
-get_buffer_vector=DB.get_buffer_vector
-get_buffer_vector.restype = POINTER(c_int)
-
-get_from_buffer_vector=DB.get_from_buffer_vector
-get_from_buffer_vector.restype = c_int
-get_from_buffer_vector.argtypes = [c_int]
-
-erase_buffer_vector=DB.erase_buffer_vector
-
-get_table_buffer = DB.get_table_buffer
-get_table_buffer.restype = POINTER(c_int)
-
-get_string_buffer = DB.get_string_buffer
-get_string_buffer.restype = POINTER(c_char)
 
 Database_constructor = DB.Database_constructor
 Database_constructor.restype = POINTER(c_int)
@@ -84,22 +72,7 @@ Database_open.argtypes=[POINTER(c_int),POINTER(c_char)]
 Database_close = DB.Database_close
 Database_close.argtypes=[POINTER(c_int)]
 
-parse_table = DB.parse_table
-parse_table.argtypes=[POINTER(c_int),POINTER(c_char)]
-
 # Functions from index.cpp
-
-clearRidBuffer = DB.clearRidBuffer
-
-ridBufferSize = DB.ridBufferSize
-ridBufferSize.restype = c_int
-
-fillRidBuffer = DB.fillRidBuffer
-fillRidBuffer.argtypes = [POINTER(c_int)]
-
-getRidFromBuffer = DB.getRidFromBuffer
-getRidFromBuffer.restype = c_int
-getRidFromBuffer.argtypes = [c_int]
 
 
 Index_table = DB.Index_table
@@ -342,6 +315,45 @@ Table_num_columns=DB.Table_num_columns
 Table_num_columns.restype = c_int
 Table_num_columns.argtypes = [POINTER(c_int)]
 
+
+#Toolkit.cpp
+
+cpp_min_signed_int = DB.cpp_min_signed_int
+cpp_min_signed_int.restype = c_int
+
+add_to_buffer_vector=DB.add_to_buffer_vector
+add_to_buffer_vector.argtypes = [c_int]
+
+get_buffer_vector=DB.get_buffer_vector
+get_buffer_vector.restype = POINTER(c_int)
+
+get_from_buffer_vector=DB.get_from_buffer_vector
+get_from_buffer_vector.restype = c_int
+get_from_buffer_vector.argtypes = [c_int]
+
+erase_buffer_vector=DB.erase_buffer_vector
+
+get_table_buffer = DB.get_table_buffer
+get_table_buffer.restype = POINTER(c_int)
+
+get_string_buffer = DB.get_string_buffer
+get_string_buffer.restype = POINTER(c_char)
+
+parse_table = DB.parse_table
+parse_table.argtypes=[POINTER(c_int),POINTER(c_char)]
+
+clearRidBuffer = DB.clearRidBuffer
+
+ridBufferSize = DB.ridBufferSize
+ridBufferSize.restype = c_int
+
+fillRidBuffer = DB.fillRidBuffer
+fillRidBuffer.argtypes = [POINTER(c_int)]
+
+getRidFromBuffer = DB.getRidFromBuffer
+getRidFromBuffer.restype = c_int
+getRidFromBuffer.argtypes = [c_int]
+
 clearRecordBuffer=DB.clearRecordBuffer
 
 numberOfRecordsInBuffer=DB.numberOfRecordsInBuffer
@@ -356,11 +368,6 @@ fillRecordBuffer.argtypes = [POINTER(c_int)]
 
 getRecordSize = DB.getRecordSize
 getRecordSize.restype =  c_int
-
-#Toolkit.cpp
-
-cpp_min_signed_int = DB.cpp_min_signed_int
-cpp_min_signed_int.restype = c_int
 
 def c_intOrZero(number):
     return c_int(number) if isinstance(number, int) else c_int(0)
