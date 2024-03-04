@@ -1,5 +1,6 @@
 from .table import Table, Record
 from .index import Index
+from DBWrapper import *
 
 class Transaction:
 
@@ -8,7 +9,7 @@ class Transaction:
     """
     def __init__(self):
         self.queries = []
-        pass
+        self.selfPtr = Transaction_constructor()
 
     """
     # Adds the given query to this transaction
@@ -18,8 +19,26 @@ class Transaction:
     # t.add_query(q.update, grades_table, 0, *[None, 1, None, 2, None])
     """
     def add_query(self, query, table, *args):
+        #query is a function and each symbol it is tested against is a 
+        #valid compare because of how the library is built
+        if query == insert:
+           pass
+        elif query == update:
+            pass
+        elif query==select:
+            pass
+        elif query==select_version:
+            pass
+        elif query==sum:
+            pass
+        elif query==sum_version:
+            pass
+                
         self.queries.append((query, args))
+        
+            
         # use grades_table for aborting
+        
 
         
     # If you choose to implement this differently this method must still return True if transaction commits or False on abort
@@ -40,4 +59,7 @@ class Transaction:
     def commit(self):
         # TODO: commit to database
         return True
+    
+    def destroyPointer(self):
+        Transaction_destructor(self.selfPtr)
 
