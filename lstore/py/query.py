@@ -14,6 +14,7 @@ class Query:
     def __init__(self, table):
         self.table = table
         self.selfPtr = Query_constructor(table.selfPtr)
+
     
     """
     # internal Method

@@ -7,7 +7,7 @@ class TransactionWorker {
 public:
     std::vector<std::vector<Transaction>> transactions; // List of transactions to run
     std::vector<std::thread> threads;
-    std::vector<bool>stats;
+    std::vector<bool> stats;
     int result = 0;
     TransactionWorker ();
     virtual ~TransactionWorker ();
