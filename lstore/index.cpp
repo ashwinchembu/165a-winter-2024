@@ -78,12 +78,17 @@ void Index::create_index(const int& column_number) {
     std::unordered_multimap<int, int> index;
 
     for (int i = 1; i <= table->num_insert; i++) {
+        std::cout << "Inside of the Create index -1" << std::endl;
         auto loc = table->page_directory.find(i); // Find RID for every rows
+        std::cout << "Inside of the Create index -2" << std::endl;
         if (loc != table->page_directory.end()) { // if RID ID exist ie. not deleted
+            std::cout << "Inside of the Create index -3" << std::endl;
             RID rid = table->page_directory.find(loc->second.id)->second;
 
             int value;
+            std::cout << "Inside of the Create index -4" << std::endl;
             int indirection_num = buffer_pool.get(rid, INDIRECTION_COLUMN);
+            std::cout << "Inside of the Create index -5" << std::endl;
 
             if ((buffer_pool.get(rid, SCHEMA_ENCODING_COLUMN) >> (column_number - 1)) & (0b1)) { // If the column of the record at loc is updated
                 std::cout << "Inside of the Create index 0" << std::endl;
