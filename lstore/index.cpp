@@ -90,6 +90,7 @@ void Index::create_index(const int& column_number) {
             int indirection_num = buffer_pool.get(rid, INDIRECTION_COLUMN);
             std::cout << "Inside of the Create index -5" << std::endl;
                 std::cout << column_number << std::endl;
+                std::cout << rid.id << std::endl;
                 std::cout << rid.offset << std::endl;
 
             if ((buffer_pool.get(rid, SCHEMA_ENCODING_COLUMN) >> (column_number - 1)) & (0b1)) { // If the column of the record at loc is updated
