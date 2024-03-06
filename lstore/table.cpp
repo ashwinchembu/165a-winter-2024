@@ -522,7 +522,7 @@ int Table::merge() {
                 currentFrame = mergeBufferPool->search(page_rid, RID_COLUMN);
                 Page *currentPage = currentFrame->page;
                 for (int tail_iterator = (currentPage->num_rows - 1) * sizeof(int); tail_iterator >= 0; tail_iterator -= sizeof(int)) {
-                    RID currentRID(*(tail_iterator + currentPage->data),
+					RID currentRID(*(tail_iterator + currentPage->data),
                                    to_merge[i]->first_rid_page_range, to_merge[i]->first_rid_page, tail_iterator, name);
 
                     if (currentRID.id > latest_tail_id) {
@@ -536,11 +536,16 @@ int Table::merge() {
                             std::vector<int> merge_vals;
                             for (int j = NUM_METADATA_COLUMNS; j < num_columns + NUM_METADATA_COLUMNS; j++) { // indirection place stuff
                                 int value = mergeBufferPool->get(currentRID, j);
-                                // std::cout << "VALUE BEFORE PUSH: " << value << std::endl;
+                                std::cout << " " << value ;
                                 merge_vals.push_back(value);
                             }
+							std::cout << "vector" << std::endl; 
+							for (size_t z = 0; z < merge_vals.size(); ++z) {
+								std::cout << merge_vals[z] << " ";
+							}
+							std::cout << std::endl;
                             latest_update[baseRID].second = merge_vals;
-                            // std::cout << latest_update.size() << std::endl;
+                            std::cout << std::endl;
                         }
                     }
                     if (currentRID.id < tail_rid_last) {
@@ -563,15 +568,15 @@ int Table::merge() {
         int tail_id = latest_update.at(itr->first).first;
         // mergeBufferPool->set (latest_base_rid, INDIRECTION_COLUMN, tail_id, false);
 
-        // std::cout << "COLUMN VALUES: value.size: " << values.size() << " ";
-        // for (int i = 0; i < values.size(); i++) {
-        //     std::cout << values[i] << " ";
-        // }
-        // std::cout << std::endl;
+        std::cout << "COLUMN VALUES: value.size: " << values.size() << " ";
+        for (int i = 0; i < values.size(); i++) {
+             std::cout << values[i] << " ";
+         }
+        std::cout << std::endl;
 
         for (int col = NUM_METADATA_COLUMNS; col < num_columns + NUM_METADATA_COLUMNS; col++) {
             // mergeBufferPool->set (latest_base_rid, col, values[col], false);
-            // std::cout << "latest base_rid: " << latest_base_rid.id << " col :" << col << std::endl;
+            std::cout << "latest base_rid: " << latest_base_rid.id << " col :" << col << "value: " << values[col - NUM_METADATA_COLUMNS] << std::endl;
             // mergeBufferPool->get(latest_base_rid, col);
             // std::cout << "get :)" << std::endl;
 
@@ -601,6 +606,7 @@ int Table::merge() {
 
     std::cout << "before write back" << std::endl;
     Frame *cur1 = buffer_pool.head;
+	/*
     while (cur1 != nullptr) {
         std::cout << cur1->first_rid_page << " " << std::endl;
         if (cur1->first_rid_page == 4097) {
@@ -610,11 +616,12 @@ int Table::merge() {
         cur1 = cur1->next;
     }
     std::cout << std::endl;
+	*/
 
     std::cout << "1. :)" << std::endl;
     mergeBufferPool->write_back_all(); // see is the file being written back is the problem or is merge process the problem
-
-    std::cout << "after write back" << std::endl;
+	/*
+    std::cout << "after write back" << mergeBufferPool->hash_vector.size() << std::endl;
     Frame *cur2 = buffer_pool.head;
     while (cur2 != nullptr) {
         std::cout << cur2->first_rid_page << " " << std::endl;
@@ -625,6 +632,7 @@ int Table::merge() {
         cur2 = cur2->next;
     }
     std::cout << std::endl;
+	*/
 
 	std::cout << "2. :)" << std::endl;
     std::cout << "before free" << std::endl;
