@@ -75,15 +75,14 @@ class Query:
         clearRecordBuffer()
         
         returnRecords=[]
-        
+
         if fillRecordBuffer(recordsPtr)==False:
             return returnRecords
-            
         
         numRecords = numberOfRecordsInBuffer()
         recordSize = getRecordSize()
         
-       
+        
         for i in range(numRecords):
             offset = i * recordSize
             rid = getRecordBufferElement(offset)
