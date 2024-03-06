@@ -271,14 +271,13 @@ void BufferPool::write_back_all (){
   while(current_frame != nullptr){ //iterate through entire bufferpool
     if(current_frame != nullptr && (current_frame->dirty && current_frame->valid)){
       write_back(current_frame);
-    } else {
-      if(current_frame->page != nullptr){
-        std::cout << "expr" << std::endl;
+    } else if(current_frame->page != nullptr && !current_frame->dirty && current_frame->valid){
+      std::cout << "expr" << std::endl;
       std::cout << current_frame->page << std::endl;
-        delete current_frame->page;
-        std::cout << "expr2" << std::endl;
-      }
+      delete current_frame->page;
+      std::cout << "expr2" << std::endl;
     }
+
     current_frame->valid = false;
     current_frame = current_frame->next;
   }

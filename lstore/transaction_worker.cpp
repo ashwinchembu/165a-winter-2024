@@ -1,7 +1,7 @@
 #include <thread>
 #include <iostream>
 #include "config.h"
-#include "DllConfig.h"
+#include "../DllConfig.h"
 #include "transaction_worker.h"
 
 
@@ -21,7 +21,7 @@ void TransactionWorker::add_transaction(const Transaction& t) {
 
 // Start all the transactions. Create thread and run.
 void TransactionWorker::run() {
-    for (int i = 0; i < transactions.size(); i++) {
+    for (size_t i = 0; i < transactions.size(); i++) {
         int num_transaction = transactions[i].size();
         if (num_transaction > 0) {
             for (int j = 0; j < num_transaction; j++) {
