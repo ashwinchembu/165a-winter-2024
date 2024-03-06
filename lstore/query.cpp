@@ -16,12 +16,17 @@ Query::~Query () {
 
 bool Query::deleteRecord(const int& primary_key) {
     // Return true if successful, false otherwise
-    if (table->page_directory.find(primary_key)->second.id == 0) {
-        return false;
-    } else {
-        table->page_directory.find(primary_key)->second.id = 0;
-        return true;
+    std::vector<int> rids = table->index->locate(table->key, primary_key);
+    if(rids.size() != 0){
+        int target = rids[0];
+        if (table->page_directory.find(target)->second.id == 0) {
+            return false;
+        } else {
+            table->page_directory.find(target)->second.id = 0;
+            return true;
+        }
     }
+    std::cerr << "Attempted to delete record that does not exist" << std::endl;
 }
 
 bool Query::insert(const std::vector<int>& columns) {
