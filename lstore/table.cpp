@@ -585,19 +585,19 @@ int Table::merge() {
         mergeBufferPool->set(latest_base_rid, TPS, tail_rid_last, false);
     }
 
-    // update page directory
-    Frame *current = mergeBufferPool->head;
-    while (current != nullptr) {
-        if (current->first_rid_page > 0) { // is base page
-            for (int base_iterator = ((current->page->num_rows) - 1) * sizeof(int); base_iterator >= 0; base_iterator -= sizeof(int)) {
-                RID currentRID(*(base_iterator + current->page->data), current->first_rid_page_range,
-                               current->first_rid_page, base_iterator, current->table_name);
-                page_directory[currentRID.id] = currentRID; // update page directory
-            }
-        }
-        // Move to the next frame
-        current = current->next;
-    }
+    // // update page directory
+    // Frame *current = mergeBufferPool->head;
+    // while (current != nullptr) {
+    //     if (current->first_rid_page > 0) { // is base page
+    //         for (int base_iterator = ((current->page->num_rows) - 1) * sizeof(int); base_iterator >= 0; base_iterator -= sizeof(int)) {
+    //             RID currentRID(*(base_iterator + current->page->data), current->first_rid_page_range,
+    //                            current->first_rid_page, base_iterator, current->table_name);
+    //             page_directory[currentRID.id] = currentRID; // update page directory
+    //         }
+    //     }
+    //     // Move to the next frame
+    //     current = current->next;
+    // }
 
     std::cout << "before write back" << std::endl;
     Frame *cur1 = buffer_pool.head;
@@ -612,7 +612,7 @@ int Table::merge() {
     std::cout << std::endl;
 
     std::cout << "1. :)" << std::endl;
-    mergeBufferPool->write_back_all(); // see is the file being written back is the problem or is merge process the problem
+    //mergeBufferPool->write_back_all(); // see is the file being written back is the problem or is merge process the problem
 
     std::cout << "after write back" << std::endl;
     Frame *cur2 = buffer_pool.head;
