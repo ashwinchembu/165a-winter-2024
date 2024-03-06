@@ -34,7 +34,7 @@ class Table:
         self.page_directory = {}
 
         self.selfPtr=Table_constructor(name.encode(),num_columns,key)
-        self.index = Index(self.selfPtr)
+        self.index = Index(self)
         self.last_page = -1
         
         
@@ -48,10 +48,8 @@ class Table:
         self.page_directory = {}
         
         self.selfPtr=tablePtr
-        self.index = Index(self.selfPtr)
+        self.index = Index(self)
         self.last_page = -1
-        
-        self.selfPtr = tablePtr
     
     
 
