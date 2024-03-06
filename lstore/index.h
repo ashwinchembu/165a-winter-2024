@@ -2,6 +2,7 @@
 #define INDEXH
 #include <unordered_map>
 #include <vector>
+#include <mutex>
 #include "RID.h"
 #include "table.h"
 
@@ -9,6 +10,7 @@ class Table;
 
 class Index {
 public:
+    std::mutex mutex;
     Table* table = nullptr;
     std::unordered_map<int, std::unordered_multimap<int, int>> indices; //column, (value, rid id)
 

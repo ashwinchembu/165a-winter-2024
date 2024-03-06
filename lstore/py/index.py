@@ -9,7 +9,8 @@ class Index:
         # One index for each table. All our empty initially.
         self.indices = [None] *  table.num_columns
         
-        self.selfPtr = Index_constructor()
+        self.selfPtr = Table_index(table.selfPtr)
+
 
     """
     # returns the location of all records with the given value on column "column"

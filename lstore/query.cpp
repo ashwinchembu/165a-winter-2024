@@ -10,86 +10,30 @@
 #include "../Toolkit.h"
 #include "../DllConfig.h"
 
-COMPILER_SYMBOL int* Query_constructor(int* table){
-	return (int*)new Query((Table*)table);
-}
-
-COMPILER_SYMBOL void Query_destructor(int* table){
-	delete (int*)((Table*)table);
-}
-
-COMPILER_SYMBOL bool Query_deleteRecord(int* obj, const int primary_key){
-	return ((Query*)obj)->deleteRecord(primary_key);
-}
-
-COMPILER_SYMBOL bool Query_insert(int* obj, int* columns){
-	std::vector<int>* cols = (std::vector<int>*)columns;
-
-	return ((Query*)obj)->insert(*cols);
-}
-
-COMPILER_SYMBOL int* Query_select(int* obj, const int search_key,
-		int search_key_index, int* projected_columns_index){
-	Query* ref = (Query*)obj;
-
-	std::vector<int>*projected_cols = (std::vector<int>*)projected_columns_index;
-
-	std::vector<Record> ret = ref->select(search_key,search_key_index,*projected_cols);
-
-	return (int*) (new std::vector<Record>(ret));
-}
-
-COMPILER_SYMBOL int* Query_select_version(int* obj, const int search_key, const int search_key_index,
-		int* projected_columns_index, const int relative_version){
-
-	std::vector<int>* proj_columns = (std::vector<int>*)projected_columns_index;
-	Query* ref = (Query*)obj;
-
-	std::vector<Record> ret = ref->select_version(search_key,search_key_index,*proj_columns,relative_version);
-	return (int*)(new std::vector<Record>(ret));
-}
-
-COMPILER_SYMBOL bool Query_update(int* obj, const int primary_key, int* columns){
-	std::vector<int>* cols = (std::vector<int>*)columns;
-
-	return ((Query*)obj)->update(primary_key,*cols);
-}
-
-COMPILER_SYMBOL unsigned long int Query_sum(int* obj, const int start_range, const int end_range, const int aggregate_column_index){
-	return ((Query*)obj)->sum(start_range,end_range,aggregate_column_index);
-}
-
-COMPILER_SYMBOL unsigned long int Query_sum_version(int* obj, const int start_range,  const int end_range,
-		int aggregate_column_index, int relative_version){
-
-	return ((Query*)obj)->sum_version(start_range,end_range,aggregate_column_index,relative_version);
-}
-
-COMPILER_SYMBOL bool Query_increment(int* obj, const int key, const int column){
-	return  ((Query*)obj)->increment(key,column);
-}
-
-COMPILER_SYMBOL int* Query_table(int* obj){
-	return (int*)(&(((Query*)obj)->table));
-}
 
 Query::~Query () {
 }
 
 bool Query::deleteRecord(const int& primary_key) {
     // Return true if successful, false otherwise
-    if (table->page_directory.find(primary_key)->second.id == 0) {
-        return false;
-    } else {
-        table->page_directory.find(primary_key)->second.id = 0;
-        return true;
+    std::vector<int> rids = table->index->locate(table->key, primary_key);
+    if(rids.size() != 0){
+        int target = rids[0];
+        if (table->page_directory.find(target)->second.id == 0) {
+            return false;
+        } else {
+            table->page_directory.find(target)->second.id = 0;
+            return true;
+        }
     }
+    std::cerr << "Attempted to delete record that does not exist" << std::endl;
+    return false;
 }
 
 bool Query::insert(const std::vector<int>& columns) {
     // Return true if successful, false otherwise
-    if (table->page_directory.find(columns[table->key]) != table->page_directory.end()) {
-        std::cout << "Record with the specified primary key already exists" << std::endl;
+    if (table->index->locate(table->key, columns[table->key]).size() != 0) {
+        std::cerr << "Record with the specified primary key already exists" << std::endl;
         return false;
     }
     RID rid = table->insert(columns);
@@ -99,7 +43,7 @@ bool Query::insert(const std::vector<int>& columns) {
 
 std::vector<Record> Query::select(const int& search_key, const int& search_key_index, const std::vector<int>& projected_columns_index) {
     // Populate records based on the search criteria
-      return select_version(search_key, search_key_index, projected_columns_index, 0);
+    return select_version(search_key, search_key_index, projected_columns_index, 0);
 }
 
 std::vector<Record> Query::select_version(const int& search_key, const int& search_key_index, const std::vector<int>& projected_columns_index, const int& _relative_version) {
@@ -130,13 +74,13 @@ std::vector<Record> Query::select_version(const int& search_key, const int& sear
 
 bool Query::update(const int& primary_key, const std::vector<int>& columns) {
 
-    if (primary_key != columns[table->key] && table->page_directory.find(columns[table->key]) != table->page_directory.end()) {
-        std::cout << "Record with the primary key you are trying to update already exists" << std::endl;
+    if ((primary_key != columns[table->key] && table->index->locate(table->key, columns[table->key]).size() != 0) || (table->index->locate(table->key, primary_key).size() == 0)) {
+        std::cerr << "Record with the primary key you are trying to update already exists or Update called on key that does not exist" << std::endl;
         return false;
     }
-    
+
     RID base_rid = table->page_directory.find(table->index->locate(table->key, primary_key)[0])->second; //locate base RID of record to be updated
-		RID last_update = table->page_directory.find(buffer_pool.get(base_rid, INDIRECTION_COLUMN))->second; //locate the previous update
+    RID last_update = table->page_directory.find(buffer_pool.get(base_rid, INDIRECTION_COLUMN))->second; //locate the previous update
     RID update_rid = table->update(base_rid, columns); // insert update into the table
     std::vector<int> old_columns;
 
@@ -218,67 +162,67 @@ void deleteWithinJoin(RIDJoin ridJoin);
  */
 void Query::performDeleteOnColumnReferences(RID base_rid){
     for(int col = 0; col < table->num_columns;col++){
-    	if(table->ridIsJoined(base_rid, col)){
+        if(table->ridIsJoined(base_rid, col)){
 
-    		RIDJoin ridJoin = table->getJoin(base_rid,col);
+            RIDJoin ridJoin = table->getJoin(base_rid,col);
 
-    		if(ridJoin.modificationPolicy == -1){//supposed to be DELETE_NULL, had to change for now
-    			deleteWithinJoin(ridJoin);
+            if(ridJoin.modificationPolicy == -1){//supposed to be DELETE_NULL, had to change for now
+                deleteWithinJoin(ridJoin);
 
-    		} else if(ridJoin.modificationPolicy == -1){//supposed to be DELETE_CASCADE, had to change for now
-    			std::vector<RIDJoin> allJoins;
+            } else if(ridJoin.modificationPolicy == -1){//supposed to be DELETE_CASCADE, had to change for now
+                std::vector<RIDJoin> allJoins;
 
-    			RIDJoin currentJoin = ridJoin;
+                RIDJoin currentJoin = ridJoin;
 
-    			allJoins.push_back(currentJoin);
+                allJoins.push_back(currentJoin);
 
-    			while(currentJoin.targetTable->ridIsJoined(currentJoin.ridTarget, currentJoin.targetCol)){
+                while(currentJoin.targetTable->ridIsJoined(currentJoin.ridTarget, currentJoin.targetCol)){
 
-    				allJoins.push_back(currentJoin);
-    				currentJoin = currentJoin.targetTable->getJoin(currentJoin.ridTarget, col);
-    			}
+                    allJoins.push_back(currentJoin);
+                    currentJoin = currentJoin.targetTable->getJoin(currentJoin.ridTarget, col);
+                }
 
-    			for(auto& j : allJoins){
-    				deleteWithinJoin(j);
-    			}
-    		}
-    	}
+                for(auto& j : allJoins){
+                    deleteWithinJoin(j);
+                }
+            }
+        }
     }
- }
+}
 
 /*
  * Makes one column of a table reference column of another table.
  *
  */
 void referenceOnColumns(Table* srcTable, Table* targetTable,
-		int srcCol, int targetCol, int modificationPolicy){
-	if(srcTable->page_directory.size() != targetTable->page_directory.size()){
-		return;
-	}
+                        int srcCol, int targetCol, int modificationPolicy){
+    if(srcTable->page_directory.size() != targetTable->page_directory.size()){
+        return;
+    }
 
-	auto srcRecords =  srcTable->page_directory.begin();
-	auto targetRecords = targetTable->page_directory.begin();
+    auto srcRecords =  srcTable->page_directory.begin();
+    auto targetRecords = targetTable->page_directory.begin();
 
-	for(;srcRecords != srcTable->page_directory.end(); srcRecords++, targetRecords++){
-		RIDJoin join;
+    for(;srcRecords != srcTable->page_directory.end(); srcRecords++, targetRecords++){
+        RIDJoin join;
 
-		join.ridSrc = srcRecords->second;
-		join.ridTarget = targetRecords->second;
+        join.ridSrc = srcRecords->second;
+        join.ridTarget = targetRecords->second;
 
-		join.srcCol = srcCol;
-		join.targetCol = targetCol;
+        join.srcCol = srcCol;
+        join.targetCol = targetCol;
 
-		join.targetTable = targetTable;
-		join.modificationPolicy = modificationPolicy;
+        join.targetTable = targetTable;
+        join.modificationPolicy = modificationPolicy;
 
-		if(srcTable->referencesOut.find(srcCol)!= srcTable->referencesOut.end()){
-			(srcTable->referencesOut.find(srcCol)->second).push_back(join);
+        if(srcTable->referencesOut.find(srcCol)!= srcTable->referencesOut.end()){
+            (srcTable->referencesOut.find(srcCol)->second).push_back(join);
 
-		} else {
-			srcTable->referencesOut.insert({srcCol,std::vector<RIDJoin>()});
-			srcTable->referencesOut.find(srcCol)->second.push_back(join);
-		}
-	}
+        } else {
+            srcTable->referencesOut.insert({srcCol,std::vector<RIDJoin>()});
+            srcTable->referencesOut.find(srcCol)->second.push_back(join);
+        }
+    }
 }
 
 /*
@@ -291,24 +235,87 @@ void deleteWithinJoin(RIDJoin ridJoin){
 	buffer_pool.pin(ridJoin.ridTarget,INDIRECTION_COLUMN);
 
 	RID lastUpdateOtherTable
-			= ridJoin.targetTable->page_directory.find(buffer_pool.get(
-			ridJoin.ridTarget,INDIRECTION_COLUMN))->second;
+	= ridJoin.targetTable->page_directory.find(buffer_pool.get(
+		ridJoin.ridTarget,INDIRECTION_COLUMN))->second;
 
-	buffer_pool.unpin(ridJoin.ridTarget,INDIRECTION_COLUMN);
+		buffer_pool.unpin(ridJoin.ridTarget,INDIRECTION_COLUMN);
 
-	for(int c = 0; c < columns;c++){
+		for(int c = 0; c < columns;c++){
 
-		buffer_pool.pin(lastUpdateOtherTable,NUM_METADATA_COLUMNS + c);
+			buffer_pool.pin(lastUpdateOtherTable,NUM_METADATA_COLUMNS + c);
 
-		targetCols.push_back(buffer_pool.get(lastUpdateOtherTable,NUM_METADATA_COLUMNS + c));
+			targetCols.push_back(buffer_pool.get(lastUpdateOtherTable,NUM_METADATA_COLUMNS + c));
 
-		buffer_pool.unpin(lastUpdateOtherTable,NUM_METADATA_COLUMNS + c);
-	}
+			buffer_pool.unpin(lastUpdateOtherTable,NUM_METADATA_COLUMNS + c);
+		}
 
-	std::vector<int>oldTargetCols = targetCols;
+		std::vector<int>oldTargetCols = targetCols;
 
-	targetCols[ridJoin.targetCol]=0;
+		targetCols[ridJoin.targetCol]=0;
 
-	ridJoin.targetTable->update(ridJoin.ridTarget,targetCols);
-	ridJoin.targetTable->index->update_index(ridJoin.ridTarget.id,targetCols,oldTargetCols);
+		ridJoin.targetTable->update(ridJoin.ridTarget,targetCols);
+		ridJoin.targetTable->index->update_index(ridJoin.ridTarget.id,targetCols,oldTargetCols);
+}
+
+COMPILER_SYMBOL int* Query_constructor(int* table){
+	return (int*)new Query((Table*)table);
+}
+
+COMPILER_SYMBOL void Query_destructor(int* table){
+	delete (int*)((Table*)table);
+}
+
+COMPILER_SYMBOL bool Query_deleteRecord(int* obj, const int primary_key){
+	return ((Query*)obj)->deleteRecord(primary_key);
+}
+
+COMPILER_SYMBOL bool Query_insert(int* obj, int* columns){
+	std::vector<int>* cols = (std::vector<int>*)columns;
+
+	return ((Query*)obj)->insert(*cols);
+}
+
+COMPILER_SYMBOL int* Query_select(int* obj, const int search_key,
+		int search_key_index, int* projected_columns_index){
+	Query* ref = (Query*)obj;
+
+	std::vector<int>*projected_cols = (std::vector<int>*)projected_columns_index;
+
+	std::vector<Record> ret = ref->select(search_key,search_key_index,*projected_cols);
+
+	return (int*) (new std::vector<Record>(ret));
+}
+
+COMPILER_SYMBOL int* Query_select_version(int* obj, const int search_key, const int search_key_index,
+		int* projected_columns_index, const int relative_version){
+
+	std::vector<int>* proj_columns = (std::vector<int>*)projected_columns_index;
+	Query* ref = (Query*)obj;
+
+	std::vector<Record> ret = ref->select_version(search_key,search_key_index,*proj_columns,relative_version);
+	return (int*)(new std::vector<Record>(ret));
+}
+
+COMPILER_SYMBOL bool Query_update(int* obj, const int primary_key, int* columns){
+	std::vector<int>* cols = (std::vector<int>*)columns;
+
+	return ((Query*)obj)->update(primary_key,*cols);
+}
+
+COMPILER_SYMBOL unsigned long int Query_sum(int* obj, const int start_range, const int end_range, const int aggregate_column_index){
+	return ((Query*)obj)->sum(start_range,end_range,aggregate_column_index);
+}
+
+COMPILER_SYMBOL unsigned long int Query_sum_version(int* obj, const int start_range,  const int end_range,
+		int aggregate_column_index, int relative_version){
+
+	return ((Query*)obj)->sum_version(start_range,end_range,aggregate_column_index,relative_version);
+}
+
+COMPILER_SYMBOL bool Query_increment(int* obj, const int key, const int column){
+	return  ((Query*)obj)->increment(key,column);
+}
+
+COMPILER_SYMBOL int* Query_table(int* obj){
+	return (int*)(&(((Query*)obj)->table));
 }

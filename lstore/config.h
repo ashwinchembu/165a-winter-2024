@@ -15,4 +15,5 @@
     extern const int MAX_PAGE_RANGE_UPDATES;
     extern const int MAX_TABLE_UPDATES;
     extern const std::string file_path;
+    extern const size_t MAX_THREADS;
 #endif
