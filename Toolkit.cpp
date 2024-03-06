@@ -11,7 +11,7 @@
 
 #include "lstore/table.h"
 #include "DllConfig.h"
-#include "db.h"
+#include "lstore/db.h"
 
 COMPILER_SYMBOL int* Database_get_table(int* obj,char* name);
 
