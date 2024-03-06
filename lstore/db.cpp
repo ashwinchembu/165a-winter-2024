@@ -55,7 +55,6 @@ void Database::close() {
 }
 
 void Database::read(const std::string& path){
-	std::cout << "Database Read start" << std::endl;
 	FILE* fp = fopen((path + "/ProgramState.dat").c_str(),"r");
 	if (!fp) {
 		return;
@@ -81,7 +80,6 @@ void Database::read(const std::string& path){
 		std::cout << "Possible error (Database open : Number of read does not match)" << std::endl;
 	}
 	fclose(fp);
-	std::cout << "Database Read end" << std::endl;
 	return;
 }
 
