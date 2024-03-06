@@ -82,5 +82,5 @@ for i in range(0, 10):
 print(f"Mean insert time for 10k records over 10 runs: {mean(insert)}")
 print(f"Mean update time for 10k records over 10 runs: {mean(update)}")
 print(f"Mean select time for 10k records over 10 runs: {mean(select)}")
-print(f"Mean agg time for 10k records over 10 runs: {mean(agg)}")
+print(f"Mean aggreg time for 10k records over 10 runs: {mean(agg)}")
 print(f"Mean delete time for 10k records over 10 runs: {mean(delete)}")
