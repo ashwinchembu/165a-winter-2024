@@ -155,9 +155,11 @@ int Table::read(FILE* fp) {
 		newPageRange.get()->read(fp);
 		page_range.push_back(newPageRange);
 	}
-	std::cout << "Something happening here?" << std::endl;
+	std::cout << "Something happening here? 1" << std::endl;
 	delete index;
+	std::cout << "Something happening here? 2" << std::endl;
 	index = new Index();
+	std::cout << "Something happening here? 3" << std::endl;
 	index->setTable(this);
 	std::cout << "Table Read end" << std::endl;
 	return e;
