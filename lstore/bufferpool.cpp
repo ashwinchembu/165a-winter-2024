@@ -267,11 +267,12 @@ void BufferPool::write_back(Frame* frame){
 void BufferPool::write_back_all (){
   Frame* current_frame = head;
   while(current_frame != nullptr){ //iterate through entire bufferpool
-      std::cout << current_frame << std::endl;
     if(current_frame != nullptr && (current_frame->dirty && current_frame->valid)){
       write_back(current_frame);
     } else {
       if(current_frame->page != nullptr){
+        std::cout << "expr" << std::endl;
+      std::cout << current_frame->page << std::endl;
         delete current_frame->page;
       }
     }
@@ -310,11 +311,9 @@ void BufferPool::set_path (const std::string& path_rhs) {
 
 
 Frame::Frame () {
-  std::cout << "frame const?" << std::endl;
 }
 
 Frame::~Frame () {
-  std::cout << "frame dest?" << std::endl;
 }
 
 bool Frame::operator==(const Frame& rhs) {
