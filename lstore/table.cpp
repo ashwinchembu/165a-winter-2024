@@ -155,7 +155,7 @@ int Table::read(FILE* fp) {
 		newPageRange.get()->read(fp);
 		page_range.push_back(newPageRange);
 	}
-
+	std::cout << "Something happening here?" << std::endl;
 	delete index;
 	index = new Index();
 	index->setTable(this);
