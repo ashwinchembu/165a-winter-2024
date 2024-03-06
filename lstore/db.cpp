@@ -50,8 +50,11 @@ void Database::close() {
 	// for (std::map<std::string, Table>::iterator itr = tables.begin(); itr != tables.end(); itr++) {
 	// 	itr->second.merge();
 	// }
+	std::cout << "1" << std::endl;
 	buffer_pool.write_back_all();
+	std::cout << "2" << std::endl;
 	write();
+	std::cout << "3" << std::endl;
 }
 
 void Database::read(const std::string& path){
