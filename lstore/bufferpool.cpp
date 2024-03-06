@@ -57,12 +57,10 @@ int BufferPool::get (const RID& rid, const int& column) {
     }
     found = load(rid, column);
   }
-  update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
-    std::cout << rid.offset << std::endl;
     std::cout << found << std::endl;
     std::cout << found->page << std::endl;
     std::cout << found->page->data << std::endl;
-    std::cout << *(found->page->data + rid.offset) << std::endl;
+  update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
   return *(found->page->data + rid.offset); //return the value we want
 }
 
@@ -262,7 +260,6 @@ void BufferPool::write_back(Frame* frame){
   }
   if (frame->page != nullptr) {
     fwrite(&(frame->page->num_rows), sizeof(int), 1, fp);
-    std::cout << "Wrote " << frame->page->num_rows << " and " << frame->page->data << std::endl;
     fwrite(frame->page->data, sizeof(int), frame->page->num_rows, fp);
   }
   fclose(fp);
