@@ -50,8 +50,6 @@ int BufferPool::hash_fun(unsigned int x) {
 
 int BufferPool::get (const RID& rid, const int& column) {
   Frame* found = search(rid, column);
-  std::cout << found << std::endl;
-  std::cout << found->valid << std::endl;
   if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
     Frame* current_frame = head;
     while(current_frame != nullptr){ //iterate through entire bufferpool
@@ -59,9 +57,6 @@ int BufferPool::get (const RID& rid, const int& column) {
     }
     found = load(rid, column);
   }
-    std::cout << found << std::endl;
-    std::cout << found->page << std::endl;
-    std::cout << found->page->data << std::endl;
   update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
   return *(found->page->data + rid.offset); //return the value we want
 }
