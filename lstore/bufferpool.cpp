@@ -260,7 +260,7 @@ void BufferPool::write_back(Frame* frame){
   fclose(fp);
 
   if(frame->page != nullptr){
-          std::cout << current_frame->page << std::endl;
+          std::cout << frame->page << std::endl;
 
     delete frame->page;
   }
