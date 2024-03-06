@@ -262,6 +262,7 @@ void BufferPool::write_back(Frame* frame){
   }
   if (frame->page != nullptr) {
     fwrite(&(frame->page->num_rows), sizeof(int), 1, fp);
+    std::cout << "Wrote " << frame->page->num_rows << " and " << frame->page->data << std::endl;
     fwrite(frame->page->data, sizeof(int), frame->page->num_rows, fp);
   }
   fclose(fp);
