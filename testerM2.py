@@ -93,6 +93,7 @@ def correctness_tester1():
         else:
             print("Error[4]")
     except Exception as e:
+        print(e)
         print("Wrong[4]")
 
     try:
