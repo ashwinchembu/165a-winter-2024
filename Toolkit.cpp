@@ -115,8 +115,12 @@ COMPILER_SYMBOL int getRecordBufferElement(const int i){
 	return recordBuffer[i];
 }
 
-COMPILER_SYMBOL void fillRecordBuffer(int* obj){
+COMPILER_SYMBOL bool fillRecordBuffer(int* obj){
 	std::vector<Record>* records = (std::vector<Record>*)obj;
+
+	if(records->size()==0){
+		return false;
+	}
 
 	sizeOfRecords = (*records)[0].columns.size() + 2;
 
@@ -135,6 +139,8 @@ COMPILER_SYMBOL void fillRecordBuffer(int* obj){
 	}
 
 	delete records;
+
+	return true;
 }
 
 namespace Toolkit {

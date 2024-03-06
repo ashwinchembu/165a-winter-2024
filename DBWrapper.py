@@ -302,6 +302,7 @@ getRecordBufferElement.restype =  c_int
 getRecordBufferElement.argtypes = [c_int]
 
 fillRecordBuffer=DB.fillRecordBuffer
+fillRecordBuffer.restype = c_bool
 fillRecordBuffer.argtypes = [POINTER(c_int)]
 
 getRecordSize = DB.getRecordSize
