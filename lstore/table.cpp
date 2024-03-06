@@ -214,10 +214,11 @@ RID Table::insert(const std::vector<int> &columns) {
  *
  */
 RID Table::update(RID &rid, const std::vector<int> &columns) {
-    num_update++;
     if (num_update % MAX_TABLE_UPDATES == 0) {
         merge();
     }
+
+    std::cout << "running update" << std::endl;
 
     // std::cout << "right after merge" << std::endl;
     // std::cout << "printing bufferpool 1: " << std::endl;
@@ -232,6 +233,7 @@ RID Table::update(RID &rid, const std::vector<int> &columns) {
     // }
     // std::cout << std::endl;
 
+    num_update++;
     const int rid_id = num_update * -1;
     size_t i = 0;
     for (; i < page_range.size(); i++) {
@@ -253,32 +255,35 @@ RID Table::update(RID &rid, const std::vector<int> &columns) {
     // std::cout << "i: " << i << std::endl;
     // std::cout << page_range[i].get()->pages[0].id << std::endl;
 
-	if (num_update % MAX_TABLE_UPDATES == 0) {
-		std::cout << "printing bufferpool 2: " << std::endl;
-		Frame* cur1 = buffer_pool.head;
-		while (cur1 != nullptr) {
-			std::cout << cur1->first_rid_page << " " << std::endl;
-			if (cur1->first_rid_page == 4097) {
-				std::cout << *(cur1->page) << std::endl;
-				break;
-			}
-			cur1 = cur1->next;
-		}
-		std::cout << std::endl;
-	}
+    if (num_update > MAX_TABLE_UPDATES) {
+        std::cout << "printing bufferpool 2: " << std::endl;
+        Frame *cur1 = buffer_pool.head;
+        while (cur1 != nullptr) {
+            std::cout << cur1->first_rid_page << " " << std::endl;
+            if (cur1->first_rid_page == 4097) {
+                std::cout << *(cur1->page) << std::endl;
+                break;
+            }
+            cur1 = cur1->next;
+        }
+        std::cout << std::endl;
+    }
+
+    std::cout << "before update" << std::endl;
 
     (page_range[i].get())->update(rid, new_rid, columns, page_directory);
     page_range_update[i]++;
 
-    // std::cout << "before if" << std::endl;
+    std::cout << "before if" << std::endl;
     if (page_range_update[i] % MAX_PAGE_RANGE_UPDATES == 0) {
+        std::cout << "step in for loop" << std::endl;
         // Make a deep copy of page_range[i]
         std::shared_ptr<PageRange> deep_copy = std::make_shared<PageRange>(*(page_range[i].get()));
 
         // use bufferpool to get all the pages within a page range
         std::vector<Frame *> insert_to_queue;
         std::vector<RID> rids_in_range;
-        // std::cout << "Pages inserted: ";
+        std::cout << "Pages inserted: ";
         for (int i = deep_copy->pages.size() - 1; i >= 0; i--) {
             RID rid = deep_copy->pages[i];
             for (auto itr = rids_in_range.begin(); itr != rids_in_range.end(); itr++) {
@@ -293,7 +298,7 @@ RID Table::update(RID &rid, const std::vector<int> &columns) {
 
         for (int i = 0; i < rids_in_range.size(); i++) {
             for (int to_load_tail_page_col = 0; to_load_tail_page_col < num_columns + NUM_METADATA_COLUMNS; to_load_tail_page_col++) {
-                Frame* new_frame = buffer_pool.get_page(rids_in_range[i], to_load_tail_page_col);
+                Frame *new_frame = buffer_pool.get_page(rids_in_range[i], to_load_tail_page_col);
 
                 Page *page_copy = new_frame->page;
                 Page *page_pointer = new Page();
@@ -323,19 +328,19 @@ RID Table::update(RID &rid, const std::vector<int> &columns) {
         // std::cout << std::endl;
 
         // std::cout << "merge_queue size: " << merge_queue.size() << std::endl;
-		std::cout << "insert to queue: " << std::endl;
+        std::cout << "insert to queue: " << std::endl;
         for (int i = 0; i < insert_to_queue.size(); i++) {
             std::cout << insert_to_queue[i]->first_rid_page_range << " " << insert_to_queue[i]->first_rid_page << std::endl;
         }
         std::cout << std::endl;
 
         merge_queue.push(insert_to_queue);
+        std::cout << "after if" << std::endl;
     }
 
-    // std::cout << "after if" << std::endl;
     //}
 
-    // std::cout << "4. :)" << std::endl;
+    std::cout << "4. :)" << std::endl;
 
     page_directory.insert({rid_id, new_rid});
     return new_rid;
@@ -531,7 +536,7 @@ int Table::merge() {
                             std::vector<int> merge_vals;
                             for (int j = NUM_METADATA_COLUMNS; j < num_columns + NUM_METADATA_COLUMNS; j++) { // indirection place stuff
                                 int value = mergeBufferPool->get(currentRID, j);
-                                //std::cout << "VALUE BEFORE PUSH: " << value << std::endl;
+                                // std::cout << "VALUE BEFORE PUSH: " << value << std::endl;
                                 merge_vals.push_back(value);
                             }
                             latest_update[baseRID].second = merge_vals;
@@ -570,7 +575,7 @@ int Table::merge() {
             // mergeBufferPool->get(latest_base_rid, col);
             // std::cout << "get :)" << std::endl;
 
-            //std::cout << "Index of val set to set: " << col - NUM_METADATA_COLUMNS << std::endl;
+            // std::cout << "Index of val set to set: " << col - NUM_METADATA_COLUMNS << std::endl;
             mergeBufferPool->set(latest_base_rid, col, values[col - NUM_METADATA_COLUMNS], false);
             // mergeBufferPool->set(latest_base_rid, col, 0, false);
             // std::cout << latest_base_rid.id << " " << col << " " << mergeBufferPool->get(latest_base_rid, col) << " ";
@@ -606,6 +611,22 @@ int Table::merge() {
     }
     std::cout << std::endl;
 
+    std::cout << "1. :)" << std::endl;
+    mergeBufferPool->write_back_all(); // see is the file being written back is the problem or is merge process the problem
+
+    std::cout << "after write back" << std::endl;
+    Frame *cur2 = buffer_pool.head;
+    while (cur2 != nullptr) {
+        std::cout << cur2->first_rid_page << " " << std::endl;
+        if (cur2->first_rid_page == 4097) {
+            std::cout << *(cur2->page) << std::endl;
+            break;
+        }
+        cur2 = cur2->next;
+    }
+    std::cout << std::endl;
+
+	std::cout << "2. :)" << std::endl;
     std::cout << "before free" << std::endl;
     Frame *buffer_start = mergeBufferPool->head;
     while (buffer_start != nullptr) {
@@ -613,10 +634,6 @@ int Table::merge() {
         delete buffer_start->page;
         buffer_start = buffer_start->next;
     }
-
-    std::cout << "1. :)" << std::endl;
-    // mergeBufferPool->write_back_all(); //see is the file being written back is the problem or is merge process the problem
-    std::cout << "2. :)" << std::endl;
     delete mergeBufferPool;
     std::cout << "3. :)" << std::endl;
 
