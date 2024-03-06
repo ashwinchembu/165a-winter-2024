@@ -26,7 +26,7 @@ bool Query::deleteRecord(const int& primary_key) {
 
 bool Query::insert(const std::vector<int>& columns) {
     // Return true if successful, false otherwise
-    if (table->page_directory.find(columns[table->key]) != table->page_directory.end()) {
+    if (table->index->locate(table->key, columns[table->key]).size() != 0) {
         std::cout << "Record with the specified primary key already exists" << std::endl;
         return false;
     }
@@ -68,7 +68,7 @@ std::vector<Record> Query::select_version(const int& search_key, const int& sear
 
 bool Query::update(const int& primary_key, const std::vector<int>& columns) {
 
-    if (primary_key != columns[table->key] && table->page_directory.find(columns[table->key]) != table->page_directory.end()) {
+    if (primary_key != columns[table->key] && table->index->locate(table->key, columns[table->key]).size() != 0) {
         std::cout << "Record with the primary key you are trying to update already exists" << std::endl;
         return false;
     }
