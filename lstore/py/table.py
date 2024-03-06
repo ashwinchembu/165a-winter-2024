@@ -32,7 +32,7 @@ class Table:
         self.key = key
         self.num_columns = num_columns
         self.page_directory = {}
-        self.index = Index(self)
+        self.index = Index(self,self.selfPtr)
         self.last_page = -1
         
         
@@ -44,7 +44,7 @@ class Table:
         self.key = key
         self.num_columns = num_columns
         self.page_directory = {}
-        self.index = Index(self)
+        self.index = Index(self,self.selfPtr)
         self.last_page = -1
         
         self.selfPtr = tablePtr
