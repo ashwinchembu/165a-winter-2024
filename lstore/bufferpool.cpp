@@ -272,10 +272,7 @@ void BufferPool::write_back_all (){
     if(current_frame != nullptr && (current_frame->dirty && current_frame->valid)){
       write_back(current_frame);
     } else if(current_frame->page != nullptr && !current_frame->dirty && current_frame->valid){
-      std::cout << "expr" << std::endl;
-      std::cout << current_frame->page << std::endl;
       delete current_frame->page;
-      std::cout << "expr2" << std::endl;
     }
 
     current_frame->valid = false;
