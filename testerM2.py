@@ -31,20 +31,14 @@ def correctness_tester1():
     ]
     db = Database()
     db.open("./CT")
-    print("Before create table")
     test_table = db.create_table('test', 5, 0)
-    print("Before query")
     query = Query(test_table)
-    print("Before Insert")
     for record in records:
         query.insert(*record)
-        print(record)
     try:
         # select on columns with index
         test_table.index.create_index(2)
-        print("After create index on column 2")
         result = reorganize_result(query.select(1, 2, [1,1,1,1,1]))
-        print("After select")
         if len(result) == 4:
             if records[0] in result and records[1] in result and records[5] in result and records[7] in result:
                 print("PASS[0]")
