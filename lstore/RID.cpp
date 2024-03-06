@@ -18,10 +18,12 @@ int RID::write(FILE* fp) {
 	return 0;
 }
 int RID::read(FILE* fp) {
+	std::cout << "RID Read start" << std::endl;
 	size_t e = fread(&id, sizeof(int), 1, fp);
 	e = e + fread(&first_rid_page, sizeof(int), 1, fp);
 	e = e + fread(&first_rid_page_range, sizeof(int), 1, fp);
 	e = e + fread(&offset, sizeof(int), 1, fp);
+	std::cout << "RID Read end" << std::endl;
 	return e;
 }
 
