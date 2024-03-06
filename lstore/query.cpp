@@ -27,6 +27,7 @@ bool Query::deleteRecord(const int& primary_key) {
         }
     }
     std::cerr << "Attempted to delete record that does not exist" << std::endl;
+    return false;
 }
 
 bool Query::insert(const std::vector<int>& columns) {
