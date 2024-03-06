@@ -52,11 +52,11 @@ int BufferPool::hash_fun(unsigned int x) {
 }
 
 int BufferPool::get (const RID& rid, const int& column) {
-  std::cout << "started get" << std::endl;
-  std::cout << path << std::endl;
+  //std::cout << "started get" << std::endl;
+  //std::cout << path << std::endl;
   Frame* found = search(rid, column);
   if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
-    std::cout << "Couldn't find it :(" << std::endl;
+    //std::cout << "Couldn't find it :(" << std::endl;
     Frame* current_frame = head;
     while(current_frame != nullptr){ //iterate through entire bufferpool
       // if(current_frame->page != nullptr){
@@ -74,19 +74,19 @@ int BufferPool::get (const RID& rid, const int& column) {
   //   std::cout << found->page;
   // }
   update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
-  std::cout << "dklsjflkasjdkladsfjkldsj" << std::endl;
+  //std::cout << "dklsjflkasjdkladsfjkldsj" << std::endl;
   //std::cout << "rid offset: " << rid.offset;
   if (found->page == nullptr) { 
-    std::cout << "NOTHING THERE" << std::endl;
+    //std::cout << "NOTHING THERE" << std::endl;
   }
   if (found->page->data == nullptr) {
-    std::cout << "NO DATA THERE" << std::endl;
+    //std::cout << "NO DATA THERE" << std::endl;
   }
-  std::cout << "slkdfklsajf" <<std::endl;
+  //std::cout << "slkdfklsajf" <<std::endl;
   // std::cout << "first rid of found" << found->first_rid_page << std::endl;
   // std::cout << *(found->page->data) << std::endl; //page pointer is pointing to somewhere that is Segmentation faulting
   
-  std::cout << "base is returning" << *(found->page->data + rid.offset) << std::endl;
+  //std::cout << "base is returning" << *(found->page->data + rid.offset) << std::endl;
   return *(found->page->data + rid.offset); //return the value we want
 }
 
@@ -101,7 +101,7 @@ Frame* BufferPool::get_page(const RID& rid, const int& column){
 
 void BufferPool::set (const RID& rid, const int& column, const int& value, const bool& is_new){
   //std::cout << "hello1" << rid.id << std::endl;
-  std::cout << "-------------RID: " << rid.id << " VALUE BEING SET: " << value << std::endl;
+  //std::cout << "-------------RID: " << rid.id << " VALUE BEING SET: " << value << std::endl;
   pin(rid, column);
   //std::cout << "hello2" << std::endl;
   Frame* found = search(rid, column);
@@ -175,7 +175,7 @@ Frame* BufferPool::search(const RID& rid, const int& column, std::string merge){
 }*/
 
 void BufferPool::update_ages(Frame*& just_accessed, Frame*& range_begin){ //change ages and reorder linked list
-  std::cout << "UPDATE AGES DATA: " << just_accessed->first_rid_page << " " << range_begin->first_rid_page << std::endl;
+  //std::cout << "UPDATE AGES DATA: " << just_accessed->first_rid_page << " " << range_begin->first_rid_page << std::endl;
   if(just_accessed != range_begin){ //if not already the range beginning / most recently accessed
     if(just_accessed->next == nullptr ){ //if just_accessed is the tail
       tail = just_accessed->prev;
@@ -320,7 +320,7 @@ void BufferPool::write_back(Frame* frame){
     + "_" + frp_s
     + "_" + std::to_string(frame->column) + ".dat";
   
-  std::cout << "data_path: " << data_path << std::endl;
+  //std::cout << "data_path: " << data_path << std::endl;
   
   FILE* fp = fopen((data_path).c_str(),"w");
   // std::cout << "1.3" << std::endl;
