@@ -272,7 +272,6 @@ void BufferPool::write_back_all (){
     } else if(current_frame->page != nullptr && !current_frame->dirty && current_frame->valid){
       delete current_frame->page;
     }
-
     current_frame->valid = false;
     current_frame = current_frame->next;
   }
