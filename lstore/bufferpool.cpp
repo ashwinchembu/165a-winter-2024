@@ -162,9 +162,7 @@ Frame* BufferPool::load (const RID& rid, const int& column){ //return the frame 
   Frame* frame = nullptr;
   Page* p = new Page();
   int e = fread(&(p->num_rows), sizeof(int), 1, fp);
-  std::cout << p->num_rows << std::endl;
   e = e + fread(p->data, sizeof(int), p->num_rows, fp);
-  std::cout << p->data << std::endl;
   fclose(fp);
   frame = insert_into_frame(rid, column, p); //insert the page into a frame in the bufferpool
   frame->dirty = false; //frame has not yet been modified

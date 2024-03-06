@@ -78,33 +78,20 @@ void Index::create_index(const int& column_number) {
     std::unordered_multimap<int, int> index;
 
     for (int i = 1; i <= table->num_insert; i++) {
-        std::cout << "Inside of the Create index -1" << std::endl;
         auto loc = table->page_directory.find(i); // Find RID for every rows
-        std::cout << "Inside of the Create index -2" << std::endl;
         if (loc != table->page_directory.end()) { // if RID ID exist ie. not deleted
-            std::cout << "Inside of the Create index -3" << std::endl;
             RID rid = table->page_directory.find(loc->second.id)->second;
-
             int value;
-            std::cout << "Inside of the Create index -4" << std::endl;
             int indirection_num = buffer_pool.get(rid, INDIRECTION_COLUMN);
-            std::cout << "Inside of the Create index -5" << std::endl;
 
             if ((buffer_pool.get(rid, SCHEMA_ENCODING_COLUMN) >> (column_number - 1)) & (0b1)) { // If the column of the record at loc is updated
-                std::cout << "Inside of the Create index 0" << std::endl;
                 std::cout << indirection_num << std::endl;
                 RID update_rid = table->page_directory.find(indirection_num)->second;
-                std::cout << "Inside of the Create index 1" << std::endl;
                 value = buffer_pool.get(update_rid, column_number + NUM_METADATA_COLUMNS);
-                std::cout << "Inside of the Create index 2" << std::endl;
             } else {
-                std::cout << "Inside of the Create index 3" << std::endl;
                 value = buffer_pool.get(rid, column_number + NUM_METADATA_COLUMNS);
-                std::cout << "Inside of the Create index 4" << std::endl;
             }
-            std::cout << "Inside of the Create index 5" << std::endl;
             index.insert({value, rid.id});
-            std::cout << "Inside of the Create index 6" << std::endl;
         }
     }
     indices.insert({column_number, index});
