@@ -76,7 +76,7 @@ class Query:
         
         returnRecords=[]
         
-        if fillRecordBuffer(recordsPtr)==false:
+        if fillRecordBuffer(recordsPtr)==False:
             return returnRecords
             
         
