@@ -37,8 +37,6 @@ class Database():
     def drop_table(self, name):
         Database_drop_table(self.selfPtr, name.encode())
         
-        self.tables[name].destroyPointer()
-        
         del self.tables[name]
     
 
