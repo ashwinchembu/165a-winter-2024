@@ -94,6 +94,8 @@ void Index::create_index(const int& column_number) {
                 std::cout << "Inside of the Create index 2" << std::endl;
             } else {
                 std::cout << "Inside of the Create index 3" << std::endl;
+                std::cout << column_number << std::endl;
+                std::cout << rid.offset << std::endl;
                 value = buffer_pool.get(rid, column_number + NUM_METADATA_COLUMNS);
                 std::cout << "Inside of the Create index 4" << std::endl;
             }
