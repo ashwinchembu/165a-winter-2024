@@ -129,7 +129,6 @@ int Table::write(FILE* fp) {
 
 
 int Table::read(FILE* fp) {
-	std::cout << "Table Read start" << std::endl;
 	size_t e = fread(&key, sizeof(int), 1, fp);
 	e = e + fread(&num_columns, sizeof(int), 1, fp);
 	e = e + fread(&num_update, sizeof(int), 1, fp);
@@ -155,13 +154,9 @@ int Table::read(FILE* fp) {
 		newPageRange.get()->read(fp);
 		page_range.push_back(newPageRange);
 	}
-	std::cout << "Something happening here? 1" << std::endl;
 	delete index;
-	std::cout << "Something happening here? 2" << std::endl;
 	index = new Index();
-	std::cout << "Something happening here? 3" << std::endl;
 	index->setTable(this);
-	std::cout << "Table Read end" << std::endl;
 	return e;
 }
 
