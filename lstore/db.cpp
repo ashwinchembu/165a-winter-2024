@@ -179,8 +179,6 @@ COMPILER_SYMBOL void Database_destructor(int* obj){
 COMPILER_SYMBOL int* Database_create_table(int*obj,char* name, const int num_columns,  const int key_index){
 	Database* self = ((Database*)obj);
 	Table* ret = self->create_table({name},num_columns,key_index);
-
-
 	return (int*)ret;
 }
 
