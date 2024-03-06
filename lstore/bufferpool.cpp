@@ -14,7 +14,6 @@
 #include "../Toolkit.h"
 
 BufferPool::BufferPool (const int& num_pages) : bufferpool_size(num_pages){
-  std::cout << "Const called?" << std::endl;
   head = new Frame; //create head
   hash_vector.push_back(head); //head will be the first hash range beginning
   frame_directory.push_back(0); //each hash range begins empty
@@ -37,7 +36,6 @@ BufferPool::BufferPool (const int& num_pages) : bufferpool_size(num_pages){
 }
 
 BufferPool::~BufferPool () {
-  std::cout << "Called?" << std::endl;
   Frame* current_frame = head;
   while(current_frame != nullptr){ //iterate through entire bufferpool
     Frame* old = current_frame;
@@ -311,9 +309,12 @@ void BufferPool::set_path (const std::string& path_rhs) {
 }
 
 
-Frame::Frame () {}
+Frame::Frame () {
+  std::cout << "frame const?" << std::endl;
+}
 
 Frame::~Frame () {
+  std::cout << "frame dest?" << std::endl;
 }
 
 bool Frame::operator==(const Frame& rhs) {
