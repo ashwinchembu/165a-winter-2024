@@ -232,6 +232,7 @@ Frame* BufferPool::load (const RID& rid, const int& column){ //return the frame 
 Frame* BufferPool::insert_into_frame(const RID& rid, const int& column, Page* page){ //return the frame that the page was placed into
   Frame* frame = nullptr;
   size_t hash = hash_fun(rid.first_rid_page); //determine correct hash range
+  //std::cout << *(page->data) << std::endl; 
 
   //std::cout << "rid#: " << rid.id << " hash#: " << hash << " frame directory size: " << frame_directory[hash] << std::endl;
 
@@ -306,6 +307,7 @@ Frame* BufferPool::evict(const RID& rid){ //return the frame that was evicted
 }
 
 void BufferPool::write_back(Frame* frame){
+  std::cout << "in write back" << std::endl;
   //std::cout << "1.1" << std::endl;
   int frp = frame->first_rid_page;
   std::string frp_s = std::to_string(frame->first_rid_page);
@@ -330,10 +332,10 @@ void BufferPool::write_back(Frame* frame){
   //std::cout << "1.6" << std::endl;
   if (frame->page != nullptr) {
     // std::cout << "1.6 went in to for loop" << std::endl; 
-    // std::cout << frame->page->num_rows << " " << frame->page->data << std::endl; 
     // [A]frame page num_row is negative
     fwrite(&(frame->page->num_rows), sizeof(int), 1, fp);
     fwrite(frame->page->data, sizeof(int), frame->page->num_rows, fp);
+    std::cout << *(frame->page->data) << std::endl; 
   }
   fclose(fp);
 
@@ -348,12 +350,15 @@ void BufferPool::write_back(Frame* frame){
 }
 
 void BufferPool::write_back_all (){
+  int counter = 0;
   Frame* current_frame = head;
   //std::cout << current_frame << std::endl;
   while(current_frame != nullptr){ //iterate through entire bufferpool
+  
     if(current_frame != nullptr && (current_frame->dirty && current_frame->valid)){
       //std::cout << "2 error" << std::endl;
       write_back(current_frame);
+      counter++;
     } else {
       current_frame->valid = false;
       if(current_frame->page != nullptr){
