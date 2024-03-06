@@ -389,7 +389,7 @@ COMPILER_SYMBOL int* Table_page_range(int* obj){
 
 COMPILER_SYMBOL int* Table_index(int* obj){
 	Table* ref = (Table*)obj;
-	return(int*)(&( ref->index));
+	return(int*)(ref->index);
 }
 
 COMPILER_SYMBOL int Table_num_update(int* obj){
