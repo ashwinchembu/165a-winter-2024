@@ -50,11 +50,8 @@ void Database::close() {
 	// for (std::map<std::string, Table>::iterator itr = tables.begin(); itr != tables.end(); itr++) {
 	// 	itr->second.merge();
 	// }
-	std::cout << "1" << std::endl;
 	buffer_pool.write_back_all();
-	std::cout << "2" << std::endl;
 	write();
-	std::cout << "3" << std::endl;
 }
 
 void Database::read(const std::string& path){
@@ -80,7 +77,7 @@ void Database::read(const std::string& path){
 		tables.insert({{nameBuffer},t});
 	}
 	if (e != numTables + 1) {
-		std::cout << "Possible error (Database open : Number of read does not match)" << std::endl;
+		std::cerr << "Possible error (Database open : Number of read does not match)" << std::endl;
 	}
 	fclose(fp);
 	return;

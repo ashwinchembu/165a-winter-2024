@@ -33,7 +33,7 @@ bool Query::deleteRecord(const int& primary_key) {
 bool Query::insert(const std::vector<int>& columns) {
     // Return true if successful, false otherwise
     if (table->index->locate(table->key, columns[table->key]).size() != 0) {
-        std::cout << "Record with the specified primary key already exists" << std::endl;
+        std::cerr << "Record with the specified primary key already exists" << std::endl;
         return false;
     }
     RID rid = table->insert(columns);
@@ -75,7 +75,7 @@ std::vector<Record> Query::select_version(const int& search_key, const int& sear
 bool Query::update(const int& primary_key, const std::vector<int>& columns) {
 
     if ((primary_key != columns[table->key] && table->index->locate(table->key, columns[table->key]).size() != 0) || (table->index->locate(table->key, primary_key).size() == 0)) {
-        std::cout << "Record with the primary key you are trying to update already exists or Update called on key that does not exist" << std::endl;
+        std::cerr << "Record with the primary key you are trying to update already exists or Update called on key that does not exist" << std::endl;
         return false;
     }
 

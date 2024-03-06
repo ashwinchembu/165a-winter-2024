@@ -85,7 +85,6 @@ void Index::create_index(const int& column_number) {
             int indirection_num = buffer_pool.get(rid, INDIRECTION_COLUMN);
 
             if ((buffer_pool.get(rid, SCHEMA_ENCODING_COLUMN) >> (column_number - 1)) & (0b1)) { // If the column of the record at loc is updated
-                std::cout << indirection_num << std::endl;
                 RID update_rid = table->page_directory.find(indirection_num)->second;
                 value = buffer_pool.get(update_rid, column_number + NUM_METADATA_COLUMNS);
             } else {

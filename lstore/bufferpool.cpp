@@ -167,7 +167,7 @@ Frame* BufferPool::load (const RID& rid, const int& column){ //return the frame 
   frame = insert_into_frame(rid, column, p); //insert the page into a frame in the bufferpool
   frame->dirty = false; //frame has not yet been modified
   if (e != 1 + p->num_rows) {
-    std::cout << "Possible error (Bufferpool Load : Number of read does not match)" << e << std::endl;
+    std::cerr << "Possible error (Bufferpool Load : Number of read does not match)" << e << std::endl;
   }
   return frame;
 }
@@ -266,16 +266,21 @@ void BufferPool::write_back(Frame* frame){
 
 void BufferPool::write_back_all (){
   Frame* current_frame = head;
+  std::cout << "1" << std::endl;
   while(current_frame != nullptr){ //iterate through entire bufferpool
+  std::cout << "2" << std::endl;
     if(current_frame != nullptr || (current_frame->dirty && current_frame->valid)){
+  std::cout << "3" << std::endl;
       write_back(current_frame);
+  std::cout << "4" << std::endl;
+      current_frame->valid = false;
+  std::cout << "5" << std::endl;
     } else {
       current_frame->valid = false;
       if(current_frame->page != nullptr){
         delete current_frame->page;
       }
     }
-    current_frame->valid = false;
     current_frame = current_frame->next;
   }
   return;
