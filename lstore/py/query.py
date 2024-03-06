@@ -73,17 +73,17 @@ class Query:
                 search_key_index,get_buffer_vector(),relative_version)
         
         clearRecordBuffer()
-        fillRecordBuffer(recordsPtr)
-        
-        numRecords = numberOfRecordsInBuffer()
-
-        if numRecords == 0:
-            return False
-        
-        recordSize = getRecordSize()
         
         returnRecords=[]
         
+        if fillRecordBuffer(recordsPtr)==false:
+            return returnRecords
+            
+        
+        numRecords = numberOfRecordsInBuffer()
+        recordSize = getRecordSize()
+        
+       
         for i in range(numRecords):
             offset = i * recordSize
             rid = getRecordBufferElement(offset)
