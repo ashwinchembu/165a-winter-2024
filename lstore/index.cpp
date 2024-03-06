@@ -188,8 +188,11 @@ int Index::read(FILE* fp){
 }
 
 void Index::setTable(Table* t){
+    std::cout << "Inside of the setTable1" << std::endl;
     this->table = t;
+    std::cout << "Inside of the setTable2" << std::endl;
     create_index(table->key);
+    std::cout << "Inside of the setTable3" << std::endl;
 }
 
 
