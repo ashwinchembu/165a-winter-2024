@@ -36,6 +36,9 @@ public:
     virtual ~BufferPool ();
     Frame* head;
     Frame* tail;
+
+    int mergeNumber;
+
     int hash_fun(unsigned int x);
     int get (const RID& rid, const int& column); // given a rid and column, returns the value in that location
     Frame* get_page (const RID& rid, const int& column); // given a rid and column, returns the page that holds it
@@ -47,6 +50,9 @@ public:
     void insert_new_page(const RID& rid, const int& column, const int& value); //write new data to memory
     void update_ages(Frame*& just_accessed, Frame*& range_begin); // update all the ages in hash range based on which frame was just accessed
     Frame* evict (const RID& rid); //evict the oldest frame that is not pinned
+
+    std::string buildPath(std::string tname,int first_rid_page,int first_rid_page_range,int column);
+
     void write_back(Frame* frame); //write back to disk if dirty
     void write_back_all();
     void pin (const RID& rid, const int& column);

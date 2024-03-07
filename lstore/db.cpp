@@ -17,6 +17,7 @@ BufferPool buffer_pool(BUFFER_POOL_SIZE);
 
 Database::Database() {
 	buffer_pool.set_path(file_path);
+	buffer_pool.mergeNumber = 0;
 
 	struct stat checkDir;
 
@@ -34,6 +35,7 @@ void Database::open(const std::string& path) {
 	file_path = path;
 
 	buffer_pool.set_path(file_path);
+
 	struct stat checkDir;
 
 	if(stat(file_path.c_str(),&checkDir)!=0 || !S_ISDIR(checkDir.st_mode)){
@@ -67,6 +69,9 @@ void Database::read(const std::string& path){
 		return;
 	}
 	fseek(fp, 0, SEEK_SET);
+
+	fread(&buffer_pool.mergeNumber,sizeof(int),1,fp);
+
 	int numTables;
 	int e = fread(&numTables,sizeof(int),1,fp);
 	char nameBuffer[128];
@@ -90,6 +95,8 @@ void Database::write(){
 		creat((file_path + "/ProgramState.dat").c_str(),0666);
 		fp = fopen((file_path + "/ProgramState.dat").c_str(),"w");
 	}
+
+	fwrite(&buffer_pool.mergeNumber,sizeof(int),1,fp);
 
 	size_t numTables = tables.size();
 

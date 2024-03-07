@@ -13,7 +13,7 @@
 #include "bufferpool.h"
 #include "../Toolkit.h"
 
-BufferPool::BufferPool (const int& num_pages) : bufferpool_size(num_pages){
+BufferPool::BufferPool (const int& num_pages) : bufferpool_size(num_pages){ // @suppress("Class members should be properly initialized")
   head = new Frame; //create head
   hash_vector.push_back(head); //head will be the first hash range beginning
   frame_directory.push_back(0); //each hash range begins empty
@@ -143,17 +143,43 @@ void BufferPool::update_ages(Frame*& just_accessed, Frame*& range_begin){ //chan
   return;
 }
 
+std::string BufferPool::buildPath(std::string tname,int first_rid_page,int first_rid_page_range,int column){
+	char ret[2048];
+	char* ptr =  ret;
+
+	bool isHead = false;
+
+	ptr+=sprintf(ptr,"%s/",this->path.c_str());
+
+	ptr += sprintf(ptr, "%-10s%-70s%-10s", "NAME_",tname.c_str(),"TYPE_");
+
+	if(column < NUM_METADATA_COLUMNS){
+		ptr+= sprintf(ptr,"%-10s","META");
+
+	} else if(first_rid_page < 0){
+		ptr+= sprintf(ptr,"%-10s","TAIL");
+
+	} else if(first_rid_page > 0){
+		ptr+= sprintf(ptr,"%-10s","HEAD");
+		isHead = true;
+	}
+
+	ptr+=sprintf(ptr,"%-10s%-10d%-10s%-10d%-10s%-10d","FRP_",first_rid_page,"FRPR_",first_rid_page_range,
+			"COL_",column);
+
+	if(isHead){
+		ptr+=sprintf(ptr,"%-10s%-10d","MERGE_",mergeNumber);
+	}
+
+	sprintf(ptr,".dat");
+
+	return {ret};
+}
+
 // Called by get and set
 Frame* BufferPool::load (const RID& rid, const int& column){ //return the frame that the page was loaded into
-  int frp = rid.first_rid_page;
-  std::string frp_s = std::to_string(rid.first_rid_page);
-  if (frp < 0) {
-    frp_s = "M" + std::to_string(-1 * (frp));
-  }
-  std::string data_path = path + "/" + rid.table_name
-  + "_" + std::to_string(rid.first_rid_page_range)
-  + "_" + frp_s
-  + "_" + std::to_string(column) + ".dat";
+  std::string data_path = buildPath(rid.table_name,rid.first_rid_page,
+          rid.first_rid_page_range,column);
 
   FILE* fp = fopen((data_path).c_str(),"r");
   if (!fp) {
@@ -240,15 +266,9 @@ Frame* BufferPool::evict(const RID& rid){ //return the frame that was evicted
 }
 
 void BufferPool::write_back(Frame* frame){
-  int frp = frame->first_rid_page;
-  std::string frp_s = std::to_string(frame->first_rid_page);
-  if (frp < 0) {
-    frp_s = "M" + std::to_string(-1 * (frp));
-  }
-  std::string data_path = path + "/" + frame->table_name
-    + "_" + std::to_string(frame->first_rid_page_range)
-    + "_" + frp_s
-    + "_" + std::to_string(frame->column) + ".dat";
+  std::string data_path = buildPath(frame->table_name,frame->first_rid_page,
+          frame->first_rid_page_range,frame->column);
+
   FILE* fp = fopen((data_path).c_str(),"w");
   if (!fp) {
     throw std::invalid_argument("Couldn't open file " + data_path);

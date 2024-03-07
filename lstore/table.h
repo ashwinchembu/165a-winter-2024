@@ -56,6 +56,8 @@ public:
     int num_update = 0;
     int num_insert = 0;
 
+    int TPS = 0;
+
     std::map<int,std::vector<RIDJoin>>referencesOut;
 
     int num_columns; //number of columns of actual data, excluding the metadata
@@ -63,6 +65,8 @@ public:
     Table () {};
     ~Table ();
     Table(const std::string& name, const int& num_columns, const int& key);
+
+
 
     friend class Index;
     friend class Query;
@@ -73,6 +77,12 @@ public:
     int write(FILE* fp);
     int read(FILE* fp);
     void PrintData();
+
+    //////////////////////////
+    //unused code for testing
+//
+//    RID update2(RID& rid, const std::vector<int>& columns);
+//    int merge2();
 
     bool ridIsJoined(RID rid,int col);
     RIDJoin getJoin(RID rid, int col);

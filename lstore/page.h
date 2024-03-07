@@ -19,6 +19,16 @@ public:
     int write(const int& value);
     int* data = nullptr; // Data location(pointer)
     friend std::ostream& operator<<(std::ostream& os, const Page& p);
+
+    void deep_copy(Page* other){
+		delete[] data;
+
+		data= new int[PAGE_SIZE * 4];
+
+		num_rows = other->num_rows;
+
+		memcpy(data,other->data,num_rows * sizeof(int));
+	}
 };
 
 class PageRange {
