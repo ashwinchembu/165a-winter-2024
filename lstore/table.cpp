@@ -468,14 +468,20 @@ int Table::merge(){
 			buffer_pool.pin(baseRid,field);
 
 			Frame* pageOfField = buffer_pool.get_page(baseRid, field);
-
 			Page* copyOfFieldPage = new Page();
 
 			copyOfFieldPage->deep_copy(pageOfField->page);
 
-			mergeBufferPool->insert_into_frame(baseRid,field,copyOfFieldPage);
-
 			buffer_pool.unpin(baseRid,field);
+
+			Frame* frame = mergeBufferPool->insert_into_frame(baseRid,field,copyOfFieldPage);
+			mergeBufferPool->pin(baseRid, field);
+
+			frame->dirty = true;
+
+			mergeBufferPool->unpin(baseRid, field);
+
+			mergeBufferPool->update_ages(frame, mergeBufferPool->hash_vector[mergeBufferPool->hash_fun(baseRid.first_rid_page)]);
 		}
 
 		visitedRids.push_back(baseRid.id);
@@ -492,11 +498,16 @@ int Table::merge(){
 				int val = buffer_pool.get(tailRid,i);
 
 				mergeBufferPool->set(baseRid,i,val,false);
+
+
 			}
 		}
 	}
 
 	TPS = lastRID;
+
+	buffer_pool.write_back_all();
+	mergeBufferPool->write_back_all();
 
 	buffer_pool.mergeNumber = mergeBufferPool->mergeNumber;
 
