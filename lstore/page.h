@@ -5,6 +5,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <mutex>
+#include <atomic>
 #include "RID.h"
 #include "table.h"
 #include "config.h"
@@ -12,7 +13,7 @@
 
 class Page {
 public:
-    int num_rows = 0;
+    std::atomic<int> num_rows = 0;
     Page ();
     virtual ~Page ();
     const bool has_capacity() const;
@@ -27,14 +28,14 @@ public:
     Toolkit::BasicSharedPtr<std::mutex>mutex_update = Toolkit::BasicSharedPtr<std::mutex>(new std::mutex());;
 
     const int NUM_SLOTS = 4096*LOGICAL_PAGE;
-    int num_slot_left = NUM_SLOTS;
-    int num_slot_used_base = 0;
-    int num_slot_used_tail = 0;
-    int base_last = 0;
-    bool base_last_wasfull = false;
-    int tail_last = 0;
-    bool tail_last_wasfull = true;
-    int num_column = 0;
+    std::atomic<int> num_slot_left = NUM_SLOTS;
+    std::atomic<int> num_slot_used_base = 0;
+    std::atomic<int> num_slot_used_tail = 0;
+    std::atomic<int> base_last = 0;
+    std::atomic<bool> base_last_wasfull = false;
+    std::atomic<int> tail_last = 0;
+    std::atomic<bool> tail_last_wasfull = true;
+    std::atomic<int> num_column = 0;
     std::vector<RID> pages;
     PageRange () {} // Never use this outside of loading saved data
     PageRange (RID& new_rid, const std::vector<int>& columns);

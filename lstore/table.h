@@ -9,6 +9,7 @@
 #include <memory>
 #include <queue>
 #include <mutex>
+#include <atomic>
 #include "config.h"
 #include "../Toolkit.h"
 // Avoid recursive include
@@ -53,8 +54,10 @@ public:
     std::vector<std::shared_ptr<PageRange>> page_range;
     std::map<int, int> page_range_update;
     Index* index = nullptr;
-    int num_update = 0;
-    int num_insert = 0;
+    // int num_update = 0;
+    // int num_insert = 0;
+    std::atomic<int> num_update = 0;
+    std::atomic<int> num_insert = 0;
 
     std::map<int,std::vector<RIDJoin>>referencesOut;
 

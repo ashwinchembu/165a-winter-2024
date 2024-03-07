@@ -8,6 +8,7 @@
 #include <vector>
 #include <fstream>
 #include <mutex>
+#include <shared_mutex>
 
 class Page;
 
@@ -17,7 +18,8 @@ public:
     virtual ~Frame ();
     bool operator==(const Frame& rhs);
     void operator=(const Frame& rhs);
-    Toolkit::BasicSharedPtr<std::mutex>mutex = Toolkit::BasicSharedPtr<std::mutex>(new std::mutex());
+    // Toolkit::BasicSharedPtr<std::mutex>mutex = Toolkit::BasicSharedPtr<std::mutex>(new std::mutex());
+    std::shared_mutex mutex;
     Page* page = nullptr;
     int first_rid_page = 0; //first rid in the page
     std::string table_name = "";

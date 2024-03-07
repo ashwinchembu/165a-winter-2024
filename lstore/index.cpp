@@ -4,6 +4,7 @@
  *
  */
 
+#include <mutex>
 #include <string>
 #include <vector>
 #include <unordered_map> // unordered_multimap is part of this library
@@ -39,7 +40,11 @@ std::vector<int> Index::locate (const int& column_number, const int& value) {
         create_index(column_number);
         index = indices.find(column_number);
     }
+    std::shared_lock<std::shared_mutex> lock_shared(*(mutex_list.find(column_number)->second), std::defer_lock);
+    // lock_shared.try_lock();
+    lock_shared.lock();
     auto range = (*index).second.equal_range(value); //check for all matching records in the index
+    lock_shared.unlock();
     for(auto iter = range.first; iter != range.second; iter++){
         matching_records.push_back(iter->second);
     }
@@ -76,6 +81,7 @@ std::vector<int> Index::locate_range(const int& begin, const int& end, const int
 /// @TODO Adopt to the change in RID
 void Index::create_index(const int& column_number) {
     std::unordered_multimap<int, int> index;
+    mutex_list.insert({column_number, new std::shared_mutex()});
 
     for (int i = 1; i <= table->num_insert; i++) {
         auto loc = table->page_directory.find(i); // Find RID for every rows
@@ -111,6 +117,8 @@ void Index::drop_index(const int& column_number) {
         throw std::invalid_argument("No index for that column was located. The index was not dropped.");
     }
     indices.erase(column_number);
+    delete mutex_list.find(column_number)->second;
+    mutex_list.erase(column_number);
     return;
 }
 
@@ -118,7 +126,10 @@ void Index::insert_index(int& rid, std::vector<int> columns) {
     for (size_t i = 0; i < columns.size(); i++) {
         auto itr = indices.find(i);
         if (itr != indices.end()) {
+            std::unique_lock<std::shared_mutex> lock(*(mutex_list.find(i)->second), std::defer_lock);
+            lock.lock();
             itr->second.insert({columns[i], rid});
+            lock.unlock();
         }
     }
 
@@ -131,7 +142,10 @@ void Index::update_index(int& rid, std::vector<int> columns, std::vector<int> ol
             auto range = indices[i].equal_range(old_value);
             for(auto itr = range.first; itr != range.second; itr++){
                 if (itr->second == rid) {
+                    std::unique_lock<std::shared_mutex> lock(*(mutex_list.find(i)->second), std::defer_lock);
+                    lock.lock();
                     indices[i].erase(itr);
+                    lock.unlock();
                     break;
                 }
             }
