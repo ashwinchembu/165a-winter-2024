@@ -144,14 +144,45 @@ void BufferPool::update_ages(Frame*& just_accessed, Frame*& range_begin){ //chan
   return;
 }
 
-std::string BufferPool::buildPath(std::string tname,int first_rid_page,int first_rid_page_range,int column,
-		bool isText){
+std::string BufferPool::buildDatPath(std::string tname,int first_rid_page,int first_rid_page_range,int column){
+	char ret[1024];
+	char* ptr =  ret;
+
+	bool isBase = false;
+
+	ptr += sprintf(ptr,"%s/",path.c_str());
+
+	ptr += sprintf(ptr, "%s",tname.c_str());
+
+	if(column < NUM_METADATA_COLUMNS){
+		ptr+= sprintf(ptr," M ");
+
+	} else if(first_rid_page < 0){
+		ptr+= sprintf(ptr," T ");
+
+	} else if(first_rid_page > 0){
+		ptr+= sprintf(ptr," B ");
+		isBase = true;
+	}
+
+	ptr+=sprintf(ptr,"%d %d %d",first_rid_page,first_rid_page_range,column);
+
+	if(isBase){
+		ptr+=sprintf(ptr," %d",mergeNumber);
+	}
+
+	sprintf(ptr, ".dat");
+
+	return {ret};
+}
+
+std::string BufferPool::buildTxtPath(std::string tname,int first_rid_page,int first_rid_page_range,int column){
 	char ret[2048];
 	char* ptr =  ret;
 
-	bool isHead = false;
+	bool isBase = false;
 
-	if(isText && !textOutputEnabled){
+	if(!textOutputEnabled){
 		struct stat checkTextDir;
 
 		if(stat(textPath.c_str(),&checkTextDir)!=0
@@ -162,7 +193,7 @@ std::string BufferPool::buildPath(std::string tname,int first_rid_page,int first
 		textOutputEnabled = true;
 	}
 
-	ptr+=sprintf(ptr,"%s/", isText ? (textPath.c_str()) : (path.c_str()));
+	ptr+=sprintf(ptr,"%s/",textPath.c_str());
 
 	ptr += sprintf(ptr, "%-10s%-40s%-10s", "NAME_",tname.c_str(),"TYPE_");
 
@@ -174,25 +205,25 @@ std::string BufferPool::buildPath(std::string tname,int first_rid_page,int first
 
 	} else if(first_rid_page > 0){
 		ptr+= sprintf(ptr,"%-10s","BASE");
-		isHead = true;
+		isBase = true;
 	}
 
 	ptr+=sprintf(ptr,"%-10s%-10d%-10s%-10d%-10s%-10d","FRP_",first_rid_page,"FRPR_",first_rid_page_range,
 			"COL_",column);
 
-	if(isHead){
+	if(isBase){
 		ptr+=sprintf(ptr,"%-10s%-10d","MERGE_",mergeNumber);
 	}
 
-	sprintf(ptr, isText ? ".txt" : ".dat");
+	sprintf(ptr, ".txt");
 
 	return {ret};
 }
 
 // Called by get and set
 Frame* BufferPool::load (const RID& rid, const int& column){ //return the frame that the page was loaded into
-  std::string data_path = buildPath(rid.table_name,rid.first_rid_page,
-          rid.first_rid_page_range,column,false);
+  std::string data_path = buildDatPath(rid.table_name,rid.first_rid_page,
+          rid.first_rid_page_range,column);
 
   FILE* fp = fopen((data_path).c_str(),"r");
   if (!fp) {
@@ -280,16 +311,16 @@ Frame* BufferPool::evict(const RID& rid){ //return the frame that was evicted
 }
 
 void BufferPool::write_back(Frame* frame){
-  std::string data_path = buildPath(frame->table_name,frame->first_rid_page,
-          frame->first_rid_page_range,frame->column,false);
+  std::string data_path = buildDatPath(frame->table_name,frame->first_rid_page,
+          frame->first_rid_page_range,frame->column);
 
   FILE* fp = fopen((data_path).c_str(),"w");
   if (!fp) {
     throw std::invalid_argument("Couldn't open file " + data_path);
   }
 
-  std::string text_copy_path = buildPath(frame->table_name,frame->first_rid_page,
-          frame->first_rid_page_range,frame->column,true);
+  std::string text_copy_path = buildTxtPath(frame->table_name,frame->first_rid_page,
+          frame->first_rid_page_range,frame->column);
 
   FILE* textFilePtr = fopen((text_copy_path).c_str(),"w");
 
