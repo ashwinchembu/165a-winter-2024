@@ -17,6 +17,7 @@ BufferPool buffer_pool(BUFFER_POOL_SIZE);
 
 Database::Database() {
 	buffer_pool.set_path(file_path);
+	buffer_pool.textPath = file_path + "/TextOutput";
 	buffer_pool.mergeNumber = 0;
 
 	struct stat checkDir;
@@ -24,7 +25,7 @@ Database::Database() {
 	if(stat(file_path.c_str(),&checkDir)!=0
 		|| !S_ISDIR(checkDir.st_mode)){
 		mkdir(file_path.c_str(),0777);
-		}
+	}
 }
 
 Database::~Database() {
@@ -35,6 +36,8 @@ void Database::open(const std::string& path) {
 	file_path = path;
 
 	buffer_pool.set_path(file_path);
+	buffer_pool.textPath = file_path + "/TextOutput";
+	buffer_pool.mergeNumber = 0;
 
 	struct stat checkDir;
 

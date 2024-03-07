@@ -451,6 +451,7 @@ int Table::merge(){
 	mergeBufferPool->mergeNumber = buffer_pool.mergeNumber + 1;
 
 	mergeBufferPool->set_path(buffer_pool.path);
+	mergeBufferPool->textPath=buffer_pool.textPath;
 
 	struct stat checkDir;
 
