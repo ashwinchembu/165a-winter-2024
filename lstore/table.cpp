@@ -7,6 +7,7 @@
 #include <cstring>
 #include "table.h"
 #include <cstdio>
+#include <mutex>
 #include <algorithm>
 #include <memory>
 #include <sys/stat.h>
@@ -41,6 +42,8 @@ Table::~Table() {
  *
  */
 RID Table::insert(const std::vector<int>& columns) {
+	std::lock_guard<std::mutex>merge_lock(*mutex_insert);
+
 	num_insert++;
 	int rid_id = num_insert;
 	RID record;
@@ -430,6 +433,8 @@ RID Table::update(RID& rid, const std::vector<int>& columns){
 }
 
 int Table::merge(){
+	std::lock_guard<std::mutex>merge_lock(*mutex_insert);
+
 	std::vector<RID>basePages;
 
 	for(std::shared_ptr<PageRange>& pr: page_range){
@@ -439,6 +444,7 @@ int Table::merge(){
 			}
 		}
 	}
+
 
 	BufferPool* mergeBufferPool = new BufferPool(basePages.size() * 4 + 256);
 
@@ -504,8 +510,9 @@ int Table::merge(){
 
 	TPS = lastRID;
 
-	buffer_pool.write_back_all();
 	mergeBufferPool->write_back_all();
+
+	buffer_pool.write_back_all();
 
 	buffer_pool.mergeNumber = mergeBufferPool->mergeNumber;
 
