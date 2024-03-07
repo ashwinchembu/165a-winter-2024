@@ -213,17 +213,17 @@ int PageRange::update(RID &rid, RID &rid_new, const std::vector<int> &columns, c
     // std::cout << "update try to find page" << std::endl;
     // std::cout << "rid: " << rid.id << std::endl;
 
-    std::cout << "printing bufferpool in pagerange update: " << std::endl;
-    Frame *cur1 = buffer_pool.head;
-    while (cur1 != nullptr) {
-        std::cout << cur1->first_rid_page << " " << std::endl;
-        if (cur1->first_rid_page == 4097) {
-            std::cout << *(cur1->page) << std::endl;
-            break;
-        }
-        cur1 = cur1->next;
-    }
-    std::cout << std::endl;
+    // std::cout << "printing bufferpool in pagerange update: " << std::endl;
+    // Frame *cur1 = buffer_pool.head;
+    // while (cur1 != nullptr) {
+    //     std::cout << cur1->first_rid_page << " " << std::endl;
+    //     if (cur1->first_rid_page == 4097) {
+    //         std::cout << *(cur1->page) << std::endl;
+    //         break;
+    //     }
+    //     cur1 = cur1->next;
+    // }
+    // std::cout << std::endl;
 
     // std::cout << "found get value: "<< buffer_pool.get(rid, INDIRECTION_COLUMN) << std::endl;
     if (buffer_pool.search(rid, INDIRECTION_COLUMN) == nullptr) {

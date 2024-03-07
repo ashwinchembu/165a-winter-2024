@@ -335,7 +335,7 @@ void BufferPool::write_back(Frame* frame){
     // [A]frame page num_row is negative
     fwrite(&(frame->page->num_rows), sizeof(int), 1, fp);
     fwrite(frame->page->data, sizeof(int), frame->page->num_rows, fp);
-    std::cout << *(frame->page->data) << std::endl; 
+    // std::cout << *(frame->page->data) << std::endl; 
   }
   fclose(fp);
 
