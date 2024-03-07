@@ -4,8 +4,10 @@
 #include <string>
 #include "config.h"
 #include "page.h"
+#include "../Toolkit.h"
 #include <vector>
 #include <fstream>
+#include <mutex>
 
 class Page;
 
@@ -15,6 +17,7 @@ public:
     virtual ~Frame ();
     bool operator==(const Frame& rhs);
     void operator=(const Frame& rhs);
+    Toolkit::BasicSharedPtr<std::mutex>mutex = Toolkit::BasicSharedPtr<std::mutex>(new std::mutex());
     Page* page = nullptr;
     int first_rid_page = 0; //first rid in the page
     std::string table_name = "";
@@ -53,7 +56,6 @@ public:
     std::vector<int> frame_directory; //keep track of how many open frames in each hash range
     int bufferpool_size;
     std::string path = "./ECS165";
-
 };
 
 

@@ -32,11 +32,13 @@ class Table:
         self.key = key
         self.num_columns = num_columns
         self.page_directory = {}
+
+        self.selfPtr=Table_constructor(name.encode(),num_columns,key)
         self.index = Index(self)
         self.last_page = -1
         
         
-        self.selfPtr=Table_constructor(name.encode(),num_columns,key)
+       
         
     
     def __init__(self, tablePtr, name, num_columns, key):
@@ -44,10 +46,10 @@ class Table:
         self.key = key
         self.num_columns = num_columns
         self.page_directory = {}
+        
+        self.selfPtr=tablePtr
         self.index = Index(self)
         self.last_page = -1
-        
-        self.selfPtr = tablePtr
     
     
 

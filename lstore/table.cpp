@@ -16,164 +16,19 @@
 #include <vector>
 
 #include "../DllConfig.h"
-
 #include "../Toolkit.h"
 
-std::vector<int> recordBuffer;
-int sizeOfRecords;
-int recordBufferIndex;
-
-COMPILER_SYMBOL void clearRecordBuffer() {
-    recordBuffer.clear();
-
-    sizeOfRecords = 0;
-    recordBufferIndex = 0;
-}
-
-COMPILER_SYMBOL int getRecordSize() {
-    return sizeOfRecords;
-}
-
-COMPILER_SYMBOL int numberOfRecordsInBuffer() {
-    if (recordBuffer.size() == 0) {
-        return 0;
-    }
-
-    return recordBuffer.size() / sizeOfRecords;
-}
-
-COMPILER_SYMBOL int getRecordBufferElement(const int i) {
-    return recordBuffer[i];
-}
-
-COMPILER_SYMBOL void fillRecordBuffer(int *obj) {
-    std::vector<Record> *records = (std::vector<Record> *)obj;
-
-    sizeOfRecords = (*records)[0].columns.size() + 2;
-
-    recordBuffer = std::vector<int>(sizeOfRecords * records->size());
-
-    for (size_t i = 0; i < records->size(); i++) {
-
-        for (int j = 0; j < sizeOfRecords; j++) {
-
-            recordBuffer[i * sizeOfRecords + j] =
-
-                j == 0 ? (*records)[i].rid : j == 1 ? (*records)[i].key
-                                                    : (*records)[i].columns[j - 2];
-        }
-    }
-
-    delete records;
-}
-
-COMPILER_SYMBOL int *Record_constructor(const int rid_in, const int key_in, int *columns_in) {
-    std::vector<int> *cols = (std::vector<int> *)columns_in;
-    return (int *)(new Record(rid_in, key_in, *cols));
-}
-
-COMPILER_SYMBOL void Record_destructor(int *obj) {
-    delete ((Record *)(obj));
-}
-
-COMPILER_SYMBOL int Record_rid(int *obj) {
-    return ((Record *)(obj))->rid;
-}
-
-COMPILER_SYMBOL int Record_key(int *obj) {
-    return ((Record *)(obj))->key;
-}
-
-COMPILER_SYMBOL int *Record_columns(int *obj) {
-    Record *ref = (Record *)obj;
-
-    return (int *)(&(ref->columns));
-}
-
-COMPILER_SYMBOL void Table_destructor(int *obj) {
-    delete ((Table *)obj);
-}
-
-COMPILER_SYMBOL char *Table_name(int *obj) {
-    char *buf = new char[256];
-    Table *ref = (Table *)obj;
-
-    strcpy(buf, ref->name.c_str());
-
-    return buf;
-}
-
-COMPILER_SYMBOL int Table_key(int *obj) {
-    return ((Table *)obj)->key;
-}
-
-COMPILER_SYMBOL int *Table_page_directory(int *obj) {
-    Table *ref = (Table *)obj;
-
-    return (int *)(&(ref->page_directory));
-}
-
-COMPILER_SYMBOL int *Table_page_range(int *obj) {
-    Table *ref = (Table *)obj;
-    return (int *)(&(ref->page_range));
-}
-
-COMPILER_SYMBOL int *Table_index(int *obj) {
-    Table *ref = (Table *)obj;
-    return (int *)(&(ref->index));
-}
-
-COMPILER_SYMBOL int Table_num_update(int *obj) {
-    return ((Table *)obj)->num_update;
-}
-
-COMPILER_SYMBOL int Table_num_insert(int *obj) {
-    return ((Table *)obj)->num_insert;
-}
-
-COMPILER_SYMBOL int *Table_constructor(char *name_in, const int num_columns_in, const int key_in) {
-    return (int *)new Table({name_in}, num_columns_in, key_in);
-}
-
-COMPILER_SYMBOL int *Table_insert(int *obj, int *columns) {
-    std::vector<int> *cols = (std::vector<int> *)columns;
-
-    Table *ref = (Table *)obj;
-
-    return (int *)new RID((ref->insert(*cols)));
-}
-
-COMPILER_SYMBOL int *Table_update(int *obj, int *rid, int *columns) {
-    std::vector<int> *cols = (std::vector<int> *)columns;
-
-    Table *ref = (Table *)obj;
-
-    RID *r = (RID *)rid;
-
-    return (int *)new RID(ref->update(*r, *cols));
-}
-
-COMPILER_SYMBOL int Table_merge(int *obj) {
-    return ((Table *)obj)->merge();
-}
-
-COMPILER_SYMBOL int Table_num_columns(int *obj) {
-    return ((Table *)obj)->num_columns;
-}
-
-Table::Table(const std::string &name, const int &num_columns, const int &key) : name(name), key(key), num_columns(num_columns) {
-    index = new Index();
-    index->setTable(this);
+Table::Table(const std::string& name, const int& num_columns, const int& key): name(name), key(key), num_columns(num_columns) {
+	index = new Index();
+	index->setTable(this);
 };
 
 Table::~Table() {
-    // std::cout << "table destructor in" << std::endl;
-    for (size_t i = 0; i < page_range.size(); i++) {
-        if (page_range[i].unique()) {
-            page_range[i].reset();
-        }
-    }
-    // std::cout << "table destructor out" << std::endl;
+	for (size_t i = 0; i <page_range.size(); i++) {
+		if (page_range[i].unique()) {
+			page_range[i].reset();
+		}
+	}
 }
 
 /***
@@ -184,24 +39,24 @@ Table::~Table() {
  * @return const std::vector<int>& columns the values of the record
  *
  */
-RID Table::insert(const std::vector<int> &columns) {
-    num_insert++;
-    int rid_id = num_insert;
-    RID record;
-    record.table_name = name;
-    record.id = rid_id;
+RID Table::insert(const std::vector<int>& columns) {
+	num_insert++;
+	int rid_id = num_insert;
+	RID record;
+	record.table_name = name;
+	record.id = rid_id;
 
-    if (page_range.size() == 0 || !(page_range.back().get()->base_has_capacity())) {
+	if (page_range.size() == 0 || !(page_range.back().get()->base_has_capacity())) {
 
-        std::shared_ptr<PageRange> newPageRange{new PageRange(record, columns)};
-        page_range.push_back(newPageRange); // Make a base page with given record
-    } else {                                // If there are base page already, just insert it normally.
-        record.first_rid_page_range = (page_range.back().get())->pages[0].first_rid_page_range;
-        (page_range.back().get())->insert(record, columns);
-    }
+		std::shared_ptr<PageRange>newPageRange{new PageRange(record, columns)};
+		page_range.push_back(newPageRange); // Make a base page with given record
+	} else { // If there are base page already, just insert it normally.
+		record.first_rid_page_range = (page_range.back().get())->pages[0].first_rid_page_range;
+		(page_range.back().get())->insert(record, columns);
+	}
 
-    page_directory.insert({rid_id, record});
-    return record;
+	page_directory.insert({rid_id, record});
+	return record;
 }
 
 /***
@@ -366,22 +221,22 @@ RID Table::update(RID &rid, const std::vector<int> &columns) {
 
     std::cout << "4. :)" << std::endl;
 
-    page_directory.insert({rid_id, new_rid});
-    return new_rid;
+	page_directory.insert({rid_id, new_rid});
+	return new_rid;
 }
 
-int Table::write(FILE *fp) {
-    fwrite(&key, sizeof(int), 1, fp);
-    fwrite(&num_columns, sizeof(int), 1, fp);
-    fwrite(&num_update, sizeof(int), 1, fp);
-    fwrite(&num_insert, sizeof(int), 1, fp);
-    char nameBuffer[128];
-    strcpy(nameBuffer, name.c_str());
-    fwrite(nameBuffer, 128, 1, fp);
-    for (std::map<int, RID>::iterator iter = page_directory.begin(); iter != page_directory.end(); iter++) {
-        fwrite(&(iter->first), sizeof(int), 1, fp);
-        iter->second.write(fp);
-    }
+int Table::write(FILE* fp) {
+	fwrite(&key, sizeof(int), 1, fp);
+	fwrite(&num_columns, sizeof(int), 1, fp);
+	fwrite(&num_update, sizeof(int), 1, fp);
+	fwrite(&num_insert, sizeof(int), 1, fp);
+	char nameBuffer[128];
+	strcpy(nameBuffer,name.c_str());
+	fwrite(nameBuffer,128,1,fp);
+	for(std::map<int, RID>::iterator iter=page_directory.begin(); iter!=page_directory.end(); iter++){
+		fwrite(&(iter->first), sizeof(int), 1, fp);
+		iter->second.write(fp);
+	}
 
     int num_page_range = page_range.size();
     fwrite(&(num_page_range), sizeof(int), 1, fp);
@@ -392,36 +247,37 @@ int Table::write(FILE *fp) {
     return 0;
 }
 
-int Table::read(FILE *fp) {
-    size_t e = fread(&key, sizeof(int), 1, fp);
-    e = e + fread(&num_columns, sizeof(int), 1, fp);
-    e = e + fread(&num_update, sizeof(int), 1, fp);
-    e = e + fread(&num_insert, sizeof(int), 1, fp);
-    char nameBuffer[128];
-    e = e + fread(nameBuffer, 128, 1, fp);
-    name = std::string(nameBuffer);
-    int num_element = num_insert + num_update;
-    RID value;
-    int key;
-    for (int i = 0; i < num_element; i++) {
-        e = e + fread(&key, sizeof(int), 1, fp);
-        value.read(fp);
-        value.table_name = name;
-        page_directory.insert({key, value});
-    }
-    page_range.clear();
-    int num_page_range = 0;
-    e = e + fread(&(num_page_range), sizeof(int), 1, fp);
-    for (int i = 0; i < num_page_range; i++) {
-        std::shared_ptr<PageRange> newPageRange{new PageRange()};
-        newPageRange.get()->read(fp);
-        page_range.push_back(newPageRange);
-    }
 
-    delete index;
-    index = new Index();
-    index->setTable(this);
-    return e;
+int Table::read(FILE* fp) {
+	size_t e = fread(&key, sizeof(int), 1, fp);
+	e = e + fread(&num_columns, sizeof(int), 1, fp);
+	e = e + fread(&num_update, sizeof(int), 1, fp);
+	e = e + fread(&num_insert, sizeof(int), 1, fp);
+	char nameBuffer[128];
+	e = e + fread(nameBuffer,128,1,fp);
+	name = std::string(nameBuffer);
+	int num_element = num_insert + num_update;
+	RID value;
+	int key;
+	for(int i = 0; i < num_element; i++){
+		e = e + fread(&key, sizeof(int), 1, fp);
+		value.read(fp);
+		value.table_name = name;
+		page_directory.insert({key, value});
+
+	}
+	page_range.clear();
+	int num_page_range = 0;
+	e = e + fread(&(num_page_range), sizeof(int), 1, fp);
+	for (int i = 0; i < num_page_range; i++) {
+		std::shared_ptr<PageRange>newPageRange{new PageRange()};
+		newPageRange.get()->read(fp);
+		page_range.push_back(newPageRange);
+	}
+	delete index;
+	index = new Index();
+	index->setTable(this);
+	return e;
 }
 
 /***
@@ -705,16 +561,113 @@ bool Table::ridIsJoined(RID rid, int col) {
 RIDJoin Table::getJoin(RID rid, int col) {
     std::vector<RIDJoin> joins = referencesOut.find(col)->second;
 
-    for (RIDJoin &j : joins) {
-        if (j.ridSrc.id == rid.id) {
-            return j;
-        }
-    }
+	for(RIDJoin& j : joins){
+		if(j.ridSrc.id == rid.id){
+			return j;
+		}
+	}
+	return RIDJoin();
 }
 
 void Table::PrintData() {
-    std::cout << "--Page Directory--" << std::endl;
-    for (auto &e : page_directory) {
-        std::cout << "Key: " << e.first << ", Value.id: " << e.second.id << std::endl;
-    }
+	std::cout << "--Page Directory--" << std::endl;
+	for(auto& e: page_directory){
+		std::cout << "Key: " << e.first << ", Value.id: " << e.second.id << std::endl;
+	}
+}
+
+
+COMPILER_SYMBOL int* Record_constructor(const int rid_in, const int key_in, int* columns_in){
+	std::vector<int>* cols = (std::vector<int>*)columns_in;
+	return (int*)(new Record(rid_in,key_in,*cols));
+}
+
+COMPILER_SYMBOL void Record_destructor(int*obj){
+	delete ((Record*)(obj));
+}
+
+COMPILER_SYMBOL int Record_rid(int*obj){
+	return ((Record*)(obj))->rid;
+}
+
+COMPILER_SYMBOL int Record_key(int*obj){
+	return ((Record*)(obj))->key;
+}
+
+COMPILER_SYMBOL int* Record_columns(int* obj){
+	Record* ref = (Record*)obj;
+
+	return (int*)(&(ref->columns));
+}
+
+COMPILER_SYMBOL void Table_destructor(int* obj){
+	delete ((Table*)obj);
+}
+
+COMPILER_SYMBOL char* Table_name(int* obj){
+	char* buf = new char[256];
+	Table* ref = (Table*)obj;
+
+	strcpy(buf,ref->name.c_str());
+
+	return buf;
+}
+
+COMPILER_SYMBOL int Table_key(int* obj){
+	return ((Table*)obj)->key;
+}
+
+COMPILER_SYMBOL int* Table_page_directory(int* obj){
+	Table* ref = (Table*)obj;
+
+	return(int*)(&( ref->page_directory));
+}
+
+COMPILER_SYMBOL int* Table_page_range(int* obj){
+	Table* ref = (Table*)obj;
+	return(int*)(&( ref->page_range));
+}
+
+COMPILER_SYMBOL int* Table_index(int* obj){
+	Table* ref = (Table*)obj;
+	return(int*)(ref->index);
+}
+
+COMPILER_SYMBOL int Table_num_update(int* obj){
+	return ((Table*)obj)->num_update;
+}
+
+COMPILER_SYMBOL int Table_num_insert(int* obj){
+	return ((Table*)obj)->num_insert;
+}
+
+COMPILER_SYMBOL int* Table_constructor(char* name_in, const int num_columns_in, const int key_in){
+	return (int*)new Table({name_in},num_columns_in,key_in);
+}
+
+COMPILER_SYMBOL int* Table_insert(int* obj,int* columns){
+	std::vector<int>* cols = (std::vector<int>*)columns;
+
+	Table* ref = (Table*)obj;
+
+	return (int*)new RID((ref->insert(*cols)));
+
+}
+
+COMPILER_SYMBOL int* Table_update(int* obj,int* rid, int* columns){
+	std::vector<int>* cols = (std::vector<int>*)columns;
+
+	Table* ref = (Table*)obj;
+
+	RID* r = (RID*) rid;
+
+	return (int*)new RID(ref->update(*r,*cols));
+}
+
+COMPILER_SYMBOL int Table_merge(int* obj){
+	return ((Table*)obj)->merge();
+}
+
+COMPILER_SYMBOL int Table_num_columns(int* obj){
+	return ((Table*)obj)->num_columns;
 }

@@ -1,6 +1,30 @@
 #include "RID.h"
 #include "config.h"
 
+RID::RID (const RID& rhs) {
+	id = rhs.id;
+	first_rid_page_range = rhs.first_rid_page_range;
+	first_rid_page = rhs.first_rid_page;
+	offset = rhs.offset;
+	table_name = rhs.table_name;
+}
+
+
+int RID::write(FILE* fp) {
+	fwrite(&id, sizeof(int), 1, fp);
+	fwrite(&first_rid_page, sizeof(int), 1, fp);
+	fwrite(&first_rid_page_range, sizeof(int), 1, fp);
+	fwrite(&offset, sizeof(int), 1, fp);
+	return 0;
+}
+int RID::read(FILE* fp) {
+	size_t e = fread(&id, sizeof(int), 1, fp);
+	e = e + fread(&first_rid_page, sizeof(int), 1, fp);
+	e = e + fread(&first_rid_page_range, sizeof(int), 1, fp);
+	e = e + fread(&offset, sizeof(int), 1, fp);
+	return e;
+}
+
 //COMPILER_SYMBOL int RID_INDIRECTION_COLUMN(int* obj){
 //	return ((RID*)obj)->INDIRECTION_COLUMN;
 //}
@@ -44,27 +68,3 @@
 //	return ((RID*)obj)->column_with_one();
 //}
 //
-
-RID::RID (const RID& rhs) {
-	id = rhs.id;
-    first_rid_page_range = rhs.first_rid_page_range;
-    first_rid_page = rhs.first_rid_page;
-    offset = rhs.offset;
-    table_name = rhs.table_name;
-}
-
-
-int RID::write(FILE* fp) {
-	fwrite(&id, sizeof(int), 1, fp);
-	fwrite(&first_rid_page, sizeof(int), 1, fp);
-	fwrite(&first_rid_page_range, sizeof(int), 1, fp);
-	fwrite(&offset, sizeof(int), 1, fp);
-	return 0;
-}
-int RID::read(FILE* fp) {
-	size_t e = fread(&id, sizeof(int), 1, fp);
-	e = e + fread(&first_rid_page, sizeof(int), 1, fp);
-	e = e + fread(&first_rid_page_range, sizeof(int), 1, fp);
-	e = e + fread(&offset, sizeof(int), 1, fp);
-	return e;
-}

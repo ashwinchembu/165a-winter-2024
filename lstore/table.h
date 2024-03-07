@@ -8,7 +8,9 @@
 #include "RID.h"
 #include <memory>
 #include <queue>
+#include <mutex>
 #include "config.h"
+#include "../Toolkit.h"
 // Avoid recursive include
 // #include "index.h"
 // #include "page.h"
@@ -40,6 +42,10 @@ class RIDJoin;
 
 class Table {
 public:
+	Toolkit::BasicSharedPtr<std::mutex>mutex_insert = Toolkit::BasicSharedPtr<std::mutex>(new std::mutex());
+	Toolkit::BasicSharedPtr<std::mutex>mutex_update = Toolkit::BasicSharedPtr<std::mutex>(new std::mutex());;
+
+
     std::string name;
     int key; //primary key
     std::map<int, RID> page_directory; //<RID.id, RID>
