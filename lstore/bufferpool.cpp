@@ -160,7 +160,7 @@ std::string BufferPool::buildPath(std::string tname,int first_rid_page,int first
 		ptr+= sprintf(ptr,"%-10s","TAIL");
 
 	} else if(first_rid_page > 0){
-		ptr+= sprintf(ptr,"%-10s","HEAD");
+		ptr+= sprintf(ptr,"%-10s","BASE");
 		isHead = true;
 	}
 
