@@ -487,7 +487,7 @@ int Table::merge(){
 		visitedRids.push_back(baseRid.id);
 	}
 
-	for(int _tailRid = startRID; _tailRid<= lastRID;_tailRid++){
+	for(int _tailRid = startRID; _tailRid>= lastRID;_tailRid--){
 		RID tailRid = this->page_directory.find(_tailRid)->second;
 
 		int _baseRid = buffer_pool.get(tailRid, BASE_RID_COLUMN);
@@ -498,8 +498,6 @@ int Table::merge(){
 				int val = buffer_pool.get(tailRid,i);
 
 				mergeBufferPool->set(baseRid,i,val,false);
-
-
 			}
 		}
 	}
