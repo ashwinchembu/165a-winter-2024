@@ -43,7 +43,33 @@ bool Query::insert(const std::vector<int>& columns) {
 
 std::vector<Record> Query::select(const int& search_key, const int& search_key_index, const std::vector<int>& projected_columns_index) {
     // Populate records based on the search criteria
-    return select_version(search_key, search_key_index, projected_columns_index, 0);
+
+	std::vector<Record> records;
+	std::vector<int> rids = table->index->locate(search_key_index, search_key); //this returns the RIDs of the base pages
+
+	for(size_t i = 0; i < rids.size(); i++){ //go through each matching RID that was returned from index
+		RID rid = table->page_directory.find(rids[i])->second;
+
+		if(rid.id != 0){
+			int indirection = buffer_pool.get(rid, INDIRECTION_COLUMN);
+
+			if(indirection < table->TPS){
+				rid = table->page_directory.find(indirection)->second;
+			}
+
+			std::vector<int> record_columns(table->num_columns);
+
+			for(int j = 0; j < table->num_columns; j++){ //transfer columns from desired version into record object
+				if(projected_columns_index[j]){
+					record_columns[j] = buffer_pool.get(rid, NUM_METADATA_COLUMNS + j);
+				}
+			}
+
+			records.push_back(Record(rid.id, search_key, record_columns)); //add a record with RID of base page, value of primary key, and contents of desired version
+		}
+	}
+
+	return records;
 }
 
 std::vector<Record> Query::select_version(const int& search_key, const int& search_key_index, const std::vector<int>& projected_columns_index, const int& _relative_version) {
