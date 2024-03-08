@@ -8,12 +8,14 @@
 #include "table.h"
 #include "db.h"
 #include "bufferpool.h"
+#include "log.h"
 #include <cstdio>
 #include <cstring>
 #include "config.h"
 #include "../DllConfig.h"
 
 BufferPool buffer_pool(BUFFER_POOL_SIZE);
+Log log();
 
 Database::Database() {
 	buffer_pool.set_path(file_path);

@@ -1,5 +1,6 @@
 #include "transaction.h"
 #include "../DllConfig.h"
+#include "log.h"
 #include "query.h"
 
 int QueryOperation::run() {
@@ -72,60 +73,63 @@ Transaction::~Transaction () {}
 // I believe wrapper can simplify these function pointers
 // Insert
 void Transaction::add_query(Query& q, Table& t, const std::vector<int>& columns) {
-    log.push_back(QueryOperation(&q, OpCode::INSERT, &t));
+    queries.push_back(QueryOperation(&q, OpCode::INSERT, &t));
     num_queries++;
-    log[num_queries - 1].columns = columns;
+    queries[num_queries - 1].columns = columns;
 }
 // Update
 void Transaction::add_query(Query& q, Table& t, int& key, const std::vector<int>& columns) {
-    log.push_back(QueryOperation(&q, OpCode::UPDATE, &t));
+    queries.push_back(QueryOperation(&q, OpCode::UPDATE, &t));
     num_queries++;
-    log[num_queries - 1].key = &key;
-    log[num_queries - 1].columns = columns;
+    queries[num_queries - 1].key = &key;
+    queries[num_queries - 1].columns = columns;
 }
 // Select
 void Transaction::add_query(Query& q, Table& t, int& key, const int& search_key_index, const std::vector<int>& projected_columns_index) {
-    log.push_back(QueryOperation(&q, OpCode::SELECT, &t));
+    queries.push_back(QueryOperation(&q, OpCode::SELECT, &t));
     num_queries++;
-    log[num_queries - 1].key = &key;
-    log[num_queries - 1].search_key_index = search_key_index;
-    log[num_queries - 1].columns = projected_columns_index;
-    log[num_queries - 1].relative_version = 0;
+    queries[num_queries - 1].key = &key;
+    queries[num_queries - 1].search_key_index = search_key_index;
+    queries[num_queries - 1].columns = projected_columns_index;
+    queries[num_queries - 1].relative_version = 0;
 }
 // Select version
 void Transaction::add_query(Query& q, Table& t, int& key, const int& search_key_index, const std::vector<int>& projected_columns_index,  const int& relative_version) {
-    log.push_back(QueryOperation(&q, OpCode::SELECT_VER, &t));
+    queries.push_back(QueryOperation(&q, OpCode::SELECT_VER, &t));
     num_queries++;
-    log[num_queries - 1].key = &key;
-    log[num_queries - 1].search_key_index = search_key_index;
-    log[num_queries - 1].columns = projected_columns_index;
-    log[num_queries - 1].relative_version = relative_version;
+    queries[num_queries - 1].key = &key;
+    queries[num_queries - 1].search_key_index = search_key_index;
+    queries[num_queries - 1].columns = projected_columns_index;
+    queries[num_queries - 1].relative_version = relative_version;
 }
 // Sum
 void Transaction::add_query(Query& q, Table& t, int& start_range, int& end_range, const int& aggregate_column_index) {
-    log.push_back(QueryOperation(&q, OpCode::SUM, &t));
+    queries.push_back(QueryOperation(&q, OpCode::SUM, &t));
     num_queries++;
-    log[num_queries - 1].start_range = &start_range;
-    log[num_queries - 1].end_range = &end_range;
-    log[num_queries - 1].aggregate_column_index = aggregate_column_index;
-    log[num_queries - 1].relative_version = 0;
+    queries[num_queries - 1].start_range = &start_range;
+    queries[num_queries - 1].end_range = &end_range;
+    queries[num_queries - 1].aggregate_column_index = aggregate_column_index;
+    queries[num_queries - 1].relative_version = 0;
 }
 // Sum version
 void Transaction::add_query(Query& q, Table& t, int& start_range, int& end_range, const int& aggregate_column_index, const int& relative_version) {
-    log.push_back(QueryOperation(&q, OpCode::SUM_VER, &t));
+    queries.push_back(QueryOperation(&q, OpCode::SUM_VER, &t));
     num_queries++;
-    log[num_queries - 1].start_range = &start_range;
-    log[num_queries - 1].end_range = &end_range;
-    log[num_queries - 1].aggregate_column_index = aggregate_column_index;
-    log[num_queries - 1].relative_version = relative_version;
+    queries[num_queries - 1].start_range = &start_range;
+    queries[num_queries - 1].end_range = &end_range;
+    queries[num_queries - 1].aggregate_column_index = aggregate_column_index;
+    queries[num_queries - 1].relative_version = relative_version;
 }
 
 bool Transaction::run() {
     bool transaction_completed = true; //any case where transaction does not need to be redone
     bool commit = true; //any case where transaction does not need to be redone
+    log.num_transactions++;
+    xact_id = log.num_transactions;
+    log.entries.push_back(xact_id, LogEntry(queries)); //note in log that transaction has begun
 
     for (int i = 0; i < num_queries; i++) { //run all the queries
-      int query_success = log[i].run();
+      int query_success = queries[i].run();
       switch (query_success) {
           case QUERY_SUCCESS: //query completed successfully
             break;
@@ -152,20 +156,22 @@ bool Transaction::run() {
 }
 
 void Transaction::abort() {
-  for(int i = 0; i < log.size(); i++){ //undo all queries in the transaction
-    OpCode type = log[i].type;
+  LogEntry log_entry = log.entries.find(xact_id)->second;
+
+  for(int i = 0; i < log_entry.queries.size(); i++){ //undo all queries in the transaction
+    OpCode type = queries[i].type;
     switch (type) {
         case OpCode::NOTHING:
           std::cerr << "Query with No type" << std::endl;
           break;
         case OpCode::INSERT: //delete the newly added record
-          log[i].q->deleteRecord(log[i].columns[log[i]->key]);
+          queries[i].q->deleteRecord(queries[i].columns[queries[i]->key]);
           break;
         case OpCode::UPDATE: //delete the update
-          RID base_rid = log[i].table->page_directory.find(log[i].columns[log[i]->key]);
+          RID base_rid = queries[i].table->page_directory.find(queries[i].columns[queries[i]->key]);
           int most_recent_update = buffer_pool.get(base_rid, INDIRECTION_COLUMN);
           int second_most_recent_update = buffer_pool.get(most_recent_update, INDIRECTION_COLUMN);
-          log[i].table->page_directory.find(most_recent_update)->second.id = 0; //delete in page directory
+          queries[i].table->page_directory.find(most_recent_update)->second.id = 0; //delete in page directory
           buffer_pool.set(base_rid, INDIRECTION_COLUMN, second_most_recent_update); //fix indirection
           break;
         case OpCode::SELECT:
@@ -175,9 +181,11 @@ void Transaction::abort() {
         default:
     }
   }
+  log.entries.erase(xact_id);
 }
 
 void Transaction::commit() {
+  log.entries.erase(xact_id);
 }
 
 COMPILER_SYMBOL void Transaction_add_query_insert(
