@@ -6,6 +6,7 @@
 #include <map>
 #include "table.h"
 #include "bufferpool.h"
+#include "log.h"
 #include "../DllConfig.h"
 
 COMPILER_SYMBOL int* Database_get_table(int* obj,char* name);

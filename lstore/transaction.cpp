@@ -1,24 +1,25 @@
 #include "transaction.h"
 #include "../DllConfig.h"
+#include "query.h"
 
-bool QueryOperation::run() {
+int QueryOperation::run() {
     switch (type) {
         case OpCode::NOTHING:
             std::cerr << "Query with No type" << std::endl;
-            return 0;
+            return QUERY_IC;
         case OpCode::INSERT:
             if (check_req()) {
                 return q->insert(columns);
             } else {
                 std::cerr << "Query with Not enough data : Insert" << std::endl;
-                return 0;
+                return QUERY_IC;
             }
         case OpCode::UPDATE:
             if (check_req()) {
                 return q->update(*key, columns);
             } else {
                 std::cerr << "Query with Not enough data : Update" << std::endl;
-                return 0;
+                return QUERY_IC;
             }
         case OpCode::SELECT:
         case OpCode::SELECT_VER:
@@ -27,7 +28,7 @@ bool QueryOperation::run() {
                 return select_result.size();
             } else {
                 std::cerr << "Query with Not enough data : Select or Select_ver" << std::endl;
-                return 0;
+                return QUERY_IC;
             }
         case OpCode::SUM:
         case OpCode::SUM_VER:
@@ -36,11 +37,11 @@ bool QueryOperation::run() {
                 return sum_result != nullptr;
             } else {
                 std::cerr << "Query with Not enough data : Sum or Sum_ver" << std::endl;
-                return 0;
+                return QUERY_IC;
             }
         default:
             std::cerr << "Query with unknown type" << std::endl;
-            return 0;
+            return QUERY_IC;
     }
 }
 
@@ -71,76 +72,112 @@ Transaction::~Transaction () {}
 // I believe wrapper can simplify these function pointers
 // Insert
 void Transaction::add_query(Query& q, Table& t, const std::vector<int>& columns) {
-    hash_key = columns[t.key];
-    queries.push_back(QueryOperation(&q, OpCode::INSERT, &t));
+    log.push_back(QueryOperation(&q, OpCode::INSERT, &t));
     num_queries++;
-    queries[num_queries - 1].columns = columns;
+    log[num_queries - 1].columns = columns;
 }
 // Update
 void Transaction::add_query(Query& q, Table& t, int& key, const std::vector<int>& columns) {
-    hash_key = key;
-    queries.push_back(QueryOperation(&q, OpCode::UPDATE, &t));
+    log.push_back(QueryOperation(&q, OpCode::UPDATE, &t));
     num_queries++;
-    queries[num_queries - 1].key = &key;
-    queries[num_queries - 1].columns = columns;
+    log[num_queries - 1].key = &key;
+    log[num_queries - 1].columns = columns;
 }
 // Select
 void Transaction::add_query(Query& q, Table& t, int& key, const int& search_key_index, const std::vector<int>& projected_columns_index) {
-    hash_key = key;
-    queries.push_back(QueryOperation(&q, OpCode::SELECT, &t));
+    log.push_back(QueryOperation(&q, OpCode::SELECT, &t));
     num_queries++;
-    queries[num_queries - 1].key = &key;
-    queries[num_queries - 1].search_key_index = search_key_index;
-    queries[num_queries - 1].columns = projected_columns_index;
-    queries[num_queries - 1].relative_version = 0;
+    log[num_queries - 1].key = &key;
+    log[num_queries - 1].search_key_index = search_key_index;
+    log[num_queries - 1].columns = projected_columns_index;
+    log[num_queries - 1].relative_version = 0;
 }
 // Select version
 void Transaction::add_query(Query& q, Table& t, int& key, const int& search_key_index, const std::vector<int>& projected_columns_index,  const int& relative_version) {
-    hash_key = key;
-    queries.push_back(QueryOperation(&q, OpCode::SELECT_VER, &t));
+    log.push_back(QueryOperation(&q, OpCode::SELECT_VER, &t));
     num_queries++;
-    queries[num_queries - 1].key = &key;
-    queries[num_queries - 1].search_key_index = search_key_index;
-    queries[num_queries - 1].columns = projected_columns_index;
-    queries[num_queries - 1].relative_version = relative_version;
+    log[num_queries - 1].key = &key;
+    log[num_queries - 1].search_key_index = search_key_index;
+    log[num_queries - 1].columns = projected_columns_index;
+    log[num_queries - 1].relative_version = relative_version;
 }
 // Sum
 void Transaction::add_query(Query& q, Table& t, int& start_range, int& end_range, const int& aggregate_column_index) {
-    hash_key = start_range;
-    queries.push_back(QueryOperation(&q, OpCode::SUM, &t));
+    log.push_back(QueryOperation(&q, OpCode::SUM, &t));
     num_queries++;
-    queries[num_queries - 1].start_range = &start_range;
-    queries[num_queries - 1].end_range = &end_range;
-    queries[num_queries - 1].aggregate_column_index = aggregate_column_index;
-    queries[num_queries - 1].relative_version = 0;
+    log[num_queries - 1].start_range = &start_range;
+    log[num_queries - 1].end_range = &end_range;
+    log[num_queries - 1].aggregate_column_index = aggregate_column_index;
+    log[num_queries - 1].relative_version = 0;
 }
 // Sum version
 void Transaction::add_query(Query& q, Table& t, int& start_range, int& end_range, const int& aggregate_column_index, const int& relative_version) {
-    hash_key = start_range;
-    queries.push_back(QueryOperation(&q, OpCode::SUM_VER, &t));
+    log.push_back(QueryOperation(&q, OpCode::SUM_VER, &t));
     num_queries++;
-    queries[num_queries - 1].start_range = &start_range;
-    queries[num_queries - 1].end_range = &end_range;
-    queries[num_queries - 1].aggregate_column_index = aggregate_column_index;
-    queries[num_queries - 1].relative_version = relative_version;
+    log[num_queries - 1].start_range = &start_range;
+    log[num_queries - 1].end_range = &end_range;
+    log[num_queries - 1].aggregate_column_index = aggregate_column_index;
+    log[num_queries - 1].relative_version = relative_version;
 }
 
-void Transaction::run() {
-    for (int i = 0; i < num_queries; i++) {
-        if (!(queries[i].run())) { // If ever false, abort
-            abort();
+bool Transaction::run() {
+    bool transaction_completed = true; //any case where transaction does not need to be redone
+    bool commit = true; //any case where transaction does not need to be redone
+
+    for (int i = 0; i < num_queries; i++) { //run all the queries
+      int query_success = log[i].run();
+      switch (query_success) {
+          case QUERY_SUCCESS: //query completed successfully
+            break;
+          case QUERY_LOCK: //failed to fetch lock, re-add to transaction queue
+            commit = false;
+            transaction_completed = false;
+            break;
+          case QUERY_IC: //integrity contraint violated, do not re-attempt
+            commit = false;
+            break;
+          default:
+          std::cerr << "unexpected behavior in QueryOperation::run()" << std::endl;
+        }
+        if(!commit){ //no need to complete transaction if one query fails
+          break;
         }
     }
-    commit();
+    if(commit){
+      commit();
+    } else {
+      abort();
+    }
+    return transaction_completed; //transaction be reattempted if return is 0
 }
 
 void Transaction::abort() {
-    // Revert the changes that this made, I think
-    run();
+  for(int i = 0; i < log.size(); i++){ //undo all queries in the transaction
+    OpCode type = log[i].type;
+    switch (type) {
+        case OpCode::NOTHING:
+          std::cerr << "Query with No type" << std::endl;
+          break;
+        case OpCode::INSERT: //delete the newly added record
+          log[i].q->deleteRecord(log[i].columns[log[i]->key]);
+          break;
+        case OpCode::UPDATE: //delete the update
+          RID base_rid = log[i].table->page_directory.find(log[i].columns[log[i]->key]);
+          int most_recent_update = buffer_pool.get(base_rid, INDIRECTION_COLUMN);
+          int second_most_recent_update = buffer_pool.get(most_recent_update, INDIRECTION_COLUMN);
+          log[i].table->page_directory.find(most_recent_update)->second.id = 0; //delete in page directory
+          buffer_pool.set(base_rid, INDIRECTION_COLUMN, second_most_recent_update); //fix indirection
+          break;
+        case OpCode::SELECT:
+        case OpCode::SELECT_VER:
+        case OpCode::SUM:
+        case OpCode::SUM_VER:
+        default:
+    }
+  }
 }
 
 void Transaction::commit() {
-    // Commit all the changes and clear off the queries vector
 }
 
 COMPILER_SYMBOL void Transaction_add_query_insert(

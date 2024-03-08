@@ -25,15 +25,14 @@ public:
 
     QueryOperation (Query* query, const OpCode& op, Table* t) : q(query), type(op), table(t) {}
     virtual ~QueryOperation ();
-    bool run(); // Run the operation
+    int run();
     bool check_req();
 };
 
 class Transaction {
 public:
-    std::vector<QueryOperation> queries; // To hold onto queries for abort?
+    std::vector<QueryOperation> log; // To hold onto queries
     int num_queries = 0;
-    int hash_key = 0;
     Transaction ();
     virtual ~Transaction ();
     // I believe wrapper can simplify these function pointers
@@ -52,7 +51,7 @@ public:
     void add_query(Query& q, Table& t, int& start_range, int& end_range, const int& aggregate_column_index);
     void add_query(Query& q, Table& t, int& start_range, int& end_range, const int& aggregate_column_index, const int& relative_version);
 
-    void run(); // Called by transaction worker. Return 0 if fails
+    bool run(); // Called by transaction worker, transaction be reattempted if return is 0
     void abort(); // Transaction worker check the work. If it contain anomaly, abort.
     void commit(); // Transaction worker check the work. If it run successfully, commit.
 };
