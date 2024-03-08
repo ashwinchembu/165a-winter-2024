@@ -72,50 +72,14 @@ RID Table::insert(const std::vector<int>& columns) {
  */
 RID Table::update(RID &rid, const std::vector<int> &columns) {
     if (num_update % MAX_TABLE_UPDATES == 0) {
-        /*
-		std::cout << "before merge: " << std::endl;
-        Frame *cur2 = buffer_pool.head;
-        while (cur2 != nullptr) {
-            std::cout << cur2->first_rid_page << " " << std::endl;
-            if (cur2->first_rid_page == 1) {
-                std::cout << *(cur2->page) << std::endl;
-            }
-            cur2 = cur2->next;
-        }
-        std::cout << std::endl;
-        */
+        
 
        merge();
-    /*
-        std::cout << "after merge: " << std::endl;
-        cur2 = buffer_pool.head;
-        while (cur2 != nullptr) {
-            std::cout << cur2->first_rid_page << " " << std::endl;
-            if (cur2->first_rid_page == 1) {
-                std::cout << *(cur2->page) << std::endl;
-            }
-            cur2 = cur2->next;
-        }
-        std::cout << std::endl;
-        */
+
     }
     
 
-    std::cout << "running update" << std::endl;
-    
-
-    // std::cout << "right after merge" << std::endl;
-    // std::cout << "printing bufferpool 1: " << std::endl;
-    // Frame* cur = buffer_pool.head;
-    // while (cur != nullptr) {
-    // 	std::cout << cur->first_rid_page << " " << std::endl;
-    // 	if (cur->first_rid_page == 1) {
-    // 		std::cout << *(cur->page) << std::endl;
-    // 		break;
-    // 	}
-    // 	cur = cur->next;
-    // }
-    // std::cout << std::endl;
+   
 
     num_update++;
     const int rid_id = num_update * -1;
@@ -126,48 +90,23 @@ RID Table::update(RID &rid, const std::vector<int> &columns) {
         }
     }
 
-    // std::cout << "first for loop end" << std::endl;
+    
 
     RID new_rid(rid_id);
-    // std::cout << "new rid" << std::endl;
     new_rid.table_name = name;
-    // std::cout << "new name" << std::endl;
     new_rid.first_rid_page_range = rid.first_rid_page_range;
-    // std::cout << "new page range" << std::endl;
 
-    // std::cout << "new rid id: " << new_rid.id << " table name: " << name << " rid page range: " << new_rid.first_rid_page_range << std::endl;
-    // std::cout << "i: " << i << std::endl;
-    // std::cout << page_range[i].get()->pages[0].id << std::endl;
-
-    // if (num_update > MAX_TABLE_UPDATES) {
-    //     std::cout << "printing bufferpool 2: " << std::endl;
-    //     Frame *cur1 = buffer_pool.head;
-    //     while (cur1 != nullptr) {
-    //         std::cout << cur1->first_rid_page << " " << std::endl;
-    //         if (cur1->first_rid_page == 4097) {
-    //             std::cout << *(cur1->page) << std::endl;
-    //             break;
-    //         }
-    //         cur1 = cur1->next;
-    //     }
-    //     std::cout << std::endl;
-    // }
-
-    //std::cout << "before update" << std::endl;
-
+    
     (page_range[i].get())->update(rid, new_rid, columns, page_directory);
     page_range_update[i]++;
 
-    std::cout << "before if" << std::endl;
     if (page_range_update[i] % MAX_PAGE_RANGE_UPDATES == 0) {
-        std::cout << "step in for loop" << std::endl;
         // Make a deep copy of page_range[i]
         std::shared_ptr<PageRange> deep_copy = std::make_shared<PageRange>(*(page_range[i].get()));
 
         // use bufferpool to get all the pages within a page range
         std::vector<Frame *> insert_to_queue;
         std::vector<RID> rids_in_range;
-        std::cout << "Pages inserted: ";
         for (int i = deep_copy->pages.size() - 1; i >= 0; i--) {
             RID rid = deep_copy->pages[i];
             for (auto itr = rids_in_range.begin(); itr != rids_in_range.end(); itr++) {
@@ -176,68 +115,32 @@ RID Table::update(RID &rid, const std::vector<int> &columns) {
                 }
             }
             rids_in_range.push_back(rid);
-            // std::cout << rid.id << " ";
             // load all of the pages in pagerange into bufferpool
         }
 
         for (int i = 0; i < rids_in_range.size(); i++) {
             for (int to_load_tail_page_col = 0; to_load_tail_page_col < num_columns + NUM_METADATA_COLUMNS; to_load_tail_page_col++) {
                 Frame *new_frame = buffer_pool.get_page(rids_in_range[i], to_load_tail_page_col);
-                std::cout << "rids_in_range: " << rids_in_range[i].id << std::endl;
                 Page *page_copy = new_frame->page;
                 Page *page_pointer = new Page();
-                //page_pointer->data = new int[PAGE_SIZE * 4];
-                //page_pointer->num_rows = page_copy->num_rows;
-                //std::copy(page_copy->data, page_copy->data + page_copy->num_rows, page_pointer->data);
-                // std::memcpy(page_pointer->data, page_copy->data, page_copy->num_rows * sizeof(int));
+
                 page_pointer->deep_copy(new_frame->page);
-                //new_frame->page = page_pointer;
                 Frame* copy_frame = new Frame();
                 *(copy_frame) = *(new_frame);
                 copy_frame->page = page_pointer;            
 
-                // std::cout << "new fram page: " << *(page_copy) << std::endl;
-                // std::cout << page_copy->data << std::endl;
-
-                // std::cout << "copy page: " << *(page_pointer) << std::endl;
-                // std::cout << page_pointer->data << std::endl;
-
-                // delete page_copy;
-                // delete page_pointer;
-                // Frame *add_to_queue = &new_frame;
-                // std::cout << "i: " << i << " what is in frame, pagerange RID: " << new_frame->first_rid_page_range << " RID: " << new_frame->first_rid_page << std::endl;
-
-                // delete[] page_pointer->data;
-                //  delete page_pointer;
+                
 
                 insert_to_queue.push_back(copy_frame);
             }
         }
-        // std::cout << std::endl;
-
-        // std::cout << "merge_queue size: " << merge_queue.size() << std::endl;
-        //std::cout << "insert to queue: " << std::endl;
-        // for (int i = 0; i < insert_to_queue.size(); i++) {
-        //     std::cout << insert_to_queue[i]->first_rid_page_range << " " << insert_to_queue[i]->first_rid_page << std::endl;
-        // }
-        // std::cout << std::endl;
-        Frame* cur2 = buffer_pool.head;
-        while (cur2 != nullptr) {
-            std::cout << cur2->first_rid_page << " " << std::endl;
-            if (cur2->first_rid_page == 1) {
-                std::cout << *(cur2->page) << std::endl;
-            }
-            cur2 = cur2->next;
-        }
-        std::cout << std::endl;
+        
 
         merge_queue.push(insert_to_queue);
-        std::cout << "after if" << std::endl;
     }
 
-    //}
 
-    std::cout << "4. :)" << std::endl;
+
 
 	page_directory.insert({rid_id, new_rid});
 	return new_rid;
@@ -309,7 +212,6 @@ int Table::merge() {
     if (!merge_queue.size()) {
         return 0;
     }
-    // std::cout << "after if statement" << std::endl;
     /*
     updating at page range level
 
@@ -320,22 +222,16 @@ int Table::merge() {
 
     */
    
-    std::cout << "-------------entered merge" << std::endl;
     // get pages to merge
     std::vector<Frame *> to_merge = merge_queue.front();
 
-    for (int i = 0; i < to_merge.size(); i++) {
-        //std::cout << to_merge[i]->first_rid_page_range << " " << to_merge[i]->first_rid_page << std::endl;
-    }
-    std::cout << std::endl;
-
+   
     merge_queue.pop();
     
     
     // rounding up bufferpool size to fit in hash
     // make mergebufferpool and set new path
     auto pool_size = poolSizeRoundUp(to_merge.size()) * 14; // change to actual - temp
-    // std::cout << pool_size << std::endl;
     BufferPool *mergeBufferPool = new BufferPool(pool_size);
 
     mergeBufferPool->set_path("./ECS165/Merge");
@@ -344,48 +240,23 @@ int Table::merge() {
         mkdir(mergeBufferPool->path.c_str(), 0777);
     }
     
-    // std::cout << "end of block 1" << std::endl;
-
-    // to_merge size = 44, seem to have the correct # of page with correct rids
-    //  std::cout << "-------------What is in to_merge" << std::endl;
-    //  std::cout << "to_merge size: " << to_merge.size() << std::endl;
-    //  for (int i = 0; i < to_merge.size(); i++) {
-    //  	std::cout << to_merge[i]->first_rid_page << " ";
-    //  }
-    //  std::cout << "--------------" << std::endl;
-
-    std::cout << "HERE" << std::endl;
     for (int i = 0; i < to_merge.size(); i++) {
         if (to_merge[i]->first_rid_page_range != NULL) {
             RID new_rid(to_merge[i]->first_rid_page, to_merge[i]->first_rid_page_range, to_merge[i]->first_rid_page, 0, name);
 
-            std::cout << "to_merge RID: " << to_merge[i]->first_rid_page << " page RID: " << new_rid.first_rid_page << std::endl;
 
             Frame *frame = mergeBufferPool->insert_into_frame(new_rid, to_merge[i]->column, to_merge[i]->page);
             frame->dirty = true;
 
-            // check bufferpool current size
-            //  int sum = 0;
-            //  for (int i = 0; i < 4; i++) {
-            //  	sum += mergeBufferPool->frame_directory[i];
-            //  }
-            //  std::cout << "-----------sum: " << sum << " bufferpool size: " << pool_size << std::endl;
+
         }
     }
     
-    // std::cout << "--------Testing bufferpool linked list" << std::endl;
-    // Frame* current = mergeBufferPool->head;
-    // while (current != nullptr) {
-    //     std::cout << current->first_rid_page << " ";
-    //     current = current->next;
-    // }
-    // std::cout << std::endl;
 
     // get current TPS from first base page
     Frame *first_frame = to_merge[0];
     RID last_tail_rid(0, first_frame->first_rid_page_range, first_frame->first_rid_page, 0, name);
     int latest_tail_id = mergeBufferPool->get(last_tail_rid, TPS);
-    // std::cout << "--------lastest tail id: "<< first_frame->first_rid_page_range << " " << latest_tail_id << std::endl;
 
     // map of most up to date value
     std::map<int, std::pair<int, std::vector<int>>> latest_update; //<latest base RID: <tailRID, values>>
@@ -396,7 +267,6 @@ int Table::merge() {
     
     // load copy of all base pages in each page range
     for (int i = to_merge.size() - 1; i >= 0; i--) {
-        std::cout << "enter for loop" << std::endl;
         Frame *currentFrame = to_merge[i];
         RID page_rid = page_directory.find(currentFrame->first_rid_page)->second;
 
@@ -411,8 +281,7 @@ int Table::merge() {
         // determine frame holds tail page
 
         if (page_rid.id < 0) {
-            std::cout << "determining tail page" << std::endl;
-            // holds tail page
+
             if (page_rid.id > latest_tail_id) {
                 continue;
             }
@@ -436,16 +305,10 @@ int Table::merge() {
                             std::vector<int> merge_vals;
                             for (int j = NUM_METADATA_COLUMNS; j < num_columns + NUM_METADATA_COLUMNS; j++) { // indirection place stuff
                                 int value = mergeBufferPool->get(currentRID, j);
-                                std::cout << " " << value;
                                 merge_vals.push_back(value);
                             }
-                            // std::cout << "vector" << std::endl;
-                            // for (size_t z = 0; z < merge_vals.size(); ++z) {
-                            //     std::cout << merge_vals[z] << " ";
-                            // }
-                            // std::cout << std::endl;
+
                             latest_update[baseRID].second = merge_vals;
-                            std::cout << std::endl;
                         }
                     }
                     if (currentRID.id < tail_rid_last) {
@@ -467,59 +330,12 @@ int Table::merge() {
         const std::vector<int> &values = itr->second.second;
 
         int tail_id = latest_update.at(itr->first).first;
-        // mergeBufferPool->set (latest_base_rid, INDIRECTION_COLUMN, tail_id, false);
-
-        // std::cout << "COLUMN VALUES: value.size: " << values.size() << " ";
-        // for (int i = 0; i < values.size(); i++) {
-        //     std::cout << values[i] << " ";
-        // }
-        // std::cout << std::endl;
 
         for (int col = NUM_METADATA_COLUMNS; col < num_columns + NUM_METADATA_COLUMNS; col++) {
-            // mergeBufferPool->set (latest_base_rid, col, values[col], false);
-            //std::cout << "latest base_rid: " << latest_base_rid.id << " col :" << col << "value: " << values[col - NUM_METADATA_COLUMNS] << std::endl;
-            // mergeBufferPool->get(latest_base_rid, col);
-            // std::cout << "get :)" << std::endl;
-
-            // std::cout << "Index of val set to set: " << col - NUM_METADATA_COLUMNS << std::endl;
-            Frame *current = mergeBufferPool->head;
-            while (current != nullptr) {
-                if (current->first_rid_page) {
-                    std::cout << "FRAME POINTER MERGE BUFFERPOOL" << current << std::endl;
-                    std::cout << "PAGE POINTER MERGE BUFFERPOOL" << current->page << std::endl;
-                    std::cout << "Data POINTER MERGE BUFFERPOOL" << current->page->data << std::endl;
-                    std::cout << *(current->page) << std::endl;
-                }
-                current = current->next;
-            }
-            std::cout << "BEFORE " << col - NUM_METADATA_COLUMNS << std::endl;
-            Frame *cur1 = buffer_pool.head;
-            while (cur1 != nullptr) {
-                if (cur1->first_rid_page) {
-                    std::cout << "FRAME POINTER BUFFERPOOL" << cur1 << std::endl;
-                    std::cout << "RID:" << cur1->first_rid_page << " " << std::endl;
-                    std::cout << "PAGE POINTER BUFFERPOOL" << cur1->page << std::endl;
-                    std::cout << "Data POINTER BUFFERPOOL" << cur1->page->data << std::endl;
-                    std::cout << *(cur1->page) << std::endl;
-                }
-                cur1 = cur1->next;
-            }
-            std::cout << std::endl;
+           
             mergeBufferPool->set(latest_base_rid, col, values[col - NUM_METADATA_COLUMNS], false);
-            std::cout << "After" << col - NUM_METADATA_COLUMNS << std::endl;
-            cur1 = buffer_pool.head;
-            while (cur1 != nullptr) {
-                std::cout << "RID:" << cur1->first_rid_page << " " << std::endl;
-                if (cur1->first_rid_page) {
-                    std::cout << *(cur1->page) << std::endl;
-                }
-                cur1 = cur1->next;
-            }
-            std::cout << std::endl;
-            // mergeBufferPool->set(latest_base_rid, col, 0, false);
-            // std::cout << latest_base_rid.id << " " << col << " " << mergeBufferPool->get(latest_base_rid, col) << " ";
+            
         }
-        // std::cout << std::endl;
 
     }
     for (int i = to_merge.size() - 1; i >= 0; i--) {
@@ -532,66 +348,7 @@ int Table::merge() {
     }
     }
 
-    
-
-    // update page directory
-    
-    Frame *current = mergeBufferPool->head;
-    while (current != nullptr) {
-        if (current->first_rid_page > 0) { // is base page
-            for (int base_iterator = ((current->page->num_rows) - 1) * sizeof(int); base_iterator >= 0; base_iterator -= sizeof(int)) {
-                RID currentRID(*(base_iterator + current->page->data), current->first_rid_page_range,
-                               current->first_rid_page, base_iterator, current->table_name);
-                page_directory[currentRID.id] = currentRID; // update page directory
-            }
-        }
-        // Move to the next frame
-        current = current->next;
-    }
-
-    std::cout << "before write back" << std::endl;
-    
-	// Frame *cur1 = buffer_pool.head;
-    // while (cur1 != nullptr) {
-    //     std::cout << cur1->first_rid_page << " " << std::endl;
-    //     if (cur1->first_rid_page == 4097) {
-    //         std::cout << *(cur1->page) << std::endl;
-    //         break;
-    //     }
-    //     cur1 = cur1->next;
-    // }
-    // std::cout << std::endl;
-    
-
-    std::cout << "1. :)" << std::endl;
-    //mergeBufferPool->write_back_all(); // see is the file being written back is the problem or is merge process the problem
-    /*
-
-    std::cout << "after write back" << std::endl;
-    Frame *cur2 = buffer_pool.head;
-    while (cur2 != nullptr) {
-        std::cout << cur2->first_rid_page << " " << std::endl;
-        if (cur2->first_rid_page == 4097) {
-			std::cout << "page is 4097" << std::endl;
-			if (cur2->page == nullptr) {
-				std::cout << "the page pointer is nullptr" << std::endl;
-			}
-            std::cout << *(cur2->page) << std::endl;
-            break;
-        }
-		if (cur2->next == nullptr) {
-			std::cout << "the next pointer is nullptr" << std::endl;
-		}
-        cur2 = cur2->next;
-    }
-    std::cout << std::endl;
-    */
-
-    std::cout << "2. :)" << std::endl;
-    std::cout << "before free" << std::endl;
-
-    // delete mergeBufferPool;
-    std::cout << "3. :)" << std::endl;
+	buffer_pool.mergeNumber = mergeBufferPool->mergeNumber;
 
     return 0;
     
