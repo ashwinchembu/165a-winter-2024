@@ -26,6 +26,7 @@ class PageRange {
 public:
     std::mutex mutex_insert;
     std::mutex mutex_update;
+    std::mutex page_lock; /// TODO Make this shared mutex
     // Toolkit::BasicSharedPtr<std::mutex>mutex_insert = Toolkit::BasicSharedPtr<std::mutex>(new std::mutex());
     // Toolkit::BasicSharedPtr<std::mutex>mutex_update = Toolkit::BasicSharedPtr<std::mutex>(new std::mutex());
 
@@ -43,7 +44,7 @@ public:
     PageRange (RID& new_rid, const std::vector<int>& columns);
     ~PageRange();
     int insert(RID& new_rid, const std::vector<int>& columns);
-    int update(RID& rid, RID& rid_new, const std::vector<int>& columns, const std::map<int, RID>& page_directory);
+    int update(RID& rid, RID& rid_new, const std::vector<int>& columns, const std::map<int, RID>& page_directory, std::shared_lock<std::shared_mutex>* lock);
     bool base_has_capacity () const;
     int write(FILE* fp);
     int read(FILE* fp);

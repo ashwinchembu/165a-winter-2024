@@ -61,8 +61,9 @@ RID Table::insert(const std::vector<int>& columns) {
 		page_range_unique.unlock();
 	} else { // If there are base page already, just insert it normally.
 		record.first_rid_page_range = (page_range.back().get())->pages[0].first_rid_page_range;
-		(page_range.back().get())->insert(record, columns);
+		PageRange* prange = (page_range.back().get());
 		page_range_shared.unlock();
+		prange->insert(record, columns);
 	}
 	page_directory_unique.lock();
 	page_directory.insert({rid_id, record});
@@ -101,8 +102,9 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 	new_rid.first_rid_page_range = rid.first_rid_page_range;
 
 	page_range_shared.lock();
-	(page_range[i].get())->update(rid, new_rid, columns, page_directory);
+	PageRange* prange = (page_range[i].get());
 	page_range_shared.unlock();
+	prange->update(rid, new_rid, columns, page_directory, &page_range_shared);
 	page_range_update[i]++;
 	if (page_range_update[i] >= MAX_PAGE_RANGE_UPDATES){
 		// Make a deep copy of page_range[i]

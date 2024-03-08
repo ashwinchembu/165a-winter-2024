@@ -88,14 +88,21 @@ void Index::create_index(const int& column_number) {
 
     unique_lock_list.find(column_number)->second->lock();
     for (int i = 1; i <= table->num_insert; i++) {
+        table->page_directory_shared.lock();
         auto loc = table->page_directory.find(i); // Find RID for every rows
+        table->page_directory_shared.unlock();
         if (loc != table->page_directory.end()) { // if RID ID exist ie. not deleted
+            table->page_directory_shared.lock();
             RID rid = table->page_directory.find(loc->second.id)->second;
+            table->page_directory_shared.unlock();
             int value;
             int indirection_num = buffer_pool.get(rid, INDIRECTION_COLUMN);
 
             if ((buffer_pool.get(rid, SCHEMA_ENCODING_COLUMN) >> (column_number - 1)) & (0b1)) { // If the column of the record at loc is updated
+                table->page_directory_shared.lock();
                 RID update_rid = table->page_directory.find(indirection_num)->second;
+                table->page_directory_shared.unlock();
+
                 value = buffer_pool.get(update_rid, column_number + NUM_METADATA_COLUMNS);
             } else {
                 value = buffer_pool.get(rid, column_number + NUM_METADATA_COLUMNS);
