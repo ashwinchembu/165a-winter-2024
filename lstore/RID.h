@@ -13,7 +13,7 @@ public:
     RID (const RID& rhs);
     ~RID(){}
     RID (int i) : id(i) {};
-    RID (int id, int page_range, int page_rid, int offset, std::string table_name) : 
+    RID (int id, int page_range, int page_rid, int offset, std::string table_name) :
         id(id), first_rid_page_range(page_range), first_rid_page(page_rid), offset(offset), table_name(table_name) {};
     int write(FILE* fp);
     int read(FILE* fp);
@@ -22,6 +22,8 @@ public:
     int first_rid_page = 0;
     int offset = 0;
     std::string table_name = "";
+
+    
 };
 
 #endif
