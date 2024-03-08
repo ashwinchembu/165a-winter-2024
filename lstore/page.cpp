@@ -25,7 +25,9 @@ PageRange::PageRange (RID& new_rid, const std::vector<int>& columns) {
     for (int i = 0; i < num_column; i++) {
         buffer_pool.insert_new_page(new_rid, NUM_METADATA_COLUMNS + i, columns[i]);
     }
+    page_lock.lock();
     pages.push_back(new_rid);
+    page_lock.unlock();
     num_column = num_column + NUM_METADATA_COLUMNS;
 }
 
@@ -74,7 +76,9 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
         for (int i = NUM_METADATA_COLUMNS; i < num_column; i++) {
             buffer_pool.insert_new_page(new_rid, i, columns[i - NUM_METADATA_COLUMNS]);
         }
+        page_lock.lock();
         pages.insert(pages.begin() + base_last, new_rid);
+        page_lock.unlock();
     } else {
         base_last_wasfull = (num_slot_used_base == PAGE_SIZE);
         num_slot_used_base++;
@@ -141,7 +145,9 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
             }
         }
         buffer_pool.insert_new_page(rid_new, SCHEMA_ENCODING_COLUMN, schema_encoding);
+        page_lock.lock();
         pages.push_back(rid_new);
+        page_lock.unlock();
     } else {
         num_slot_used_tail++;
         tail_last_wasfull = (num_slot_used_tail == PAGE_SIZE);
