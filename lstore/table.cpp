@@ -55,7 +55,7 @@ RID Table::insert(const std::vector<int>& columns) {
 		(page_range.back().get())->insert(record, columns);
 	}
 
-    update(record, columns);
+    //update(record, columns);
 
 	page_directory.insert({rid_id, record});
 	return record;
