@@ -318,8 +318,6 @@ int Table::merge() {
             }
         }
     }
-
-    // for (int i)
     
 
     for (auto itr = latest_update.begin(); itr != latest_update.end(); ++itr) {
