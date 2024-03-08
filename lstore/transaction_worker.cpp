@@ -16,30 +16,21 @@ TransactionWorker::~TransactionWorker () {
 // Append transaction t to the appropriate place.
 // Operation that happens on same place in same page goes to same place. Best effort model.
 void TransactionWorker::add_transaction(const Transaction& t) {
-    transactions[t.hash_key % MAX_THREADS].push_back(t);
+    transactions.push_back(t);
 }
 
 // Start all the transactions. Create thread and run.
 void TransactionWorker::run() {
     for (size_t i = 0; i < transactions.size(); i++) {
-        int num_transaction = transactions[i].size();
-        if (num_transaction > 0) {
-            for (int j = 0; j < num_transaction; j++) {
-                threads.push_back(std::thread(&Transaction::run, &(transactions[i][j])));
-            }
-        }
+        thread = std::thread(&Transaction::run, &(transactions[i]));
     }
 }
 
 // call all the join function for the thread we have.
 void TransactionWorker::join() {
-    for (size_t i=0; i < threads.size(); i++) {
-        if (threads[i].joinable()) {
-            threads[i].join();
-        }
+    if (thread.joinable()) {
+        thread.join();
     }
-
-    threads.clear();
 }
 
 

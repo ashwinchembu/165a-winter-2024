@@ -1,3 +1,6 @@
+#ifndef TRANSACTION_WORKER_H
+#define TRANSACTION_WORKER_H
+
 #include <thread>
 #include "table.h"
 #include "index.h"
@@ -5,8 +8,8 @@
 
 class TransactionWorker {
 public:
-    std::vector<std::vector<Transaction>> transactions; // List of transactions to run
-    std::vector<std::thread> threads;
+    std::vector<Transaction> transactions; // List of transactions to run
+    std::thread thread;
     std::vector<bool> stats;
     int result = 0;
     TransactionWorker ();
@@ -15,3 +18,5 @@ public:
     void run(); // Start all the transactions. Create thread and run.
     void join(); // call all the join function for the thread we have.
 };
+#endif
+

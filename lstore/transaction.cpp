@@ -2,25 +2,29 @@
 #include "../DllConfig.h"
 #include "log.h"
 #include "query.h"
+#include "RID.h"
+#include "bufferpool.h"
+#include "table.h"
+#include "config.h"
 
 int QueryOperation::run() {
     switch (type) {
         case OpCode::NOTHING:
             std::cerr << "Query with No type" << std::endl;
-            return QUERY_IC;
+            return QueryResult::QUERY_IC;
         case OpCode::INSERT:
             if (check_req()) {
                 return q->insert(columns);
             } else {
                 std::cerr << "Query with Not enough data : Insert" << std::endl;
-                return QUERY_IC;
+                return QueryResult::QUERY_IC;
             }
         case OpCode::UPDATE:
             if (check_req()) {
                 return q->update(*key, columns);
             } else {
                 std::cerr << "Query with Not enough data : Update" << std::endl;
-                return QUERY_IC;
+                return QueryResult::QUERY_IC;
             }
         case OpCode::SELECT:
         case OpCode::SELECT_VER:
@@ -29,7 +33,7 @@ int QueryOperation::run() {
                 return select_result.size();
             } else {
                 std::cerr << "Query with Not enough data : Select or Select_ver" << std::endl;
-                return QUERY_IC;
+                return QueryResult::QUERY_IC;
             }
         case OpCode::SUM:
         case OpCode::SUM_VER:
@@ -38,11 +42,11 @@ int QueryOperation::run() {
                 return sum_result != nullptr;
             } else {
                 std::cerr << "Query with Not enough data : Sum or Sum_ver" << std::endl;
-                return QUERY_IC;
+                return QueryResult::QUERY_IC;
             }
         default:
             std::cerr << "Query with unknown type" << std::endl;
-            return QUERY_IC;
+            return QueryResult::QUERY_IC;
     }
 }
 
@@ -123,31 +127,31 @@ void Transaction::add_query(Query& q, Table& t, int& start_range, int& end_range
 
 bool Transaction::run() {
     bool transaction_completed = true; //any case where transaction does not need to be redone
-    bool commit = true; //any case where transaction does not need to be redone
+    bool _commit = true; //any case where transaction does not need to be redone
     log.num_transactions++;
     xact_id = log.num_transactions;
-    log.entries.push_back(xact_id, LogEntry(queries)); //note in log that transaction has begun
+    log.entries.insert({xact_id, LogEntry(queries)}); //note in log that transaction has begun
 
     for (int i = 0; i < num_queries; i++) { //run all the queries
       int query_success = queries[i].run();
       switch (query_success) {
-          case QUERY_SUCCESS: //query completed successfully
+          case QueryResult::QUERY_SUCCESS: //query completed successfully
             break;
-          case QUERY_LOCK: //failed to fetch lock, re-add to transaction queue
-            commit = false;
+          case QueryResult::QUERY_LOCK: //failed to fetch lock, re-add to transaction queue
+            _commit = false;
             transaction_completed = false;
             break;
-          case QUERY_IC: //integrity contraint violated, do not re-attempt
-            commit = false;
+          case QueryResult::QUERY_IC: //integrity contraint violated, do not re-attempt
+            _commit = false;
             break;
           default:
           std::cerr << "unexpected behavior in QueryOperation::run()" << std::endl;
         }
-        if(!commit){ //no need to complete transaction if one query fails
+        if(!_commit){ //no need to complete transaction if one query fails
           break;
         }
     }
-    if(commit){
+    if(_commit){
       commit();
     } else {
       abort();
@@ -160,25 +164,24 @@ void Transaction::abort() {
 
   for(int i = 0; i < log_entry.queries.size(); i++){ //undo all queries in the transaction
     OpCode type = queries[i].type;
+    RID base_rid, most_recent_update;
+    int second_most_recent_update = 0;
     switch (type) {
         case OpCode::NOTHING:
-          std::cerr << "Query with No type" << std::endl;
-          break;
+            std::cerr << "Query with No type" << std::endl;
+            break;
         case OpCode::INSERT: //delete the newly added record
-          queries[i].q->deleteRecord(queries[i].columns[queries[i]->key]);
-          break;
+            queries[i].q->deleteRecord(queries[i].columns[*(queries[i].key)]);
+            break;
         case OpCode::UPDATE: //delete the update
-          RID base_rid = queries[i].table->page_directory.find(queries[i].columns[queries[i]->key]);
-          int most_recent_update = buffer_pool.get(base_rid, INDIRECTION_COLUMN);
-          int second_most_recent_update = buffer_pool.get(most_recent_update, INDIRECTION_COLUMN);
-          queries[i].table->page_directory.find(most_recent_update)->second.id = 0; //delete in page directory
-          buffer_pool.set(base_rid, INDIRECTION_COLUMN, second_most_recent_update); //fix indirection
-          break;
-        case OpCode::SELECT:
-        case OpCode::SELECT_VER:
-        case OpCode::SUM:
-        case OpCode::SUM_VER:
+            base_rid = queries[i].table->page_directory.find(queries[i].columns[*(queries[i].key)])->second;
+            most_recent_update = queries[i].table->page_directory.find(buffer_pool.get(base_rid, INDIRECTION_COLUMN))->second;
+            second_most_recent_update = buffer_pool.get(most_recent_update, INDIRECTION_COLUMN);
+            queries[i].table->page_directory.find(most_recent_update.id)->second.id = 0; //delete in page directory
+            buffer_pool.set(base_rid, INDIRECTION_COLUMN, second_most_recent_update, false); //fix indirection
+            break;
         default:
+            break;
     }
   }
   log.entries.erase(xact_id);

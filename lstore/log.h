@@ -4,14 +4,7 @@
 #include <vector>
 #include <map>
 #include "../Toolkit.h"
-
-class Log{
-public:
-  Log ();
-  virtual ~LogEntry ();
-  std::map<int, LogEntry> entries;
-  int num_transactions = 0;
-};
+#include "transaction.h"
 
 class LogEntry { //represents one transaction
 public:
@@ -20,6 +13,15 @@ public:
   std::vector<QueryOperation> queries;
   //int num_attempts = 0; //after three tries, abort to avoid loops
 };
+
+class Log{
+public:
+  Log ();
+  virtual ~Log ();
+  std::map<int, LogEntry> entries;
+  int num_transactions = 0;
+};
+
 
 extern Log log;
 

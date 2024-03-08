@@ -17,7 +17,4 @@
     extern const std::string file_path;
     extern const size_t MAX_THREADS;
     extern const int NUM_THREADS;
-    extern const int QUERY_SUCCESS;
-    extern const int QUERY_LOCK;
-    extern const int QUERY_IC;
 #endif

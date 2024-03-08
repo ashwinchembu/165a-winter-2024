@@ -1,8 +1,13 @@
+#ifndef TRANSACTION_H
+#define TRANSACTION_H
+
 #include "table.h"
 #include "index.h"
 #include "query.h"
+#include "config.h"
 
 enum OpCode { NOTHING, INSERT, UPDATE, SELECT, SELECT_VER, SUM, SUM_VER };
+enum QueryResult { QUERY_SUCCESS, QUERY_LOCK, QUERY_IC };
 
 class QueryOperation {
 public:
@@ -25,7 +30,7 @@ public:
 
     QueryOperation (Query* query, const OpCode& op, Table* t) : q(query), type(op), table(t) {}
     virtual ~QueryOperation ();
-    bool run(); // Run the operation
+    int run(); // Run the operation
     bool check_req();
 };
 
@@ -53,7 +58,9 @@ public:
     void add_query(Query& q, Table& t, int& start_range, int& end_range, const int& aggregate_column_index);
     void add_query(Query& q, Table& t, int& start_range, int& end_range, const int& aggregate_column_index, const int& relative_version);
 
-    void run(); // Called by transaction worker. Return 0 if need to re-attempt
+    bool run(); // Called by transaction worker. Return 0 if need to re-attempt
     void abort(); // Transaction worker check the work. If it contain anomaly, abort.
     void commit(); // Transaction worker check the work. If it run successfully, commit.
 };
+#endif
+
