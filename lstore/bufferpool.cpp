@@ -155,20 +155,20 @@ std::string BufferPool::buildDatPath(std::string tname,int first_rid_page,int fi
 	ptr += sprintf(ptr, "%s",tname.c_str());
 
 	if(column < NUM_METADATA_COLUMNS){
-		ptr+= sprintf(ptr," M ");
+		ptr+= sprintf(ptr,"_M_");
 
 	} else if(first_rid_page < 0){
-		ptr+= sprintf(ptr," T ");
+		ptr+= sprintf(ptr,"_T_");
 
 	} else if(first_rid_page > 0){
-		ptr+= sprintf(ptr," B ");
+		ptr+= sprintf(ptr,"_B_");
 		isBase = true;
 	}
 
-	ptr+=sprintf(ptr,"%d %d %d",first_rid_page,first_rid_page_range,column);
+	ptr+=sprintf(ptr,"%d_%d_%d",first_rid_page,first_rid_page_range,column);
 
 	if(isBase){
-		ptr+=sprintf(ptr," %d",mergeNumber);
+		ptr+=sprintf(ptr,"_%d",mergeNumber);
 	}
 
 	sprintf(ptr, ".dat");
@@ -319,15 +319,15 @@ void BufferPool::write_back(Frame* frame){
     throw std::invalid_argument("Couldn't open file " + data_path);
   }
 
-  std::string text_copy_path = buildTxtPath(frame->table_name,frame->first_rid_page,
-          frame->first_rid_page_range,frame->column);
-
-  FILE* textFilePtr = fopen((text_copy_path).c_str(),"w");
-
-  if(!textFilePtr){
-	  creat(text_copy_path.c_str(),0666);
-	  textFilePtr = fopen(text_copy_path.c_str(),"w");
-  }
+//  std::string text_copy_path = buildTxtPath(frame->table_name,frame->first_rid_page,
+//          frame->first_rid_page_range,frame->column);
+//
+//  FILE* textFilePtr = fopen((text_copy_path).c_str(),"w");
+//
+//  if(!textFilePtr){
+//	  creat(text_copy_path.c_str(),0666);
+//	  textFilePtr = fopen(text_copy_path.c_str(),"w");
+//  }
 
   std::string buffer;
 
@@ -336,17 +336,17 @@ void BufferPool::write_back(Frame* frame){
     fwrite(frame->page->data, sizeof(int), frame->page->num_rows, fp);
 
     buffer = std::to_string(frame->page->num_rows) + " ";
-    fwrite(buffer.c_str(), buffer.size(), 1, textFilePtr);
+//    fwrite(buffer.c_str(), buffer.size(), 1, textFilePtr);
 
     int* ptr = frame->page->data;
     for(int i = 0; i < frame->page->num_rows; i++){
     	buffer = std::to_string(ptr[i]) + " ";
-    	fwrite(buffer.c_str(), buffer.size(), 1, textFilePtr);
+//    	fwrite(buffer.c_str(), buffer.size(), 1, textFilePtr);
     }
 
   }
   fclose(fp);
-  fclose(textFilePtr);
+//  fclose(textFilePtr);
 
   if(frame->page != nullptr){
     delete frame->page;
