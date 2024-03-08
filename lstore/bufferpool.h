@@ -47,6 +47,7 @@ public:
     //Frame* search(const RID& rid, const int& column, std::string merge);
     Frame* insert_into_frame(const RID& rid, const int& column, Page* page); //insert a page into a frame
     void insert_new_page(const RID& rid, const int& column, const int& value); //write new data to memory
+    std::mutex update_age_lock;
     void update_ages(Frame*& just_accessed, Frame*& range_begin); // update all the ages in hash range based on which frame was just accessed
     Frame* evict (const RID& rid); //evict the oldest frame that is not pinned
     void write_back(Frame* frame); //write back to disk if dirty
@@ -55,7 +56,11 @@ public:
     void unpin (const RID& rid, const int& column);
     void set_path (const std::string& path_rhs);
     std::vector<Frame*> hash_vector; //the starting frame of each hash range
+
     std::vector<int> frame_directory; //keep track of how many open frames in each hash range
+    std::shared_mutex frame_directory_lock;
+    std::shared_lock<std::shared_mutex> shared_frame_directory_lock;
+    std::unique_lock<std::shared_mutex> unique_frame_directory_lock;
     int bufferpool_size;
     std::string path = "./ECS165";
 };

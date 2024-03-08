@@ -121,6 +121,7 @@ Frame* BufferPool::search(const RID& rid, const int& column){
  * }*/
 
 void BufferPool::update_ages(Frame*& just_accessed, Frame*& range_begin){ //change ages and reorder linked list
+  update_age_lock.lock();
   if(just_accessed != range_begin){ //if not already the range beginning / most recently accessed
     if(just_accessed->next == nullptr ){ //if just_accessed is the tail
       tail = just_accessed->prev;
@@ -140,6 +141,7 @@ void BufferPool::update_ages(Frame*& just_accessed, Frame*& range_begin){ //chan
     range_begin->prev = just_accessed;
     range_begin = just_accessed;
   }
+  update_age_lock.unlock();
   return;
 }
 
@@ -175,9 +177,12 @@ Frame* BufferPool::load (const RID& rid, const int& column){ //return the frame 
 Frame* BufferPool::insert_into_frame(const RID& rid, const int& column, Page* page){ //return the frame that the page was placed into
   Frame* frame = nullptr;
   size_t hash = hash_fun(rid.first_rid_page); //determine correct hash range
+  shared_frame_directory_lock.lock();
   if(frame_directory[hash] == (bufferpool_size / NUM_BUFFERPOOL_HASH_PARTITIONS)){ //if hash range is full
+    shared_frame_directory_lock.unlock();
     frame = evict(rid);
   } else{ //find empty frame to fill
+    shared_frame_directory_lock.unlock();
     Frame* range_begin = hash_vector[hash]; //beginning of hash range
     Frame* range_end = hash == (hash_vector.size() - 1) ? tail : hash_vector[hash + 1]->prev; //end of hash range
     Frame* current_frame = range_begin; //iterate through range
@@ -198,7 +203,9 @@ Frame* BufferPool::insert_into_frame(const RID& rid, const int& column, Page* pa
   frame->first_rid_page_range = rid.first_rid_page_range;
   frame->column = column;
   frame->valid = true;
+  unique_frame_directory_lock.lock();
   frame_directory[hash]++; //a frame has been filled
+  unique_frame_directory_lock.unlock();
   return frame;
 }
 
@@ -228,7 +235,10 @@ Frame* BufferPool::evict(const RID& rid){ //return the frame that was evicted
       if(current_frame->dirty && current_frame->valid){ //if dirty and valid write back to disk
         write_back(current_frame);
       }
+      unique_frame_directory_lock.lock();
       frame_directory[hash]--;
+      unique_frame_directory_lock.unlock();
+
       current_frame->valid = false; //frame is now empty
       return current_frame;
     }
