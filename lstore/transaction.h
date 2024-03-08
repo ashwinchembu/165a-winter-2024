@@ -8,7 +8,7 @@ class QueryOperation {
 public:
     /* Data for things necessary to run query, i.e. table, key, columns... */
     Query* q = nullptr;
-    const OpCode type = NOTHING;
+    const OpCode type = OpCode::NOTHING;
     Table* table = nullptr;
 
     int* key = nullptr; // Update, Select, Select version

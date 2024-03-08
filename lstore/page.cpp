@@ -10,8 +10,8 @@
 #include "../DllConfig.h"
 
 PageRange::PageRange (RID& new_rid, const std::vector<int>& columns) {
-    new_rid.offset = 0;
     num_column = columns.size();
+    new_rid.offset = 0;
 
     new_rid.first_rid_page_range = new_rid.id;
     new_rid.first_rid_page = new_rid.id;
@@ -27,8 +27,6 @@ PageRange::PageRange (RID& new_rid, const std::vector<int>& columns) {
     }
     pages.push_back(new_rid);
     num_column = num_column + NUM_METADATA_COLUMNS;
-    base_last = 0;
-    num_slot_used_base++;
 }
 
 /***
@@ -58,10 +56,13 @@ PageRange::~PageRange(){
 int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
     // Get first rid of the page and offset
     // Find if the last base page has capacity for new record
+    mutex_insert.lock();
     if (base_last_wasfull) {
+        base_last_wasfull = false;
+        num_slot_used_base = 1;
+        mutex_insert.unlock();
         new_rid.offset = 0;
         new_rid.first_rid_page = new_rid.id;
-        base_last_wasfull = false;
         tail_last++;
         base_last++; // Assuming that they will call after check if there are space left or not.
         buffer_pool.insert_new_page(new_rid, INDIRECTION_COLUMN, new_rid.id);
@@ -74,9 +75,11 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
             buffer_pool.insert_new_page(new_rid, i, columns[i - NUM_METADATA_COLUMNS]);
         }
         pages.insert(pages.begin() + base_last, new_rid);
-        num_slot_used_base = 1;
     } else {
-        new_rid.offset = num_slot_used_base;
+        base_last_wasfull = (num_slot_used_base == PAGE_SIZE);
+        num_slot_used_base++;
+        mutex_insert.unlock();
+        new_rid.offset = num_slot_used_base - 1;
         new_rid.first_rid_page = pages[base_last].id;
         buffer_pool.set(new_rid, INDIRECTION_COLUMN, new_rid.id, true);
         buffer_pool.set(new_rid, RID_COLUMN, new_rid.id, true);
@@ -87,9 +90,7 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
         for (int i = NUM_METADATA_COLUMNS; i < num_column; i++) {
             buffer_pool.set(new_rid, i, columns[i - NUM_METADATA_COLUMNS], true);
         }
-        num_slot_used_base++;
     }
-    base_last_wasfull = (num_slot_used_base == PAGE_SIZE);
     return 0;
 }
 
@@ -113,12 +114,14 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
     // Create new tail pages if there are no space left or tail page does not exist.
     int schema_encoding = 0;
     // If tail_last and base_last is equal, that means there are no tail page created.
-
+    mutex_update.lock();
     if (tail_last_wasfull) {
+        tail_last_wasfull = false;
+        tail_last++;
+        num_slot_used_tail = 1;
+        mutex_update.unlock();
         rid_new.offset = 0;
         rid_new.first_rid_page = rid_new.id;
-        base_last_wasfull = false;
-        tail_last++;
         buffer_pool.insert_new_page(rid_new, INDIRECTION_COLUMN, rid.id);
         buffer_pool.insert_new_page(rid_new, RID_COLUMN, rid_new.id);
         buffer_pool.insert_new_page(rid_new, TIMESTAMP_COLUMN, 0);
@@ -135,11 +138,13 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
             }
         }
         buffer_pool.insert_new_page(rid_new, SCHEMA_ENCODING_COLUMN, schema_encoding);
-        num_slot_used_tail = 1;
         pages.push_back(rid_new);
     } else {
+        num_slot_used_tail++;
+        tail_last_wasfull = (num_slot_used_tail == PAGE_SIZE);
+        mutex_update.unlock();
         rid_new.first_rid_page = pages.back().first_rid_page;
-        rid_new.offset = num_slot_used_tail;
+        rid_new.offset = num_slot_used_tail - 1;
         buffer_pool.set(rid_new, INDIRECTION_COLUMN, rid.id, true);
         buffer_pool.set(rid_new, RID_COLUMN, rid_new.id, true);
         buffer_pool.set(rid_new, TIMESTAMP_COLUMN, 0, true);
@@ -156,14 +161,12 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
             }
         }
         buffer_pool.set(rid_new, SCHEMA_ENCODING_COLUMN, schema_encoding, true);
-        num_slot_used_tail++;
     }
 
     // Updating indirection column and schema encoding column for the base page
     buffer_pool.pin(rid, SCHEMA_ENCODING_COLUMN);
     buffer_pool.set(rid, SCHEMA_ENCODING_COLUMN, buffer_pool.get(rid, SCHEMA_ENCODING_COLUMN) | schema_encoding, false);
     buffer_pool.unpin(rid, SCHEMA_ENCODING_COLUMN);
-    tail_last_wasfull = (num_slot_used_tail == PAGE_SIZE);
     // Setting the new RID to be representation of the page if the page was newly created
     return 0;
 }
@@ -226,6 +229,8 @@ const bool Page::has_capacity() const {
  * Write value into page
  *
  * @param int value Value to write into
+ * @warning This function is not thread safe
+ * @DEPRECATED
  *
  */
 int Page::write(const int& value) {

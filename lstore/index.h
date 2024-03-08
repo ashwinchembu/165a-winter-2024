@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <vector>
 #include <mutex>
+#include <atomic>
 #include <shared_mutex>
 #include "RID.h"
 #include "table.h"
@@ -13,6 +14,10 @@ class Table;
 class Index {
 public:
     std::unordered_map<int, std::shared_mutex*> mutex_list;
+    std::unordered_map<int, std::shared_lock<std::shared_mutex>*> shared_lock_list;
+    std::unordered_map<int, std::unique_lock<std::shared_mutex>*> unique_lock_list;
+
+    // std::atomic<Table*> table = nullptr;
     Table* table = nullptr;
     std::unordered_map<int, std::unordered_multimap<int, int>> indices; //column, (value, rid id)
 

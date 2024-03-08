@@ -72,14 +72,14 @@ Transaction::~Transaction () {}
 // Insert
 void Transaction::add_query(Query& q, Table& t, const std::vector<int>& columns) {
     hash_key = columns[t.key];
-    queries.push_back(QueryOperation(&q, INSERT, &t));
+    queries.push_back(QueryOperation(&q, OpCode::INSERT, &t));
     num_queries++;
     queries[num_queries - 1].columns = columns;
 }
 // Update
 void Transaction::add_query(Query& q, Table& t, int& key, const std::vector<int>& columns) {
     hash_key = key;
-    queries.push_back(QueryOperation(&q, UPDATE, &t));
+    queries.push_back(QueryOperation(&q, OpCode::UPDATE, &t));
     num_queries++;
     queries[num_queries - 1].key = &key;
     queries[num_queries - 1].columns = columns;
@@ -87,7 +87,7 @@ void Transaction::add_query(Query& q, Table& t, int& key, const std::vector<int>
 // Select
 void Transaction::add_query(Query& q, Table& t, int& key, const int& search_key_index, const std::vector<int>& projected_columns_index) {
     hash_key = key;
-    queries.push_back(QueryOperation(&q, SELECT, &t));
+    queries.push_back(QueryOperation(&q, OpCode::SELECT, &t));
     num_queries++;
     queries[num_queries - 1].key = &key;
     queries[num_queries - 1].search_key_index = search_key_index;
@@ -97,7 +97,7 @@ void Transaction::add_query(Query& q, Table& t, int& key, const int& search_key_
 // Select version
 void Transaction::add_query(Query& q, Table& t, int& key, const int& search_key_index, const std::vector<int>& projected_columns_index,  const int& relative_version) {
     hash_key = key;
-    queries.push_back(QueryOperation(&q, SELECT_VER, &t));
+    queries.push_back(QueryOperation(&q, OpCode::SELECT_VER, &t));
     num_queries++;
     queries[num_queries - 1].key = &key;
     queries[num_queries - 1].search_key_index = search_key_index;
@@ -107,7 +107,7 @@ void Transaction::add_query(Query& q, Table& t, int& key, const int& search_key_
 // Sum
 void Transaction::add_query(Query& q, Table& t, int& start_range, int& end_range, const int& aggregate_column_index) {
     hash_key = start_range;
-    queries.push_back(QueryOperation(&q, SUM, &t));
+    queries.push_back(QueryOperation(&q, OpCode::SUM, &t));
     num_queries++;
     queries[num_queries - 1].start_range = &start_range;
     queries[num_queries - 1].end_range = &end_range;
@@ -117,7 +117,7 @@ void Transaction::add_query(Query& q, Table& t, int& start_range, int& end_range
 // Sum version
 void Transaction::add_query(Query& q, Table& t, int& start_range, int& end_range, const int& aggregate_column_index, const int& relative_version) {
     hash_key = start_range;
-    queries.push_back(QueryOperation(&q, SUM_VER, &t));
+    queries.push_back(QueryOperation(&q, OpCode::SUM_VER, &t));
     num_queries++;
     queries[num_queries - 1].start_range = &start_range;
     queries[num_queries - 1].end_range = &end_range;

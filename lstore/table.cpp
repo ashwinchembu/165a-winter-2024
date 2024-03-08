@@ -21,6 +21,10 @@
 Table::Table(const std::string& name, const int& num_columns, const int& key): name(name), key(key), num_columns(num_columns) {
 	index = new Index();
 	index->setTable(this);
+	page_directory_unique = std::unique_lock<std::shared_mutex>(page_directory_lock, std::defer_lock);
+	page_directory_shared = std::shared_lock<std::shared_mutex>(page_directory_lock, std::defer_lock);
+	page_range_unique = std::unique_lock<std::shared_mutex>(page_range_lock, std::defer_lock);
+	page_range_shared = std::shared_lock<std::shared_mutex>(page_range_lock, std::defer_lock);
 };
 
 Table::~Table() {
@@ -40,22 +44,29 @@ Table::~Table() {
  *
  */
 RID Table::insert(const std::vector<int>& columns) {
-	num_insert++;
+	insert_lock.lock();
+	num_insert++; // Should not need mutex here. num_insert is std::atomic and rid solely depend on that.
 	int rid_id = num_insert;
+	insert_lock.unlock();
 	RID record;
 	record.table_name = name;
 	record.id = rid_id;
 
+	page_range_shared.lock();
 	if (page_range.size() == 0 || !(page_range.back().get()->base_has_capacity())) {
-
+		page_range_shared.unlock();
 		std::shared_ptr<PageRange>newPageRange{new PageRange(record, columns)};
+		page_range_unique.lock();
 		page_range.push_back(newPageRange); // Make a base page with given record
+		page_range_unique.unlock();
 	} else { // If there are base page already, just insert it normally.
 		record.first_rid_page_range = (page_range.back().get())->pages[0].first_rid_page_range;
 		(page_range.back().get())->insert(record, columns);
+		page_range_shared.unlock();
 	}
-
+	page_directory_unique.lock();
 	page_directory.insert({rid_id, record});
+	page_directory_unique.unlock();
 	return record;
 }
 
@@ -69,22 +80,29 @@ RID Table::insert(const std::vector<int>& columns) {
  *
  */
 RID Table::update(RID& rid, const std::vector<int>& columns) {
+	update_lock.lock();
 	num_update++;
 	if (num_update >= MAX_TABLE_UPDATES){
 		merge();
 	}
 	const int rid_id = num_update * -1;
+	update_lock.unlock();
 	size_t i = 0;
+
+	page_range_shared.lock();
 	for (; i < page_range.size(); i++) {
 		if ((page_range[i].get())->pages[0].first_rid_page_range == rid.first_rid_page_range) {
 			break;
 		}
 	}
+	page_range_shared.unlock();
 	RID new_rid(rid_id);
 	new_rid.table_name = name;
 	new_rid.first_rid_page_range = rid.first_rid_page_range;
 
+	page_range_shared.lock();
 	(page_range[i].get())->update(rid, new_rid, columns, page_directory);
+	page_range_shared.unlock();
 	page_range_update[i]++;
 	if (page_range_update[i] >= MAX_PAGE_RANGE_UPDATES){
 		// Make a deep copy of page_range[i]
@@ -100,8 +118,9 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 		}
 		merge_queue.push(insert_to_queue);
 	}
-
+	page_directory_unique.lock();
 	page_directory.insert({rid_id, new_rid});
+	page_directory_unique.unlock();
 	return new_rid;
 }
 

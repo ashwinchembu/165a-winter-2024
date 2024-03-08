@@ -9,6 +9,7 @@
 #include <memory>
 #include <queue>
 #include <mutex>
+#include <shared_mutex>
 #include <atomic>
 #include "config.h"
 #include "../Toolkit.h"
@@ -43,9 +44,15 @@ class RIDJoin;
 
 class Table {
 public:
-	Toolkit::BasicSharedPtr<std::mutex>mutex_insert = Toolkit::BasicSharedPtr<std::mutex>(new std::mutex());
-	Toolkit::BasicSharedPtr<std::mutex>mutex_update = Toolkit::BasicSharedPtr<std::mutex>(new std::mutex());;
+    std::mutex insert_lock;
+    std::mutex update_lock;
+    std::shared_mutex page_directory_lock;
+    std::unique_lock<std::shared_mutex> page_directory_unique;
+    std::shared_lock<std::shared_mutex> page_directory_shared;
 
+    std::shared_mutex page_range_lock;
+    std::shared_lock<std::shared_mutex> page_range_shared;
+    std::unique_lock<std::shared_mutex> page_range_unique;
 
     std::string name;
     int key; //primary key
@@ -56,8 +63,8 @@ public:
     Index* index = nullptr;
     // int num_update = 0;
     // int num_insert = 0;
-    std::atomic<int> num_update = 0;
-    std::atomic<int> num_insert = 0;
+    std::atomic_int num_update = 0;
+    std::atomic_int num_insert = 0;
 
     std::map<int,std::vector<RIDJoin>>referencesOut;
 

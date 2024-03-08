@@ -5,6 +5,7 @@
  */
 
 #include <mutex>
+#include <shared_mutex>
 #include <string>
 #include <vector>
 #include <unordered_map> // unordered_multimap is part of this library
@@ -40,11 +41,9 @@ std::vector<int> Index::locate (const int& column_number, const int& value) {
         create_index(column_number);
         index = indices.find(column_number);
     }
-    std::shared_lock<std::shared_mutex> lock_shared(*(mutex_list.find(column_number)->second), std::defer_lock);
-    // lock_shared.try_lock();
-    lock_shared.lock();
+    shared_lock_list.find(column_number)->second->lock();
     auto range = (*index).second.equal_range(value); //check for all matching records in the index
-    lock_shared.unlock();
+    shared_lock_list.find(column_number)->second->unlock();
     for(auto iter = range.first; iter != range.second; iter++){
         matching_records.push_back(iter->second);
     }
@@ -81,8 +80,13 @@ std::vector<int> Index::locate_range(const int& begin, const int& end, const int
 /// @TODO Adopt to the change in RID
 void Index::create_index(const int& column_number) {
     std::unordered_multimap<int, int> index;
-    mutex_list.insert({column_number, new std::shared_mutex()});
+    std::shared_mutex* new_mutex = new std::shared_mutex();
 
+    shared_lock_list.insert({column_number, new std::shared_lock<std::shared_mutex>(*new_mutex, std::defer_lock)});
+    unique_lock_list.insert({column_number, new std::unique_lock<std::shared_mutex>(*new_mutex, std::defer_lock)});
+    mutex_list.insert({column_number, new_mutex});
+
+    unique_lock_list.find(column_number)->second->lock();
     for (int i = 1; i <= table->num_insert; i++) {
         auto loc = table->page_directory.find(i); // Find RID for every rows
         if (loc != table->page_directory.end()) { // if RID ID exist ie. not deleted
@@ -99,6 +103,7 @@ void Index::create_index(const int& column_number) {
             index.insert({value, rid.id});
         }
     }
+    unique_lock_list.find(column_number)->second->unlock();
     indices.insert({column_number, index});
     return;
 }
@@ -118,7 +123,11 @@ void Index::drop_index(const int& column_number) {
     }
     indices.erase(column_number);
     delete mutex_list.find(column_number)->second;
+    delete shared_lock_list.find(column_number)->second;
+    delete unique_lock_list.find(column_number)->second;
     mutex_list.erase(column_number);
+    shared_lock_list.erase(column_number);
+    unique_lock_list.erase(column_number);
     return;
 }
 
@@ -126,10 +135,9 @@ void Index::insert_index(int& rid, std::vector<int> columns) {
     for (size_t i = 0; i < columns.size(); i++) {
         auto itr = indices.find(i);
         if (itr != indices.end()) {
-            std::unique_lock<std::shared_mutex> lock(*(mutex_list.find(i)->second), std::defer_lock);
-            lock.lock();
+            unique_lock_list.find(i)->second->lock();
             itr->second.insert({columns[i], rid});
-            lock.unlock();
+            unique_lock_list.find(i)->second->unlock();
         }
     }
 
@@ -142,10 +150,9 @@ void Index::update_index(int& rid, std::vector<int> columns, std::vector<int> ol
             auto range = indices[i].equal_range(old_value);
             for(auto itr = range.first; itr != range.second; itr++){
                 if (itr->second == rid) {
-                    std::unique_lock<std::shared_mutex> lock(*(mutex_list.find(i)->second), std::defer_lock);
-                    lock.lock();
+                    unique_lock_list.find(i)->second->lock();
                     indices[i].erase(itr);
-                    lock.unlock();
+                    unique_lock_list.find(i)->second->unlock();
                     break;
                 }
             }

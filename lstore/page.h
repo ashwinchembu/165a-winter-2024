@@ -13,7 +13,7 @@
 
 class Page {
 public:
-    std::atomic<int> num_rows = 0;
+    std::atomic_int num_rows = 0;
     Page ();
     virtual ~Page ();
     const bool has_capacity() const;
@@ -24,18 +24,20 @@ public:
 
 class PageRange {
 public:
-    Toolkit::BasicSharedPtr<std::mutex>mutex_insert = Toolkit::BasicSharedPtr<std::mutex>(new std::mutex());
-    Toolkit::BasicSharedPtr<std::mutex>mutex_update = Toolkit::BasicSharedPtr<std::mutex>(new std::mutex());;
+    std::mutex mutex_insert;
+    std::mutex mutex_update;
+    // Toolkit::BasicSharedPtr<std::mutex>mutex_insert = Toolkit::BasicSharedPtr<std::mutex>(new std::mutex());
+    // Toolkit::BasicSharedPtr<std::mutex>mutex_update = Toolkit::BasicSharedPtr<std::mutex>(new std::mutex());
 
     const int NUM_SLOTS = 4096*LOGICAL_PAGE;
-    std::atomic<int> num_slot_left = NUM_SLOTS;
-    std::atomic<int> num_slot_used_base = 0;
-    std::atomic<int> num_slot_used_tail = 0;
-    std::atomic<int> base_last = 0;
-    std::atomic<bool> base_last_wasfull = false;
-    std::atomic<int> tail_last = 0;
-    std::atomic<bool> tail_last_wasfull = true;
-    std::atomic<int> num_column = 0;
+    std::atomic_int num_slot_left = NUM_SLOTS;
+    std::atomic_int num_slot_used_base = 1;
+    std::atomic_int num_slot_used_tail = 0;
+    std::atomic_int base_last = 0;
+    std::atomic_bool base_last_wasfull = false;
+    std::atomic_int tail_last = 0;
+    std::atomic_bool tail_last_wasfull = true;
+    std::atomic_int num_column = 0;
     std::vector<RID> pages;
     PageRange () {} // Never use this outside of loading saved data
     PageRange (RID& new_rid, const std::vector<int>& columns);
