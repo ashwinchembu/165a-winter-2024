@@ -121,7 +121,7 @@ RID Table::update(RID &rid, const std::vector<int> &columns) {
         for (int i = 0; i < rids_in_range.size(); i++) {
             for (int to_load_tail_page_col = 0; to_load_tail_page_col < num_columns + NUM_METADATA_COLUMNS; to_load_tail_page_col++) {
                 Frame *new_frame = buffer_pool.get_page(rids_in_range[i], to_load_tail_page_col);
-                Page *page_copy = new_frame->page;
+                //Page *page_copy = new_frame->page;
                 Page *page_pointer = new Page();
 
                 page_pointer->deep_copy(new_frame->page);
@@ -241,7 +241,7 @@ int Table::merge() {
     }
     
     for (int i = 0; i < to_merge.size(); i++) {
-        if (to_merge[i]->first_rid_page_range != NULL) {
+        if (to_merge[i]->first_rid_page_range) {
             RID new_rid(to_merge[i]->first_rid_page, to_merge[i]->first_rid_page_range, to_merge[i]->first_rid_page, 0, name);
 
 
@@ -328,8 +328,6 @@ int Table::merge() {
         }
         RID latest_base_rid = page_directory.find(itr->first)->second;
         const std::vector<int> &values = itr->second.second;
-
-        int tail_id = latest_update.at(itr->first).first;
 
         for (int col = NUM_METADATA_COLUMNS; col < num_columns + NUM_METADATA_COLUMNS; col++) {
            
