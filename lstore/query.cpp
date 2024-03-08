@@ -19,10 +19,13 @@ bool Query::deleteRecord(const int& primary_key) {
     std::vector<int> rids = table->index->locate(table->key, primary_key);
     if(rids.size() != 0){
         int target = rids[0];
+        table->page_directory_shared.lock();
         if (table->page_directory.find(target)->second.id == 0) {
+            table->page_directory_shared.unlock();
             return false;
         } else {
             table->page_directory.find(target)->second.id = 0;
+            table->page_directory_shared.unlock();
             return true;
         }
     }
@@ -51,10 +54,15 @@ std::vector<Record> Query::select_version(const int& search_key, const int& sear
     std::vector<Record> records;
     std::vector<int> rids = table->index->locate(search_key_index, search_key); //this returns the RIDs of the base pages
     for(size_t i = 0; i < rids.size(); i++){ //go through each matching RID that was returned from index
+        table->page_directory_shared.lock();
         RID rid = table->page_directory.find(rids[i])->second;
+        table->page_directory_shared.unlock();
         if(rid.id != 0){
             for(int j = 0; j <= relative_version; j++){ //go through indirection to get to correct version
-                rid = table->page_directory.find((buffer_pool.get(rid, INDIRECTION_COLUMN)))->second; //go one step further in indirection
+                int new_int = buffer_pool.get(rid, INDIRECTION_COLUMN);
+                table->page_directory_shared.lock();
+                rid = table->page_directory.find((new_int))->second; //go one step further in indirection
+                table->page_directory_shared.unlock();
 
                 if(rid.id > 0){
                     break;
@@ -78,9 +86,13 @@ bool Query::update(const int& primary_key, const std::vector<int>& columns) {
         std::cerr << "Record with the primary key you are trying to update already exists or Update called on key that does not exist" << std::endl;
         return false;
     }
-
+    table->page_directory_shared.lock();
     RID base_rid = table->page_directory.find(table->index->locate(table->key, primary_key)[0])->second; //locate base RID of record to be updated
-    RID last_update = table->page_directory.find(buffer_pool.get(base_rid, INDIRECTION_COLUMN))->second; //locate the previous update
+    table->page_directory_shared.unlock();
+    int indirection_rid = buffer_pool.get(base_rid, INDIRECTION_COLUMN);
+    table->page_directory_shared.lock();
+    RID last_update = table->page_directory.find(indirection_rid)->second; //locate the previous update
+    table->page_directory_shared.unlock();
     RID update_rid = table->update(base_rid, columns); // insert update into the table
     std::vector<int> old_columns;
 
@@ -110,16 +122,23 @@ unsigned long int Query::sum_version(const int& start_range, const int& end_rang
     std::vector<int> rids = table->index->locate_range(start_range, end_range, table->key);
     int num_add = 0;
     for (size_t i = 0; i < rids.size(); i++) { //for each of the rids, find the old value and sum
+        table->page_directory_shared.lock();
         RID rid = table->page_directory.find(rids[i])->second;
+        table->page_directory_shared.unlock();
         if (rid.id != 0) { //If RID is valid i.e. not deleted
             int indirection = buffer_pool.get(rid, INDIRECTION_COLUMN); // the new indirection
             for (int j = 1; j <= relative_version; j++) {
-                indirection = buffer_pool.get(table->page_directory.find(indirection)->second, INDIRECTION_COLUMN); //get the next indirection
+                table->page_directory_shared.lock();
+                RID new_thing = table->page_directory.find(indirection)->second;
+                table->page_directory_shared.unlock();
+                indirection = buffer_pool.get(new_thing, INDIRECTION_COLUMN); //get the next indirection
                 if(indirection > 0){
                     break;
                 }
             }
+            table->page_directory_shared.lock();
             RID old_rid = table->page_directory.find(indirection)->second;
+            table->page_directory_shared.unlock();
             sum += buffer_pool.get((old_rid), NUM_METADATA_COLUMNS+aggregate_column_index); // add the value for the old rid
             num_add++;
         }
@@ -132,7 +151,9 @@ unsigned long int Query::sum_version(const int& start_range, const int& end_rang
 
 bool Query::increment(const int& key, const int& column) {
     std::vector<int> rids = table->index->locate(table->key, key); //find key in primary key column
+    table->page_directory_shared.lock();
     RID rid = table->page_directory.find(rids[0])->second;
+    table->page_directory_shared.unlock();
     if (rids.size() == 0 || rid.id == 0) { // if none found or deleted
         return false;
     }
