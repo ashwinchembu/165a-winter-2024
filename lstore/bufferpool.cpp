@@ -49,6 +49,7 @@ int BufferPool::hash_fun(unsigned int x) {
 }
 
 int BufferPool::get (const RID& rid, const int& column) {
+  pin(rid, column);
   Frame* found = search(rid, column);
   if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
     Frame* current_frame = head;
@@ -57,6 +58,7 @@ int BufferPool::get (const RID& rid, const int& column) {
     }
     found = load(rid, column);
   }
+  unpin(rid, column);
   update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
   return *(found->page->data + rid.offset); //return the value we want
 }
@@ -105,20 +107,6 @@ Frame* BufferPool::search(const RID& rid, const int& column){
   }
   return nullptr; //if not found in the range
 }
-
-/*
- * Frame* BufferPool::search(const RID& rid, const int& column, std::string merge){
- *  Frame* current_frame = head; //iterate through range
- *  while(current_frame != nullptr){
- *    if ((current_frame->valid)) {
- *      if(rid.first_rid_page == current_frame->first_rid_page && column == current_frame->column){
- *        return current_frame;
- *      }
- *    }
- *    current_frame = current_frame->next;
- *  }
- *  return nullptr; //if not found in the range
- * }*/
 
 void BufferPool::update_ages(Frame*& just_accessed, Frame*& range_begin){ //change ages and reorder linked list
   update_age_lock.lock();
@@ -315,11 +303,54 @@ void BufferPool::set_path (const std::string& path_rhs) {
   path = path_rhs;
 }
 
+bool get_try_lock(const RID& rid, const int& column){
+  pin(rid, column);
+  Frame* found = search(rid, column);
+  bool get_lock = found.shared_lock_list[rid.offset]->try_lock();
+  unpin(rid, column);
+  return get_lock;
+}
+
+bool set_try_lock(const RID& rid, const int& column){
+  pin(rid, column);
+  Frame* found = search(rid, column);
+  bool get_lock = found.unique_lock_list[rid.offset]->try_lock();
+  unpin(rid, column);
+  return get_lock;
+}
+
+void get_unlock(const RID& rid, const int& column){
+  pin(rid, column);
+  Frame* found = search(rid, column);
+  found.shared_lock_list[rid.offset]->unlock();
+  unpin(rid, column);
+}
+
+void set_unlock(const RID& rid, const int& column){
+  pin(rid, column);
+  Frame* found = search(rid, column);
+  found.unique_lock_list[rid.offset]->unlock();
+  unpin(rid, column);
+}
 
 Frame::Frame () {
+  for(int i = 0; i < PAGE_SIZE){ //set up lock manager
+    std::shared_mutex* new_mutex = new std::shared_mutex();
+    mutex_list.push_back(new_mutex);
+    shared_lock_list.push_back(new std::shared_lock<std::shared_mutex>(*new_mutex, std::defer_lock));
+    unique_lock_list.push_back(new std::unique_lock<std::shared_mutex>(*new_mutex, std::defer_lock));
+  }
 }
 
 Frame::~Frame () {
+  for(int i = 0; i < PAGE_SIZE){ //clear lock manager
+    delete mutex_list[i];
+    delete shared_lock_list[i];
+    delete unique_lock_list[i];
+  }
+    mutex_list.clear();
+    shared_lock_list.clear();
+    unique_lock_list.clear();
 }
 
 bool Frame::operator==(const Frame& rhs) {

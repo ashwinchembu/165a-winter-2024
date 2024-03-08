@@ -8,6 +8,7 @@
 #include <vector>
 #include <fstream>
 #include <mutex>
+#include <atomic>
 #include <shared_mutex>
 
 class Page;
@@ -26,10 +27,14 @@ public:
     int first_rid_page_range = 0; //first rid in the page range
     int column = -1;
     bool valid = false; //whether the frame contains data
-    int pin = 0; //how many transactions have pinned the page
+    atomic_int pin = 0; //how many transactions have pinned the page
     bool dirty = false; //whether the page was modified
     Frame* next = nullptr;
     Frame* prev = nullptr;
+
+    std::vector<std::shared_mutex*> mutex_list;
+    std::vector<std::shared_lock<std::shared_mutex>*> shared_lock_list;
+    std::vector<std::unique_lock<std::shared_mutex>*> unique_lock_list;
 };
 
 class BufferPool {
@@ -55,6 +60,10 @@ public:
     void pin (const RID& rid, const int& column);
     void unpin (const RID& rid, const int& column);
     void set_path (const std::string& path_rhs);
+    bool get_try_lock(const RID& rid, const int& column); //try to lock the desired record
+    bool set_try_lock(const RID& rid, const int& column); //try to lock the desired record
+    void get_unlock(const RID& rid, const int& column); //unlock the desired record
+    void set_unlock(const RID& rid, const int& column); //unlock the desired record
     std::vector<Frame*> hash_vector; //the starting frame of each hash range
 
     std::vector<int> frame_directory; //keep track of how many open frames in each hash range

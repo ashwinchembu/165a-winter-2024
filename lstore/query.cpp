@@ -59,7 +59,14 @@ std::vector<Record> Query::select_version(const int& search_key, const int& sear
         table->page_directory_shared.unlock();
         if(rid.id != 0){
             for(int j = 0; j <= relative_version; j++){ //go through indirection to get to correct version
-                int new_int = buffer_pool.get(rid, INDIRECTION_COLUMN);
+                int new_int = 0;
+                if(buffer_pool.get_try_lock(rid, INDIRECTION_COLUMN)){
+                  new_int = buffer_pool.get(rid, INDIRECTION_COLUMN);
+                  buffer_pool.get_unlock(rid, INDIRECTION_COLUMN);
+                } else {
+                  std::vector<Record> failed_records;
+                  return failed_records;
+                }
                 table->page_directory_shared.lock();
                 rid = table->page_directory.find((new_int))->second; //go one step further in indirection
                 table->page_directory_shared.unlock();
@@ -71,7 +78,13 @@ std::vector<Record> Query::select_version(const int& search_key, const int& sear
             std::vector<int> record_columns(table->num_columns);
             for(int j = 0; j < table->num_columns; j++){ //transfer columns from desired version into record object
                 if(projected_columns_index[j]){
+                  if(buffer_pool.get_try_lock(rid, j + NUM_METADATA_COLUMNS)){
                     record_columns[j] = buffer_pool.get(rid, j + NUM_METADATA_COLUMNS);
+                    buffer_pool.get_unlock(rid, j + NUM_METADATA_COLUMNS);
+                  } else {
+                    std::vector<Record> failed_records;
+                    return failed_records;
+                  }
                 }
             }
             records.push_back(Record(rids[i], search_key, record_columns)); //add a record with RID of base page, value of primary key, and contents of desired version
@@ -89,21 +102,36 @@ bool Query::update(const int& primary_key, const std::vector<int>& columns) {
     table->page_directory_shared.lock();
     RID base_rid = table->page_directory.find(table->index->locate(table->key, primary_key)[0])->second; //locate base RID of record to be updated
     table->page_directory_shared.unlock();
-    int indirection_rid = buffer_pool.get(base_rid, INDIRECTION_COLUMN);
+    int indirection_rid;
+    if(buffer_pool.get_try_lock(base_rid, INDIRECTION_COLUMN)){
+      indirection_rid = buffer_pool.get(base_rid, INDIRECTION_COLUMN);
+      buffer_pool.get_unlock(base_rid, INDIRECTION_COLUMN);
+    } else {
+      return false;
+    }
     table->page_directory_shared.lock();
     RID last_update = table->page_directory.find(indirection_rid)->second; //locate the previous update
     table->page_directory_shared.unlock();
     RID update_rid = table->update(base_rid, columns); // insert update into the table
     std::vector<int> old_columns;
-
     std::vector<int> new_columns;
     for(int i = 0; i < table->num_columns; i++){ // fill old_columns with the contents of previous update
+      if(buffer_pool.get_try_lock(last_update, i + NUM_METADATA_COLUMNS)){
         old_columns.push_back(buffer_pool.get(last_update, i + NUM_METADATA_COLUMNS));
-        if (std::isnan(columns[i]) || columns[i] < -2147480000) {
-            new_columns.push_back(old_columns[i]);
+        buffer_pool.get_unlock(last_update, i + NUM_METADATA_COLUMNS);
+      } else {
+        return false;
+      }
+      if (std::isnan(columns[i]) || columns[i] < -2147480000) {
+          new_columns.push_back(old_columns[i]);
+      } else {
+        if(buffer_pool.get_try_lock(update_rid, i + NUM_METADATA_COLUMNS)){
+          new_columns.push_back(buffer_pool.get(update_rid, i + NUM_METADATA_COLUMNS));
+          buffer_pool.get_unlock(update_rid, i + NUM_METADATA_COLUMNS);
         } else {
-            new_columns.push_back(buffer_pool.get(update_rid, i + NUM_METADATA_COLUMNS));
+          return false;
         }
+      }
     }
     if(update_rid.id != 0){
         table->index->update_index(base_rid.id, new_columns, old_columns); //update the index
@@ -126,12 +154,22 @@ unsigned long int Query::sum_version(const int& start_range, const int& end_rang
         RID rid = table->page_directory.find(rids[i])->second;
         table->page_directory_shared.unlock();
         if (rid.id != 0) { //If RID is valid i.e. not deleted
+          if(buffer_pool.get_try_lock(rid, INDIRECTION_COLUMN)){
             int indirection = buffer_pool.get(rid, INDIRECTION_COLUMN); // the new indirection
+            buffer_pool.get_unlock(rid, INDIRECTION_COLUMN);
+          } else {
+            return -1;
+          }
             for (int j = 1; j <= relative_version; j++) {
                 table->page_directory_shared.lock();
                 RID new_thing = table->page_directory.find(indirection)->second;
                 table->page_directory_shared.unlock();
-                indirection = buffer_pool.get(new_thing, INDIRECTION_COLUMN); //get the next indirection
+                if(buffer_pool.get_try_lock(new_thing, INDIRECTION_COLUMN)){
+                  indirection = buffer_pool.get(new_thing, INDIRECTION_COLUMN); //get the next indirection
+                  buffer_pool.get_unlock(new_thing, INDIRECTION_COLUMN);
+                } else {
+                  return -1;
+                }
                 if(indirection > 0){
                     break;
                 }
@@ -139,7 +177,12 @@ unsigned long int Query::sum_version(const int& start_range, const int& end_rang
             table->page_directory_shared.lock();
             RID old_rid = table->page_directory.find(indirection)->second;
             table->page_directory_shared.unlock();
-            sum += buffer_pool.get((old_rid), NUM_METADATA_COLUMNS+aggregate_column_index); // add the value for the old rid
+            if(buffer_pool.get_try_lock(old_rid, NUM_METADATA_COLUMNS+aggregate_column_index)){
+              sum += buffer_pool.get(old_rid, NUM_METADATA_COLUMNS+aggregate_column_index); // add the value for the old rid
+              buffer_pool.get_unlock(old_rid, NUM_METADATA_COLUMNS+aggregate_column_index);
+            } else {
+              return -1;
+            }
             num_add++;
         }
     }
@@ -157,18 +200,39 @@ bool Query::increment(const int& key, const int& column) {
     if (rids.size() == 0 || rid.id == 0) { // if none found or deleted
         return false;
     }
-    int value = buffer_pool.get(rid, NUM_METADATA_COLUMNS+column);
-    (buffer_pool.set(rid, NUM_METADATA_COLUMNS+column, value++, false)); //increment the column in record
+    int value;
+    if(buffer_pool.get_try_lock(rid, NUM_METADATA_COLUMNS+column)){
+      value = buffer_pool.get(rid, NUM_METADATA_COLUMNS+column);
+      buffer_pool.get_unlock(rid, NUM_METADATA_COLUMNS+column);
+    } else {
+      return false;
+    }
+    if(buffer_pool.set_try_lock(rid, NUM_METADATA_COLUMNS+column)){
+      (buffer_pool.set(rid, NUM_METADATA_COLUMNS+column, value++, false)); //increment the column in record
+      buffer_pool.set_unlock(rid, NUM_METADATA_COLUMNS+column);
+    } else {
+      return false;
+    }
 
     // void Index::update_index(RID rid, std::vector<int>columns, std::vector<int>old_columns){
     std::vector<int> columns;
     std::vector<int> old_columns;
     for (int i = 0; i < table->num_columns; i++) {
         if (i != (4+column)) {
-            columns.push_back((buffer_pool.get(rid, i)));
-            old_columns.push_back((buffer_pool.get(rid, i)));
+          if(buffer_pool.get_try_lock(rid, i)){
+            columns.push_back(buffer_pool.get(rid, i));
+            old_columns.push_back(buffer_pool.get(rid, i));
+            buffer_pool.get_unlock(rid, i);
+          } else {
+            return false;
+          }
         } else {
+          if(buffer_pool.get_try_lock(rid, i)){
             columns.push_back((buffer_pool.get(rid, i)));
+            buffer_pool.get_unlock(rid, i);
+          } else {
+            return false;
+          }
             old_columns.push_back(value);
         }
     }

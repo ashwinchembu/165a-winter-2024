@@ -14,14 +14,24 @@ int QueryOperation::run() {
             return QueryResult::QUERY_IC;
         case OpCode::INSERT:
             if (check_req()) {
-                return q->insert(columns);
+                bool result = q->insert(columns);
+                if(!result){
+                  return QueryResult::QUERY_LOCK;
+                } else {
+                  return QueryResult::QUERY_SUCCESS;
+                }
             } else {
                 std::cerr << "Query with Not enough data : Insert" << std::endl;
                 return QueryResult::QUERY_IC;
             }
         case OpCode::UPDATE:
             if (check_req()) {
-                return q->update(*key, columns);
+              bool result = q->update(*key, columns);
+              if(!result){
+                return QueryResult::QUERY_LOCK;
+              } else {
+                return QueryResult::QUERY_SUCCESS;
+              }
             } else {
                 std::cerr << "Query with Not enough data : Update" << std::endl;
                 return QueryResult::QUERY_IC;
@@ -30,7 +40,11 @@ int QueryOperation::run() {
         case OpCode::SELECT_VER:
             if (check_req()) {
                 select_result = q->select_version(*key, search_key_index, columns, relative_version);
-                return select_result.size();
+                if(select_result.size() == 0){
+                  return QueryResult::QUERY_LOCK;
+                } else {
+                  return QueryResult::QUERY_SUCCESS;
+                }
             } else {
                 std::cerr << "Query with Not enough data : Select or Select_ver" << std::endl;
                 return QueryResult::QUERY_IC;
@@ -39,7 +53,11 @@ int QueryOperation::run() {
         case OpCode::SUM_VER:
             if (check_req()) {
                 *sum_result = q->sum_version(*start_range, *end_range, aggregate_column_index, relative_version);
-                return sum_result != nullptr;
+                if(sum_result == nullptr){
+                  return QueryResult::QUERY_LOCK;
+                } else {
+                  return QueryResult::QUERY_SUCCESS;
+                }
             } else {
                 std::cerr << "Query with Not enough data : Sum or Sum_ver" << std::endl;
                 return QueryResult::QUERY_IC;
