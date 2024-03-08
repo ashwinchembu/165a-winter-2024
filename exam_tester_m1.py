@@ -105,9 +105,9 @@ for c in range(0, grades_table.num_columns):
         column_sum = sum(map(lambda key: records[key][c], keys[r[0]: r[1] + 1]))
         result = query.sum_version(keys[r[0]], keys[r[1]], c, -1)
         if column_sum != result:
-            pass
+            #pass
             #print("version -1",result)
-            #print('sum error on [', keys[r[0]], ',', keys[r[1]], ']: ', result, ', correct: ', column_sum)
+            print('sum error on [', keys[r[0]], ',', keys[r[1]], ']: ', result, ', correct: ', column_sum)
         else:
             pass
             # print('sum on [', keys[r[0]], ',', keys[r[1]], ']: ', column_sum)
@@ -116,9 +116,9 @@ for c in range(0, grades_table.num_columns):
         result = query.sum_version(keys[r[0]], keys[r[1]], c, -2)
         #print(result)
         if column_sum != result:
-            pass
+            #pass
             #print("version -2", result)
-            #print('sum error on [', keys[r[0]], ',', keys[r[1]], ']: ', result, ', correct: ', column_sum)
+            print('sum error on [', keys[r[0]], ',', keys[r[1]], ']: ', result, ', correct: ', column_sum)
         else:
             pass
         # version 0 sum
@@ -126,8 +126,8 @@ for c in range(0, grades_table.num_columns):
         updated_result = query.sum_version(keys[r[0]], keys[r[1]], c, 0)
         #print("version 0", updated_result)
         if updated_column_sum != updated_result:
-            pass
-            #print('sum error on [', keys[r[0]], ',', keys[r[1]], ']: ', updated_result, ', correct: ', updated_column_sum)
+            #pass
+            print('sum error on [', keys[r[0]], ',', keys[r[1]], ']: ', updated_result, ', correct: ', updated_column_sum)
         else:
             pass
 

@@ -21,7 +21,7 @@ public:
     friend std::ostream& operator<<(std::ostream& os, const Page& p);
 
     void deep_copy(Page* other){
-		delete[] data;
+		//delete[] data;
 
 		data= new int[PAGE_SIZE * 4];
 

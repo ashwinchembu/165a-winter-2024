@@ -191,7 +191,10 @@ RID Table::update(RID &rid, const std::vector<int> &columns) {
                 //std::copy(page_copy->data, page_copy->data + page_copy->num_rows, page_pointer->data);
                 // std::memcpy(page_pointer->data, page_copy->data, page_copy->num_rows * sizeof(int));
                 page_pointer->deep_copy(new_frame->page);
-                new_frame->page = page_pointer;
+                //new_frame->page = page_pointer;
+                Frame* copy_frame = new Frame();
+                *(copy_frame) = *(new_frame);
+                copy_frame->page = page_pointer;            
 
                 // std::cout << "new fram page: " << *(page_copy) << std::endl;
                 // std::cout << page_copy->data << std::endl;
@@ -207,7 +210,7 @@ RID Table::update(RID &rid, const std::vector<int> &columns) {
                 // delete[] page_pointer->data;
                 //  delete page_pointer;
 
-                insert_to_queue.push_back(new_frame);
+                insert_to_queue.push_back(copy_frame);
             }
         }
         // std::cout << std::endl;
@@ -531,21 +534,22 @@ int Table::merge() {
 
     
 
-    // // update page directory
-    // Frame *current = mergeBufferPool->head;
-    // while (current != nullptr) {
-    //     if (current->first_rid_page > 0) { // is base page
-    //         for (int base_iterator = ((current->page->num_rows) - 1) * sizeof(int); base_iterator >= 0; base_iterator -= sizeof(int)) {
-    //             RID currentRID(*(base_iterator + current->page->data), current->first_rid_page_range,
-    //                            current->first_rid_page, base_iterator, current->table_name);
-    //             page_directory[currentRID.id] = currentRID; // update page directory
-    //         }
-    //     }
-    //     // Move to the next frame
-    //     current = current->next;
-    // }
+    // update page directory
+    
+    Frame *current = mergeBufferPool->head;
+    while (current != nullptr) {
+        if (current->first_rid_page > 0) { // is base page
+            for (int base_iterator = ((current->page->num_rows) - 1) * sizeof(int); base_iterator >= 0; base_iterator -= sizeof(int)) {
+                RID currentRID(*(base_iterator + current->page->data), current->first_rid_page_range,
+                               current->first_rid_page, base_iterator, current->table_name);
+                page_directory[currentRID.id] = currentRID; // update page directory
+            }
+        }
+        // Move to the next frame
+        current = current->next;
+    }
 
-    // std::cout << "before write back" << std::endl;
+    std::cout << "before write back" << std::endl;
     
 	// Frame *cur1 = buffer_pool.head;
     // while (cur1 != nullptr) {
