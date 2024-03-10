@@ -13,6 +13,7 @@
 #include "config.h"
 #include <set>
 #include <map>
+#include "lock_manager_entry.h"
 
 
 #include "../DllConfig.h"
@@ -67,6 +68,7 @@ RID Table::insert(const std::vector<int>& columns) {
 	}
 	page_directory_unique.lock();
 	page_directory.insert({rid_id, record});
+	buffer_pool.lock_manager.find(name).insert({rid_id, new LockManagerEntry});
 	page_directory_unique.unlock();
 	return record;
 }
@@ -122,6 +124,7 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 	}
 	page_directory_unique.lock();
 	page_directory.insert({rid_id, new_rid});
+	buffer_pool.lock_manager.find(name).insert({rid_id, new LockManagerEntry});
 	page_directory_unique.unlock();
 	return new_rid;
 }

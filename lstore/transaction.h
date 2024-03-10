@@ -63,4 +63,3 @@ public:
     void commit(); // Transaction worker check the work. If it run successfully, commit.
 };
 #endif
-

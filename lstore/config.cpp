@@ -22,3 +22,4 @@ const int MAX_TABLE_UPDATES = 100000000;
 const std::string file_path = "/Data/";
 const size_t MAX_THREADS = std::thread::hardware_concurrency();
 const int NUM_THREADS = 8;
+const int NONE = -2147480000;

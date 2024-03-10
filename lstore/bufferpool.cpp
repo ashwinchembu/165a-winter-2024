@@ -11,6 +11,7 @@
 #include "page.h"
 #include "config.h"
 #include "bufferpool.h"
+#include "lock_manager_entry.h"
 #include "../Toolkit.h"
 
 BufferPool::BufferPool (const int& num_pages) : bufferpool_size(num_pages){
@@ -49,18 +50,15 @@ int BufferPool::hash_fun(unsigned int x) {
 }
 
 int BufferPool::get (const RID& rid, const int& column) {
-  pin(rid, column);
-  Frame* found = search(rid, column);
-  if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
-    Frame* current_frame = head;
-    while(current_frame != nullptr){ //iterate through entire bufferpool
-      current_frame = current_frame->next;
-    }
-    found = load(rid, column);
+  int return_val = -2147480010;
+  Frame* found = pin(rid, column, 'S');
+  if(found == nullptr){ //if not already in the bufferpool, load into bufferpool
+    return return_val;
   }
-  unpin(rid, column);
+  return_val = *(found->page->data + rid.offset);
+  unpin(rid, column, 'S');
   update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
-  return *(found->page->data + rid.offset); //return the value we want
+  return return_val; //return the value we want
 }
 
 Frame* BufferPool::get_page(const RID& rid, const int& column){
@@ -72,24 +70,19 @@ Frame* BufferPool::get_page(const RID& rid, const int& column){
   return found; //return the value we want
 }
 
-void BufferPool::set (const RID& rid, const int& column, const int& value, const bool& is_new){
-  pin(rid, column);
-  Frame* found = search(rid, column);
-  if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
-    Frame* current_frame = head;
-    while(current_frame != nullptr){ //iterate through entire bufferpool
-      current_frame = current_frame->next;
-    }
-    found = load(rid, column);
+bool BufferPool::set (const RID& rid, const int& column, const int& value, const bool& is_new){
+  Frame* found = pin(rid, column, 'N');
+  if(found == nullptr){ //if not already in the bufferpool, load into bufferpool
+    return false;
   }
   *(found->page->data + rid.offset) = value;
   if(is_new){
     found->page->num_rows++;
   }
   found->dirty = true; //the page has been modified
-  unpin(rid, column);
+  unpin(rid, column, 'N');
   update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
-  return;
+  return true;
 }
 
 Frame* BufferPool::search(const RID& rid, const int& column){
@@ -204,9 +197,9 @@ void BufferPool::insert_new_page(const RID& rid, const int& column, const int& v
   page->num_rows++;
 
   Frame* frame = insert_into_frame(rid, column, page); //insert the page into a frame in the bufferpool
-  pin(rid, column);
+  pin(rid, column, 'N');
   frame->dirty = true; //make sure data will be written back to disk
-  unpin(rid, column);
+  unpin(rid, column, 'N');
   update_ages(frame, hash_vector[hash_fun(rid.first_rid_page)]);
 
   return;
@@ -276,17 +269,30 @@ void BufferPool::write_back_all (){
   return;
 }
 
-void BufferPool::pin (const RID& rid, const int& column) {
-  Frame* found = search(rid, column);
+Frame* BufferPool::pin (const RID& rid, const int& column, const char& pin_type) {
+  Frame* found = nullptr;
+  switch(pin_type){
+    case 'S':
+      if(!lock_manager.find(rid.table_name).find(rid.id)->second->shared_lock.try_lock()){
+        return found;
+      }
+      break;
+    case 'X':
+      if(!lock_manager.find(rid.table_name).find(rid.id)->second->unique_lock.try_lock()){
+        return found;
+      }
+      break;
+    default:
+  }
+  found = search(rid, column);
   if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
     found = load(rid, column);
   }
   (found->pin)++;
-
-  return;
+  return found;
 }
 
-void BufferPool::unpin (const RID& rid, const int& column) {
+void BufferPool::unpin (const RID& rid, const int& column, const char& pin_type) {
   Frame* found = search(rid, column);
   if(found == nullptr || !found->valid){ //if not in the bufferpool
     throw std::invalid_argument("Attempt to unpin record that was not already pinned (No record found)");
@@ -296,6 +302,16 @@ void BufferPool::unpin (const RID& rid, const int& column) {
     (found->pin) = 0;
     throw std::invalid_argument("Attempt to unpin record that was not already pinned (Pin negative value)");
   }
+  Frame* found = nullptr;
+  switch(pin_type){
+    case 'S':
+      lock_manager.find(rid.table_name).find(rid.id)->second->shared_lock.unlock();
+      break;
+    case 'X':
+      lock_manager.find(rid.table_name).find(rid.id)->second->unique_lock.unlock();
+      break;
+    default:
+  }
   return;
 }
 
@@ -303,54 +319,10 @@ void BufferPool::set_path (const std::string& path_rhs) {
   path = path_rhs;
 }
 
-bool get_try_lock(const RID& rid, const int& column){
-  pin(rid, column);
-  Frame* found = search(rid, column);
-  bool get_lock = found.shared_lock_list[rid.offset]->try_lock();
-  unpin(rid, column);
-  return get_lock;
-}
-
-bool set_try_lock(const RID& rid, const int& column){
-  pin(rid, column);
-  Frame* found = search(rid, column);
-  bool get_lock = found.unique_lock_list[rid.offset]->try_lock();
-  unpin(rid, column);
-  return get_lock;
-}
-
-void get_unlock(const RID& rid, const int& column){
-  pin(rid, column);
-  Frame* found = search(rid, column);
-  found.shared_lock_list[rid.offset]->unlock();
-  unpin(rid, column);
-}
-
-void set_unlock(const RID& rid, const int& column){
-  pin(rid, column);
-  Frame* found = search(rid, column);
-  found.unique_lock_list[rid.offset]->unlock();
-  unpin(rid, column);
-}
-
 Frame::Frame () {
-  for(int i = 0; i < PAGE_SIZE){ //set up lock manager
-    std::shared_mutex* new_mutex = new std::shared_mutex();
-    mutex_list.push_back(new_mutex);
-    shared_lock_list.push_back(new std::shared_lock<std::shared_mutex>(*new_mutex, std::defer_lock));
-    unique_lock_list.push_back(new std::unique_lock<std::shared_mutex>(*new_mutex, std::defer_lock));
-  }
 }
 
 Frame::~Frame () {
-  for(int i = 0; i < PAGE_SIZE){ //clear lock manager
-    delete mutex_list[i];
-    delete shared_lock_list[i];
-    delete unique_lock_list[i];
-  }
-    mutex_list.clear();
-    shared_lock_list.clear();
-    unique_lock_list.clear();
 }
 
 bool Frame::operator==(const Frame& rhs) {

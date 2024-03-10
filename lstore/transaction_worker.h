@@ -16,7 +16,7 @@ public:
     virtual ~TransactionWorker ();
     void add_transaction(const Transaction& t); // Append transaction t to the appropriate place.
     void run(); // Start all the transactions. Create thread and run.
+    void _run(); // Start all the transactions. Create thread and run.
     void join(); // call all the join function for the thread we have.
 };
 #endif
-

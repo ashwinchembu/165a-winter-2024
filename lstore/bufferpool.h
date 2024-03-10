@@ -10,6 +10,7 @@
 #include <mutex>
 #include <atomic>
 #include <shared_mutex>
+#include <map>
 
 class Page;
 
@@ -46,7 +47,7 @@ public:
     int hash_fun(unsigned int x);
     int get (const RID& rid, const int& column); // given a rid and column, returns the value in that location
     Frame* get_page (const RID& rid, const int& column); // given a rid and column, returns the page that holds it
-    void set (const RID& rid, const int& column, const int& value, const bool& is_new); // given a rid and column, changes the value in that location
+    bool set (const RID& rid, const int& column, const int& value, const bool& is_new); // given a rid and column, changes the value in that location
     Frame* load (const RID& rid, const int& column); //from disk into bufferpool
     Frame* search(const RID& rid, const int& column); //search in specific hash range
     //Frame* search(const RID& rid, const int& column, std::string merge);
@@ -57,14 +58,11 @@ public:
     Frame* evict (const RID& rid); //evict the oldest frame that is not pinned
     void write_back(Frame* frame); //write back to disk if dirty
     void write_back_all();
-    void pin (const RID& rid, const int& column);
-    void unpin (const RID& rid, const int& column);
+    Frame* pin (const RID& rid, const int& column, const char& pin_type);
+    void unpin (const RID& rid, const int& column, const char& pin_type);
     void set_path (const std::string& path_rhs);
-    bool get_try_lock(const RID& rid, const int& column); //try to lock the desired record
-    bool set_try_lock(const RID& rid, const int& column); //try to lock the desired record
-    void get_unlock(const RID& rid, const int& column); //unlock the desired record
-    void set_unlock(const RID& rid, const int& column); //unlock the desired record
     std::vector<Frame*> hash_vector; //the starting frame of each hash range
+    std::unordered_map<std::string, std::unordered_map<int, LockManagerEntry*>> lock_manager; //<table_name, <rid_id, lock_manager_entry>>
 
     std::vector<int> frame_directory; //keep track of how many open frames in each hash range
     std::shared_mutex frame_directory_lock;
