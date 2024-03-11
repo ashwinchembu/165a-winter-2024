@@ -34,6 +34,8 @@ BufferPool::BufferPool (const int& num_pages) : bufferpool_size(num_pages){
   tail = new Frame; //create tail
   old_frame->next = tail;
   tail->prev = old_frame;
+  shared_frame_directory_lock = std::shared_lock<std::shared_mutex>(frame_directory_lock, std::defer_lock);
+  unique_frame_directory_lock = std::unique_lock<std::shared_mutex>(frame_directory_lock, std::defer_lock);
 }
 
 BufferPool::~BufferPool () {
