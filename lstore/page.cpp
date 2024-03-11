@@ -16,7 +16,9 @@ PageRange::PageRange (RID& new_rid, const std::vector<int>& columns) {
     new_rid.first_rid_page_range = new_rid.id;
     new_rid.first_rid_page = new_rid.id;
     // Update using
+    std::cout << "Before inserting 1st new page" << std::endl;
     buffer_pool.insert_new_page(new_rid, INDIRECTION_COLUMN, new_rid.id);
+    std::cout << "Before inserting 2nd new page" << std::endl;
     buffer_pool.insert_new_page(new_rid, RID_COLUMN, new_rid.id);
     buffer_pool.insert_new_page(new_rid, TIMESTAMP_COLUMN, 0);
     buffer_pool.insert_new_page(new_rid, SCHEMA_ENCODING_COLUMN, 0);
