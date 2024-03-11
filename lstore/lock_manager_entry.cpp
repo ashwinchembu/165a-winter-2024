@@ -6,7 +6,7 @@
       unique_lock = new std::unique_lock<std::shared_mutex>(*mutex, std::defer_lock);
     }
 
-    virtual LockManagerEntry::~LockManagerEntry(){
+    LockManagerEntry::~LockManagerEntry(){
       delete mutex;
       delete shared_lock;
       delete unique_lock;

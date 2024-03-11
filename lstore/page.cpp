@@ -56,44 +56,76 @@ PageRange::~PageRange(){
  *
  */
 int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
-    // Get first rid of the page and offset
-    // Find if the last base page has capacity for new record
+    // Lock to protect variable in Page range.
     mutex_insert.lock();
     if (base_last_wasfull) {
+        // Update status of the page range
         base_last_wasfull = false;
         num_slot_used_base = 1;
+        tail_last++;
+        base_last++;
         mutex_insert.unlock();
+
+        // Update information in the rid class
         new_rid.offset = 0;
         new_rid.first_rid_page = new_rid.id;
-        tail_last++;
-        base_last++; // Assuming that they will call after check if there are space left or not.
+
+        // Lock the rid of record that we are inserting
+        if (!(buffer_pool.lock_manager.find(new_rid.table_name)->second.find(new_rid.id)->second->unique_lock->try_lock())) {
+            return 1;
+        }
+
+        // Write in the metadatas
         buffer_pool.insert_new_page(new_rid, INDIRECTION_COLUMN, new_rid.id);
         buffer_pool.insert_new_page(new_rid, RID_COLUMN, new_rid.id);
         buffer_pool.insert_new_page(new_rid, TIMESTAMP_COLUMN, 0);
         buffer_pool.insert_new_page(new_rid, SCHEMA_ENCODING_COLUMN, 0);
         buffer_pool.insert_new_page(new_rid, BASE_RID_COLUMN, new_rid.id);
         buffer_pool.insert_new_page(new_rid, TPS, 0);
+
+        // Write in the data
         for (int i = NUM_METADATA_COLUMNS; i < num_column; i++) {
             buffer_pool.insert_new_page(new_rid, i, columns[i - NUM_METADATA_COLUMNS]);
         }
+
+        // Unlock the rid of the record once we are done inserting
+        buffer_pool.lock_manager.find(new_rid.table_name)->second.find(new_rid.id)->second->unique_lock->unlock();
+
+        // Protecting pages vector from multiple thread writing simultaneously
         page_lock.lock();
+        // Insert the first rid of the logical page into appropriate place
         pages.insert(pages.begin() + base_last, new_rid);
         page_lock.unlock();
     } else {
+        // Update status of the page range
         base_last_wasfull = (num_slot_used_base == PAGE_SIZE);
         num_slot_used_base++;
         mutex_insert.unlock();
+
+        // Update information in the rid class
         new_rid.offset = num_slot_used_base - 1;
         new_rid.first_rid_page = pages[base_last].id;
+
+        // Lock the rid of record that we are inserting
+        if (!(buffer_pool.lock_manager.find(new_rid.table_name)->second.find(new_rid.id)->second->unique_lock->try_lock())) {
+            return 1;
+        }
+
+        // Write in the metadatas
         buffer_pool.set(new_rid, INDIRECTION_COLUMN, new_rid.id, true);
         buffer_pool.set(new_rid, RID_COLUMN, new_rid.id, true);
         buffer_pool.set(new_rid, TIMESTAMP_COLUMN, 0, true);
         buffer_pool.set(new_rid, SCHEMA_ENCODING_COLUMN, 0, true);
         buffer_pool.set(new_rid, BASE_RID_COLUMN, new_rid.id, true);
         buffer_pool.set(new_rid, TPS, 0, true);
+
+        // Write in the data
         for (int i = NUM_METADATA_COLUMNS; i < num_column; i++) {
             buffer_pool.set(new_rid, i, columns[i - NUM_METADATA_COLUMNS], true);
         }
+
+        // Unlock the rid of the record once we are done inserting
+        buffer_pool.lock_manager.find(new_rid.table_name)->second.find(new_rid.id)->second->unique_lock->lock();
     }
     return 0;
 }
@@ -109,33 +141,45 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
  *
  */
 int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, const std::map<int, RID>& page_directory, std::shared_lock<std::shared_mutex>* lock) {
-    // Get the latest update of the record. Accessing the indirection column.
-
-    buffer_pool.pin(rid, INDIRECTION_COLUMN);
-    // This page directory is protected by the shared lock outside.
+    // Protecting page directory from thread writing while another thread is reading
     lock->lock();
     RID latest_rid = page_directory.find(buffer_pool.get(rid, INDIRECTION_COLUMN))->second;
     lock->unlock();
-    buffer_pool.set(rid, INDIRECTION_COLUMN, rid_new.id, false);
-    buffer_pool.unpin(rid, INDIRECTION_COLUMN);
-    // Create new tail pages if there are no space left or tail page does not exist.
+
+    // Declared here so that we can use after the if statement
     int schema_encoding = 0;
-    // If tail_last and base_last is equal, that means there are no tail page created.
+
+    // Lock to protect the variable in page range
     mutex_update.lock();
+
+    // Create new tail pages if there are no space left or tail page does not exist.
+    // Otherwise just insert the update in the last tail page
     if (tail_last_wasfull) {
+        // Update the variable of the page range
         tail_last_wasfull = false;
         tail_last++;
         num_slot_used_tail = 1;
         mutex_update.unlock();
+
+        // Update the information in the new rid class
         rid_new.offset = 0;
         rid_new.first_rid_page = rid_new.id;
+
+        // Lock the rid of record that we are inserting
+        if (!(buffer_pool.lock_manager.find(rid_new.table_name)->second.find(rid_new.id)->second->unique_lock->try_lock())) {
+            return 1;
+        }
+
+        // Write in the metadata except for schema encoding column
         buffer_pool.insert_new_page(rid_new, INDIRECTION_COLUMN, rid.id);
         buffer_pool.insert_new_page(rid_new, RID_COLUMN, rid_new.id);
         buffer_pool.insert_new_page(rid_new, TIMESTAMP_COLUMN, 0);
         buffer_pool.insert_new_page(rid_new, BASE_RID_COLUMN, rid.id);
         buffer_pool.insert_new_page(rid_new, TPS, 0);
+
+        // Write in the data
         for (int i = NUM_METADATA_COLUMNS; i < num_column; i++) {
-            if (std::isnan(columns[i - NUM_METADATA_COLUMNS]) || columns[i-NUM_METADATA_COLUMNS] < -2147480000) { // Wrapper changes None to smallest integer possible
+            if (std::isnan(columns[i - NUM_METADATA_COLUMNS]) || columns[i-NUM_METADATA_COLUMNS] < NONE) { // Wrapper changes None to smallest integer possible
                 // If there are no update, we write the value from latest update
                 buffer_pool.insert_new_page(rid_new, i, buffer_pool.get(latest_rid, i));
             } else {
@@ -144,23 +188,42 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
                 schema_encoding = schema_encoding | (0b1 << (num_column - (i - NUM_METADATA_COLUMNS) - 1));
             }
         }
+
+        // Write in the schema encoding once we know which one is updated.
         buffer_pool.insert_new_page(rid_new, SCHEMA_ENCODING_COLUMN, schema_encoding);
+
+        // Unlock the lock for the new record. If we reach here then we were able to lock it before.
+        buffer_pool.lock_manager.find(rid_new.table_name)->second.find(rid_new.id)->second->unique_lock->unlock();
+
+        // Setting the new RID to be representation of the page if the page was newly created
         page_lock.lock();
         pages.push_back(rid_new);
         page_lock.unlock();
     } else {
+        // Update the variable of the page range
         num_slot_used_tail++;
         tail_last_wasfull = (num_slot_used_tail == PAGE_SIZE);
         mutex_update.unlock();
+
+        // Update the information in the new rid class
         rid_new.first_rid_page = pages.back().first_rid_page;
         rid_new.offset = num_slot_used_tail - 1;
+
+        // Lock the rid of record that we are inserting
+        if (!(buffer_pool.lock_manager.find(rid_new.table_name)->second.find(rid_new.id)->second->unique_lock->try_lock())) {
+            return 1;
+        }
+
+        // Write in the metadata except for schema encoding column
         buffer_pool.set(rid_new, INDIRECTION_COLUMN, rid.id, true);
         buffer_pool.set(rid_new, RID_COLUMN, rid_new.id, true);
         buffer_pool.set(rid_new, TIMESTAMP_COLUMN, 0, true);
         buffer_pool.set(rid_new, BASE_RID_COLUMN, rid.id, true);
         buffer_pool.set(rid_new, TPS, 0, true);
+
+        // Write in the data
         for (int i = NUM_METADATA_COLUMNS; i < num_column; i++) {
-            if (std::isnan(columns[i - NUM_METADATA_COLUMNS]) || columns[i-NUM_METADATA_COLUMNS] < -2147480000) { // Wrapper changes None to smallest integer possible
+            if (std::isnan(columns[i - NUM_METADATA_COLUMNS]) || columns[i-NUM_METADATA_COLUMNS] < NONE) { // Wrapper changes None to smallest integer possible
                 // If there are no update, we write the value from latest update
                 buffer_pool.set(rid_new, i, buffer_pool.get(latest_rid, i), true);
             } else {
@@ -169,14 +232,20 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
                 schema_encoding = schema_encoding | (0b1 << (num_column - (i - NUM_METADATA_COLUMNS) - 1));
             }
         }
+
+        // Write in the schema encoding once we know which one is updated.
         buffer_pool.set(rid_new, SCHEMA_ENCODING_COLUMN, schema_encoding, true);
+
+        // Unlock the lock for the new record. If we reach here then we were able to lock it before.
+        buffer_pool.lock_manager.find(rid_new.table_name)->second.find(rid_new.id)->second->unique_lock->unlock();
     }
 
     // Updating indirection column and schema encoding column for the base page
-    buffer_pool.pin(rid, SCHEMA_ENCODING_COLUMN);
-    buffer_pool.set(rid, SCHEMA_ENCODING_COLUMN, buffer_pool.get(rid, SCHEMA_ENCODING_COLUMN) | schema_encoding, false);
-    buffer_pool.unpin(rid, SCHEMA_ENCODING_COLUMN);
-    // Setting the new RID to be representation of the page if the page was newly created
+    int base_schema = buffer_pool.get(rid, SCHEMA_ENCODING_COLUMN);
+    buffer_pool.pin(rid, SCHEMA_ENCODING_COLUMN, 'X');
+    buffer_pool.set(rid, INDIRECTION_COLUMN, rid_new.id, false);
+    buffer_pool.set(rid, SCHEMA_ENCODING_COLUMN, base_schema | schema_encoding, false);
+    buffer_pool.unpin(rid, SCHEMA_ENCODING_COLUMN, 'X');
     return 0;
 }
 

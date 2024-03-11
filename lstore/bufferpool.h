@@ -10,7 +10,8 @@
 #include <mutex>
 #include <atomic>
 #include <shared_mutex>
-#include <map>
+#include <unordered_map>
+#include "lock_manager_entry.h"
 
 class Page;
 
@@ -28,7 +29,7 @@ public:
     int first_rid_page_range = 0; //first rid in the page range
     int column = -1;
     bool valid = false; //whether the frame contains data
-    atomic_int pin = 0; //how many transactions have pinned the page
+    std::atomic_int pin = 0; //how many transactions have pinned the page
     bool dirty = false; //whether the page was modified
     Frame* next = nullptr;
     Frame* prev = nullptr;

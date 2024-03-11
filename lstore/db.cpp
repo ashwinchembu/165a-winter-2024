@@ -1,7 +1,7 @@
 #include <map>
 #include <string>
 #include <fcntl.h>
-#include <unistd.h>
+// #include <unistd.h>
 #include<sys/stat.h>
 #include <stdexcept>
 #include <cstdio>
@@ -16,7 +16,7 @@
 #include "lock_manager_entry.h"
 
 BufferPool buffer_pool(BUFFER_POOL_SIZE);
-Log log();
+Log db_log;
 
 Database::Database() {
 	buffer_pool.set_path(file_path);

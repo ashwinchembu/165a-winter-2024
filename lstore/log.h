@@ -6,6 +6,7 @@
 #include "../Toolkit.h"
 #include "transaction.h"
 
+
 class LogEntry { //represents one transaction
 public:
   LogEntry (const std::vector<QueryOperation>& queries) : queries(queries){};
@@ -16,13 +17,13 @@ public:
 
 class Log{
 public:
-  Log ();
-  virtual ~Log ();
+  Log () {};
+  virtual ~Log () {};
   std::map<int, LogEntry> entries;
   int num_transactions = 0;
 };
 
 
-extern Log log;
+extern Log db_log;
 
 #endif

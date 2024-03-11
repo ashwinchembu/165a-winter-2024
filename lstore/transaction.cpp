@@ -146,9 +146,9 @@ void Transaction::add_query(Query& q, Table& t, int& start_range, int& end_range
 bool Transaction::run() {
     bool transaction_completed = true; //any case where transaction does not need to be redone
     bool _commit = true; //any case where transaction does not need to be redone
-    log.num_transactions++;
-    xact_id = log.num_transactions;
-    log.entries.insert({xact_id, LogEntry(queries)}); //note in log that transaction has begun
+    db_log.num_transactions++;
+    xact_id = db_log.num_transactions;
+    db_log.entries.insert({xact_id, LogEntry(queries)}); //note in log that transaction has begun
 
     for (int i = 0; i < num_queries; i++) { //run all the queries
       int query_success = queries[i].run();
@@ -178,7 +178,7 @@ bool Transaction::run() {
 }
 
 void Transaction::abort() {
-  LogEntry log_entry = log.entries.find(xact_id)->second;
+  LogEntry log_entry = db_log.entries.find(xact_id)->second;
 
   for(int i = 0; i < log_entry.queries.size(); i++){ //undo all queries in the transaction
     OpCode type = queries[i].type;
@@ -202,11 +202,11 @@ void Transaction::abort() {
             break;
     }
   }
-  log.entries.erase(xact_id);
+  db_log.entries.erase(xact_id);
 }
 
 void Transaction::commit() {
-  log.entries.erase(xact_id);
+  db_log.entries.erase(xact_id);
 }
 
 COMPILER_SYMBOL void Transaction_add_query_insert(

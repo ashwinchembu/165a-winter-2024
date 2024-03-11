@@ -48,6 +48,7 @@ RID Table::insert(const std::vector<int>& columns) {
 	insert_lock.lock();
 	num_insert++; // Should not need mutex here. num_insert is std::atomic and rid solely depend on that.
 	int rid_id = num_insert;
+	buffer_pool.lock_manager.find(name)->second.insert({rid_id, new LockManagerEntry});
 	insert_lock.unlock();
 	RID record;
 	record.table_name = name;
@@ -64,11 +65,12 @@ RID Table::insert(const std::vector<int>& columns) {
 		record.first_rid_page_range = (page_range.back().get())->pages[0].first_rid_page_range;
 		PageRange* prange = (page_range.back().get());
 		page_range_shared.unlock();
-		prange->insert(record, columns);
+		if (prange->insert(record, columns)) {
+			return RID(0);
+		}
 	}
 	page_directory_unique.lock();
 	page_directory.insert({rid_id, record});
-	buffer_pool.lock_manager.find(name).insert({rid_id, new LockManagerEntry});
 	page_directory_unique.unlock();
 	return record;
 }
@@ -89,6 +91,7 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 		merge();
 	}
 	const int rid_id = num_update * -1;
+	buffer_pool.lock_manager.find(name)->second.insert({rid_id, new LockManagerEntry});
 	update_lock.unlock();
 	size_t i = 0;
 
@@ -106,7 +109,9 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 	page_range_shared.lock();
 	PageRange* prange = (page_range[i].get());
 	page_range_shared.unlock();
-	prange->update(rid, new_rid, columns, page_directory, &page_range_shared);
+	if (prange->update(rid, new_rid, columns, page_directory, &page_range_shared)) {
+		return RID(0);
+	}
 	page_range_update[i]++;
 	if (page_range_update[i] >= MAX_PAGE_RANGE_UPDATES){
 		// Make a deep copy of page_range[i]
@@ -124,7 +129,6 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 	}
 	page_directory_unique.lock();
 	page_directory.insert({rid_id, new_rid});
-	buffer_pool.lock_manager.find(name).insert({rid_id, new LockManagerEntry});
 	page_directory_unique.unlock();
 	return new_rid;
 }

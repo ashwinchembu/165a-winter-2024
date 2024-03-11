@@ -273,16 +273,17 @@ Frame* BufferPool::pin (const RID& rid, const int& column, const char& pin_type)
   Frame* found = nullptr;
   switch(pin_type){
     case 'S':
-      if(!lock_manager.find(rid.table_name).find(rid.id)->second->shared_lock.try_lock()){
+      if(!lock_manager.find(rid.table_name)->second.find(rid.id)->second->shared_lock->try_lock()){
         return found;
       }
       break;
     case 'X':
-      if(!lock_manager.find(rid.table_name).find(rid.id)->second->unique_lock.try_lock()){
+      if(!lock_manager.find(rid.table_name)->second.find(rid.id)->second->unique_lock->try_lock()){
         return found;
       }
       break;
     default:
+      break;
   }
   found = search(rid, column);
   if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
@@ -302,15 +303,15 @@ void BufferPool::unpin (const RID& rid, const int& column, const char& pin_type)
     (found->pin) = 0;
     throw std::invalid_argument("Attempt to unpin record that was not already pinned (Pin negative value)");
   }
-  Frame* found = nullptr;
   switch(pin_type){
     case 'S':
-      lock_manager.find(rid.table_name).find(rid.id)->second->shared_lock.unlock();
+      lock_manager.find(rid.table_name)->second.find(rid.id)->second->shared_lock->unlock();
       break;
     case 'X':
-      lock_manager.find(rid.table_name).find(rid.id)->second->unique_lock.unlock();
+      lock_manager.find(rid.table_name)->second.find(rid.id)->second->unique_lock->unlock();
       break;
     default:
+      break;
   }
   return;
 }
@@ -337,6 +338,7 @@ void Frame::operator=(const Frame& rhs)
   first_rid_page_range = rhs.first_rid_page_range; //first rid in the page range
   column = rhs.column;
   valid = rhs.valid; //whether the frame contains data
-  pin = rhs.pin; //how many transactions have pinned the page
+  int current_pin = rhs.pin;
+  pin = current_pin; //how many transactions have pinned the page
   dirty = rhs.dirty; //whether the page was modified
 }
