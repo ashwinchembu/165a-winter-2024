@@ -156,17 +156,29 @@ Frame* BufferPool::load (const RID& rid, const int& column){ //return the frame 
 }
 
 Frame* BufferPool::insert_into_frame(const RID& rid, const int& column, Page* page){ //return the frame that the page was placed into
+  std::cout << "Insert_into_frame" << 1 << std::endl;
   Frame* frame = nullptr;
+  std::cout << "Insert_into_frame" << 2 << std::endl;
   size_t hash = hash_fun(rid.first_rid_page); //determine correct hash range
+  std::cout << "Insert_into_frame" << 3 << std::endl;
   shared_frame_directory_lock.lock();
+  std::cout << "Insert_into_frame" << 4 << std::endl;
   if(frame_directory[hash] == (bufferpool_size / NUM_BUFFERPOOL_HASH_PARTITIONS)){ //if hash range is full
+  std::cout << "Insert_into_frame" << 5 << std::endl;
     shared_frame_directory_lock.unlock();
+  std::cout << "Insert_into_frame" << 6 << std::endl;
     frame = evict(rid);
+  std::cout << "Insert_into_frame" << 7 << std::endl;
   } else{ //find empty frame to fill
+  std::cout << "Insert_into_frame" << 8 << std::endl;
     shared_frame_directory_lock.unlock();
+  std::cout << "Insert_into_frame" << 9 << std::endl;
     Frame* range_begin = hash_vector[hash]; //beginning of hash range
+  std::cout << "Insert_into_frame" << 10 << std::endl;
     Frame* range_end = hash == (hash_vector.size() - 1) ? tail : hash_vector[hash + 1]->prev; //end of hash range
+  std::cout << "Insert_into_frame" << 11 << std::endl;
     Frame* current_frame = range_begin; //iterate through range
+  std::cout << "Insert_into_frame" << 12 << std::endl;
     while(current_frame != range_end->next){
       if(!current_frame->valid){ //frame is empty
         frame = current_frame;
