@@ -1,5 +1,5 @@
-from table import Table, Record
-from index import Index
+from .table import Table, Record
+from .index import Index
 from DBWrapper import *
 
 class TransactionWorker:

@@ -72,12 +72,13 @@ class Transaction:
     
     def abort(self):
         #TODO: do roll-back and any other necessary operations
-        return False
-
+        # return False
+        pass
     
     def commit(self):
         # TODO: commit to database
-        return True
+        # return True
+        pass
     
     def destroyPointer(self):
         Transaction_destructor(self.selfPtr)
