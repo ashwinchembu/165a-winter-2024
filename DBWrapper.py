@@ -322,6 +322,7 @@ def fillAndReturnIntBuffer(*args):
     erase_buffer_vector()
     for i in lst:
         add_to_buffer_vector(c_intOrUnreasonable(i))
+        print(i)
         
     return get_buffer_vector()
 
