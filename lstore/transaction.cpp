@@ -14,6 +14,10 @@ int QueryOperation::run() {
             return QueryResult::QUERY_IC;
         case OpCode::INSERT:
             if (check_req()) {
+                for (int i = 0; i <columns.size(); i++) {
+                    std::cout << columns[i] << " ";
+                }
+                std::cout << std::endl;
                 bool result = q->insert(columns);
                 if(!result){
                   return QueryResult::QUERY_LOCK;
