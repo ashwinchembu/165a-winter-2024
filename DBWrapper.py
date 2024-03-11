@@ -253,6 +253,14 @@ Table_num_columns=DB.Table_num_columns
 Table_num_columns.restype = c_int
 Table_num_columns.argtypes = [POINTER(c_int)]
 
+Table_print_lineage = DB.Table_print_lineage
+Table_print_lineage.argtypes = [POINTER(c_int)]
+
+
+#bufferpool.cpp
+
+force_write_back_all=DB.force_write_back_all
+
 
 #Toolkit.cpp
 
