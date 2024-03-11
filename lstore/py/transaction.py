@@ -1,5 +1,6 @@
 from .table import Table, Record
 from .index import Index
+from DBWrapper import *
 
 class Transaction:
 
@@ -34,10 +35,10 @@ class Transaction:
     
     def abort(self):
         #TODO: do roll-back and any other necessary operations
-        return False
+        pass
 
     
     def commit(self):
         # TODO: commit to database
-        return True
+        pass
 
