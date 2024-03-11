@@ -31,6 +31,35 @@ PageRange::PageRange (RID& new_rid, const std::vector<int>& columns) {
     num_column = num_column + NUM_METADATA_COLUMNS;
 }
 
+PageRange::PageRange (const PageRange& rhs) {
+    pages = rhs.pages;
+
+    int current_num = rhs.num_slot_left;
+    num_slot_left = current_num;
+
+    current_num = rhs.num_slot_used_base;
+    num_slot_used_base = current_num;
+
+    current_num = rhs.num_slot_used_tail;
+    num_slot_used_tail = current_num;
+
+    current_num = rhs.base_last;
+    base_last = current_num;
+
+    current_num = rhs.tail_last;
+    tail_last = current_num;
+
+    current_num = rhs.num_column;
+    tail_last = current_num;
+
+    bool current_bool = rhs.base_last_wasfull;
+    base_last_wasfull = current_bool;
+
+    current_bool = rhs.tail_last_wasfull;
+    tail_last_wasfull = current_bool;
+}
+
+
 /***
  *
  * Return if there are more space to insert record or not

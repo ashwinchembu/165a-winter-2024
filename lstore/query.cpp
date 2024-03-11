@@ -24,8 +24,10 @@ bool Query::deleteRecord(const int& primary_key) {
             table->page_directory_shared.unlock();
             return false;
         } else {
-            table->page_directory.find(target)->second.id = 0;
             table->page_directory_shared.unlock();
+            table->page_directory_unique.lock();
+            table->page_directory.find(target)->second.id = 0;
+            table->page_directory_unique.unlock();
             return true;
         }
     }

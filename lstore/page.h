@@ -44,6 +44,7 @@ public:
     std::atomic_int num_column = 0;
     std::vector<RID> pages;
     PageRange () {} // Never use this outside of loading saved data
+    PageRange (const PageRange& rhs);
     PageRange (RID& new_rid, const std::vector<int>& columns);
     ~PageRange();
     int insert(RID& new_rid, const std::vector<int>& columns);

@@ -62,6 +62,18 @@ int QueryOperation::run() {
                 std::cerr << "Query with Not enough data : Sum or Sum_ver" << std::endl;
                 return QueryResult::QUERY_IC;
             }
+        case OpCode::INCREMENT:
+            if (check_req()) {
+              bool result = q->increment(*key, aggregate_column_index);
+              if(!result){
+                return QueryResult::QUERY_LOCK;
+              } else {
+                return QueryResult::QUERY_SUCCESS;
+              }
+            } else {
+                std::cerr << "Query with Not enough data : Increment" << std::endl;
+                return QueryResult::QUERY_IC;
+            }
         default:
             std::cerr << "Query with unknown type" << std::endl;
             return QueryResult::QUERY_IC;
@@ -77,6 +89,8 @@ bool QueryOperation::check_req() {
             return (!columns.empty() && (table != nullptr) && (q != nullptr));
         case OpCode::UPDATE:
             return (!columns.empty() && (table != nullptr) && (key != nullptr) && (q != nullptr));
+        case OpCode::INCREMENT:
+            return ((aggregate_column_index != -1) && (table != nullptr) && (key != nullptr) && (q != nullptr));
         case OpCode::SELECT:
         case OpCode::SELECT_VER:
             return (!columns.empty() && (search_key_index != -1) && (table != nullptr) && (key != nullptr) && (relative_version != 1) && (q != nullptr));
@@ -142,6 +156,13 @@ void Transaction::add_query(Query& q, Table& t, int& start_range, int& end_range
     queries[num_queries - 1].aggregate_column_index = aggregate_column_index;
     queries[num_queries - 1].relative_version = relative_version;
 }
+// Increment
+void Transaction::add_query(Query& q, Table& t, int& key, const int& column) {
+    queries.push_back(QueryOperation(&q, OpCode::INCREMENT, &t));
+    num_queries++;
+    queries[num_queries - 1].aggregate_column_index = column;
+    queries[num_queries - 1].key = &key;
+}
 
 bool Transaction::run() {
     bool transaction_completed = true; //any case where transaction does not need to be redone
@@ -180,10 +201,13 @@ bool Transaction::run() {
 void Transaction::abort() {
   LogEntry log_entry = db_log.entries.find(xact_id)->second;
 
-  for(int i = 0; i < log_entry.queries.size(); i++){ //undo all queries in the transaction
+  for(size_t i = 0; i < log_entry.queries.size(); i++){ //undo all queries in the transaction
     OpCode type = queries[i].type;
-    RID base_rid, most_recent_update;
-    int second_most_recent_update = 0;
+    RID base_rid = RID(0);
+    int base_record_indirection = 0;
+    RID most_recent_update = RID(0);
+    bool update_written = true;
+
     switch (type) {
         case OpCode::NOTHING:
             std::cerr << "Query with No type" << std::endl;
@@ -192,12 +216,39 @@ void Transaction::abort() {
             queries[i].q->deleteRecord(queries[i].columns[*(queries[i].key)]);
             break;
         case OpCode::UPDATE: //delete the update
+            queries[i].table->page_directory_shared.lock();
             base_rid = queries[i].table->page_directory.find(queries[i].columns[*(queries[i].key)])->second;
-            most_recent_update = queries[i].table->page_directory.find(buffer_pool.get(base_rid, INDIRECTION_COLUMN))->second;
-            second_most_recent_update = buffer_pool.get(most_recent_update, INDIRECTION_COLUMN);
-            queries[i].table->page_directory.find(most_recent_update.id)->second.id = 0; //delete in page directory
-            buffer_pool.set(base_rid, INDIRECTION_COLUMN, second_most_recent_update, false); //fix indirection
-            break;
+            queries[i].table->page_directory_shared.unlock();
+
+            base_record_indirection = buffer_pool.get(base_rid, INDIRECTION_COLUMN);
+            queries[i].table->page_directory_shared.lock();
+            most_recent_update = queries[i].table->page_directory.find(base_record_indirection)->second;
+            queries[i].table->page_directory_shared.unlock();
+
+
+            for (size_t j = 0; j < queries[i].columns.size(); j++) {
+                if (queries[i].columns[j] >= NONE) {
+                    int latest_val = buffer_pool.get(most_recent_update, j + NUM_METADATA_COLUMNS);
+                    if (latest_val != queries[i].columns[j]) {
+                        update_written = false;
+                        break;
+                    }
+                }
+            }
+
+            if (update_written) {
+
+              int second_most_recent_update = buffer_pool.get(most_recent_update, INDIRECTION_COLUMN);
+
+              queries[i].table->page_directory_unique.lock();
+              queries[i].table->page_directory.find(most_recent_update.id)->second.id = 0; //delete in page directory
+              queries[i].table->page_directory_unique.unlock();
+
+              buffer_pool.pin(base_rid, SCHEMA_ENCODING_COLUMN, 'X');
+              buffer_pool.set(base_rid, INDIRECTION_COLUMN, second_most_recent_update, false); //fix indirection
+              buffer_pool.unpin(base_rid, SCHEMA_ENCODING_COLUMN, 'X');
+              break;
+            }
         default:
             break;
     }

@@ -6,7 +6,7 @@
 #include "query.h"
 #include "config.h"
 
-enum OpCode { NOTHING, INSERT, UPDATE, SELECT, SELECT_VER, SUM, SUM_VER };
+enum OpCode { NOTHING, INSERT, UPDATE, SELECT, SELECT_VER, SUM, SUM_VER, INCREMENT };
 enum QueryResult { QUERY_SUCCESS, QUERY_LOCK, QUERY_IC };
 
 class QueryOperation {
@@ -16,13 +16,13 @@ public:
     const OpCode type = OpCode::NOTHING;
     Table* table = nullptr;
 
-    int* key = nullptr; // Update, Select, Select version
+    int* key = nullptr; // Update, Select, Select version, Increment
     std::vector<int> columns; // Columns and projected_columns_index combined. For insert, update, select, select ver.
     int search_key_index = -1; // Select and Select ver
     int relative_version = 1; // Select ver and Sum ver
     int* start_range = nullptr; // Sum and Sum ver
     int* end_range = nullptr; // Sum and Sum ver
-    int aggregate_column_index = -1; // Sum and Sum ver
+    int aggregate_column_index = -1; // Sum and Sum ver and Increment
 
     /* Return values */
     unsigned long int* sum_result = nullptr;
@@ -57,6 +57,7 @@ public:
     void add_query(Query& q, Table& t, int& key, const int& search_key_index, const std::vector<int>& projected_columns_index,  const int& relative_version);
     void add_query(Query& q, Table& t, int& start_range, int& end_range, const int& aggregate_column_index);
     void add_query(Query& q, Table& t, int& start_range, int& end_range, const int& aggregate_column_index, const int& relative_version);
+    void add_query(Query& q, Table& t, int& key, const int& column);
 
     bool run(); // Called by transaction worker. Return 0 if need to re-attempt
     void abort(); // Transaction worker check the work. If it contain anomaly, abort.
