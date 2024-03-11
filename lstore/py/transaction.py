@@ -24,33 +24,33 @@ class Transaction:
         queryCode = query.__code__
         queryObj = query.__self__
         
-        if queryCode == Query.insert.__code__:
+        if queryCode == query.insert.__code__:
             
             Transaction_add_query_insert(self.selfPtr, queryObj.selfPtr,
                     table.selfPtr, fillAndReturnIntBuffer(args))
            
-        elif queryCode == Query.update.__code__:
+        elif queryCode == query.update.__code__:
             
             Transaction_add_query_update(self.selfPtr,queryObj.selfPtr,
                     table.selfPtr,args[0],fillAndReturnIntBuffer(args[1]))
          
-        elif queryCode == Query.select.__code__:
+        elif queryCode == query.select.__code__:
             
             Transaction_add_query_select(self.selfPtr,queryObj.selfPtr,
                     table.selfPtr,args[0],args[1],fillAndReturnIntBuffer(args[2]))
       
-        elif queryCode == Query.select_version.__code__:
+        elif queryCode == query.select_version.__code__:
             
             Transaction_add_query_select_version(self.selfPtr,queryObj.selfPtr,
                     table.selfPtr,args[0],args[1],fillAndReturnIntBuffer(args[2]),
                     args[3])
  
-        elif queryCode == Query.sum.__code__:
+        elif queryCode == query.sum.__code__:
             
             Transaction_add_query_sum(self.selfPtr,queryObj.selfPtr,table.selfPtr,
                     args[0],args[1],args[2])
       
-        elif queryCode == Query.sum_version.__code__:
+        elif queryCode == query.sum_version.__code__:
             
             Transaction_add_query_sum_version(self.selfPtr,query.selfPtr,
             table.selfPtr,args[0],args[1],args[2],args[3])
