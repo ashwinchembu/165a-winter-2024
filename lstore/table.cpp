@@ -30,11 +30,23 @@ Table::Table(const std::string& name, const int& num_columns, const int& key): n
 
 Table::~Table() {
 	for (size_t i = 0; i <page_range.size(); i++) {
-		if (page_range[i].unique()) {
-			page_range[i].reset();
-		}
+		page_range[i].reset();
 	}
 }
+
+Table::Table (const Table& rhs) {
+	name = rhs.name;
+	key = rhs.key;
+	merge_queue = rhs.merge_queue;
+	page_range_update = rhs.page_range_update;
+	index = rhs.index;
+	num_columns = rhs.num_columns;
+	int num_update_now = rhs.num_update;
+	num_update = num_update_now;
+	int num_insert_now = rhs.num_insert;
+	num_insert = num_insert_now;
+}
+
 
 /***
  *

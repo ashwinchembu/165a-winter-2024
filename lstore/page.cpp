@@ -287,6 +287,21 @@ Page::Page() {
     data = new int[PAGE_SIZE * 4];
 }
 
+Page::Page (const Page& rhs) {
+    int current_num_rows = rhs.num_rows;
+    num_rows = current_num_rows;
+    data = rhs.data;
+}
+
+void Page::DeepCopy (const Page& rhs) {
+    int current_num_rows = rhs.num_rows;
+    num_rows = current_num_rows;
+    for (int i = 0; i < current_num_rows; i++) {
+        data[i] = rhs.data[i];
+    }
+}
+
+
 Page::~Page() {
     delete[] data;
 }

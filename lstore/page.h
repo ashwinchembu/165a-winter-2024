@@ -15,6 +15,8 @@ class Page {
 public:
     std::atomic_int num_rows = 0;
     Page ();
+    Page (const Page& rhs);
+    void DeepCopy (const Page& rhs);
     virtual ~Page ();
     const bool has_capacity() const;
     int write(const int& value);

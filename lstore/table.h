@@ -72,6 +72,7 @@ public:
     int num_columns; //number of columns of actual data, excluding the metadata
 
     Table () {};
+    Table (const Table& rhs);
     ~Table ();
     Table(const std::string& name, const int& num_columns, const int& key);
 
