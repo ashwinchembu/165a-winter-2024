@@ -45,6 +45,7 @@ class RIDJoin;
 class Table {
 public:
     std::mutex insert_lock;
+    std::mutex insert_lock2;
     std::mutex update_lock;
 
     std::map<int, RID> page_directory; //<RID.id, RID>
