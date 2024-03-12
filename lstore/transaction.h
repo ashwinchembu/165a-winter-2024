@@ -37,6 +37,7 @@ public:
 class Transaction {
 public:
     std::vector<QueryOperation> queries; // To hold onto queries
+    std::mutex db_log_lock;
     int num_queries = 0;
     int hash_key = 0;
     int xact_id;
