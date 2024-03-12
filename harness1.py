@@ -29,7 +29,8 @@ for i in range(updates):
     query.update(i % records,*next)
 
 force_write_back_all()
-Table_print_lineage(table1.selfPtr)
+# Table_print_lineage(table1.selfPtr)
+Table_print_table(table1.selfPtr)
 
 dbs.close()
 
