@@ -172,8 +172,7 @@ void Transaction::add_query(Query& q, Table& t, int& key, const int& column) {
 bool Transaction::run() {
     bool transaction_completed = true; //any case where transaction does not need to be redone
     bool _commit = true; //any case where transaction does not need to be redone
-    while (!db_log.lk.try_lock()) {}
-    // db_log.lk.lock();
+    db_log.lk.lock();
     db_log.num_transactions++;
     xact_id = db_log.num_transactions;
     db_log.entries.insert({xact_id, LogEntry(queries)}); //note in log that transaction has begun
