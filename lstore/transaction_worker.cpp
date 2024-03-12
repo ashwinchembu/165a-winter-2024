@@ -22,17 +22,7 @@ void TransactionWorker::add_transaction(const Transaction& t) {
 
 // Start all the transactions. Create thread and run.
 void TransactionWorker::run() {
-    try
-    {
-        query_thread = std::thread(&TransactionWorker::_run, this);
-    }
-    catch(const std::system_error& e)
-    {
-        std::cout << "Caught system_error with code "
-                     "[" << e.code() << "] meaning "
-                     "[" << e.what() << "]\n";
-    }
-    
+    query_thread = std::thread(&TransactionWorker::_run, this);
     // thread = std::thread(&TransactionWorker::_run, this);
 }
 
