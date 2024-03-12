@@ -37,9 +37,12 @@ void TransactionWorker::_run() {
         bool result = transactions[i].run();
         std::cout << "after transaction: " << std::this_thread::get_id() << std::endl;
         if(!result){
+            std::cout << "error 1" << std::endl;
           transactions.push_back(transactions[i]);
         }
+        std::cout << "error 2" << std::endl;
     }
+    std::cout << "error 3" << std::endl;
 }
 
 // call all the join function for the thread we have.
