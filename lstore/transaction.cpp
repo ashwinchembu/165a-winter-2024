@@ -176,6 +176,7 @@ bool Transaction::run() {
     bool _commit = true; //any case where transaction does not need to be redone
     db_log.num_transactions++;
     xact_id = db_log.num_transactions;
+    lk.lock();
     db_log.entries.insert({xact_id, LogEntry(queries)}); //note in log that transaction has begun
     lk.unlock();
 
@@ -261,15 +262,15 @@ void Transaction::abort() {
             break;
     }
   }
-  db_log_lock.lock();
+  lk.lock();
   db_log.entries.erase(xact_id);
-  db_log_lock.unlock();
+  lk.unlock();
 }
 
 void Transaction::commit() {
-  db_log_lock.lock();
+  lk.lock();
   db_log.entries.erase(xact_id);
-  db_log_lock.unlock();
+  lk.unlock();
 }
 
 COMPILER_SYMBOL void Transaction_add_query_insert(
