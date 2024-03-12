@@ -172,11 +172,11 @@ void Transaction::add_query(Query& q, Table& t, int& key, const int& column) {
 bool Transaction::run() {
     bool transaction_completed = true; //any case where transaction does not need to be redone
     bool _commit = true; //any case where transaction does not need to be redone
-    db_log.lk->lock();
+    db_log.lk.lock();
     db_log.num_transactions++;
     xact_id = db_log.num_transactions;
     db_log.entries.insert({xact_id, LogEntry(queries)}); //note in log that transaction has begun
-    db_log.lk->unlock();
+    db_log.lk.unlock();
 
     for (int i = 0; i < num_queries; i++) { //run all the queries
       int query_success = queries[i].run();
@@ -206,9 +206,9 @@ bool Transaction::run() {
 }
 
 void Transaction::abort() {
-  db_log.lk_shared->lock();
+  db_log.db_log_lock.lock();
   LogEntry log_entry = db_log.entries.find(xact_id)->second;
-  db_log.lk_shared->unlock();
+  db_log.db_log_lock.unlock();
 
   for(size_t i = 0; i < log_entry.queries.size(); i++){ //undo all queries in the transaction
     OpCode type = queries[i].type;
@@ -263,15 +263,15 @@ void Transaction::abort() {
     }
   }
 
-  db_log.lk->lock();
+  db_log.lk.lock();
   db_log.entries.erase(xact_id);
-  db_log.lk->unlock();
+  db_log.lk.unlock();
 }
 
 void Transaction::commit() {
-  db_log.lk->lock();
+  db_log.lk.lock();
   db_log.entries.erase(xact_id);
-  db_log.lk->unlock();
+  db_log.lk.unlock();
 }
 
 COMPILER_SYMBOL void Transaction_add_query_insert(
