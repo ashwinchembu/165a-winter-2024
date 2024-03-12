@@ -22,7 +22,17 @@ void TransactionWorker::add_transaction(const Transaction& t) {
 
 // Start all the transactions. Create thread and run.
 void TransactionWorker::run() {
-    query_thread = std::thread(&TransactionWorker::_run, this);
+    try
+    {
+        query_thread = std::thread(&TransactionWorker::_run, this);
+    }
+    catch(const std::system_error& e)
+    {
+        std::cout << "Caught system_error with code "
+                     "[" << e.code() << "] meaning "
+                     "[" << e.what() << "]\n";
+    }
+    
     // thread = std::thread(&TransactionWorker::_run, this);
 }
 
@@ -47,21 +57,11 @@ void TransactionWorker::_run() {
 
 // call all the join function for the thread we have.
 void TransactionWorker::join() {
-	try
-    {
-        if (query_thread.joinable()) {
+    if (query_thread.joinable()) {
 		std::cout << "Joining transaction " << query_thread.get_id() << std::endl;
         query_thread.join();
 std::cout << "Joined" << std::endl;
     }
-    }
-    catch(const std::system_error& e)
-    {
-        std::cerr << "Caught system_error with code "
-                     "[" << e.code() << "] meaning "
-                     "[" << e.what() << "]\n";
-    }
-    
 }
 
 
