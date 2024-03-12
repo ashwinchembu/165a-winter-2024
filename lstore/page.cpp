@@ -343,7 +343,7 @@ void Page::DeepCopy (const Page& rhs) {
 
 
 Page::~Page() {
-    std::cout << "Destructor Page Called by" << std::this_thread::get_id() << std::endl;
+    // std::cout << "Destructor Page Called by" << std::this_thread::get_id() << std::endl;
     delete[] data;
 }
 
