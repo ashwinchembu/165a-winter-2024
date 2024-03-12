@@ -319,6 +319,7 @@ def c_intOrUnreasonable(number):
 #Elements of None are given an extreme value
 def fillAndReturnIntBuffer(*args):
     lst = list(args)
+    print(args[1])
     erase_buffer_vector()
     for i in lst:
         print(i)

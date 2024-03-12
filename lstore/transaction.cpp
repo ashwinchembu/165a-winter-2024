@@ -110,10 +110,10 @@ Transaction::~Transaction () {}
 // Insert
 void Transaction::add_query(Query& q, Table& t, const std::vector<int>& columns) {
     queries.push_back(QueryOperation(&q, OpCode::INSERT, &t));
-    for (int i = 0; i <columns.size(); i++) {
-      std::cout << columns[i] << " ";
-    }
-    std::cout << std::endl;
+    // for (int i = 0; i <columns.size(); i++) {
+    //   std::cout << columns[i] << " ";
+    // }
+    // std::cout << std::endl;
     num_queries++;
     queries[num_queries - 1].columns = columns;
 }
