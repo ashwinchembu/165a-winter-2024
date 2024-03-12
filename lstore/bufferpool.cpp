@@ -7,6 +7,7 @@
 #include <cmath>
 #include <stdexcept> // Throwing errors
 #include <iostream>
+#include <thread>
 
 #include "page.h"
 #include "config.h"
@@ -158,29 +159,29 @@ Frame* BufferPool::load (const RID& rid, const int& column){ //return the frame 
 }
 
 Frame* BufferPool::insert_into_frame(const RID& rid, const int& column, Page* page){ //return the frame that the page was placed into
-  std::cout << "Insert_into_frame" << 1 << std::endl;
+  std::cout << "Insert_into_frame" << 1 << " on thread " << std::this_thread::get_id() << std::endl;
   Frame* frame = nullptr;
   std::cout << "Insert_into_frame" << 2 << std::endl;
   size_t hash = hash_fun(rid.first_rid_page); //determine correct hash range
-  std::cout << "Insert_into_frame" << 3 << std::endl;
+  std::cout << "Insert_into_frame" << 3 << " on thread " << std::this_thread::get_id() << std::endl;
   shared_frame_directory_lock.lock();
-  std::cout << "Insert_into_frame" << 4 << std::endl;
+  std::cout << "Insert_into_frame" << 4 << " on thread " << std::this_thread::get_id() << std::endl;
   if(frame_directory[hash] == (bufferpool_size / NUM_BUFFERPOOL_HASH_PARTITIONS)){ //if hash range is full
-  std::cout << "Insert_into_frame" << 5 << std::endl;
+  std::cout << "Insert_into_frame" << 5 << " on thread " << std::this_thread::get_id() << std::endl;
     shared_frame_directory_lock.unlock();
-  std::cout << "Insert_into_frame" << 6 << std::endl;
+  std::cout << "Insert_into_frame" << 6 << " on thread " << std::this_thread::get_id() << std::endl;
     frame = evict(rid);
-  std::cout << "Insert_into_frame" << 7 << std::endl;
+  std::cout << "Insert_into_frame" << 7 << " on thread " << std::this_thread::get_id() << std::endl;
   } else{ //find empty frame to fill
-  std::cout << "Insert_into_frame" << 8 << std::endl;
+  std::cout << "Insert_into_frame" << 8 << " on thread " << std::this_thread::get_id() << std::endl;
     shared_frame_directory_lock.unlock();
-  std::cout << "Insert_into_frame" << 9 << std::endl;
+  std::cout << "Insert_into_frame" << 9 << " on thread " << std::this_thread::get_id() << std::endl;
     Frame* range_begin = hash_vector[hash]; //beginning of hash range
-  std::cout << "Insert_into_frame" << 10 << std::endl;
+  std::cout << "Insert_into_frame" << 10 << " on thread " << std::this_thread::get_id() << std::endl;
     Frame* range_end = hash == (hash_vector.size() - 1) ? tail : hash_vector[hash + 1]->prev; //end of hash range
-  std::cout << "Insert_into_frame" << 11 << std::endl;
+  std::cout << "Insert_into_frame" << 11 << " on thread " << std::this_thread::get_id() << std::endl;
     Frame* current_frame = range_begin; //iterate through range
-  std::cout << "Insert_into_frame" << 12 << std::endl;
+  std::cout << "Insert_into_frame" << 12 << " on thread " << std::this_thread::get_id() << std::endl;
     while(current_frame != range_end->next){
       if(!current_frame->valid){ //frame is empty
         frame = current_frame;
@@ -205,24 +206,24 @@ Frame* BufferPool::insert_into_frame(const RID& rid, const int& column, Page* pa
 }
 
 void BufferPool::insert_new_page(const RID& rid, const int& column, const int& value) {
-  std::cout << 1 << std::endl;
+  std::cout << 1 << " on thread " << std::this_thread::get_id() << std::endl;
   Page* page = new Page();
-  std::cout << 2 << std::endl;
+  std::cout << 2 << " on thread " << std::this_thread::get_id() << std::endl;
   *(page->data + rid.offset) = value;
-  std::cout << 3 << std::endl;
+  std::cout << 3 << " on thread " << std::this_thread::get_id() << std::endl;
   page->num_rows++;
-  std::cout << 4 << std::endl;
+  std::cout << 4 << " on thread " << std::this_thread::get_id() << std::endl;
 
   Frame* frame = insert_into_frame(rid, column, page); //insert the page into a frame in the bufferpool
-  std::cout << 5 << std::endl;
+  std::cout << 5 << " on thread " << std::this_thread::get_id() << std::endl;
   pin(rid, column, 'N');
-  std::cout << 6 << std::endl;
+  std::cout << 6 << " on thread " << std::this_thread::get_id() << std::endl;
   frame->dirty = true; //make sure data will be written back to disk
-  std::cout << 7 << std::endl;
+  std::cout << 7 << " on thread " << std::this_thread::get_id() << std::endl;
   unpin(rid, column, 'N');
-  std::cout << 8 << std::endl;
+  std::cout << 8 << " on thread " << std::this_thread::get_id() << std::endl;
   update_ages(frame, hash_vector[hash_fun(rid.first_rid_page)]);
-  std::cout << 9 << std::endl;
+  std::cout << 9 << " on thread " << std::this_thread::get_id() << std::endl;
 
   return;
 }

@@ -35,6 +35,7 @@ void TransactionWorker::_run() {
         if(!result){
           transactions.push_back(transactions[i]);
         }
+        std::this_thread::sleep_for(2000ms);
     }
 }
 
