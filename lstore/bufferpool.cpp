@@ -180,6 +180,7 @@ Frame* BufferPool::insert_into_frame(const RID& rid, const int& column, Page* pa
   std::cout << "Insert_into_frame" << 10 << " on thread " << std::this_thread::get_id() << std::endl;
     Frame* range_end = hash == (hash_vector.size() - 1) ? tail : hash_vector[hash + 1]->prev; //end of hash range
   std::cout << "Insert_into_frame" << 11 << " on thread " << std::this_thread::get_id() << std::endl;
+  std::cout << range_begin << std::endl;
     Frame* current_frame = range_begin; //iterate through range
   std::cout << "Insert_into_frame" << 12 << " on thread " << std::this_thread::get_id() << std::endl;
     while(current_frame != range_end->next){
