@@ -20,12 +20,14 @@ class Log{
 public:
   Log () {
     lk = std::unique_lock<std::mutex>(db_log_lock, std::defer_lock);
+    lk_shared = std::shared_lock<std::mutex>(db_log_lock, std::defer_lock);
   }
   virtual ~Log () {};
   std::map<int, LogEntry> entries;
   std::atomic_int num_transactions = 0;
   std::mutex db_log_lock;
   std::unique_lock<std::mutex> lk;
+  std::shared_lock<std::mutex> lk_shared;
 };
 
 

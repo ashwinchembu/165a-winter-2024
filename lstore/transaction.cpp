@@ -206,7 +206,9 @@ bool Transaction::run() {
 }
 
 void Transaction::abort() {
+  db_log.lk_shared.lock();
   LogEntry log_entry = db_log.entries.find(xact_id)->second;
+  db_log.lk_shared.unlock();
 
   for(size_t i = 0; i < log_entry.queries.size(); i++){ //undo all queries in the transaction
     OpCode type = queries[i].type;
