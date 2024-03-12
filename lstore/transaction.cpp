@@ -104,7 +104,9 @@ bool QueryOperation::check_req() {
 
 QueryOperation::~QueryOperation(){}
 
-Transaction::Transaction () {}
+Transaction::Transaction () {
+  lk = std::unique_lock<std::mutex>(db_log_lock, std::defer_lock);
+}
 Transaction::~Transaction () {}
 Transaction::Transaction (const Transaction& rhs) {
   queries = rhs.queries;
@@ -174,9 +176,8 @@ bool Transaction::run() {
     bool _commit = true; //any case where transaction does not need to be redone
     db_log.num_transactions++;
     xact_id = db_log.num_transactions;
-    db_log_lock.lock();
     db_log.entries.insert({xact_id, LogEntry(queries)}); //note in log that transaction has begun
-    db_log_lock.unlock();
+    lk.unlock();
 
     for (int i = 0; i < num_queries; i++) { //run all the queries
       int query_success = queries[i].run();

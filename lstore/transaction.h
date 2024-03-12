@@ -1,6 +1,6 @@
 #ifndef TRANSACTION_H
 #define TRANSACTION_H
-
+#include <thread>
 #include "table.h"
 #include "index.h"
 #include "query.h"
@@ -38,6 +38,7 @@ class Transaction {
 public:
     std::vector<QueryOperation> queries; // To hold onto queries
     std::mutex db_log_lock;
+    std::unique_lock<std::mutex> lk;
     int num_queries = 0;
     int xact_id = -1;
     Transaction ();
