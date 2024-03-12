@@ -73,25 +73,25 @@ RID Table::insert(const std::vector<int>& columns) {
 	// std::lock(insert_lock, page_directory_shared);
 	insert_lock.lock();
 	{
-		// page_range_shared.lock();
-		// if (page_range.size() == 0 || !(page_range.back().get()->base_has_capacity())) {
-		// 	page_range_shared.unlock();
-		// 	std::shared_ptr<PageRange>newPageRange{new PageRange(record, columns)};
-		// 	page_range_unique.lock();
-		// 	page_range.push_back(newPageRange); // Make a base page with given record
-		// 	page_range_unique.unlock();
-		// 	insert_lock.unlock();
-		// } else { // If there are base page already, just insert it normally.
-  //
-		// 	record.first_rid_page_range = (page_range.back().get())->pages[0].first_rid_page_range;
-		// 	PageRange* prange = (page_range.back().get());
-		// 	page_range_shared.unlock();
-		// 	insert_lock.unlock();
-  //
-		// 	if (prange->insert(record, columns)) {
-		// 		return RID(0);
-		// 	}
-		// }
+		page_range_shared.lock();
+		if (page_range.size() == 0 || !(page_range.back().get()->base_has_capacity())) {
+			page_range_shared.unlock();
+			//std::shared_ptr<PageRange>newPageRange{new PageRange(record, columns)};
+			page_range_unique.lock();
+			//page_range.push_back(newPageRange); // Make a base page with given record
+			page_range_unique.unlock();
+			insert_lock.unlock();
+		} else { // If there are base page already, just insert it normally.
+
+			record.first_rid_page_range = (page_range.back().get())->pages[0].first_rid_page_range;
+			PageRange* prange = (page_range.back().get());
+			page_range_shared.unlock();
+			insert_lock.unlock();
+
+			//if (prange->insert(record, columns)) {
+			//	return RID(0);
+			//}
+		}
 	}
 
 	page_directory_unique.lock();
