@@ -109,6 +109,7 @@ Transaction::Transaction () {
 }
 Transaction::~Transaction () {}
 Transaction::Transaction (const Transaction& rhs) {
+  lk = std::unique_lock<std::mutex>(db_log_lock, std::defer_lock);
   queries = rhs.queries;
   num_queries = rhs.num_queries;
   xact_id = rhs.xact_id;
