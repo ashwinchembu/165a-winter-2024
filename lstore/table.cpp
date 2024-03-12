@@ -66,14 +66,16 @@ RID Table::insert(const std::vector<int>& columns) {
 	RID record;
 	record.table_name = name;
 	record.id = rid_id;
-	std::cout << "Probably here" << std::endl;
 	// std::lock(insert_lock, page_directory_shared);
-	std::cout << "Probably here 2" << std::endl;
+	std::cout << "Probably here" << std::endl;
 	insert_lock.lock();
+	std::cout << "Probably here 2" << std::endl;
 	{
 		page_range_shared.lock();
+		std::cout << "Probably here 3" << std::endl;
 		if (page_range.size() == 0 || !(page_range.back().get()->base_has_capacity())) {
 			page_range_shared.unlock();
+			std::cout << "Probably here 4" << std::endl;
 			std::shared_ptr<PageRange>newPageRange{new PageRange(record, columns)};
 			page_range_unique.lock();
 			page_range.push_back(newPageRange); // Make a base page with given record
@@ -84,6 +86,7 @@ RID Table::insert(const std::vector<int>& columns) {
 			record.first_rid_page_range = (page_range.back().get())->pages[0].first_rid_page_range;
 			PageRange* prange = (page_range.back().get());
 			page_range_shared.unlock();
+			std::cout << "Probably here 4" << std::endl;
 			insert_lock.unlock();
 			if (prange->insert(record, columns)) {
 				return RID(0);
