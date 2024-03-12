@@ -174,13 +174,7 @@ bool Transaction::run() {
     bool _commit = true; //any case where transaction does not need to be redone
     db_log.lk.lock();
     db_log.num_transactions++;
-	db_log.lk.unlock();
-
-	db_log.lk_shared.lock();
     xact_id = db_log.num_transactions;
-	db_log.lk_shared.unlock();
-
-	db_log.lk.lock();
     db_log.entries.insert({xact_id, LogEntry(queries)}); //note in log that transaction has begun
     db_log.lk.unlock();
 
