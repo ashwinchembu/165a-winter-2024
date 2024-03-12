@@ -70,10 +70,10 @@ RID Table::insert(const std::vector<int>& columns) {
 	RID record;
 	record.table_name = name;
 	record.id = rid_id;
-	// std::lock(insert_lock, page_directory_shared);
-	insert_lock.lock();
+	std::lock(insert_lock, page_directory_shared);
+	//insert_lock.lock();
 	{
-		page_range_shared.lock();
+		//page_range_shared.lock();
 		if (page_range.size() == 0 || !(page_range.back().get()->base_has_capacity())) {
 			page_range_shared.unlock();
 			std::shared_ptr<PageRange>newPageRange{new PageRange(record, columns)};
