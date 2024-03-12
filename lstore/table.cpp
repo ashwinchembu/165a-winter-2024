@@ -64,7 +64,7 @@ Table::Table (const Table& rhs) {
 RID Table::insert(const std::vector<int>& columns) {
 	// insert_lock.lock();
 	// num_insert++; // Should not need mutex here. num_insert is std::atomic and rid solely depend on that.
-	// int rid_id = num_insert;
+	int rid_id = num_insert;
 	// buffer_pool.lock_manager.find(name)->second.insert({rid_id, new LockManagerEntry});
 	// insert_lock.unlock();
 	RID record;
