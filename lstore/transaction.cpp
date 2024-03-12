@@ -106,6 +106,11 @@ QueryOperation::~QueryOperation(){}
 
 Transaction::Transaction () {}
 Transaction::~Transaction () {}
+Transaction::Transaction (const Transaction& rhs) {
+  queries = rhs.queries;
+  num_queries = rhs.num_queries;
+  xact_id = rhs.xact_id;
+}
 // I believe wrapper can simplify these function pointers
 // Insert
 void Transaction::add_query(Query& q, Table& t, const std::vector<int>& columns) {
