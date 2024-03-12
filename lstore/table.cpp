@@ -46,6 +46,10 @@ Table::Table (const Table& rhs) {
 	num_update = num_update_now;
 	int num_insert_now = rhs.num_insert;
 	num_insert = num_insert_now;
+	page_directory_unique = std::unique_lock<std::shared_mutex>(page_directory_lock, std::defer_lock);
+	page_directory_shared = std::shared_lock<std::shared_mutex>(page_directory_lock, std::defer_lock);
+	page_range_unique = std::unique_lock<std::shared_mutex>(page_range_lock, std::defer_lock);
+	page_range_shared = std::shared_lock<std::shared_mutex>(page_range_lock, std::defer_lock);
 }
 
 
