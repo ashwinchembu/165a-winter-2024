@@ -127,7 +127,9 @@ Table* Database::create_table(const std::string& name, const int& num_columns, c
 		throw std::invalid_argument("A table with this name already exists in the database. The table was not added. (Is old data removed?)");
 	}
 	std::unordered_map<int, LockManagerEntry*> new_lock_manager;
+	buffer_pool.unique_lock_manager_lock.lock();
 	buffer_pool.lock_manager.insert({name, new_lock_manager});
+	buffer_pool.unique_lock_manager_lock.unlock();
 	return table;
 }
 
@@ -144,7 +146,9 @@ void Database::drop_table(const std::string& name){
 	}
 	delete tables.find(name)->second;
 	tables.erase(name);
+	buffer_pool.unique_lock_manager_lock.lock();
 	buffer_pool.lock_manager.erase(name);
+	buffer_pool.unique_lock_manager_lock.unlock();
 	return;
 }
 

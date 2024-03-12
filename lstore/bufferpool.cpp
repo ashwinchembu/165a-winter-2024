@@ -35,6 +35,9 @@ BufferPool::BufferPool (const int& num_pages) : bufferpool_size(num_pages){
   tail = new Frame; //create tail
   old_frame->next = tail;
   tail->prev = old_frame;
+
+  shared_lock_manager_lock = std::shared_lock<std::shared_mutex>(lock_manager_lock, std::defer_lock);
+  unique_lock_manager_lock = std::unique_lock<std::shared_mutex>(lock_manager_lock, std::defer_lock);
   shared_frame_directory_lock = std::shared_lock<std::shared_mutex>(frame_directory_lock, std::defer_lock);
   unique_frame_directory_lock = std::unique_lock<std::shared_mutex>(frame_directory_lock, std::defer_lock);
 }
@@ -273,6 +276,7 @@ void BufferPool::write_back_all (){
 
 Frame* BufferPool::pin (const RID& rid, const int& column, const char& pin_type) {
   Frame* found = nullptr;
+  unique_lock_manager_lock.lock();
   switch(pin_type){
     case 'S':
       if(!lock_manager.find(rid.table_name)->second.find(rid.id)->second->shared_lock->try_lock()){
@@ -287,6 +291,7 @@ Frame* BufferPool::pin (const RID& rid, const int& column, const char& pin_type)
     default:
       break;
   }
+  unique_lock_manager_lock.unlock();
   found = search(rid, column);
   if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
     found = load(rid, column);
@@ -306,6 +311,7 @@ void BufferPool::unpin (const RID& rid, const int& column, const char& pin_type)
     (found->pin) = 0;
     throw std::invalid_argument("Attempt to unpin record that was not already pinned (Pin negative value)");
   }
+  unique_lock_manager_lock.lock();
   switch(pin_type){
     case 'S':
       lock_manager.find(rid.table_name)->second.find(rid.id)->second->shared_lock->unlock();
@@ -316,6 +322,7 @@ void BufferPool::unpin (const RID& rid, const int& column, const char& pin_type)
     default:
       break;
   }
+  unique_lock_manager_lock.unlock();
   return;
 }
 
