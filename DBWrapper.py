@@ -319,9 +319,9 @@ def c_intOrUnreasonable(number):
 #Elements of None are given an extreme value
 def fillAndReturnIntBuffer(*args):
     lst = list(args)
-    print(lst)
     erase_buffer_vector()
     for i in lst:
+        print(i)
         add_to_buffer_vector(c_intOrUnreasonable(i))
         
     return get_buffer_vector()
