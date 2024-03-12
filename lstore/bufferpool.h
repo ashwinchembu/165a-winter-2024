@@ -65,9 +65,6 @@ public:
     std::vector<Frame*> hash_vector; //the starting frame of each hash range
 
     std::unordered_map<std::string, std::unordered_map<int, LockManagerEntry*>> lock_manager; //<table_name, <rid_id, lock_manager_entry>>
-    std::shared_mutex lock_manager_lock;
-    std::shared_lock<std::shared_mutex> shared_lock_manager_lock;
-    std::unique_lock<std::shared_mutex> unique_lock_manager_lock;
 
     std::vector<int> frame_directory; //keep track of how many open frames in each hash range
     std::shared_mutex frame_directory_lock;
