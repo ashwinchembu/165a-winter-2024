@@ -115,8 +115,8 @@ void Index::create_index(const int& column_number) {
             index.insert({value, rid.id});
         }
     }
-    unique_lock_list.find(column_number)->second->unlock();
     indices.insert({column_number, index});
+    unique_lock_list.find(column_number)->second->unlock();
     return;
 }
 
