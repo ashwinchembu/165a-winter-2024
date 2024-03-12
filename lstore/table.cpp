@@ -67,11 +67,11 @@ RID Table::insert(const std::vector<int>& columns) {
 	record.table_name = name;
 	record.id = rid_id;
 	std::cout << "Probably here" << std::endl;
-	std::lock(insert_lock, page_directory_shared);
+	// std::lock(insert_lock, page_directory_shared);
 	std::cout << "Probably here 2" << std::endl;
-	//insert_lock.lock();
+	insert_lock.lock();
 	{
-		//page_range_shared.lock();
+		page_range_shared.lock();
 		if (page_range.size() == 0 || !(page_range.back().get()->base_has_capacity())) {
 			page_range_shared.unlock();
 			std::shared_ptr<PageRange>newPageRange{new PageRange(record, columns)};
