@@ -42,7 +42,7 @@ bool Query::insert(const std::vector<int>& columns) {
         return false;
     }
     RID rid = table->insert(columns);
-    // table->index->insert_index(rid.id, columns);
+    table->index->insert_index(rid.id, columns);
     return rid.id;
 }
 
