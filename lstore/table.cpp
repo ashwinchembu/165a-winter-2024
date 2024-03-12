@@ -66,6 +66,10 @@ RID Table::insert(const std::vector<int>& columns) {
 	num_insert++; // Should not need mutex here. num_insert is std::atomic and rid solely depend on that.
 	int rid_id = num_insert;
 	/// THIS LINE CAUSE std::system_error
+	if(buffer_pool.lock_manager.find(name) == buffer_pool.lock_manager.end()){
+		std::cout << "table named " << name << " not found" << std::endl;
+	}
+	std::cout << "inserting rid " << rid_id << " into lock manager" << std::endl;
 	buffer_pool.lock_manager.find(name)->second.insert({rid_id, new LockManagerEntry});
 
 	insert_lock2.unlock();
