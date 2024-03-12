@@ -31,34 +31,13 @@ void TransactionWorker::run() {
 // }
 
 void TransactionWorker::_run() {
-    try
-    {
-        std::cout << "Running transaction with id " << std::this_thread::get_id() << std::endl;
-    	for (size_t i = 0; i < transactions.size(); i++) {
-			bool result = transactions[i].run();
-			if(!result){
-				transactions.push_back(transactions[i]);
-        	}
-    	}
-    }
-    catch(const std::system_error& e)
-    {
-        std::cout << "Caught system_error with code "
-                     "[" << e.code() << "] meaning "
-                     "[" << e.what() << "]\n";
-    }
-    //std::cout << "Running transaction with id " << std::this_thread::get_id() << std::endl;
-    //for (size_t i = 0; i < transactions.size(); i++) {
-        // std::cout << "before transaction" << std::endl;
-        //bool result = transactions[i].run();
-        // std::cout << "after transaction: " << std::this_thread::get_id() << std::endl;
-        //if(!result){
-            // std::cout << "error 1" << std::endl;
-          //transactions.push_back(transactions[i]);
-        //}
-        // std::cout << "error 2" << std::endl;
-    //}
-    // std::cout << "error 3" << std::endl;
+    std::cout << "Running transaction with id " << std::this_thread::get_id() << std::endl;
+    for (size_t i = 0; i < transactions.size(); i++) {
+        bool result = transactions[i].run();
+        if(!result){
+          transactions.push_back(transactions[i]);
+        }
+	}
 }
 
 // call all the join function for the thread we have.
