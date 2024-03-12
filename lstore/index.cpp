@@ -83,7 +83,7 @@ void Index::create_index(const int& column_number) {
     std::shared_mutex* new_mutex = new std::shared_mutex();
 
     if (column_number > table->num_columns) {
-        std::cerr << "The specified column number doesn't exist"
+        std::cerr << "The specified column number doesn't exist" << std::endl;
         return;
     }
 
