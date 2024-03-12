@@ -47,12 +47,21 @@ void TransactionWorker::_run() {
 
 // call all the join function for the thread we have.
 void TransactionWorker::join() {
-	
-    if (query_thread.joinable()) {
+	try
+    {
+        if (query_thread.joinable()) {
 		std::cout << "Joining transaction " << query_thread.get_id() << std::endl;
         query_thread.join();
 std::cout << "Joined" << std::endl;
     }
+    }
+    catch(const std::system_error& e)
+    {
+        std::cerr << "Caught system_error with code "
+                     "[" << e.code() << "] meaning "
+                     "[" << e.what() << "]\n";
+    }
+    
 }
 
 
