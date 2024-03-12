@@ -31,18 +31,31 @@ void TransactionWorker::run() {
 // }
 
 void TransactionWorker::_run() {
+    std::mutex cout_lock;
+    cout_lock.lock();
     std::cout << "Running transaction with id " << std::this_thread::get_id() << std::endl;
+    cout_lock.unlock();
     for (size_t i = 0; i < transactions.size(); i++) {
+    cout_lock.lock();
         std::cout << "before transaction" << std::endl;
+    cout_lock.unlock();
         bool result = transactions[i].run();
+    cout_lock.lock();
         std::cout << "after transaction: " << std::this_thread::get_id() << std::endl;
+    cout_lock.unlock();
         if(!result){
+    cout_lock.lock();
             std::cout << "error 1" << std::endl;
+    cout_lock.unlock();
           transactions.push_back(transactions[i]);
         }
+    cout_lock.lock();
         std::cout << "error 2" << std::endl;
+    cout_lock.unlock();
     }
+    cout_lock.lock();
     std::cout << "error 3" << std::endl;
+    cout_lock.unlock();
 }
 
 // call all the join function for the thread we have.
