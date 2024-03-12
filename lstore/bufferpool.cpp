@@ -169,7 +169,6 @@ Frame* BufferPool::insert_into_frame(const RID& rid, const int& column, Page* pa
     shared_frame_directory_lock.unlock();
     Frame* range_begin = hash_vector[hash]; //beginning of hash range
     Frame* range_end = hash == (hash_vector.size() - 1) ? tail : hash_vector[hash + 1]->prev; //end of hash range
-  std::cout << range_begin << std::endl;
     Frame* current_frame = range_begin; //iterate through range
     while(current_frame != range_end->next){
       if(!current_frame->valid){ //frame is empty
