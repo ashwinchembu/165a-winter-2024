@@ -31,7 +31,7 @@ void TransactionWorker::run() {
 // }
 
 void TransactionWorker::_run() {
-    std::cout << "Running transaction with id " << std::this_thread::get_id() << std::endl;
+    // std::cout << "Running transaction with id " << std::this_thread::get_id() << std::endl;
     for (size_t i = 0; i < transactions.size(); i++) {
         bool result = transactions[i].run();
         if(!result){
@@ -43,9 +43,9 @@ void TransactionWorker::_run() {
 // call all the join function for the thread we have.
 void TransactionWorker::join() {
     if (query_thread.joinable()) {
-		std::cout << "Joining transaction " << query_thread.get_id() << std::endl;
+		// std::cout << "Joining transaction " << query_thread.get_id() << std::endl;
         query_thread.join();
-std::cout << "Joined" << std::endl;
+// std::cout << "Joined" << std::endl;
     }
 }
 
