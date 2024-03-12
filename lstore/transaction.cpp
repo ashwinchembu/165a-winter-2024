@@ -270,11 +270,11 @@ void Transaction::abort() {
 }
 
 void Transaction::commit() {
-  //db_log.lk.lock();
-std::unique_lock db_shared{db_log.db_log_lock};
-  db_log.entries.erase(xact_id);
-  //db_log.lk.unlock();
-db_shared.unlock();
+  	//db_log.lk.lock();
+	std::unique_lock db_shared{db_log.db_log_lock};
+  	db_log.entries.erase(xact_id);
+ 	//db_log.lk.unlock();
+	db_shared.unlock();
 }
 
 COMPILER_SYMBOL void Transaction_add_query_insert(
