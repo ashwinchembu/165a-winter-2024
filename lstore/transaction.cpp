@@ -172,7 +172,9 @@ void Transaction::add_query(Query& q, Table& t, int& key, const int& column) {
 bool Transaction::run() {
     bool transaction_completed = true; //any case where transaction does not need to be redone
     bool _commit = true; //any case where transaction does not need to be redone
+    std::cout << 1 << std::endl;
     db_log.lk.lock();
+    std::cout << 2 << std::endl;
     db_log.num_transactions++;
     xact_id = db_log.num_transactions;
     db_log.entries.insert({xact_id, LogEntry(queries)}); //note in log that transaction has begun
@@ -262,13 +264,18 @@ void Transaction::abort() {
             break;
     }
   }
-  db_log.lk.lock();
+
+    std::cout << 3 << std::endl;
+    db_log.lk.lock();
+    std::cout << 4 << std::endl;
   db_log.entries.erase(xact_id);
   db_log.lk.unlock();
 }
 
 void Transaction::commit() {
-  db_log.lk.lock();
+    std::cout << 5 << std::endl;
+    db_log.lk.lock();
+    std::cout << 6 << std::endl;
   db_log.entries.erase(xact_id);
   db_log.lk.unlock();
 }
