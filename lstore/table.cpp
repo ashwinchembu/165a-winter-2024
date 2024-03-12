@@ -78,8 +78,11 @@ RID Table::insert(const std::vector<int>& columns) {
 			std::cout << "Probably here 4" << std::endl;
 			std::shared_ptr<PageRange>newPageRange{new PageRange(record, columns)};
 			page_range_unique.lock();
+			std::cout << "Probably here 5" << std::endl;
 			page_range.push_back(newPageRange); // Make a base page with given record
+			std::cout << "Probably here 6" << std::endl;
 			page_range_unique.unlock();
+			std::cout << "Probably here 7" << std::endl;
 			insert_lock.unlock();
 		} else { // If there are base page already, just insert it normally.
 
