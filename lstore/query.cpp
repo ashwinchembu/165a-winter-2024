@@ -41,7 +41,7 @@ bool Query::insert(const std::vector<int>& columns) {
         std::cerr << "Record with the specified primary key already exists" << std::endl;
         return false;
     }
-    RID rid = table->insert(columns);
+    //RID rid = table->insert(columns);
     table->index->insert_index(rid.id, columns);
     return rid.id;
 }
