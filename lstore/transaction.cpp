@@ -206,9 +206,9 @@ bool Transaction::run() {
 }
 
 void Transaction::abort() {
-  db_log.db_log_lock.lock();
+  db_log.lk_shared.lock();
   LogEntry log_entry = db_log.entries.find(xact_id)->second;
-  db_log.db_log_lock.unlock();
+  db_log.lk_shared.unlock();
 
   for(size_t i = 0; i < log_entry.queries.size(); i++){ //undo all queries in the transaction
     OpCode type = queries[i].type;
@@ -269,9 +269,11 @@ void Transaction::abort() {
 }
 
 void Transaction::commit() {
-  db_log.lk.lock();
+    std::lock_guard lk(db_log.lk);
+
+  // db_log.lk.lock();
   db_log.entries.erase(xact_id);
-  db_log.lk.unlock();
+  // db_log.lk.unlock();
 }
 
 COMPILER_SYMBOL void Transaction_add_query_insert(
