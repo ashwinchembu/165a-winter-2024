@@ -198,7 +198,9 @@ bool Transaction::run() {
         }
     }
     if(_commit){
+      db_log.lk.lock();
       commit();
+      db_log.lk.unlock();
     } else {
       abort();
     }
@@ -269,9 +271,7 @@ void Transaction::abort() {
 }
 
 void Transaction::commit() {
-  db_log.lk.lock();
   db_log.entries.erase(xact_id);
-  db_log.lk.unlock();
 }
 
 COMPILER_SYMBOL void Transaction_add_query_insert(
