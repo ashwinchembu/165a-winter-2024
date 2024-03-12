@@ -23,14 +23,15 @@ void TransactionWorker::add_transaction(const Transaction& t) {
 // Start all the transactions. Create thread and run.
 void TransactionWorker::run() {
     thread = std::thread(&TransactionWorker::_run, this);
-    // thread = std::thread(&TransactionWorker::_run, this, );
+    // thread = std::thread(&TransactionWorker::_run, this);
 }
 
-// void TransactionWorker::_run_visualize(int id) {
+// void TransactionWorker::_run_visualize() {
 //
 // }
 
 void TransactionWorker::_run() {
+    std::cout << "Running transaction with id " << std::this_thread::get_id() << std::endl;
     for (size_t i = 0; i < transactions.size(); i++) {
         bool result = transactions[i].run();
         if(!result){
