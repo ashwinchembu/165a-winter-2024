@@ -172,11 +172,12 @@ void Transaction::add_query(Query& q, Table& t, int& key, const int& column) {
 bool Transaction::run() {
     bool transaction_completed = true; //any case where transaction does not need to be redone
     bool _commit = true; //any case where transaction does not need to be redone
-    db_log.lk.lock();
+	std::unique_lock db_shared{db_log.db_log_lock}
+    //db_log.lk.lock();
     db_log.num_transactions++;
     xact_id = db_log.num_transactions;
     db_log.entries.insert({xact_id, LogEntry(queries)}); //note in log that transaction has begun
-    db_log.lk.unlock();
+    db_shared.unlock();
 
     for (int i = 0; i < num_queries; i++) { //run all the queries
       int query_success = queries[i].run();
