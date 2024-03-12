@@ -144,7 +144,7 @@ int PageRange::update(RID &rid, RID &rid_new, const std::vector<int> &columns, c
     RID latest_rid = page_directory.find(buffer_pool.get(rid, INDIRECTION_COLUMN))->second;
     // std::cout << "update found page" << std::endl;
 
-    buffer_pool.set(rid, INDIRECTION_COLUMN, rid_new.id, false);
+    buffer_pool.set(latest_rid, INDIRECTION_COLUMN, rid_new.id, false);
     buffer_pool.unpin(rid, INDIRECTION_COLUMN);
     // Create new tail pages if there are no space left or tail page does not exist.
     int schema_encoding = 0;
