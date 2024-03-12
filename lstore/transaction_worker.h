@@ -9,7 +9,7 @@
 class TransactionWorker {
 public:
     std::vector<Transaction> transactions; // List of transactions to run
-    std::thread thread;
+    std::thread query_thread;
     std::vector<bool> stats;
     int result = 0;
     TransactionWorker ();
