@@ -298,6 +298,7 @@ Frame* BufferPool::pin (const RID& rid, const int& column, const char& pin_type)
 void BufferPool::unpin (const RID& rid, const int& column, const char& pin_type) {
   Frame* found = search(rid, column);
   if(found == nullptr || !found->valid){ //if not in the bufferpool
+    std::cout << "Address of found" << found << std::endl;
     throw std::invalid_argument("Attempt to unpin record that was not already pinned (No record found)");
   }
   (found->pin)--;
