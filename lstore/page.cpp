@@ -162,7 +162,7 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
         }
         std::cout << "error 12" << std::endl;
         // Unlock the rid of the record once we are done inserting
-        buffer_pool.lock_manager.find(new_rid.table_name)->second.find(new_rid.id)->second->unique_lock->lock();
+        buffer_pool.lock_manager.find(new_rid.table_name)->second.find(new_rid.id)->second->unique_lock->unlock();
     }
     std::cout << "error 13" << std::endl;
     return 0;
