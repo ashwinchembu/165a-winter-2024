@@ -1,5 +1,6 @@
 #include <thread>
 #include <iostream>
+#include <chrono>
 #include "config.h"
 #include "../DllConfig.h"
 #include "transaction_worker.h"
@@ -35,7 +36,7 @@ void TransactionWorker::_run() {
         if(!result){
           transactions.push_back(transactions[i]);
         }
-        std::this_thread::sleep_for(2000ms);
+        std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 }
 
