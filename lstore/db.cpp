@@ -128,6 +128,8 @@ Table* Database::create_table(const std::string& name, const int& num_columns, c
 	}
 	std::unordered_map<int, LockManagerEntry*> new_lock_manager;
 	buffer_pool.unique_lock_manager_lock.lock();
+	  std::cout << std::this_thread::get_id() << " - lock manager used in db: create table" << std::endl;
+
 	buffer_pool.lock_manager.insert({name, new_lock_manager});
 	buffer_pool.unique_lock_manager_lock.unlock();
 	return table;
@@ -147,6 +149,7 @@ void Database::drop_table(const std::string& name){
 	delete tables.find(name)->second;
 	tables.erase(name);
 	buffer_pool.unique_lock_manager_lock.lock();
+	std::cout << std::this_thread::get_id() << " - lock manager used in db: drop table" << std::endl;
 	buffer_pool.lock_manager.erase(name);
 	buffer_pool.unique_lock_manager_lock.unlock();
 	return;

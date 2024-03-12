@@ -277,6 +277,7 @@ void BufferPool::write_back_all (){
 Frame* BufferPool::pin (const RID& rid, const int& column, const char& pin_type) {
   Frame* found = nullptr;
   unique_lock_manager_lock.lock();
+  std::cout << std::this_thread::get_id() << " - lock manager used in bufferpool: pin" << std::endl;
   switch(pin_type){
     case 'S':
       if(!lock_manager.find(rid.table_name)->second.find(rid.id)->second->shared_lock->try_lock()){
@@ -312,6 +313,8 @@ void BufferPool::unpin (const RID& rid, const int& column, const char& pin_type)
     throw std::invalid_argument("Attempt to unpin record that was not already pinned (Pin negative value)");
   }
   unique_lock_manager_lock.lock();
+    std::cout << std::this_thread::get_id() << " - lock manager used in bufferpool: unpin" << std::endl;
+
   switch(pin_type){
     case 'S':
       lock_manager.find(rid.table_name)->second.find(rid.id)->second->shared_lock->unlock();
