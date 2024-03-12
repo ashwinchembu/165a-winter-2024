@@ -33,7 +33,9 @@ void TransactionWorker::run() {
 void TransactionWorker::_run() {
     std::cout << "Running transaction with id " << std::this_thread::get_id() << std::endl;
     for (size_t i = 0; i < transactions.size(); i++) {
+        std::cout << "before transaction" << std::endl;
         bool result = transactions[i].run();
+        std::cout << "after transaction: " << std::this_thread::get_id() << std::endl;
         if(!result){
           transactions.push_back(transactions[i]);
         }
