@@ -70,17 +70,17 @@ RID Table::insert(const std::vector<int>& columns) {
 	RID record;
 	record.table_name = name;
 	record.id = rid_id;
-	std::lock(insert_lock, page_directory_shared);
+	// std::lock(insert_lock, page_directory_shared);
 	// std::lock_guard insert_lk(insert_lock);
-	// insert_lock.lock();
+	insert_lock.lock();
 	{
-		// page_range_shared.lock();
+		page_range_shared.lock();
 		if (page_range.size() == 0 || !(page_range.back().get()->base_has_capacity())) {
 			page_range_shared.unlock();
 			//std::shared_ptr<PageRange>newPageRange{new PageRange(record, columns)};
-			page_range_unique.lock();
+			// page_range_unique.lock();
 			//page_range.push_back(newPageRange); // Make a base page with given record
-			page_range_unique.unlock();
+			// page_range_unique.unlock();
 			insert_lock.unlock();
 		} else { // If there are base page already, just insert it normally.
 
