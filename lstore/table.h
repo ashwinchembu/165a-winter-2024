@@ -77,6 +77,8 @@ public:
 
     void PrintLineage();
 
+    void PrintTable();
+
     bool ridIsJoined(RID rid,int col);
     RIDJoin getJoin(RID rid, int col);
     int poolSizeRoundUp(int size);

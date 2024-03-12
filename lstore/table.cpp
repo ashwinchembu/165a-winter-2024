@@ -429,6 +429,16 @@ void Table::PrintData() {
 	}
 }
 
+void Table::PrintTable(){
+	for(auto& rid :page_directory){
+		for(int i = 0; i < NUM_METADATA_COLUMNS+num_columns;i++){
+			printf("%15d",buffer_pool.get(rid.second,i));
+		}
+
+		printf("\n");
+	}
+}
+
 void Table::PrintLineage(){
 	for(auto& rid :page_directory){
 
@@ -551,4 +561,8 @@ COMPILER_SYMBOL int Table_num_columns(int* obj){
 
 COMPILER_SYMBOL void Table_print_lineage(int* obj){
 	((Table*)obj)->PrintLineage();
+}
+
+COMPILER_SYMBOL void Table_print_table(int* obj){
+	((Table*)obj)->PrintTable();
 }
