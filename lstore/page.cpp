@@ -90,23 +90,26 @@ PageRange::~PageRange(){
 int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
     // Lock to protect variable in Page range.
     mutex_insert.lock();
+    std::cout << "error 0" << std::endl;
     if (base_last_wasfull) {
         // Update status of the page range
         base_last_wasfull = false;
         num_slot_used_base = 1;
         tail_last++;
         base_last++;
+        std::cout << "error 1" << std::endl;
         mutex_insert.unlock();
 
         // Update information in the rid class
         new_rid.offset = 0;
         new_rid.first_rid_page = new_rid.id;
-
+        std::cout << "error 2" << std::endl;
         // Lock the rid of record that we are inserting
         if (!(buffer_pool.lock_manager.find(new_rid.table_name)->second.find(new_rid.id)->second->unique_lock->try_lock())) {
+            std::cout << "error 3" << std::endl;
             return 1;
         }
-
+        std::cout << "error 4" << std::endl;
         // Write in the metadatas
         buffer_pool.insert_new_page(new_rid, INDIRECTION_COLUMN, new_rid.id);
         buffer_pool.insert_new_page(new_rid, RID_COLUMN, new_rid.id);
@@ -114,26 +117,28 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
         buffer_pool.insert_new_page(new_rid, SCHEMA_ENCODING_COLUMN, 0);
         buffer_pool.insert_new_page(new_rid, BASE_RID_COLUMN, new_rid.id);
         buffer_pool.insert_new_page(new_rid, TPS, 0);
-
+        std::cout << "error 5" << std::endl;
         // Write in the data
         for (int i = NUM_METADATA_COLUMNS; i < num_column; i++) {
             buffer_pool.insert_new_page(new_rid, i, columns[i - NUM_METADATA_COLUMNS]);
         }
-
+        std::cout << "error 6" << std::endl;
         // Unlock the rid of the record once we are done inserting
         buffer_pool.lock_manager.find(new_rid.table_name)->second.find(new_rid.id)->second->unique_lock->unlock();
 
         // Protecting pages vector from multiple thread writing simultaneously
+        std::cout << "error 7" << std::endl;
         page_lock.lock();
         // Insert the first rid of the logical page into appropriate place
         pages.insert(pages.begin() + base_last, new_rid);
         page_lock.unlock();
     } else {
+        std::cout << "error 8" << std::endl;
         // Update status of the page range
         base_last_wasfull = (num_slot_used_base == PAGE_SIZE);
         num_slot_used_base++;
         mutex_insert.unlock();
-
+        std::cout << "error 9" << std::endl;
         // Update information in the rid class
         new_rid.offset = num_slot_used_base - 1;
         new_rid.first_rid_page = pages[base_last].id;
@@ -142,7 +147,7 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
         if (!(buffer_pool.lock_manager.find(new_rid.table_name)->second.find(new_rid.id)->second->unique_lock->try_lock())) {
             return 1;
         }
-
+        std::cout << "error 10" << std::endl;
         // Write in the metadatas
         buffer_pool.set(new_rid, INDIRECTION_COLUMN, new_rid.id, true);
         buffer_pool.set(new_rid, RID_COLUMN, new_rid.id, true);
@@ -150,15 +155,16 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
         buffer_pool.set(new_rid, SCHEMA_ENCODING_COLUMN, 0, true);
         buffer_pool.set(new_rid, BASE_RID_COLUMN, new_rid.id, true);
         buffer_pool.set(new_rid, TPS, 0, true);
-
+        std::cout << "error 11" << std::endl;
         // Write in the data
         for (int i = NUM_METADATA_COLUMNS; i < num_column; i++) {
             buffer_pool.set(new_rid, i, columns[i - NUM_METADATA_COLUMNS], true);
         }
-
+        std::cout << "error 12" << std::endl;
         // Unlock the rid of the record once we are done inserting
         buffer_pool.lock_manager.find(new_rid.table_name)->second.find(new_rid.id)->second->unique_lock->lock();
     }
+    std::cout << "error 13" << std::endl;
     return 0;
 }
 
