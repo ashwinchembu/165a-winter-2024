@@ -180,8 +180,7 @@ bool Transaction::run() {
     db_shared.unlock();
 
     for (int i = 0; i < num_queries; i++) { //run all the queries
-      // int query_success = queries[i].run();
-      int query_success = QueryResult::QUERY_SUCCESS;
+      int query_success = queries[i].run();
       switch (query_success) {
           case QueryResult::QUERY_SUCCESS: //query completed successfully
             break;
