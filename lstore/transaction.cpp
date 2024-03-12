@@ -13,10 +13,6 @@ int QueryOperation::run() {
             std::cerr << "Query with No type" << std::endl;
             return QueryResult::QUERY_IC;
         case OpCode::INSERT:
-            for (int i = 0; i <columns.size(); i++) {
-              std::cout << columns[i] << " ";
-            }
-            std::cout << std::endl;
             if (check_req()) {
                 bool result = q->insert(columns);
                 if(!result){

@@ -37,16 +37,12 @@ bool Query::deleteRecord(const int& primary_key) {
 
 bool Query::insert(const std::vector<int>& columns) {
     // Return true if successful, false otherwise
-    std::cout << "Insert Query " << 1 << std::endl;
     if (table->index->locate(table->key, columns[table->key]).size() != 0) {
         std::cerr << "Record with the specified primary key already exists" << std::endl;
         return false;
     }
-    std::cout << "Insert Query " << 2 << std::endl;
     RID rid = table->insert(columns);
-    std::cout << "Insert Query " << 3 << std::endl;
     table->index->insert_index(rid.id, columns);
-    std::cout << "Insert Query " << 4 << std::endl;
     return rid.id;
 }
 
