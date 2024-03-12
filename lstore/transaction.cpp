@@ -172,7 +172,7 @@ void Transaction::add_query(Query& q, Table& t, int& key, const int& column) {
 bool Transaction::run() {
     bool transaction_completed = true; //any case where transaction does not need to be redone
     bool _commit = true; //any case where transaction does not need to be redone
-	std::unique_lock db_shared{db_log.db_log_lock}
+	std::unique_lock db_shared{db_log.db_log_lock};
     //db_log.lk.lock();
     db_log.num_transactions++;
     xact_id = db_log.num_transactions;
@@ -270,9 +270,11 @@ void Transaction::abort() {
 }
 
 void Transaction::commit() {
-  db_log.lk.lock();
+  //db_log.lk.lock();
+std::unique_lock db_shared{db_log.db_log_lock};
   db_log.entries.erase(xact_id);
-  db_log.lk.unlock();
+  //db_log.lk.unlock();
+db_shared.unlock();
 }
 
 COMPILER_SYMBOL void Transaction_add_query_insert(
