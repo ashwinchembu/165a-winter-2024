@@ -89,11 +89,15 @@ RID Table::insert(const std::vector<int>& columns) {
 			record.first_rid_page_range = (page_range.back().get())->pages[0].first_rid_page_range;
 			PageRange* prange = (page_range.back().get());
 			page_range_shared.unlock();
-			std::cout << "Probably here 4" << std::endl;
+			std::cout << "Probably here 4.1" << std::endl;
 			insert_lock.unlock();
+			std::cout << "Probably here 5.1" << std::endl;
+
 			if (prange->insert(record, columns)) {
+			std::cout << "Probably here 6.1" << std::endl;
 				return RID(0);
 			}
+			std::cout << "Probably here 7.1" << std::endl;
 		}
 	}
 
