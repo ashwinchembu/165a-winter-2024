@@ -91,23 +91,29 @@ bool BufferPool::set (const RID& rid, const int& column, const int& value, const
 }
 
 Frame* BufferPool::search(const RID& rid, const int& column){
+  std::shared_lock lock(update_age_lock, std::defer_lock);
   size_t hash = hash_fun(rid.first_rid_page); //perform hash on rid
+  lock.lock();
   Frame* range_begin = hash_vector[hash]; //beginning of hash range
   Frame* range_end = (hash == hash_vector.size() - 1) ? tail : hash_vector[hash + 1]->prev; //end of hash range
   Frame* current_frame = range_begin; //iterate through range
   while(current_frame != range_end->next){
     if ((current_frame->valid)) {
       if(rid.first_rid_page == current_frame->first_rid_page && column == current_frame->column){
+        lock.unlock();
         return current_frame;
       }
     }
     current_frame = current_frame->next;
   }
+  lock.unlock();
   return nullptr; //if not found in the range
 }
 
 void BufferPool::update_ages(Frame*& just_accessed, Frame*& range_begin){ //change ages and reorder linked list
-  update_age_lock.lock();
+  std::unique_lock lock(update_age_lock);
+  // update_age_lock.lock();
+  lock.lock();
   if(just_accessed != range_begin){ //if not already the range beginning / most recently accessed
     if(just_accessed->next == nullptr ){ //if just_accessed is the tail
       tail = just_accessed->prev;
@@ -127,7 +133,8 @@ void BufferPool::update_ages(Frame*& just_accessed, Frame*& range_begin){ //chan
     range_begin->prev = just_accessed;
     range_begin = just_accessed;
   }
-  update_age_lock.unlock();
+  // update_age_lock.unlock();
+  lock.unlock();
   return;
 }
 
