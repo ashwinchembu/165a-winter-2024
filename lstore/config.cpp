@@ -14,9 +14,11 @@ const int BUFFER_POOL_SIZE = 128;
 const int NUM_BUFFERPOOL_HASH_PARTITIONS = 4; //make sure this divides BUFFER_POOL_SIZE evenly
 
 // Prevent merge from happening during the development
-const int MAX_PAGE_RANGE_UPDATES = 21*PAGE_SIZE;
+const int MAX_PAGE_RANGE_UPDATES = PAGE_SIZE;
+//optimal - const int MAX_PAGE_RANGE_UPDATES = 21*PAGE_SIZE;
 // const int MAX_PAGE_RANGE_UPDATES = 1*PAGE_SIZE;
-const int MAX_TABLE_UPDATES = 21*PAGE_SIZE;
+const int MAX_TABLE_UPDATES = PAGE_SIZE;
+//optimal - const int MAX_TABLE_UPDATES = 21*PAGE_SIZE;
 // const int MAX_TABLE_UPDATES = 1*PAGE_SIZE;
 
 const std::string file_path = "/Data/";
