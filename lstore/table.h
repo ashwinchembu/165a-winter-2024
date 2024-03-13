@@ -74,6 +74,10 @@ public:
     int write(FILE* fp);
     int read(FILE* fp);
     void PrintData();
+    
+    void PrintLineage();
+    
+    void PrintTable();
 
     bool ridIsJoined(RID rid,int col);
     RIDJoin getJoin(RID rid, int col);

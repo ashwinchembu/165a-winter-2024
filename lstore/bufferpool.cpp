@@ -13,6 +13,7 @@
 #include "config.h"
 #include "bufferpool.h"
 #include "../Toolkit.h"
+#include "../DllConfig.h"
 
 int id_counter = 0;
 
@@ -440,3 +441,6 @@ void Frame::operator=(const Frame& rhs)
   dirty = rhs.dirty; //whether the page was modified
 }
 
+COMPILER_SYMBOL void force_write_back_all(){
+    buffer_pool.write_back_all();
+}

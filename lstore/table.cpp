@@ -417,6 +417,58 @@ void Table::PrintData() {
     }
 }
 
+void Table::PrintLineage(){
+    for(auto& rid :page_directory){
+
+        if(rid.first > 0){
+            std::cout<<"-----"<<rid.first<<std::endl;
+
+            int nextId = buffer_pool.get(rid.second,INDIRECTION_COLUMN);
+
+            while(nextId < 0){
+                RID nextRid = page_directory.find(nextId)->second;
+
+                std::cout<<"    "<<nextRid.id<<std::endl;
+
+                nextId = buffer_pool.get(nextRid,INDIRECTION_COLUMN);
+
+                if(nextId > 0){
+                    nextRid = page_directory.find(nextId)->second;
+                    std::cout<<"    "<<nextRid.id<<std::endl;
+                }
+            }
+        }
+    }
+}
+
+std::string metacols[6]={"INDIR","RID","TIME","SCHEM","BASE","TPS"};
+
+void Table::PrintTable(){
+    int row = 0;
+    for(auto& rid :page_directory){
+
+
+        if(row%50 == 0){
+
+            printf("\n\n");
+
+            for(int i = 0;i<6;i++){
+                    printf("%15s",metacols[i].c_str());
+                }
+
+            printf("\n\n");
+        }
+
+        row++;
+
+        for(int i = 0; i < NUM_METADATA_COLUMNS+num_columns;i++){
+            printf("%15d",buffer_pool.get(rid.second,i));
+        }
+
+        printf("\n");
+    }
+}
+
 COMPILER_SYMBOL int *Record_constructor(const int rid_in, const int key_in, int *columns_in) {
     std::vector<int> *cols = (std::vector<int> *)columns_in;
     return (int *)(new Record(rid_in, key_in, *cols));
@@ -510,3 +562,13 @@ COMPILER_SYMBOL int Table_merge(int *obj) {
 COMPILER_SYMBOL int Table_num_columns(int *obj) {
     return ((Table *)obj)->num_columns;
 }
+
+COMPILER_SYMBOL void Table_print_lineage(int* obj){
+    ((Table*)obj)->PrintLineage();
+}
+
+COMPILER_SYMBOL void Table_print_table(int* obj){
+    ((Table*)obj)->PrintTable();
+}
+
+
