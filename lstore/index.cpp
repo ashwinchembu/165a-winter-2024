@@ -41,9 +41,11 @@ std::vector<int> Index::locate (const int& column_number, const int& value) {
         create_index(column_number);
         index = indices.find(column_number);
     }
-    shared_lock_list.find(column_number)->second->lock();
+    // shared_lock_list.find(column_number)->second->lock();
+    std::shared_lock lock(*(mutex_list.find(column_number)->second));
     auto range = (*index).second.equal_range(value); //check for all matching records in the index
-    shared_lock_list.find(column_number)->second->unlock();
+    // shared_lock_list.find(column_number)->second->unlock();
+    lock.unlock();
     for(auto iter = range.first; iter != range.second; iter++){
         matching_records.push_back(iter->second);
     }
@@ -91,22 +93,31 @@ void Index::create_index(const int& column_number) {
     unique_lock_list.insert({column_number, new std::unique_lock<std::shared_mutex>(*new_mutex, std::defer_lock)});
     mutex_list.insert({column_number, new_mutex});
 
-    unique_lock_list.find(column_number)->second->lock();
+    // unique_lock_list.find(column_number)->second->lock();
+    std::unique_lock lock(*(mutex_list.find(column_number)->second));
+    std::shared_lock page_d_lock(table->page_directory_lock, std::defer_lock);
     for (int i = 1; i <= table->num_insert; i++) {
-        table->page_directory_shared.lock();
+        // table->page_directory_shared.lock();
+        page_d_lock.lock();
         auto loc = table->page_directory.find(i); // Find RID for every rows
-        table->page_directory_shared.unlock();
+        // table->page_directory_shared.unlock();
+        page_d_lock.unlock();
+
         if (loc != table->page_directory.end()) { // if RID ID exist ie. not deleted
-            table->page_directory_shared.lock();
+            // table->page_directory_shared.lock();
+            page_d_lock.lock();
             RID rid = table->page_directory.find(loc->second.id)->second;
-            table->page_directory_shared.unlock();
+            // table->page_directory_shared.unlock();
+            page_d_lock.unlock();
             int value;
             int indirection_num = buffer_pool.get(rid, INDIRECTION_COLUMN);
 
             if ((buffer_pool.get(rid, SCHEMA_ENCODING_COLUMN) >> (column_number - 1)) & (0b1)) { // If the column of the record at loc is updated
-                table->page_directory_shared.lock();
+                // table->page_directory_shared.lock();
+                page_d_lock.lock();
                 RID update_rid = table->page_directory.find(indirection_num)->second;
-                table->page_directory_shared.unlock();
+                // table->page_directory_shared.unlock();
+                page_d_lock.unlock();
 
                 value = buffer_pool.get(update_rid, column_number + NUM_METADATA_COLUMNS);
             } else {
@@ -116,7 +127,8 @@ void Index::create_index(const int& column_number) {
         }
     }
     indices.insert({column_number, index});
-    unique_lock_list.find(column_number)->second->unlock();
+    // unique_lock_list.find(column_number)->second->unlock();
+    lock.unlock();
     return;
 }
 
@@ -147,9 +159,11 @@ void Index::insert_index(int& rid, std::vector<int> columns) {
     for (size_t i = 0; i < columns.size(); i++) {
         auto itr = indices.find(i);
         if (itr != indices.end()) {
-            unique_lock_list.find(i)->second->lock();
+            std::unique_lock lock(*(mutex_list.find(i)->second));
+            // unique_lock_list.find(i)->second->lock();
             itr->second.insert({columns[i], rid});
-            unique_lock_list.find(i)->second->unlock();
+            // unique_lock_list.find(i)->second->unlock();
+            lock.unlock();
         }
     }
 
@@ -162,9 +176,11 @@ void Index::update_index(int& rid, std::vector<int> columns, std::vector<int> ol
             auto range = indices[i].equal_range(old_value);
             for(auto itr = range.first; itr != range.second; itr++){
                 if (itr->second == rid) {
-                    unique_lock_list.find(i)->second->lock();
+                    std::unique_lock lock(*(mutex_list.find(i)->second));
+                    // unique_lock_list.find(i)->second->lock();
                     indices[i].erase(itr);
-                    unique_lock_list.find(i)->second->unlock();
+                    // unique_lock_list.find(i)->second->unlock();
+                    lock.unlock();
                     break;
                 }
             }

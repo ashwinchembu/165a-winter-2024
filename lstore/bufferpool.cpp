@@ -164,12 +164,15 @@ Frame* BufferPool::load (const RID& rid, const int& column){ //return the frame 
 Frame* BufferPool::insert_into_frame(const RID& rid, const int& column, Page* page){ //return the frame that the page was placed into
   Frame* frame = nullptr;
   size_t hash = hash_fun(rid.first_rid_page); //determine correct hash range
-  shared_frame_directory_lock.lock();
+  std::shared_lock<std::shared_mutex> share_lock(frame_directory_lock);
+  // shared_frame_directory_lock.lock();
   if(frame_directory[hash] == (bufferpool_size / NUM_BUFFERPOOL_HASH_PARTITIONS)){ //if hash range is full
-    shared_frame_directory_lock.unlock();
+    // shared_frame_directory_lock.unlock();
+    share_lock.unlock();
     frame = evict(rid);
   } else{ //find empty frame to fill
-    shared_frame_directory_lock.unlock();
+    // shared_frame_directory_lock.unlock();
+    share_lock.unlock();
     Frame* range_begin = hash_vector[hash]; //beginning of hash range
     Frame* range_end = hash == (hash_vector.size() - 1) ? tail : hash_vector[hash + 1]->prev; //end of hash range
     Frame* current_frame = range_begin; //iterate through range
@@ -190,9 +193,12 @@ Frame* BufferPool::insert_into_frame(const RID& rid, const int& column, Page* pa
   frame->first_rid_page_range = rid.first_rid_page_range;
   frame->column = column;
   frame->valid = true;
-  unique_frame_directory_lock.lock();
+  std::unique_lock<std::shared_mutex> unique_lock(frame_directory_lock);
+
+  // unique_frame_directory_lock.lock();
   frame_directory[hash]++; //a frame has been filled
-  unique_frame_directory_lock.unlock();
+  // unique_frame_directory_lock.unlock();
+  unique_lock.unlock();
   return frame;
 }
 
@@ -221,9 +227,11 @@ Frame* BufferPool::evict(const RID& rid){ //return the frame that was evicted
       if(current_frame->dirty && current_frame->valid){ //if dirty and valid write back to disk
         write_back(current_frame);
       }
-      unique_frame_directory_lock.lock();
+      std::unique_lock<std::shared_mutex> unique_lock(frame_directory_lock);
+      // unique_frame_directory_lock.lock();
       frame_directory[hash]--;
-      unique_frame_directory_lock.unlock();
+      // unique_frame_directory_lock.unlock();
+      unique_lock.lock();
 
       current_frame->valid = false; //frame is now empty
       return current_frame;
@@ -277,22 +285,30 @@ void BufferPool::write_back_all (){
 Frame* BufferPool::pin (const RID& rid, const int& column, const char& pin_type) {
   Frame* found = nullptr;
   std::cout << std::this_thread::get_id() << " - lock manager used in bufferpool: pin" << std::endl;
-  unique_lock_manager_lock.lock();
+  // unique_lock_manager_lock.lock();
+  std::unique_lock<std::shared_mutex> unique_lock(lock_manager_lock);
+
+  std::shared_lock<std::shared_mutex> lock_mng_shared(*(lock_manager.find(rid.table_name)->second.find(rid.id)->second->mutex), std::defer_lock);
+  std::unique_lock<std::shared_mutex> lock_mng_unique(*(lock_manager.find(rid.table_name)->second.find(rid.id)->second->mutex), std::defer_lock);
   switch(pin_type){
     case 'S':
-      if(!lock_manager.find(rid.table_name)->second.find(rid.id)->second->shared_lock->try_lock()){
+      // if(!lock_manager.find(rid.table_name)->second.find(rid.id)->second->shared_lock->try_lock()){
+      if(!(lock_mng_shared.try_lock())){
         return found;
       }
       break;
     case 'X':
-      if(!lock_manager.find(rid.table_name)->second.find(rid.id)->second->unique_lock->try_lock()){
+      // if(!lock_manager.find(rid.table_name)->second.find(rid.id)->second->unique_lock->try_lock()){
+      if(!(lock_mng_unique.try_lock())){
         return found;
       }
       break;
     default:
       break;
   }
-  unique_lock_manager_lock.unlock();
+  std::cout << std::this_thread::get_id() << " - unlock manager used in bufferpool: pin" << std::endl;
+  // unique_lock_manager_lock.unlock();
+  unique_lock.unlock();
   found = search(rid, column);
   if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
     found = load(rid, column);
@@ -312,20 +328,27 @@ void BufferPool::unpin (const RID& rid, const int& column, const char& pin_type)
     (found->pin) = 0;
     throw std::invalid_argument("Attempt to unpin record that was not already pinned (Pin negative value)");
   }
-    std::cout << std::this_thread::get_id() << " - lock manager used in bufferpool: unpin" << std::endl;
-  unique_lock_manager_lock.lock();
+  std::cout << std::this_thread::get_id() << " - lock manager used in bufferpool: unpin" << std::endl;
+  // unique_lock_manager_lock.lock();
+  std::unique_lock<std::shared_mutex> unique_lock(lock_manager_lock);
 
+  std::shared_lock<std::shared_mutex> lock_mng_shared(*(lock_manager.find(rid.table_name)->second.find(rid.id)->second->mutex), std::defer_lock);
+  std::unique_lock<std::shared_mutex> lock_mng_unique(*(lock_manager.find(rid.table_name)->second.find(rid.id)->second->mutex), std::defer_lock);
   switch(pin_type){
     case 'S':
-      lock_manager.find(rid.table_name)->second.find(rid.id)->second->shared_lock->unlock();
+      // lock_manager.find(rid.table_name)->second.find(rid.id)->second->shared_lock->unlock();
+      lock_mng_shared.unlock();
       break;
     case 'X':
-      lock_manager.find(rid.table_name)->second.find(rid.id)->second->unique_lock->unlock();
+      // lock_manager.find(rid.table_name)->second.find(rid.id)->second->unique_lock->unlock();
+      lock_mng_unique.unlock();
       break;
     default:
       break;
   }
-  unique_lock_manager_lock.unlock();
+  std::cout << std::this_thread::get_id() << " - unlock manager used in bufferpool: unpin" << std::endl;
+  // unique_lock_manager_lock.unlock();
+  unique_lock.unlock();
   return;
 }
 
