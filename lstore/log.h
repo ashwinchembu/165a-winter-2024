@@ -19,8 +19,8 @@ public:
 class Log{
 public:
   Log () {
-    lk = std::unique_lock<std::shared_mutex>(db_log_lock, std::defer_lock);
-    lk_shared = std::shared_lock<std::shared_mutex>(db_log_lock, std::defer_lock);
+    // lk = std::unique_lock<std::shared_mutex>(db_log_lock, std::defer_lock);
+    // lk_shared = std::shared_lock<std::shared_mutex>(db_log_lock, std::defer_lock);
   }
   virtual ~Log () {};
   std::map<int, LogEntry> entries;
