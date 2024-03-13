@@ -298,7 +298,6 @@ Frame* BufferPool::pin (const RID& rid, const int& column, const char& pin_type)
     case 'S':
       // if(!lock_manager.find(rid.table_name)->second.find(rid.id)->second->shared_lock->try_lock()){
       if(!(lock_mng_shared.try_lock())){
-        std::cout << "not locked" << std::endl;
         return found;
       }
       break;
