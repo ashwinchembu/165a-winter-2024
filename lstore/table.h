@@ -45,6 +45,7 @@ public:
 	Toolkit::BasicSharedPtr<std::mutex>mutex_insert = Toolkit::BasicSharedPtr<std::mutex>(new std::mutex());
 	Toolkit::BasicSharedPtr<std::mutex>mutex_update = Toolkit::BasicSharedPtr<std::mutex>(new std::mutex());;
 
+	long long int baseVersion = 0;
 
     std::string name;
     int key; //primary key

@@ -37,7 +37,7 @@ public:
     Frame* head;
     Frame* tail;
 
-    int mergeNumber;
+    std::map<std::string, long long int>tableVersions;
 
     bool textOutputEnabled = false;
 

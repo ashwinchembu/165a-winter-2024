@@ -21,6 +21,12 @@
 Table::Table(const std::string& name, const int& num_columns, const int& key): name(name), key(key), num_columns(num_columns) {
 	index = new Index();
 	index->setTable(this);
+
+	if(buffer_pool.tableVersions.find(name)!=buffer_pool.tableVersions.end()){
+		buffer_pool.tableVersions.erase(name);
+	}
+
+	buffer_pool.tableVersions.insert({this->name,0});
 };
 
 Table::~Table() {
@@ -147,6 +153,8 @@ RID Table::update(RID &rid, const std::vector<int> &columns) {
 }
 
 int Table::write(FILE* fp) {
+	fwrite(&baseVersion,sizeof(long long int),1,fp);
+
 	fwrite(&key, sizeof(int), 1, fp);
 	fwrite(&num_columns, sizeof(int), 1, fp);
 	fwrite(&num_update, sizeof(int), 1, fp);
@@ -170,6 +178,8 @@ int Table::write(FILE* fp) {
 
 
 int Table::read(FILE* fp) {
+	fread(&baseVersion,sizeof(long long int),1,fp);
+
 	size_t e = fread(&key, sizeof(int), 1, fp);
 	e = e + fread(&num_columns, sizeof(int), 1, fp);
 	e = e + fread(&num_update, sizeof(int), 1, fp);
@@ -177,6 +187,13 @@ int Table::read(FILE* fp) {
 	char nameBuffer[128];
 	e = e + fread(nameBuffer,128,1,fp);
 	name = std::string(nameBuffer);
+
+	if(buffer_pool.tableVersions.find(name)!=buffer_pool.tableVersions.end()){
+		buffer_pool.tableVersions.erase(name);
+	}
+
+	buffer_pool.tableVersions.insert({this->name,baseVersion});
+
 	int num_element = num_insert + num_update;
 	RID value;
 	int key;
@@ -212,6 +229,12 @@ int Table::merge() {
     if (!merge_queue.size()) {
         return 0;
     }
+
+//    /*
+//     * we commit everything since we aren't editing the base pages anymore
+//     */
+//    buffer_pool.write_back_all();
+
     /*
     updating at page range level
 
@@ -225,16 +248,18 @@ int Table::merge() {
     // get pages to merge
     std::vector<Frame *> to_merge = merge_queue.front();
 
-   
     merge_queue.pop();
-    
     
     // rounding up bufferpool size to fit in hash
     // make mergebufferpool and set new path
     auto pool_size = poolSizeRoundUp(to_merge.size()) * 14; // change to actual - temp
     BufferPool *mergeBufferPool = new BufferPool(pool_size);
+    mergeBufferPool->tableVersions.insert({name,baseVersion+1});
 
-    mergeBufferPool->set_path("./ECS165/Merge");
+    mergeBufferPool->set_path(buffer_pool.path);
+    mergeBufferPool->textPath=buffer_pool.textPath;
+
+
     struct stat checkDir;
     if (stat(mergeBufferPool->path.c_str(), &checkDir) != 0 || !S_ISDIR(checkDir.st_mode)) {
         mkdir(mergeBufferPool->path.c_str(), 0777);
@@ -242,13 +267,11 @@ int Table::merge() {
     
     for (int i = 0; i < to_merge.size(); i++) {
         if (to_merge[i]->first_rid_page_range) {
-            RID new_rid(to_merge[i]->first_rid_page, to_merge[i]->first_rid_page_range, to_merge[i]->first_rid_page, 0, name);
 
+        	RID new_rid(to_merge[i]->first_rid_page, to_merge[i]->first_rid_page_range, to_merge[i]->first_rid_page, 0, name);
 
             Frame *frame = mergeBufferPool->insert_into_frame(new_rid, to_merge[i]->column, to_merge[i]->page);
             frame->dirty = true;
-
-
         }
     }
     
@@ -344,10 +367,17 @@ int Table::merge() {
     }
     }
 
-	buffer_pool.mergeNumber = mergeBufferPool->mergeNumber;
+    buffer_pool.write_back_all();
+    mergeBufferPool->write_back_all();
+
+    delete mergeBufferPool;
+
+    buffer_pool.tableVersions.erase(name);
+    buffer_pool.tableVersions.insert({name,baseVersion+1});
+
+    baseVersion++;
 
     return 0;
-    
 }
 
 int Table::poolSizeRoundUp(int size) {

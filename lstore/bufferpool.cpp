@@ -14,6 +14,8 @@
 #include "bufferpool.h"
 #include "../Toolkit.h"
 
+int id_counter = 0;
+
 BufferPool::BufferPool (const int& num_pages) : bufferpool_size(num_pages){ // @suppress("Class members should be properly initialized")
   head = new Frame; //create head
   hash_vector.push_back(head); //head will be the first hash range beginning
@@ -145,35 +147,55 @@ void BufferPool::update_ages(Frame*& just_accessed, Frame*& range_begin){ //chan
 }
 
 std::string BufferPool::buildDatPath(std::string tname,int first_rid_page,int first_rid_page_range,int column){
-	char ret[1024];
-	char* ptr =  ret;
+//	char ret[1024];
+//	char* ptr =  ret;
 
 	bool isBase = false;
 
-	ptr += sprintf(ptr,"%s/",path.c_str());
+	std::string buildPath = this->path;
+	buildPath.append("/")
+			 .append(tname);
 
-	ptr += sprintf(ptr, "%s",tname.c_str());
+//	ptr += sprintf(ptr,"%s/",path.c_str());
+//
+//	ptr += sprintf(ptr, "%s",tname.c_str());
 
 	if(column < NUM_METADATA_COLUMNS){
-		ptr+= sprintf(ptr,"_M_");
+//		ptr+= sprintf(ptr," M ");
+		buildPath.append("_M_");
 
 	} else if(first_rid_page < 0){
-		ptr+= sprintf(ptr,"_T_");
+//		ptr+= sprintf(ptr," T ");
+		buildPath.append("_T_");
 
 	} else if(first_rid_page > 0){
-		ptr+= sprintf(ptr,"_B_");
+//		ptr+= sprintf(ptr," B ");
+		buildPath.append("_B_");
 		isBase = true;
 	}
 
-	ptr+=sprintf(ptr,"%d_%d_%d",first_rid_page,first_rid_page_range,column);
+	buildPath.append(std::to_string(first_rid_page))
+			 .append("_")
+			 .append(std::to_string(first_rid_page_range))
+			 .append("_")
+			 .append(std::to_string(column));
+
+//	ptr+=sprintf(ptr,"%d %d %d",first_rid_page,first_rid_page_range,column);
 
 	if(isBase){
-		ptr+=sprintf(ptr,"_%d",mergeNumber);
+//		ptr+=sprintf(ptr," %d",mergeNumber);
+
+		buildPath.append("_")
+		         .append(std::to_string(tableVersions.find(tname)->second));
 	}
 
-	sprintf(ptr, ".dat");
+	buildPath.append(".dat");
 
-	return {ret};
+//	sprintf(ptr, ".dat");
+//
+//	return {ret};
+
+	return buildPath;
 }
 
 std::string BufferPool::buildTxtPath(std::string tname,int first_rid_page,int first_rid_page_range,int column){
@@ -212,7 +234,7 @@ std::string BufferPool::buildTxtPath(std::string tname,int first_rid_page,int fi
 			"COL_",column);
 
 	if(isBase){
-		ptr+=sprintf(ptr,"%-10s%-10d","MERGE_",mergeNumber);
+		ptr+=sprintf(ptr,"%-10s%-10lld","MERGE_",tableVersions.find(tname)->second);
 	}
 
 	sprintf(ptr, ".txt");
@@ -329,20 +351,20 @@ void BufferPool::write_back(Frame* frame){
 //	  textFilePtr = fopen(text_copy_path.c_str(),"w");
 //  }
 
-  std::string buffer;
+//  std::string buffer;
 
   if (frame->page != nullptr) {
     fwrite(&(frame->page->num_rows), sizeof(int), 1, fp);
     fwrite(frame->page->data, sizeof(int), frame->page->num_rows, fp);
 
-    buffer = std::to_string(frame->page->num_rows) + " ";
+//    buffer = std::to_string(frame->page->num_rows) + " ";
 //    fwrite(buffer.c_str(), buffer.size(), 1, textFilePtr);
 
-    int* ptr = frame->page->data;
-    for(int i = 0; i < frame->page->num_rows; i++){
-    	buffer = std::to_string(ptr[i]) + " ";
-//    	fwrite(buffer.c_str(), buffer.size(), 1, textFilePtr);
-    }
+//    int* ptr = frame->page->data;
+//    for(int i = 0; i < frame->page->num_rows; i++){
+//    	buffer = std::to_string(ptr[i]) + " ";
+////    	fwrite(buffer.c_str(), buffer.size(), 1, textFilePtr);
+//    }
 
   }
   fclose(fp);
@@ -417,3 +439,4 @@ void Frame::operator=(const Frame& rhs)
   pin = rhs.pin; //how many transactions have pinned the page
   dirty = rhs.dirty; //whether the page was modified
 }
+
