@@ -26,8 +26,6 @@ public:
   std::map<int, LogEntry> entries;
   std::atomic_int num_transactions = 0;
   std::shared_mutex db_log_lock;
-  std::unique_lock<std::shared_mutex> lk;
-  std::shared_lock<std::shared_mutex> lk_shared;
 };
 
 
