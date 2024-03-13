@@ -1,14 +1,16 @@
+#include "query.h"
+
 #include <vector>
 #include <string>
 #include <cmath>
-#include "config.h"
-#include "table.h"
-#include "page.h"
-#include "index.h"
-#include "query.h"
-#include "bufferpool.h"
-#include "../Toolkit.h"
+
 #include "../DllConfig.h"
+#include "bufferpool.h"
+#include "config.h"
+#include "index.h"
+#include "page.h"
+#include "table.h"
+#include "../Toolkit.h"
 
 
 Query::~Query () {
@@ -41,12 +43,46 @@ bool Query::insert(const std::vector<int>& columns) {
     return rid.id;
 }
 
-std::vector<Record> Query::select(const int& search_key, const int& search_key_index, const std::vector<int>& projected_columns_index) {
-    // Populate records based on the search criteria
-    return select_version(search_key, search_key_index, projected_columns_index, 0);
+std::vector<Record> Query::select(const int& search_key, const int& search_key_index,
+		const std::vector<int>& projected_columns_index) {
+//    // Populate records based on the search criteria
+//
+//	std::vector<Record> records;
+//	std::vector<int> rids = table->index->locate(search_key_index, search_key); //this returns the RIDs of the base pages
+//
+//	for(size_t i = 0; i < rids.size(); i++){ //go through each matching RID that was returned from index
+//		RID rid = table->page_directory.find(rids[i])->second;
+//
+//		if(rid.id != 0){
+//			int indirection = buffer_pool.get(rid, INDIRECTION_COLUMN);
+//
+//			std::vector<int> record_columns(table->num_columns);
+//
+//			for(int col = 0; col < table->num_columns; col++){ //transfer columns from desired version into record object
+//				int TPS = table->TPScols.find(col)->second;
+//
+//				if(projected_columns_index[col]){
+//
+//					if(indirection < TPS){
+//						rid = table->page_directory.find(indirection)->second;
+//					}
+//
+//					record_columns[col] = buffer_pool.get(rid, NUM_METADATA_COLUMNS + col);
+//				}
+//			}
+//
+//			records.push_back(Record(rid.id, search_key, record_columns)); //add a record with RID of base page, value of primary key, and contents of desired version
+//		}
+//	}
+//
+//	return records;
+
+	return select_version(search_key,search_key_index,projected_columns_index,0);
 }
 
-std::vector<Record> Query::select_version(const int& search_key, const int& search_key_index, const std::vector<int>& projected_columns_index, const int& _relative_version) {
+std::vector<Record> Query::select_version(const int& search_key, const int& search_key_index,
+		const std::vector<int>& projected_columns_index, const int& _relative_version) {
+
     const int relative_version = _relative_version * (-1);
     std::vector<Record> records;
     std::vector<int> rids = table->index->locate(search_key_index, search_key); //this returns the RIDs of the base pages
@@ -75,7 +111,8 @@ std::vector<Record> Query::select_version(const int& search_key, const int& sear
 bool Query::update(const int& primary_key, const std::vector<int>& columns) {
 
     if ((primary_key != columns[table->key] && table->index->locate(table->key, columns[table->key]).size() != 0) || (table->index->locate(table->key, primary_key).size() == 0)) {
-        std::cerr << "Record with the primary key you are trying to update already exists or Update called on key that does not exist" << std::endl;
+
+    	std::cerr << "Record with the primary key you are trying to update already exists or Update called on key that does not exist" << std::endl;
         return false;
     }
 
@@ -114,7 +151,7 @@ unsigned long int Query::sum_version(const int& start_range, const int& end_rang
         if (rid.id != 0) { //If RID is valid i.e. not deleted
             int indirection = buffer_pool.get(rid, INDIRECTION_COLUMN); // the new indirection
             for (int j = 1; j <= relative_version; j++) {
-                indirection = buffer_pool.get(table->page_directory.find(indirection)->second, INDIRECTION_COLUMN); //get the next indirection
+                indirection = buffer_pool.get((table->page_directory.find(indirection))->second, INDIRECTION_COLUMN); //get the next indirection
                 if(indirection > 0){
                     break;
                 }

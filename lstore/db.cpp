@@ -1,3 +1,5 @@
+#include "db.h"
+
 #include <map>
 #include <string>
 #include <fcntl.h>
@@ -5,25 +7,26 @@
 #include<sys/stat.h>
 #include <stdexcept>
 #include <cstdio>
-#include "table.h"
-#include "db.h"
-#include "bufferpool.h"
 #include <cstdio>
 #include <cstring>
-#include "config.h"
+
 #include "../DllConfig.h"
+#include "bufferpool.h"
+#include "config.h"
+#include "table.h"
 
 BufferPool buffer_pool(BUFFER_POOL_SIZE);
 
 Database::Database() {
 	buffer_pool.set_path(file_path);
+	buffer_pool.textPath = file_path + "/TextOutput";
 
 	struct stat checkDir;
 
 	if(stat(file_path.c_str(),&checkDir)!=0
 		|| !S_ISDIR(checkDir.st_mode)){
 		mkdir(file_path.c_str(),0777);
-		}
+	}
 }
 
 Database::~Database() {
@@ -34,6 +37,8 @@ void Database::open(const std::string& path) {
 	file_path = path;
 
 	buffer_pool.set_path(file_path);
+	buffer_pool.textPath = file_path + "/TextOutput";
+
 	struct stat checkDir;
 
 	if(stat(file_path.c_str(),&checkDir)!=0 || !S_ISDIR(checkDir.st_mode)){
@@ -67,6 +72,7 @@ void Database::read(const std::string& path){
 		return;
 	}
 	fseek(fp, 0, SEEK_SET);
+
 	int numTables;
 	int e = fread(&numTables,sizeof(int),1,fp);
 	char nameBuffer[128];

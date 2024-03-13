@@ -5,9 +5,10 @@
 #include <iostream>
 #include <cstdlib>
 #include <mutex>
+
+#include "config.h"
 #include "RID.h"
 #include "table.h"
-#include "config.h"
 #include "../Toolkit.h"
 
 class Page {
@@ -19,12 +20,18 @@ public:
     int write(const int& value);
     int* data = nullptr; // Data location(pointer)
     friend std::ostream& operator<<(std::ostream& os, const Page& p);
+
+    void deep_copy(Page* other){
+		num_rows = other->num_rows;
+
+		memcpy(data,other->data,num_rows * sizeof(int));
+	}
 };
 
 class PageRange {
 public:
-    Toolkit::BasicSharedPtr<std::mutex>mutex_insert = Toolkit::BasicSharedPtr<std::mutex>(new std::mutex());
-    Toolkit::BasicSharedPtr<std::mutex>mutex_update = Toolkit::BasicSharedPtr<std::mutex>(new std::mutex());;
+//    Toolkit::BasicSharedPtr<std::mutex>mutex_insert = Toolkit::BasicSharedPtr<std::mutex>(new std::mutex());
+//    Toolkit::BasicSharedPtr<std::mutex>mutex_update = Toolkit::BasicSharedPtr<std::mutex>(new std::mutex());;
 
     const int NUM_SLOTS = 4096*LOGICAL_PAGE;
     int num_slot_left = NUM_SLOTS;
@@ -36,6 +43,7 @@ public:
     bool tail_last_wasfull = true;
     int num_column = 0;
     std::vector<RID> pages;
+
     PageRange () {} // Never use this outside of loading saved data
     PageRange (RID& new_rid, const std::vector<int>& columns);
     ~PageRange();

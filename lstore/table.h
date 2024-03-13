@@ -5,11 +5,12 @@
 #include <utility>
 #include <ctime>
 #include <string>
-#include "RID.h"
 #include <memory>
 #include <queue>
 #include <mutex>
+
 #include "config.h"
+#include "RID.h"
 #include "../Toolkit.h"
 // Avoid recursive include
 // #include "index.h"
@@ -42,9 +43,12 @@ class RIDJoin;
 
 class Table {
 public:
-	Toolkit::BasicSharedPtr<std::mutex>mutex_insert = Toolkit::BasicSharedPtr<std::mutex>(new std::mutex());
-	Toolkit::BasicSharedPtr<std::mutex>mutex_update = Toolkit::BasicSharedPtr<std::mutex>(new std::mutex());;
+	std::shared_ptr<std::mutex> mutex_insert = std::make_shared<std::mutex>();
+	std::shared_ptr<std::mutex> mutex_update = std::make_shared<std::mutex>();
 
+	int TPS = 0;
+
+	int tableVersion = 0;
 
     std::string name;
     int key; //primary key
@@ -55,6 +59,8 @@ public:
     Index* index = nullptr;
     int num_update = 0;
     int num_insert = 0;
+
+//    int TPS = 0;
 
     std::map<int,std::vector<RIDJoin>>referencesOut;
 
@@ -73,6 +79,14 @@ public:
     int write(FILE* fp);
     int read(FILE* fp);
     void PrintData();
+
+    void PrintLineage();
+
+    //////////////////////////
+    //unused code for testing
+//
+//    RID update2(RID& rid, const std::vector<int>& columns);
+//    int merge2();
 
     bool ridIsJoined(RID rid,int col);
     RIDJoin getJoin(RID rid, int col);

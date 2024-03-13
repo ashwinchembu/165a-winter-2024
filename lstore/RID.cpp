@@ -1,5 +1,6 @@
-#include "RID.h"
 #include "config.h"
+#include "RID.h"
+
 
 RID::RID (const RID& rhs) {
 	id = rhs.id;

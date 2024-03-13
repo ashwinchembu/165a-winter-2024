@@ -1,6 +1,6 @@
-#include "table.h"
 #include "index.h"
 #include "query.h"
+#include "table.h"
 
 enum OpCode { NOTHING, INSERT, UPDATE, SELECT, SELECT_VER, SUM, SUM_VER };
 

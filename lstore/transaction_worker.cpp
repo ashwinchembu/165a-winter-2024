@@ -1,8 +1,10 @@
+#include "transaction_worker.h"
+
 #include <thread>
 #include <iostream>
-#include "config.h"
+
 #include "../DllConfig.h"
-#include "transaction_worker.h"
+#include "config.h"
 
 
 TransactionWorker::TransactionWorker () {

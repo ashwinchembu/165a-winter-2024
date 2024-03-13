@@ -1,11 +1,12 @@
 #ifndef QUERY_H
 #define QUERY_H
 
-#include "table.h" // Assuming Table, Record, and other dependencies are defined in their respective header files.
-#include "page.h"
-#include "index.h"
 #include <vector>
 #include <string>
+
+#include "index.h"
+#include "page.h"
+#include "table.h" // Assuming Table, Record, and other dependencies are defined in their respective header files.
 
 class Query {
 public:

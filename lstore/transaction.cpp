@@ -1,5 +1,5 @@
-#include "transaction.h"
 #include "../DllConfig.h"
+#include "transaction.h"
 
 bool QueryOperation::run() {
     switch (type) {

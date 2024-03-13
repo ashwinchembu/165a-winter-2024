@@ -1,6 +1,7 @@
 #include <thread>
-#include "table.h"
+
 #include "index.h"
+#include "table.h"
 #include "transaction.h"
 
 class TransactionWorker {

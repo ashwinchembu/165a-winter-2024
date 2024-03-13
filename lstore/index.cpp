@@ -4,18 +4,20 @@
  *
  */
 
+#include "index.h"
+
 #include <string>
 #include <vector>
 #include <unordered_map> // unordered_multimap is part of this library
 #include <stdexcept> // Throwing errors
-#include "index.h"
-#include "table.h"
-#include "RID.h"
 #include <iostream>
-#include "../DllConfig.h"
-#include "config.h"
-#include "bufferpool.h"
 #include <cmath>
+
+#include "../DllConfig.h"
+#include "bufferpool.h"
+#include "config.h"
+#include "RID.h"
+#include "table.h"
 
 
 Index::~Index() {
@@ -86,6 +88,7 @@ void Index::create_index(const int& column_number) {
 
             if ((buffer_pool.get(rid, SCHEMA_ENCODING_COLUMN) >> (column_number - 1)) & (0b1)) { // If the column of the record at loc is updated
                 RID update_rid = table->page_directory.find(indirection_num)->second;
+
                 value = buffer_pool.get(update_rid, column_number + NUM_METADATA_COLUMNS);
             } else {
                 value = buffer_pool.get(rid, column_number + NUM_METADATA_COLUMNS);

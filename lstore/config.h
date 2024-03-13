@@ -16,4 +16,6 @@
     extern const int MAX_TABLE_UPDATES;
     extern const std::string file_path;
     extern const size_t MAX_THREADS;
+
+    extern const int MAX_COMMITTED_TAILS;
 #endif
