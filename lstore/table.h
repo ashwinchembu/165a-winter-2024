@@ -79,6 +79,8 @@ public:
     void PrintData();
 
     void PrintLineage();
+    
+    void PrintTable();
 
     //////////////////////////
     //unused code for testing

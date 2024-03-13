@@ -300,6 +300,34 @@ void Table::PrintData() {
 	}
 }
 
+std::string metacols[6]={"INDIR","RID","TIME","SCHEM","BASE","TPS"};
+
+void Table::PrintTable(){
+    int row = 0;
+    for(auto& rid :page_directory){
+
+
+        if(row%50 == 0){
+
+            printf("\n\n");
+
+            for(int i = 0;i<6;i++){
+                    printf("%15s",metacols[i].c_str());
+                }
+
+            printf("\n\n");
+        }
+
+        row++;
+
+        for(int i = 0; i < NUM_METADATA_COLUMNS+num_columns;i++){
+            printf("%15d",buffer_pool.get(rid.second,i));
+        }
+
+        printf("\n");
+    }
+}
+
 
 COMPILER_SYMBOL int* Record_constructor(const int rid_in, const int key_in, int* columns_in){
 	std::vector<int>* cols = (std::vector<int>*)columns_in;
@@ -435,6 +463,11 @@ RIDJoin Table::getJoin(RID rid, int col){
 	}
 	return RIDJoin();
 }
+
+COMPILER_SYMBOL void Table_print_table(int* obj){
+    ((Table*)obj)->PrintTable();
+}
+
 
 
 
