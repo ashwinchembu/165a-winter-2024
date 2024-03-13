@@ -186,7 +186,6 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
  */
 int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, const std::map<int, RID>& page_directory, std::shared_mutex* lock) {
     // Protecting page directory from thread writing while another thread is reading
-    std::cout << 1 << std::endl;
     std::shared_lock pdlock(*lock);
     RID latest_rid = page_directory.find(buffer_pool.get(rid, INDIRECTION_COLUMN))->second;
     pdlock.unlock();
@@ -198,7 +197,7 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
     std::unique_lock mlock(mutex_update);
     std::unique_lock lock_manager_lock(buffer_pool.lock_manager_lock, std::defer_lock);
     std::unique_lock uniq_lock_rid(*(buffer_pool.lock_manager.find(rid_new.table_name)->second.find(rid_new.id)->second->mutex), std::defer_lock);
-
+    std::cout << 0 << std::endl;
     // Create new tail pages if there are no space left or tail page does not exist.
     // Otherwise just insert the update in the last tail page
     if (tail_last_wasfull) {
@@ -213,6 +212,7 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
         rid_new.offset = 0;
         rid_new.first_rid_page = rid_new.id;
 
+    std::cout << 1 << std::endl;
         // Lock the rid of record that we are inserting
         lock_manager_lock.lock();
         if (!(uniq_lock_rid.try_lock())) {
@@ -221,6 +221,7 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
         }
         lock_manager_lock.unlock();
 
+    std::cout << 2 << std::endl;
         // Write in the metadata except for schema encoding column
         buffer_pool.insert_new_page(rid_new, INDIRECTION_COLUMN, latest_rid.id);
         buffer_pool.insert_new_page(rid_new, RID_COLUMN, rid_new.id);
