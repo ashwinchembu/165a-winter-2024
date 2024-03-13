@@ -8,10 +8,6 @@ class LockManagerEntry{
     LockManagerEntry();
     virtual ~LockManagerEntry();
     std::shared_mutex* mutex;
-    std::shared_lock<std::shared_mutex>* shared_lock;
-    std::unique_lock<std::shared_mutex>* unique_lock;
-
-
 };
 
 #endif
