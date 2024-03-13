@@ -113,7 +113,6 @@ Frame* BufferPool::search(const RID& rid, const int& column){
 void BufferPool::update_ages(Frame*& just_accessed, Frame*& range_begin){ //change ages and reorder linked list
   std::unique_lock lock(update_age_lock);
   // update_age_lock.lock();
-  lock.lock();
   if(just_accessed != range_begin){ //if not already the range beginning / most recently accessed
     if(just_accessed->next == nullptr ){ //if just_accessed is the tail
       tail = just_accessed->prev;
