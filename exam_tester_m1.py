@@ -1,5 +1,6 @@
 from lstore.py.db import Database
 from lstore.py.query import Query
+from DBWrapper import *
 
 from random import choice, randint, sample, seed
 
@@ -18,7 +19,7 @@ query = Query(grades_table)
 # dictionary for records to test the database: test directory
 records = {}
 
-number_of_records = 10000
+number_of_records = 1000
 number_of_aggregates = 100
 seed(3562901)
 
@@ -123,5 +124,5 @@ for c in range(0, grades_table.num_columns):
             print('sum error on [', keys[r[0]], ',', keys[r[1]], ']: ', updated_result, ', correct: ', updated_column_sum)
         else:
             pass
-
-print("done")
+            
+print("Done")

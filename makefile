@@ -73,3 +73,6 @@ clean:
 	rm -rf bin
 
 .PHONY: all clean #pre-build
+
+a:
+	rm -rf tables CT ECS165 M2 MT

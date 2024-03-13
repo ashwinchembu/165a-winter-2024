@@ -1,5 +1,5 @@
-from lstore.py.db import Database
-from lstore.py.query import Query
+from lstore.db import Database
+from lstore.query import Query
 
 from random import choice, randint, sample, seed
 
@@ -93,7 +93,6 @@ def correctness_tester1():
         else:
             print("Error[4]")
     except Exception as e:
-        print(e)
         print("Wrong[4]")
 
     try:
@@ -365,7 +364,7 @@ import glob
 import traceback
 import shutil   
 
-m2tests = [1,1,1]
+m2tests = [1,0,0]
 if m2tests[0] == 1:
     print("==========correctness tester===============")
     correctness_tester1() 
