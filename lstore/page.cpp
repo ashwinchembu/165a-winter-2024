@@ -91,6 +91,7 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
     // Lock to protect variable in Page range.
     std::unique_lock lock(mutex_insert);
     std::unique_lock lock_manager_lock(buffer_pool.lock_manager_lock, std::defer_lock);
+    std::unique_lock uniq_lock_rid(*(buffer_pool.lock_manager.find(new_rid.table_name)->second.find(new_rid.id)->second->mutex), std::defer_lock);
 
     if (base_last_wasfull) {
         // Update status of the page range
@@ -107,7 +108,7 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
         // Lock the rid of record that we are inserting
         lock_manager_lock.lock();
 
-        if (!(buffer_pool.lock_manager.find(new_rid.table_name)->second.find(new_rid.id)->second->unique_lock->try_lock())) {
+        if (!uniq_lock_rid.try_lock()) {
             lock_manager_lock.unlock();
             return 1;
         }
@@ -126,7 +127,7 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
 
         // Unlock the rid of the record once we are done inserting
         lock_manager_lock.lock();
-        buffer_pool.lock_manager.find(new_rid.table_name)->second.find(new_rid.id)->second->unique_lock->unlock();
+        uniq_lock_rid.unlock();
         lock_manager_lock.unlock();
 
         // Protecting pages vector from multiple thread writing simultaneously
@@ -146,7 +147,7 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
 
         // Lock the rid of record that we are inserting
         lock_manager_lock.lock();
-        if (!(buffer_pool.lock_manager.find(new_rid.table_name)->second.find(new_rid.id)->second->unique_lock->try_lock())) {
+        if (!uniq_lock_rid.try_lock()) {
             lock_manager_lock.unlock();
             return 1;
         }
@@ -167,7 +168,7 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
 
         // Unlock the rid of the record once we are done inserting
         lock_manager_lock.lock();
-        buffer_pool.lock_manager.find(new_rid.table_name)->second.find(new_rid.id)->second->unique_lock->unlock();
+        uniq_lock_rid.unlock();
         lock_manager_lock.unlock();
     }
     return 0;
