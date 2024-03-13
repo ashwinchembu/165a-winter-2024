@@ -69,6 +69,9 @@ public:
     std::vector<int> frame_directory; //keep track of how many open frames in each hash range
     std::shared_mutex frame_directory_lock;
     std::shared_mutex lock_manager_lock;
+    std::unique_lock<std::shared_mutex> unique_lock_manager_lock;
+    std::shared_lock<std::shared_mutex> shared_frame_directory_lock;
+    std::unique_lock<std::shared_mutex> unique_frame_directory_lock;
     int bufferpool_size;
     std::string path = "./ECS165";
 };

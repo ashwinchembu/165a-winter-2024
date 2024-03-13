@@ -22,6 +22,12 @@ public:
     int first_rid_page = 0;
     int offset = 0;
     std::string table_name = "";
+
+    int num_transactions_holding = 0; //Number of transactions currently holding a lock
+    char lock_type = ' '; //Type of lock held (shared or exclusive)
+    std::vector<int> lock_requests; //x_act ids
+
+    //add some lock functions
 };
 
 #endif
