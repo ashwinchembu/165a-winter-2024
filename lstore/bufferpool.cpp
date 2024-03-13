@@ -301,13 +301,12 @@ Frame* BufferPool::pin (const RID& rid, const int& column, const char& pin_type)
   std::unique_lock<std::shared_mutex> lock_mng_unique(*(lock_manager.find(rid.table_name)->second.find(rid.id)->second->mutex), std::defer_lock);
   switch(pin_type){
     case 'S':
-      // if(!lock_manager.find(rid.table_name)->second.find(rid.id)->second->shared_lock->try_lock()){
       if(!(lock_mng_shared.try_lock())){
         return found;
       }
+      lock_mng_shared.lock()
       break;
     case 'X':
-      // if(!lock_manager.find(rid.table_name)->second.find(rid.id)->second->unique_lock->try_lock()){
       if(!(lock_mng_unique.try_lock())){
         return found;
       }
