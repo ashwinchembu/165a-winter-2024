@@ -45,7 +45,6 @@ void TransactionWorker::join() {
     if (query_thread.joinable()) {
 		std::cout << "Joining transaction " << query_thread.get_id() << std::endl;
         query_thread.join();
-        std::cout << "Joined" << std::endl;
     }
 }
 

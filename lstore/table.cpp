@@ -214,6 +214,12 @@ int Table::read(FILE* fp) {
 	delete index;
 	index = new Index();
 	index->setTable(this);
+	for (int i = (-1) * num_update; i < 0; i++) {
+		buffer_pool.lock_manager.find(name)->second.insert({i, new LockManagerEntry});
+	}
+	for (int i = 1; i < num_insert; i++) {
+		buffer_pool.lock_manager.find(name)->second.insert({i, new LockManagerEntry});
+	}
 	return e;
 }
 
