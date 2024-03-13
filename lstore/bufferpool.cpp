@@ -240,6 +240,7 @@ Frame* BufferPool::evict(const RID& rid){ //return the frame that was evicted
       unique_lock.unlock();
 
       current_frame->valid = false; //frame is now empty
+      lock.unlock();
       return current_frame;
     }
     current_frame = current_frame->prev;
@@ -247,7 +248,6 @@ Frame* BufferPool::evict(const RID& rid){ //return the frame that was evicted
       current_frame = range_end;
     }
   }
-  lock.unlock();
 }
 
 void BufferPool::write_back(Frame* frame){
