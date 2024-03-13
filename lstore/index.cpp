@@ -89,8 +89,6 @@ void Index::create_index(const int& column_number) {
         return;
     }
 
-    shared_lock_list.insert({column_number, new std::shared_lock<std::shared_mutex>(*new_mutex, std::defer_lock)});
-    unique_lock_list.insert({column_number, new std::unique_lock<std::shared_mutex>(*new_mutex, std::defer_lock)});
     mutex_list.insert({column_number, new_mutex});
 
     // unique_lock_list.find(column_number)->second->lock();
@@ -147,11 +145,7 @@ void Index::drop_index(const int& column_number) {
     }
     indices.erase(column_number);
     delete mutex_list.find(column_number)->second;
-    delete shared_lock_list.find(column_number)->second;
-    delete unique_lock_list.find(column_number)->second;
     mutex_list.erase(column_number);
-    shared_lock_list.erase(column_number);
-    unique_lock_list.erase(column_number);
     return;
 }
 
