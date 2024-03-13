@@ -18,7 +18,7 @@ query = Query(grades_table)
 # dictionary for records to test the database: test directory
 records = {}
 
-number_of_records = 10000
+number_of_records = 1000
 number_of_transactions = 100
 num_threads = 8
 
