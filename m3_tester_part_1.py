@@ -19,7 +19,7 @@ query = Query(grades_table)
 records = {}
 
 number_of_records = 10000
-number_of_transactions = 1000
+number_of_transactions = 100
 num_threads = 8
 
 # create index on the non primary columns
