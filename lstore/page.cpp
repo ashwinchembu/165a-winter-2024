@@ -189,18 +189,15 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
  */
 int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, const std::map<int, RID>& page_directory, std::shared_mutex* lock) {
     // Protecting page directory from thread writing while another thread is reading
-    // lock->lock();
     std::shared_lock pdlock(*lock);
     RID latest_rid = page_directory.find(buffer_pool.get(rid, INDIRECTION_COLUMN))->second;
-    // lock->unlock();
     pdlock.unlock();
 
     // Declared here so that we can use after the if statement
     int schema_encoding = 0;
 
     // Lock to protect the variable in page range
-    // mutex_update.lock();
-    std::unique_lock mlock(mutex_insert);
+    std::unique_lock mlock(mutex_update);
     std::unique_lock lock_manager_lock(buffer_pool.lock_manager_lock, std::defer_lock);
     std::unique_lock uniq_lock_rid(*(buffer_pool.lock_manager.find(rid_new.table_name)->second.find(rid_new.id)->second->mutex), std::defer_lock);
     // Create new tail pages if there are no space left or tail page does not exist.
@@ -211,20 +208,16 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
         tail_last++;
         num_slot_used_tail = 1;
         mlock.unlock();
-        // mutex_update.unlock();
 
         // Update the information in the new rid class
         rid_new.offset = 0;
         rid_new.first_rid_page = rid_new.id;
 
         // Lock the rid of record that we are inserting
-        // buffer_pool.unique_lock_manager_lock.lock();
         lock_manager_lock.lock();
         if (!(uniq_lock_rid.try_lock())) {
-        // if (!(buffer_pool.lock_manager.find(rid_new.table_name)->second.find(rid_new.id)->second->unique_lock->try_lock())) {
             return 1;
         }
-        // buffer_pool.unique_lock_manager_lock.unlock();
         lock_manager_lock.unlock();
 
         // Write in the metadata except for schema encoding column
@@ -250,24 +243,18 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
         buffer_pool.insert_new_page(rid_new, SCHEMA_ENCODING_COLUMN, schema_encoding);
 
         // Unlock the lock for the new record. If we reach here then we were able to lock it before.
-        // buffer_pool.unique_lock_manager_lock.lock();
         lock_manager_lock.lock();
-        // buffer_pool.lock_manager.find(rid_new.table_name)->second.find(rid_new.id)->second->unique_lock->unlock();
         uniq_lock_rid.unlock();
 
-        // buffer_pool.unique_lock_manager_lock.unlock();
         lock_manager_lock.unlock();
         // Setting the new RID to be representation of the page if the page was newly created
         std::unique_lock plock(page_lock);
-        // page_lock.lock();
         pages.push_back(rid_new);
-        // page_lock.unlock();
         plock.unlock();
     } else {
         // Update the variable of the page range
         num_slot_used_tail++;
         tail_last_wasfull = (num_slot_used_tail == PAGE_SIZE);
-        // mutex_update.unlock();
         mlock.unlock();
 
         // Update the information in the new rid class
@@ -275,10 +262,8 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
         rid_new.offset = num_slot_used_tail - 1;
 
         // Lock the rid of record that we are inserting
-        // buffer_pool.unique_lock_manager_lock.lock();
         lock_manager_lock.lock();
         if (!(uniq_lock_rid.try_lock())) {
-        // if (!(buffer_pool.lock_manager.find(rid_new.table_name)->second.find(rid_new.id)->second->unique_lock->try_lock())) {
             return 1;
         }
         // buffer_pool.unique_lock_manager_lock.unlock();
@@ -307,13 +292,7 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
         buffer_pool.set(rid_new, SCHEMA_ENCODING_COLUMN, schema_encoding, true);
 
         // Unlock the lock for the new record. If we reach here then we were able to lock it before.
-        // buffer_pool.unique_lock_manager_lock.lock();
-        lock_manager_lock.lock();
-
-        // buffer_pool.lock_manager.find(rid_new.table_name)->second.find(rid_new.id)->second->unique_lock->unlock();
         uniq_lock_rid.unlock();
-        // buffer_pool.unique_lock_manager_lock.unlock();
-        lock_manager_lock.unlock();
     }
 
     // Updating indirection column and schema encoding column for the base page
