@@ -118,12 +118,8 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 		merge();
 	}
 	const int rid_id = num_update * -1;
-<<<<<<< Updated upstream
-        std::cout << std::this_thread::get_id() << " - lock manager used in table: update 1" << std::endl;
-	buffer_pool.unique_lock_manager_lock.lock();
-=======
+  std::cout << std::this_thread::get_id() << " - lock manager used in table: update 1" << std::endl;
 	std::unique_lock unique_lock_manager_lock(buffer_pool.lock_manager_lock);
->>>>>>> Stashed changes
 	buffer_pool.lock_manager.find(name)->second.insert({rid_id, new LockManagerEntry});
 	unique_lock_manager_lock.unlock();
 	update_lock_unique.unlock();
