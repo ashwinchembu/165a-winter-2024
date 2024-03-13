@@ -317,13 +317,14 @@ Frame* BufferPool::pin (const RID& rid, const int& column, const char& pin_type)
     found = load(rid, column);
   }
   (found->pin)++;
-  std::cout << found << std::endl;
+  std::cout << "pin" << rid.id << ", " << column << std::endl;
   return found;
 }
 
 void BufferPool::unpin (const RID& rid, const int& column, const char& pin_type) {
   Frame* found = search(rid, column);
-  std::cout << found << std::endl;
+    std::cout << "unpin" << rid.id << ", " << column << std::endl;
+
   if(found == nullptr || !found->valid){ //if not in the bufferpool
     throw std::invalid_argument("Attempt to unpin record that was not already pinned (No record found)");
   }
