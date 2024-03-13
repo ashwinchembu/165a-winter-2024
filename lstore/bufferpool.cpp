@@ -283,7 +283,6 @@ void BufferPool::write_back_all (){
 
 Frame* BufferPool::pin (const RID& rid, const int& column, const char& pin_type) {
   Frame* found = nullptr;
-  std::cout << std::this_thread::get_id() << " - lock manager used in bufferpool: pin" << std::endl;
   // unique_lock_manager_lock.lock();
   std::unique_lock<std::shared_mutex> unique_lock(lock_manager_lock);
 
@@ -305,7 +304,6 @@ Frame* BufferPool::pin (const RID& rid, const int& column, const char& pin_type)
     default:
       break;
   }
-  std::cout << std::this_thread::get_id() << " - unlock manager used in bufferpool: pin" << std::endl;
   // unique_lock_manager_lock.unlock();
   unique_lock.unlock();
   found = search(rid, column);
@@ -319,7 +317,6 @@ Frame* BufferPool::pin (const RID& rid, const int& column, const char& pin_type)
 void BufferPool::unpin (const RID& rid, const int& column, const char& pin_type) {
   Frame* found = search(rid, column);
   if(found == nullptr || !found->valid){ //if not in the bufferpool
-    std::cout << "Address of found" << found << std::endl;
     throw std::invalid_argument("Attempt to unpin record that was not already pinned (No record found)");
   }
   (found->pin)--;
@@ -327,7 +324,6 @@ void BufferPool::unpin (const RID& rid, const int& column, const char& pin_type)
     (found->pin) = 0;
     throw std::invalid_argument("Attempt to unpin record that was not already pinned (Pin negative value)");
   }
-  std::cout << std::this_thread::get_id() << " - lock manager used in bufferpool: unpin" << std::endl;
   // unique_lock_manager_lock.lock();
   std::unique_lock<std::shared_mutex> unique_lock(lock_manager_lock);
 
@@ -345,7 +341,6 @@ void BufferPool::unpin (const RID& rid, const int& column, const char& pin_type)
     default:
       break;
   }
-  std::cout << std::this_thread::get_id() << " - unlock manager used in bufferpool: unpin" << std::endl;
   // unique_lock_manager_lock.unlock();
   unique_lock.unlock();
   return;

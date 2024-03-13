@@ -106,14 +106,12 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
         new_rid.offset = 0;
         new_rid.first_rid_page = new_rid.id;
         // Lock the rid of record that we are inserting
-        std::cout << std::this_thread::get_id() << " - lock manager used in page: insert 1" << std::endl;
         // buffer_pool.unique_lock_manager_lock.lock();
         lock_manager_lock.lock();
 
         if (!(buffer_pool.lock_manager.find(new_rid.table_name)->second.find(new_rid.id)->second->unique_lock->try_lock())) {
             return 1;
         }
-        std::cout << std::this_thread::get_id() << " - unlock manager used in page: insert 1" << std::endl;
         // buffer_pool.unique_lock_manager_lock.unlock();
         lock_manager_lock.unlock();
         // Write in the metadatas
@@ -128,11 +126,9 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
             buffer_pool.insert_new_page(new_rid, i, columns[i - NUM_METADATA_COLUMNS]);
         }
         // Unlock the rid of the record once we are done inserting
-        std::cout << std::this_thread::get_id() << " - lock manager used in page: insert 2" << std::endl;
         // buffer_pool.unique_lock_manager_lock.lock();
         lock_manager_lock.lock();
         buffer_pool.lock_manager.find(new_rid.table_name)->second.find(new_rid.id)->second->unique_lock->unlock();
-        std::cout << std::this_thread::get_id() << " - unlock manager used in page: insert 2" << std::endl;
         // buffer_pool.unique_lock_manager_lock.unlock();
         lock_manager_lock.unlock();
         // Protecting pages vector from multiple thread writing simultaneously
@@ -153,13 +149,11 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
         new_rid.first_rid_page = pages[base_last].id;
 
         // Lock the rid of record that we are inserting
-        std::cout << std::this_thread::get_id() << " - lock manager used in page: insert 3" << std::endl;
         // buffer_pool.unique_lock_manager_lock.lock();
         lock_manager_lock.lock();
         if (!(buffer_pool.lock_manager.find(new_rid.table_name)->second.find(new_rid.id)->second->unique_lock->try_lock())) {
             return 1;
         }
-        std::cout << std::this_thread::get_id() << " - unlock manager used in page: insert 3" << std::endl;
         // buffer_pool.unique_lock_manager_lock.unlock();
         lock_manager_lock.unlock();
         // Write in the metadatas
@@ -174,11 +168,9 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
             buffer_pool.set(new_rid, i, columns[i - NUM_METADATA_COLUMNS], true);
         }
         // Unlock the rid of the record once we are done inserting
-        std::cout << std::this_thread::get_id() << " - lock manager used in page: insert 4" << std::endl;
         // buffer_pool.unique_lock_manager_lock.lock();
         lock_manager_lock.lock();
         buffer_pool.lock_manager.find(new_rid.table_name)->second.find(new_rid.id)->second->unique_lock->unlock();
-        std::cout << std::this_thread::get_id() << " - unlock manager used in page: insert 4" << std::endl;
         // buffer_pool.unique_lock_manager_lock.unlock();
         lock_manager_lock.unlock();
     }
@@ -226,14 +218,12 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
         rid_new.first_rid_page = rid_new.id;
 
         // Lock the rid of record that we are inserting
-        std::cout << std::this_thread::get_id() << " - lock manager used in page: update 1" << std::endl;
         // buffer_pool.unique_lock_manager_lock.lock();
         lock_manager_lock.lock();
         if (!(uniq_lock_rid.try_lock())) {
         // if (!(buffer_pool.lock_manager.find(rid_new.table_name)->second.find(rid_new.id)->second->unique_lock->try_lock())) {
             return 1;
         }
-        std::cout << std::this_thread::get_id() << " - unlock manager used in page: update 1" << std::endl;
         // buffer_pool.unique_lock_manager_lock.unlock();
         lock_manager_lock.unlock();
 
@@ -260,13 +250,11 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
         buffer_pool.insert_new_page(rid_new, SCHEMA_ENCODING_COLUMN, schema_encoding);
 
         // Unlock the lock for the new record. If we reach here then we were able to lock it before.
-        std::cout << std::this_thread::get_id() << " - lock manager used in page: update 2" << std::endl;
         // buffer_pool.unique_lock_manager_lock.lock();
         lock_manager_lock.lock();
         // buffer_pool.lock_manager.find(rid_new.table_name)->second.find(rid_new.id)->second->unique_lock->unlock();
         uniq_lock_rid.unlock();
 
-        std::cout << std::this_thread::get_id() << " - unlock manager used in page: update 2" << std::endl;
         // buffer_pool.unique_lock_manager_lock.unlock();
         lock_manager_lock.unlock();
         // Setting the new RID to be representation of the page if the page was newly created
@@ -287,14 +275,12 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
         rid_new.offset = num_slot_used_tail - 1;
 
         // Lock the rid of record that we are inserting
-        std::cout << std::this_thread::get_id() << " - lock manager used in page: update 3" << std::endl;
         // buffer_pool.unique_lock_manager_lock.lock();
         lock_manager_lock.lock();
         if (!(uniq_lock_rid.try_lock())) {
         // if (!(buffer_pool.lock_manager.find(rid_new.table_name)->second.find(rid_new.id)->second->unique_lock->try_lock())) {
             return 1;
         }
-        std::cout << std::this_thread::get_id() << " - unlock manager used in page: update 3" << std::endl;
         // buffer_pool.unique_lock_manager_lock.unlock();
         lock_manager_lock.unlock();
 
@@ -321,13 +307,11 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
         buffer_pool.set(rid_new, SCHEMA_ENCODING_COLUMN, schema_encoding, true);
 
         // Unlock the lock for the new record. If we reach here then we were able to lock it before.
-        std::cout << std::this_thread::get_id() << " - lock manager used in page: update 4" << std::endl;
         // buffer_pool.unique_lock_manager_lock.lock();
         lock_manager_lock.lock();
 
         // buffer_pool.lock_manager.find(rid_new.table_name)->second.find(rid_new.id)->second->unique_lock->unlock();
         uniq_lock_rid.unlock();
-        std::cout << std::this_thread::get_id() << " - unlock manager used in page: update 4" << std::endl;
         // buffer_pool.unique_lock_manager_lock.unlock();
         lock_manager_lock.unlock();
     }
