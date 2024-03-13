@@ -321,7 +321,6 @@ Frame* BufferPool::pin (const RID& rid, const int& column, const char& pin_type)
 }
 
 void BufferPool::unpin (const RID& rid, const int& column, const char& pin_type) {
-  std::cout << 1 << std::endl;
   Frame* found = search(rid, column);
   if(found == nullptr || !found->valid){ //if not in the bufferpool
     throw std::invalid_argument("Attempt to unpin record that was not already pinned (No record found)");
@@ -331,17 +330,17 @@ void BufferPool::unpin (const RID& rid, const int& column, const char& pin_type)
     (found->pin) = 0;
     throw std::invalid_argument("Attempt to unpin record that was not already pinned (Pin negative value)");
   }
-  std::cout << 2 << std::endl;
   // unique_lock_manager_lock.lock();
   std::unique_lock<std::shared_mutex> unique_lock(lock_manager_lock);
 
   std::shared_lock<std::shared_mutex> lock_mng_shared(*(lock_manager.find(rid.table_name)->second.find(rid.id)->second->mutex), std::defer_lock);
   std::unique_lock<std::shared_mutex> lock_mng_unique(*(lock_manager.find(rid.table_name)->second.find(rid.id)->second->mutex), std::defer_lock);
-  std::cout << 3 << std::endl;
   switch(pin_type){
     case 'S':
       // lock_manager.find(rid.table_name)->second.find(rid.id)->second->shared_lock->unlock();
+  std::cout << 3 << std::endl;
       lock_mng_shared.unlock();
+  std::cout << 4 << std::endl;
       break;
     case 'X':
       // lock_manager.find(rid.table_name)->second.find(rid.id)->second->unique_lock->unlock();
@@ -350,7 +349,6 @@ void BufferPool::unpin (const RID& rid, const int& column, const char& pin_type)
     default:
       break;
   }
-  std::cout << 4 << std::endl;
   // unique_lock_manager_lock.unlock();
   unique_lock.unlock();
   std::cout << 5 << std::endl;
