@@ -304,7 +304,7 @@ Frame* BufferPool::pin (const RID& rid, const int& column, const char& pin_type)
       if(!(lock_mng_shared.try_lock())){
         return found;
       }
-      lock_mng_shared.lock()
+      lock_mng_shared.lock();
       break;
     case 'X':
       if(!(lock_mng_unique.try_lock())){
