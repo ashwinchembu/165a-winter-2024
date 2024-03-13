@@ -58,8 +58,8 @@ int BufferPool::get (const RID& rid, const int& column) {
     return return_val;
   }
   return_val = *(found->page->data + rid.offset);
-  update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
   unpin(rid, column, 'S');
+  update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
   return return_val; //return the value we want
 }
 
@@ -82,8 +82,8 @@ bool BufferPool::set (const RID& rid, const int& column, const int& value, const
     found->page->num_rows++;
   }
   found->dirty = true; //the page has been modified
-  update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
   unpin(rid, column, 'N');
+  update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
   return true;
 }
 
