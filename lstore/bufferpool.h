@@ -60,7 +60,9 @@ public:
     void write_back(Frame* frame); //write back to disk if dirty
     void write_back_all();
     Frame* pin (const RID& rid, const int& column, const char& pin_type);
+    Frame* pin (const RID& rid, const int& column, const char& pin_type, std::shared_lock<std::shared_mutex>& lock_mng_shared);
     void unpin (const RID& rid, const int& column, const char& pin_type);
+    void unpin (const RID& rid, const int& column, const char& pin_type, std::shared_lock<std::shared_mutex>& lock_mng_shared);
     void set_path (const std::string& path_rhs);
     std::vector<Frame*> hash_vector; //the starting frame of each hash range
 

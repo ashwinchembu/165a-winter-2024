@@ -56,13 +56,14 @@ int BufferPool::hash_fun(unsigned int x) {
 
 int BufferPool::get (const RID& rid, const int& column) {
   int return_val = NONE - 10;
-  Frame* found = pin(rid, column, 'S');
+  std::shared_lock<std::shared_mutex> lock;
+  Frame* found = pin(rid, column, 'S', lock);
   if(found == nullptr){ //if not already in the bufferpool, load into bufferpool
     return return_val;
   }
   return_val = *(found->page->data + rid.offset);
   update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
-  unpin(rid, column, 'S');
+  unpin(rid, column, 'S', lock);
   return return_val; //return the value we want
 }
 
@@ -301,10 +302,42 @@ Frame* BufferPool::pin (const RID& rid, const int& column, const char& pin_type)
   std::unique_lock<std::shared_mutex> lock_mng_unique(*(lock_manager.find(rid.table_name)->second.find(rid.id)->second->mutex), std::defer_lock);
   switch(pin_type){
     case 'S':
+      std::cerr << "Deprecated (unpin): Pass std::shared_lock<std::shared_mutex> for integrity" << std::endl;
       if(!(lock_mng_shared.try_lock())){
         return found;
       }
-      lock_mng_shared.lock();
+      break;
+    case 'X':
+      if(!(lock_mng_unique.try_lock())){
+        return found;
+      }
+      break;
+    default:
+      break;
+  }
+  // unique_lock_manager_lock.unlock();
+  unique_lock.unlock();
+  found = search(rid, column);
+  if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
+    found = load(rid, column);
+  }
+  (found->pin)++;
+  return found;
+}
+
+Frame* BufferPool::pin (const RID& rid, const int& column, const char& pin_type, std::shared_lock<std::shared_mutex>& lock_mng_shared) {
+  Frame* found = nullptr;
+  // unique_lock_manager_lock.lock();
+  std::unique_lock<std::shared_mutex> unique_lock(lock_manager_lock);
+
+  std::cout << (lock_manager.find(rid.table_name)->second.find(rid.id)->second->mutex) << std::endl;
+  lock_mng_shared = std::shared_lock<std::shared_mutex>(*(lock_manager.find(rid.table_name)->second.find(rid.id)->second->mutex), std::defer_lock);
+  std::unique_lock<std::shared_mutex> lock_mng_unique(*(lock_manager.find(rid.table_name)->second.find(rid.id)->second->mutex), std::defer_lock);
+  switch(pin_type){
+    case 'S':
+      if(!(lock_mng_shared.try_lock())){
+        return found;
+      }
       break;
     case 'X':
       if(!(lock_mng_unique.try_lock())){
@@ -343,10 +376,41 @@ void BufferPool::unpin (const RID& rid, const int& column, const char& pin_type)
   switch(pin_type){
     case 'S':
       // lock_manager.find(rid.table_name)->second.find(rid.id)->second->shared_lock->unlock();
+      std::cerr << "Deprecated (unpin): Pass std::shared_lock<std::shared_mutex> for integrity" << std::endl;
       lock_mng_shared.unlock();
       break;
     case 'X':
       // lock_manager.find(rid.table_name)->second.find(rid.id)->second->unique_lock->unlock();
+      lock_mng_unique.unlock();
+      break;
+    default:
+      break;
+  }
+  // unique_lock_manager_lock.unlock();
+  unique_lock.unlock();
+  return;
+}
+
+void BufferPool::unpin (const RID& rid, const int& column, const char& pin_type, std::shared_lock<std::shared_mutex>& lock_mng_shared) {
+  Frame* found = search(rid, column);
+
+  if(found == nullptr || !found->valid){ //if not in the bufferpool
+    throw std::invalid_argument("Attempt to unpin record that was not already pinned (No record found)");
+  }
+  (found->pin)--;
+  if(found->pin < 0){ //if pin count gets below 0
+    (found->pin) = 0;
+    throw std::invalid_argument("Attempt to unpin record that was not already pinned (Pin negative value)");
+  }
+  // unique_lock_manager_lock.lock();
+  std::unique_lock<std::shared_mutex> unique_lock(lock_manager_lock);
+  std::cout << (lock_manager.find(rid.table_name)->second.find(rid.id)->second->mutex) << std::endl;
+  std::unique_lock<std::shared_mutex> lock_mng_unique(*(lock_manager.find(rid.table_name)->second.find(rid.id)->second->mutex), std::defer_lock);
+  switch(pin_type){
+    case 'S':
+      lock_mng_shared.unlock();
+      break;
+    case 'X':
       lock_mng_unique.unlock();
       break;
     default:
