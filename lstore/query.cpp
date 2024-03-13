@@ -24,7 +24,7 @@ bool Query::deleteRecord(const int& primary_key) {
             page_directory_shared.unlock();
             return false;
         } else {
-            table->page_directory_shared.unlock();
+            page_directory_shared.unlock();
             std::unique_lock page_directory_unique(table->page_directory_lock);
             table->page_directory.find(target)->second.id = 0;
             page_directory_unique.unlock();
