@@ -85,8 +85,8 @@ bool BufferPool::set (const RID& rid, const int& column, const int& value, const
     found->page->num_rows++;
   }
   found->dirty = true; //the page has been modified
-  unpin(rid, column, 'N');
   update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
+  unpin(rid, column, 'N');
   return true;
 }
 
@@ -317,11 +317,13 @@ Frame* BufferPool::pin (const RID& rid, const int& column, const char& pin_type)
     found = load(rid, column);
   }
   (found->pin)++;
+  std::cout << found << std::endl;
   return found;
 }
 
 void BufferPool::unpin (const RID& rid, const int& column, const char& pin_type) {
   Frame* found = search(rid, column);
+  std::cout << found << std::endl;
   if(found == nullptr || !found->valid){ //if not in the bufferpool
     throw std::invalid_argument("Attempt to unpin record that was not already pinned (No record found)");
   }
@@ -338,9 +340,7 @@ void BufferPool::unpin (const RID& rid, const int& column, const char& pin_type)
   switch(pin_type){
     case 'S':
       // lock_manager.find(rid.table_name)->second.find(rid.id)->second->shared_lock->unlock();
-  std::cout << 3 << std::endl;
       lock_mng_shared.unlock();
-  std::cout << 4 << std::endl;
       break;
     case 'X':
       // lock_manager.find(rid.table_name)->second.find(rid.id)->second->unique_lock->unlock();
@@ -351,7 +351,6 @@ void BufferPool::unpin (const RID& rid, const int& column, const char& pin_type)
   }
   // unique_lock_manager_lock.unlock();
   unique_lock.unlock();
-  std::cout << 5 << std::endl;
   return;
 }
 
