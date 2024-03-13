@@ -1,5 +1,6 @@
 from lstore.py.db import Database
 from lstore.py.query import Query
+from DBWrapper import *
 
 from random import choice, randint, sample, seed
 
@@ -96,6 +97,9 @@ for key in records:
         print('update error on', records[key], 'and', updated_columns, ':', record, ', correct:', updated_records[key])
 
 keys = sorted(list(records.keys()))
+
+force_write_back_all()
+
 # aggregate on every column 
 for c in range(0, grades_table.num_columns):
     for i in range(0, number_of_aggregates):
@@ -105,7 +109,7 @@ for c in range(0, grades_table.num_columns):
         column_sum = sum(map(lambda key: records[key][c], keys[r[0]: r[1] + 1]))
         result = query.sum_version(keys[r[0]], keys[r[1]], c, -1)
         if column_sum != result:
-            print('sum error on [', keys[r[0]], ',', keys[r[1]], ']: ', result, ', correct: ', column_sum)
+            print(-1,'sum error on [', keys[r[0]], ',', keys[r[1]], ']: ', result, ', correct: ', column_sum)
         else:
             pass
             # print('sum on [', keys[r[0]], ',', keys[r[1]], ']: ', column_sum)
@@ -113,15 +117,15 @@ for c in range(0, grades_table.num_columns):
         column_sum = sum(map(lambda key: records[key][c], keys[r[0]: r[1] + 1]))
         result = query.sum_version(keys[r[0]], keys[r[1]], c, -2)
         if column_sum != result:
-            print('sum error on [', keys[r[0]], ',', keys[r[1]], ']: ', result, ', correct: ', column_sum)
+            print(-2,'sum error on [', keys[r[0]], ',', keys[r[1]], ']: ', result, ', correct: ', column_sum)
         else:
             pass
         # version 0 sum
         updated_column_sum = sum(map(lambda key: updated_records[key][c], keys[r[0]: r[1] + 1]))
         updated_result = query.sum_version(keys[r[0]], keys[r[1]], c, 0)
         if updated_column_sum != updated_result:
-            print('sum error on [', keys[r[0]], ',', keys[r[1]], ']: ', updated_result, ', correct: ', updated_column_sum)
+            print(0,'sum error on [', keys[r[0]], ',', keys[r[1]], ']: ', updated_result, ', correct: ', updated_column_sum)
         else:
             pass
+        
 
-print("done")
