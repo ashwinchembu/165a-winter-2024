@@ -197,7 +197,6 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
     std::unique_lock mlock(mutex_update);
     std::unique_lock lock_manager_lock(buffer_pool.lock_manager_lock, std::defer_lock);
     std::unique_lock uniq_lock_rid(*(buffer_pool.lock_manager.find(rid_new.table_name)->second.find(rid_new.id)->second->mutex), std::defer_lock);
-    std::cout << 0 << std::endl;
     // Create new tail pages if there are no space left or tail page does not exist.
     // Otherwise just insert the update in the last tail page
     if (tail_last_wasfull) {
@@ -212,7 +211,6 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
         rid_new.offset = 0;
         rid_new.first_rid_page = rid_new.id;
 
-    std::cout << 1 << std::endl;
         // Lock the rid of record that we are inserting
         lock_manager_lock.lock();
         if (!(uniq_lock_rid.try_lock())) {
@@ -221,14 +219,16 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
         }
         lock_manager_lock.unlock();
 
-    std::cout << 2 << std::endl;
+    std::cout << 1 << std::endl;
         // Write in the metadata except for schema encoding column
         buffer_pool.insert_new_page(rid_new, INDIRECTION_COLUMN, latest_rid.id);
+    std::cout << 2 << std::endl;
         buffer_pool.insert_new_page(rid_new, RID_COLUMN, rid_new.id);
         buffer_pool.insert_new_page(rid_new, TIMESTAMP_COLUMN, 0);
         buffer_pool.insert_new_page(rid_new, BASE_RID_COLUMN, rid.id);
         buffer_pool.insert_new_page(rid_new, TPS, 0);
 
+    std::cout << 3 << std::endl;
         // Write in the data
         for (int i = NUM_METADATA_COLUMNS; i < num_column; i++) {
             if (std::isnan(columns[i - NUM_METADATA_COLUMNS]) || columns[i-NUM_METADATA_COLUMNS] < NONE) { // Wrapper changes None to smallest integer possible
@@ -241,6 +241,7 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
             }
         }
 
+    std::cout << 4 << std::endl;
         // Write in the schema encoding once we know which one is updated.
         buffer_pool.insert_new_page(rid_new, SCHEMA_ENCODING_COLUMN, schema_encoding);
 
@@ -253,6 +254,7 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
         std::unique_lock plock(page_lock);
         pages.push_back(rid_new);
         plock.unlock();
+    std::cout << 5 << std::endl;
 
     } else {
 
