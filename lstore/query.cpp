@@ -53,73 +53,41 @@ std::vector<Record> Query::select(const int& search_key, const int& search_key_i
 
 std::vector<Record> Query::select_version(const int& search_key, const int& search_key_index, const std::vector<int>& projected_columns_index, const int& _relative_version) {
     const int relative_version = _relative_version * (-1);
-    std::cout << 1 << std::endl;
     std::vector<Record> records;
-    std::cout << 2 << std::endl;
     std::vector<int> rids = table->index->locate(search_key_index, search_key); //this returns the RIDs of the base pages
-    std::cout << 3 << std::endl;
     for(size_t i = 0; i < rids.size(); i++){ //go through each matching RID that was returned from index
-        std::cout << 4 << std::endl;
         std::shared_lock page_directory_shared(table->page_directory_lock);
-        std::cout << 5 << std::endl;
         RID rid = table->page_directory.find(rids[i])->second;
-        std::cout << 6 << std::endl;
         page_directory_shared.unlock();
-        std::cout << 7 << std::endl;
         if(rid.id != 0){
-            std::cout << 8 << std::endl;
             for(int j = 0; j <= relative_version; j++){ //go through indirection to get to correct version
-                std::cout << 9 << std::endl;
                 int new_int = 0;
-                std::cout << 10 << std::endl;
                 new_int = buffer_pool.get(rid, INDIRECTION_COLUMN);
-                std::cout << 11 << std::endl;
                 if(new_int < NONE){
-                    std::cout << 12 << std::endl;
-                    std::vector<Record> failed_records;
-                    std::cout << 13 << std::endl;
-                    return failed_records;
+                  std::vector<Record> failed_records;
+                  return failed_records;
                 }
-                std::cout << 14 << std::endl;
                 page_directory_shared.lock();
-                std::cout << 15 << std::endl;
                 rid = table->page_directory.find((new_int))->second; //go one step further in indirection
-                std::cout << 16 << std::endl;
                 page_directory_shared.unlock();
-                std::cout << 17 << std::endl;
 
                 if(rid.id > 0){
-                    std::cout << 18 << std::endl;
                     break;
                 }
-                std::cout << 19 << std::endl;
             }
-            std::cout << 20 << std::endl;
             std::vector<int> record_columns(table->num_columns);
-            std::cout << 21 << std::endl;
             for(int j = 0; j < table->num_columns; j++){ //transfer columns from desired version into record object
-                std::cout << 22 << std::endl;
                 if(projected_columns_index[j]){
-                    std::cout << 23 << std::endl;
                     record_columns[j] = buffer_pool.get(rid, j + NUM_METADATA_COLUMNS);
-                    std::cout << 24 << std::endl;
                     if(record_columns[j] < NONE){
-                        std::cout << 25 << std::endl;
-                        std::vector<Record> failed_records;
-                        std::cout << 26 << std::endl;
-                        return failed_records;
+                      std::vector<Record> failed_records;
+                      return failed_records;
                     }
-                    std::cout << 27 << std::endl;
                 }
-                std::cout << 28 << std::endl;
             }
-            std::cout << 29 << std::endl;
             records.push_back(Record(rids[i], search_key, record_columns)); //add a record with RID of base page, value of primary key, and contents of desired version
-            std::cout << 30 << std::endl;
         }
-        std::cout << 31 << std::endl;
     }
-    std::cout << 32 << std::endl;
     return records;
 }
 

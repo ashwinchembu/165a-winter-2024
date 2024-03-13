@@ -55,14 +55,22 @@ int BufferPool::hash_fun(unsigned int x) {
 }
 
 int BufferPool::get (const RID& rid, const int& column) {
+  std::cout << 1 << std::endl;
   int return_val = NONE - 10;
+  std::cout << 2 << std::endl;
   Frame* found = pin(rid, column, 'S');
+  std::cout << 3 << std::endl;
   if(found == nullptr){ //if not already in the bufferpool, load into bufferpool
+  std::cout << 4 << std::endl;
     return return_val;
   }
+  std::cout << 5 << std::endl;
   return_val = *(found->page->data + rid.offset);
+  std::cout << 6 << std::endl;
   update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
+  std::cout << 7 << std::endl;
   unpin(rid, column, 'S');
+  std::cout << 8 << std::endl;
   return return_val; //return the value we want
 }
 
