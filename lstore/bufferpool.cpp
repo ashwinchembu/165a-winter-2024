@@ -296,6 +296,7 @@ Frame* BufferPool::pin (const RID& rid, const int& column, const char& pin_type)
   // unique_lock_manager_lock.lock();
   std::unique_lock<std::shared_mutex> unique_lock(lock_manager_lock);
 
+  std::cout << (lock_manager.find(rid.table_name)->second.find(rid.id)->second->mutex) << std::endl;
   std::shared_lock<std::shared_mutex> lock_mng_shared(*(lock_manager.find(rid.table_name)->second.find(rid.id)->second->mutex), std::defer_lock);
   std::unique_lock<std::shared_mutex> lock_mng_unique(*(lock_manager.find(rid.table_name)->second.find(rid.id)->second->mutex), std::defer_lock);
   switch(pin_type){
@@ -337,7 +338,7 @@ void BufferPool::unpin (const RID& rid, const int& column, const char& pin_type)
   }
   // unique_lock_manager_lock.lock();
   std::unique_lock<std::shared_mutex> unique_lock(lock_manager_lock);
-
+  std::cout << (lock_manager.find(rid.table_name)->second.find(rid.id)->second->mutex) << std::endl;
   std::shared_lock<std::shared_mutex> lock_mng_shared(*(lock_manager.find(rid.table_name)->second.find(rid.id)->second->mutex), std::defer_lock);
   std::unique_lock<std::shared_mutex> lock_mng_unique(*(lock_manager.find(rid.table_name)->second.find(rid.id)->second->mutex), std::defer_lock);
   switch(pin_type){
