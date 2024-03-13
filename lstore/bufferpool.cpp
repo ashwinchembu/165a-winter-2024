@@ -61,8 +61,8 @@ int BufferPool::get (const RID& rid, const int& column) {
     return return_val;
   }
   return_val = *(found->page->data + rid.offset);
-  unpin(rid, column, 'S');
   update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
+  unpin(rid, column, 'S');
   return return_val; //return the value we want
 }
 
