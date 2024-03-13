@@ -256,6 +256,9 @@ Table_num_columns.argtypes = [POINTER(c_int)]
 Table_print_lineage = DB.Table_print_lineage
 Table_print_lineage.argtypes = [POINTER(c_int)]
 
+Table_print_table=DB.Table_print_table
+Table_print_table.argtypes = [POINTER(c_int)]
+
 
 #bufferpool.cpp
 
