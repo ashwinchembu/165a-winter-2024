@@ -85,8 +85,8 @@ bool BufferPool::set (const RID& rid, const int& column, const int& value, const
     found->page->num_rows++;
   }
   found->dirty = true; //the page has been modified
-  unpin(rid, column, 'N');
   update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
+  unpin(rid, column, 'N');
   return true;
 }
 
@@ -151,7 +151,7 @@ Frame* BufferPool::load (const RID& rid, const int& column){ //return the frame 
 
   FILE* fp = fopen((data_path).c_str(),"r");
   if (!fp) {
-    throw std::invalid_argument("Couldn't open file " + data_path);
+    throw std::invalid_argument("Load : Couldn't open file " + data_path);
   }
   Frame* frame = nullptr;
   Page* p = new Page();
@@ -222,6 +222,7 @@ void BufferPool::insert_new_page(const RID& rid, const int& column, const int& v
 }
 
 Frame* BufferPool::evict(const RID& rid){ //return the frame that was evicted
+  // std::unique_lock lock(update_age_lock);
   size_t hash = hash_fun(rid.first_rid_page); //determine correct hash range
   Frame* range_begin = hash_vector[hash]; //beginning of hash range
   Frame* range_end = (hash == (hash_vector.size() - 1)) ? tail : hash_vector[hash + 1]->prev; //end of hash range
@@ -236,9 +237,11 @@ Frame* BufferPool::evict(const RID& rid){ //return the frame that was evicted
       // unique_frame_directory_lock.lock();
       frame_directory[hash]--;
       // unique_frame_directory_lock.unlock();
-      unique_lock.lock();
+      unique_lock.unlock();
 
       current_frame->valid = false; //frame is now empty
+      // lock.unlock();
+      std::cout << "Evicted" << std::endl;
       return current_frame;
     }
     current_frame = current_frame->prev;
@@ -249,6 +252,7 @@ Frame* BufferPool::evict(const RID& rid){ //return the frame that was evicted
 }
 
 void BufferPool::write_back(Frame* frame){
+  std::cout << "Writing back" << std::endl;
   int frp = frame->first_rid_page;
   std::string frp_s = std::to_string(frame->first_rid_page);
   if (frp < 0) {
@@ -260,7 +264,7 @@ void BufferPool::write_back(Frame* frame){
     + "_" + std::to_string(frame->column) + ".dat";
   FILE* fp = fopen((data_path).c_str(),"w");
   if (!fp) {
-    throw std::invalid_argument("Couldn't open file " + data_path);
+    throw std::invalid_argument("Write Back : Couldn't open file " + data_path);
   }
   if (frame->page != nullptr) {
     fwrite(&(frame->page->num_rows), sizeof(int), 1, fp);
@@ -322,6 +326,7 @@ Frame* BufferPool::pin (const RID& rid, const int& column, const char& pin_type)
 
 void BufferPool::unpin (const RID& rid, const int& column, const char& pin_type) {
   Frame* found = search(rid, column);
+
   if(found == nullptr || !found->valid){ //if not in the bufferpool
     throw std::invalid_argument("Attempt to unpin record that was not already pinned (No record found)");
   }
@@ -338,9 +343,7 @@ void BufferPool::unpin (const RID& rid, const int& column, const char& pin_type)
   switch(pin_type){
     case 'S':
       // lock_manager.find(rid.table_name)->second.find(rid.id)->second->shared_lock->unlock();
-  std::cout << 3 << std::endl;
       lock_mng_shared.unlock();
-  std::cout << 4 << std::endl;
       break;
     case 'X':
       // lock_manager.find(rid.table_name)->second.find(rid.id)->second->unique_lock->unlock();
@@ -351,7 +354,6 @@ void BufferPool::unpin (const RID& rid, const int& column, const char& pin_type)
   }
   // unique_lock_manager_lock.unlock();
   unique_lock.unlock();
-  std::cout << 5 << std::endl;
   return;
 }
 
@@ -376,8 +378,10 @@ void Frame::operator=(const Frame& rhs)
   table_name = rhs.table_name;
   first_rid_page_range = rhs.first_rid_page_range; //first rid in the page range
   column = rhs.column;
-  valid = rhs.valid; //whether the frame contains data
+  bool current_flag = rhs.valid;
+  valid = current_flag; //whether the frame contains data
   int current_pin = rhs.pin;
   pin = current_pin; //how many transactions have pinned the page
-  dirty = rhs.dirty; //whether the page was modified
+  current_flag = rhs.dirty;
+  dirty = current_flag; //whether the page was modified
 }
