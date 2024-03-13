@@ -28,9 +28,9 @@ public:
     std::string table_name = "";
     int first_rid_page_range = 0; //first rid in the page range
     int column = -1;
-    bool valid = false; //whether the frame contains data
+    std::atomic_bool valid = false; //whether the frame contains data
     std::atomic_int pin = 0; //how many transactions have pinned the page
-    bool dirty = false; //whether the page was modified
+    std::atomic_bool dirty = false; //whether the page was modified
     Frame* next = nullptr;
     Frame* prev = nullptr;
 

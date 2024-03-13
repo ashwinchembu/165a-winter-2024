@@ -241,6 +241,7 @@ Frame* BufferPool::evict(const RID& rid){ //return the frame that was evicted
 
       current_frame->valid = false; //frame is now empty
       // lock.unlock();
+      std::cout << "Evicted" << std::endl;
       return current_frame;
     }
     current_frame = current_frame->prev;
@@ -251,6 +252,7 @@ Frame* BufferPool::evict(const RID& rid){ //return the frame that was evicted
 }
 
 void BufferPool::write_back(Frame* frame){
+  std::cout << "Writing back" << std::endl;
   int frp = frame->first_rid_page;
   std::string frp_s = std::to_string(frame->first_rid_page);
   if (frp < 0) {
@@ -376,8 +378,10 @@ void Frame::operator=(const Frame& rhs)
   table_name = rhs.table_name;
   first_rid_page_range = rhs.first_rid_page_range; //first rid in the page range
   column = rhs.column;
-  valid = rhs.valid; //whether the frame contains data
+  bool current_flag = rhs.valid;
+  valid = current_flag; //whether the frame contains data
   int current_pin = rhs.pin;
   pin = current_pin; //how many transactions have pinned the page
-  dirty = rhs.dirty; //whether the page was modified
+  current_flag = rhs.dirty;
+  dirty = current_flag; //whether the page was modified
 }
