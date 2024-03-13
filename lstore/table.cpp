@@ -202,9 +202,12 @@ int Table::merge(){
 		}
 
 		for(int field = NUM_METADATA_COLUMNS; field < NUM_METADATA_COLUMNS + num_columns;field++){
-			buffer_pool.pin(baseRid,field);
+
 
 			Frame* pageOfField = buffer_pool.get_page(baseRid, field);
+
+			buffer_pool.pin(baseRid,field);
+
 			Page* copyOfFieldPage = new Page();
 
 			copyOfFieldPage->deep_copy(pageOfField->page);
@@ -226,23 +229,31 @@ int Table::merge(){
 
 	int firstRid = TPS - 1;
 
-	int lastRid = TPS - MAX_COMMITTED_TAILS <= num_update * -1?
+	int lastRid = abs(TPS) + MAX_COMMITTED_TAILS >= num_update?
 			num_update * -1 : TPS - MAX_COMMITTED_TAILS;
 
 
-	buffer_pool.write_back_all();
+
+//	buffer_pool.write_back_all();
 	mergeBufferPool->write_back_all();
+
 
 	for(int _tailRid = firstRid; _tailRid >=lastRid; _tailRid--){
 		RID tailRid = this->page_directory.find(_tailRid)->second;
 		RID baseRid = this->page_directory.find(buffer_pool.get(tailRid, BASE_RID_COLUMN))->second;
-		RID latest = this->page_directory.find(buffer_pool.get(tailRid, BASE_RID_COLUMN))->second;
+
+
+//		RID latest = this->page_directory.find(buffer_pool.get(baseRid, BASE_RID_COLUMN))->second;
 
 		for(int c = 0; c < this->num_columns;c++){
 			int val = buffer_pool.get(tailRid,NUM_METADATA_COLUMNS + c);
-			mergeBufferPool->set(baseRid, c, val, false);
+
+			mergeBufferPool->set(baseRid, NUM_METADATA_COLUMNS + c, val, false);
+
 		}
 	}
+
+
 
 	buffer_pool.write_back_all();
 	mergeBufferPool->write_back_all();
@@ -250,7 +261,7 @@ int Table::merge(){
 
 	buffer_pool.tableVersions.erase(name);
 	buffer_pool.tableVersions.insert({name,tableVersion + 1});
-
+//
 	TPS = lastRid;
 	tableVersion++;
 

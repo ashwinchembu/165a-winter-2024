@@ -105,41 +105,8 @@ int PageRange::insert(RID &new_rid, const std::vector<int> &columns) {
  *
  */
 int PageRange::update(RID &rid, RID &rid_new, const std::vector<int> &columns, const std::map<int, RID> &page_directory) {
-    // Get the latest update of the record. Accessing the indirection column.
-    // std::cout << "update start" << std::endl;
+
     buffer_pool.pin(rid, INDIRECTION_COLUMN);
-    // std::cout << "update try to find page" << std::endl;
-    // std::cout << "rid: " << rid.id << std::endl;
-
-    // std::cout << "printing bufferpool in pagerange update: " << std::endl;
-    // Frame *cur1 = buffer_pool.head;
-    // while (cur1 != nullptr) {
-    //     std::cout << cur1->first_rid_page << " " << std::endl;
-    //     if (cur1->first_rid_page == 4097) {
-    //         std::cout << *(cur1->page) << std::endl;
-    //         break;
-    //     }
-    //     cur1 = cur1->next;
-    // }
-    // std::cout << std::endl;
-
-    // std::cout << "found get value: "<< buffer_pool.get(rid, INDIRECTION_COLUMN) << std::endl;
-    if (buffer_pool.search(rid, INDIRECTION_COLUMN) == nullptr) {
-        // std::cout << "WHYYYYYYYYYY????????????" << std::endl;
-    }
-    // std::cout << "BUFFERPOOL SEARCH: " << std::endl;
-    // std::cout << buffer_pool.search(rid, INDIRECTION_COLUMN)->first_rid_page << std::endl;
-    // std::cout << "PAGE: " << *(buffer_pool.search(rid, 2)->page) << std::endl;
-    //  std::cout << "printing bufferpool in update: " << std::endl;
-    //  Frame* cur1 = buffer_pool.head;
-    //  while (cur1 != nullptr) {
-    //  	//std::cout << cur1->first_rid_page << " " << std::endl;
-    //  	if (cur1->first_rid_page == 1) {
-    //  		std::cout << *(cur1->page) << std::endl;
-    //  	}
-    //  	cur1 = cur1->next;
-    //      std::cout << "end of this page: " << std::endl;
-    //  }
 
     RID latest_rid = page_directory.find(buffer_pool.get(rid, INDIRECTION_COLUMN))->second;
     // std::cout << "update found page" << std::endl;

@@ -60,8 +60,6 @@ public:
     int num_update = 0;
     int num_insert = 0;
 
-//    int TPS = 0;
-
     std::map<int,std::vector<RIDJoin>>referencesOut;
 
     int num_columns; //number of columns of actual data, excluding the metadata

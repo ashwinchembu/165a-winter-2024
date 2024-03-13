@@ -17,7 +17,7 @@ const int NUM_BUFFERPOOL_HASH_PARTITIONS = 4; //make sure this divides BUFFER_PO
 const int MAX_COMMITTED_TAILS = 512;
 
 // Prevent merge from happening during the development
-const int MAX_PAGE_RANGE_UPDATES = 100000000;
+const int MAX_PAGE_RANGE_UPDATES = PAGE_SIZE;
 // const int MAX_PAGE_RANGE_UPDATES = 1*PAGE_SIZE;
 const int MAX_TABLE_UPDATES = PAGE_SIZE;
 // const int MAX_TABLE_UPDATES = 1*PAGE_SIZE;
