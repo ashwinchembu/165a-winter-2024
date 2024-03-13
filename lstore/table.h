@@ -45,6 +45,7 @@ public:
 	Toolkit::BasicSharedPtr<std::mutex>mutex_insert = Toolkit::BasicSharedPtr<std::mutex>(new std::mutex());
 	Toolkit::BasicSharedPtr<std::mutex>mutex_update = Toolkit::BasicSharedPtr<std::mutex>(new std::mutex());;
 
+	long long int baseVersion = 0;
 
     std::string name;
     int key; //primary key
@@ -73,9 +74,14 @@ public:
     int write(FILE* fp);
     int read(FILE* fp);
     void PrintData();
+    
+    void PrintLineage();
+    
+    void PrintTable();
 
     bool ridIsJoined(RID rid,int col);
     RIDJoin getJoin(RID rid, int col);
+    int poolSizeRoundUp(int size);
 };
 
 class RIDJoin{

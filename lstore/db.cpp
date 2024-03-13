@@ -17,6 +17,7 @@ BufferPool buffer_pool(BUFFER_POOL_SIZE);
 
 Database::Database() {
 	buffer_pool.set_path(file_path);
+	buffer_pool.textPath = file_path + "/TextOutput";
 
 	struct stat checkDir;
 
@@ -34,6 +35,8 @@ void Database::open(const std::string& path) {
 	file_path = path;
 
 	buffer_pool.set_path(file_path);
+	buffer_pool.textPath = file_path + "/TextOutput";
+
 	struct stat checkDir;
 
 	if(stat(file_path.c_str(),&checkDir)!=0 || !S_ISDIR(checkDir.st_mode)){
@@ -50,6 +53,7 @@ void Database::close() {
 	// for (std::map<std::string, Table>::iterator itr = tables.begin(); itr != tables.end(); itr++) {
 	// 	itr->second.merge();
 	// }
+
 	buffer_pool.write_back_all();
 	write();
 }
@@ -67,6 +71,7 @@ void Database::read(const std::string& path){
 		return;
 	}
 	fseek(fp, 0, SEEK_SET);
+
 	int numTables;
 	int e = fread(&numTables,sizeof(int),1,fp);
 	char nameBuffer[128];
@@ -123,6 +128,7 @@ Table* Database::create_table(const std::string& name, const int& num_columns, c
 	if (insert.second == false) {
 		throw std::invalid_argument("A table with this name already exists in the database. The table was not added. (Is old data removed?)");
 	}
+
 	return table;
 }
 

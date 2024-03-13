@@ -1,15 +1,16 @@
-#include <vector>
-#include <iostream>
-#include <cstdlib>
 #include <cmath>
+#include <cstdlib>
+#include <iostream>
+#include <vector>
 // #include <parallel/algorithm>
+#include "../DllConfig.h"
 #include "bufferpool.h"
 #include "config.h"
 #include "page.h"
 #include "table.h"
 #include "../DllConfig.h"
 
-PageRange::PageRange (RID& new_rid, const std::vector<int>& columns) {
+PageRange::PageRange(RID &new_rid, const std::vector<int> &columns) {
     new_rid.offset = 0;
     num_column = columns.size();
 
@@ -38,7 +39,7 @@ PageRange::PageRange (RID& new_rid, const std::vector<int>& columns) {
  * @return True if there are space for one more record left, False if not
  *
  */
-bool PageRange::base_has_capacity () const {
+bool PageRange::base_has_capacity() const {
     return (base_last < LOGICAL_PAGE) || (base_last <= LOGICAL_PAGE && num_slot_used_base < PAGE_SIZE);
     // Lazy evaluation
 }
@@ -55,7 +56,7 @@ PageRange::~PageRange(){
  * @return return RID of new record upon successful insertion.
  *
  */
-int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
+int PageRange::insert(RID &new_rid, const std::vector<int> &columns) {
     // Get first rid of the page and offset
     // Find if the last base page has capacity for new record
     if (base_last_wasfull) {
@@ -103,11 +104,46 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
  * @return return RID of updated record upon successful insertion.
  *
  */
-int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, const std::map<int, RID>& page_directory) {
+int PageRange::update(RID &rid, RID &rid_new, const std::vector<int> &columns, const std::map<int, RID> &page_directory) {
     // Get the latest update of the record. Accessing the indirection column.
-
+    // std::cout << "update start" << std::endl;
     buffer_pool.pin(rid, INDIRECTION_COLUMN);
+    // std::cout << "update try to find page" << std::endl;
+    // std::cout << "rid: " << rid.id << std::endl;
+
+    // std::cout << "printing bufferpool in pagerange update: " << std::endl;
+    // Frame *cur1 = buffer_pool.head;
+    // while (cur1 != nullptr) {
+    //     std::cout << cur1->first_rid_page << " " << std::endl;
+    //     if (cur1->first_rid_page == 4097) {
+    //         std::cout << *(cur1->page) << std::endl;
+    //         break;
+    //     }
+    //     cur1 = cur1->next;
+    // }
+    // std::cout << std::endl;
+
+    // std::cout << "found get value: "<< buffer_pool.get(rid, INDIRECTION_COLUMN) << std::endl;
+    if (buffer_pool.search(rid, INDIRECTION_COLUMN) == nullptr) {
+        // std::cout << "WHYYYYYYYYYY????????????" << std::endl;
+    }
+    // std::cout << "BUFFERPOOL SEARCH: " << std::endl;
+    // std::cout << buffer_pool.search(rid, INDIRECTION_COLUMN)->first_rid_page << std::endl;
+    // std::cout << "PAGE: " << *(buffer_pool.search(rid, 2)->page) << std::endl;
+    //  std::cout << "printing bufferpool in update: " << std::endl;
+    //  Frame* cur1 = buffer_pool.head;
+    //  while (cur1 != nullptr) {
+    //  	//std::cout << cur1->first_rid_page << " " << std::endl;
+    //  	if (cur1->first_rid_page == 1) {
+    //  		std::cout << *(cur1->page) << std::endl;
+    //  	}
+    //  	cur1 = cur1->next;
+    //      std::cout << "end of this page: " << std::endl;
+    //  }
+
     RID latest_rid = page_directory.find(buffer_pool.get(rid, INDIRECTION_COLUMN))->second;
+    // std::cout << "update found page" << std::endl;
+
     buffer_pool.set(rid, INDIRECTION_COLUMN, rid_new.id, false);
     buffer_pool.unpin(rid, INDIRECTION_COLUMN);
     // Create new tail pages if there are no space left or tail page does not exist.
@@ -125,7 +161,7 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
         buffer_pool.insert_new_page(rid_new, BASE_RID_COLUMN, rid.id);
         buffer_pool.insert_new_page(rid_new, TPS, 0);
         for (int i = NUM_METADATA_COLUMNS; i < num_column; i++) {
-            if (std::isnan(columns[i - NUM_METADATA_COLUMNS]) || columns[i-NUM_METADATA_COLUMNS] < -2147480000) { // Wrapper changes None to smallest integer possible
+            if (std::isnan(columns[i - NUM_METADATA_COLUMNS]) || columns[i - NUM_METADATA_COLUMNS] < -2147480000) { // Wrapper changes None to smallest integer possible
                 // If there are no update, we write the value from latest update
                 buffer_pool.insert_new_page(rid_new, i, buffer_pool.get(latest_rid, i));
             } else {
@@ -146,7 +182,7 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
         buffer_pool.set(rid_new, BASE_RID_COLUMN, rid.id, true);
         buffer_pool.set(rid_new, TPS, 0, true);
         for (int i = NUM_METADATA_COLUMNS; i < num_column; i++) {
-            if (std::isnan(columns[i - NUM_METADATA_COLUMNS]) || columns[i-NUM_METADATA_COLUMNS] < -2147480000) { // Wrapper changes None to smallest integer possible
+            if (std::isnan(columns[i - NUM_METADATA_COLUMNS]) || columns[i - NUM_METADATA_COLUMNS] < -2147480000) { // Wrapper changes None to smallest integer possible
                 // If there are no update, we write the value from latest update
                 buffer_pool.set(rid_new, i, buffer_pool.get(latest_rid, i), true);
             } else {
@@ -168,15 +204,13 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
     return 0;
 }
 
-
-
-int PageRange::write(FILE* fp) {
+int PageRange::write(FILE *fp) {
     fwrite(&num_slot_left, sizeof(int), 1, fp);
     fwrite(&num_slot_used_base, sizeof(int), 1, fp);
     fwrite(&num_slot_used_tail, sizeof(int), 1, fp);
     fwrite(&base_last, sizeof(int), 1, fp);
     fwrite(&tail_last, sizeof(int), 1, fp);
-    for (int i = 0; i <tail_last; i++) {
+    for (int i = 0; i < tail_last; i++) {
         pages[i].write(fp);
     }
     base_last_wasfull = (num_slot_used_base == PAGE_SIZE);
@@ -185,15 +219,14 @@ int PageRange::write(FILE* fp) {
     return 0;
 }
 
-
-int PageRange::read(FILE* fp) {
+int PageRange::read(FILE *fp) {
     size_t e = fread(&num_slot_left, sizeof(int), 1, fp);
     e = e + fread(&num_slot_used_base, sizeof(int), 1, fp);
     e = e + fread(&num_slot_used_tail, sizeof(int), 1, fp);
     e = e + fread(&base_last, sizeof(int), 1, fp);
     e = e + fread(&tail_last, sizeof(int), 1, fp);
     pages.resize(tail_last);
-    for (int i = 0; i <tail_last; i++) {
+    for (int i = 0; i < tail_last; i++) {
         pages[i].read(fp);
     }
     base_last_wasfull = (num_slot_used_base == PAGE_SIZE);
@@ -218,7 +251,7 @@ Page::~Page() {
  *
  */
 const bool Page::has_capacity() const {
-    return(num_rows < PAGE_SIZE);
+    return (num_rows < PAGE_SIZE);
 }
 
 /***
@@ -228,8 +261,8 @@ const bool Page::has_capacity() const {
  * @param int value Value to write into
  *
  */
-int Page::write(const int& value) {
-    int* insert = nullptr;
+int Page::write(const int &value) {
+    int *insert = nullptr;
     insert = data + num_rows;
     *insert = value;
     num_rows++;
@@ -245,8 +278,7 @@ int Page::write(const int& value) {
  * @return Standard io
  *
  */
-std::ostream& operator<<(std::ostream& os, const Page& p)
-{
+std::ostream &operator<<(std::ostream &os, const Page &p) {
     for (int i = 0; i < PAGE_SIZE; i++) {
         os << *(p.data + i) << " ";
     }
