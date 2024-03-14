@@ -218,7 +218,7 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
         // Lock the rid of record that we are inserting
         lock_manager_lock.lock();
         if (!(uniq_lock_rid.try_lock())) {
-            std::cout << "???" << std::endl;
+            lock_manager_lock.unlock();
             return 1;
         }
         lock_manager_lock.unlock();
@@ -250,19 +250,13 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
         buffer_pool.insert_new_page(rid_new, SCHEMA_ENCODING_COLUMN, schema_encoding);
 
         // Unlock the lock for the new record. If we reach here then we were able to lock it before.
-    std::cout << 41 << std::endl;
         lock_manager_lock.lock();
-    std::cout << 42 << std::endl;
         uniq_lock_rid.unlock();
-    std::cout << 43 << std::endl;
         lock_manager_lock.unlock();
-    std::cout << 44 << std::endl;
 
         // Setting the new RID to be representation of the page if the page was newly created
         std::unique_lock plock(page_lock);
-    std::cout << 45 << std::endl;
         pages.push_back(rid_new);
-    std::cout << 46 << std::endl;
         plock.unlock();
     std::cout << 5 << std::endl;
 

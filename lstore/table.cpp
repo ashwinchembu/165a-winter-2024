@@ -136,7 +136,7 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 	page_range_shared.lock();
 	PageRange* prange = (page_range[i].get());
 	page_range_shared.unlock();
-	if (prange->update(rid, new_rid, columns, page_directory, page_range_lock)) {
+	if (prange->update(rid, new_rid, columns, page_directory, &page_range_lock)) {
 		return RID(0);
 	}
 	page_range_update[i]++;
