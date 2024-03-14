@@ -28,9 +28,9 @@ public:
     std::string table_name = "";
     int first_rid_page_range = 0; //first rid in the page range
     int column = -1;
-    bool valid = false; //whether the frame contains data
+    std::atomic_bool valid = false; //whether the frame contains data
     std::atomic_int pin = 0; //how many transactions have pinned the page
-    bool dirty = false; //whether the page was modified
+    std::atomic_bool dirty = false; //whether the page was modified
     Frame* next = nullptr;
     Frame* prev = nullptr;
 
@@ -54,19 +54,24 @@ public:
     //Frame* search(const RID& rid, const int& column, std::string merge);
     Frame* insert_into_frame(const RID& rid, const int& column, Page* page); //insert a page into a frame
     void insert_new_page(const RID& rid, const int& column, const int& value); //write new data to memory
-    std::mutex update_age_lock;
+    std::shared_mutex update_age_lock;
     void update_ages(Frame*& just_accessed, Frame*& range_begin); // update all the ages in hash range based on which frame was just accessed
     Frame* evict (const RID& rid); //evict the oldest frame that is not pinned
     void write_back(Frame* frame); //write back to disk if dirty
     void write_back_all();
     Frame* pin (const RID& rid, const int& column, const char& pin_type);
+    Frame* pin (const RID& rid, const int& column, const char& pin_type, std::shared_lock<std::shared_mutex>& lock_mng_shared);
     void unpin (const RID& rid, const int& column, const char& pin_type);
+    void unpin (const RID& rid, const int& column, const char& pin_type, std::shared_lock<std::shared_mutex>& lock_mng_shared);
     void set_path (const std::string& path_rhs);
     std::vector<Frame*> hash_vector; //the starting frame of each hash range
+
     std::unordered_map<std::string, std::unordered_map<int, LockManagerEntry*>> lock_manager; //<table_name, <rid_id, lock_manager_entry>>
 
     std::vector<int> frame_directory; //keep track of how many open frames in each hash range
     std::shared_mutex frame_directory_lock;
+    std::shared_mutex lock_manager_lock;
+    std::unique_lock<std::shared_mutex> unique_lock_manager_lock;
     std::shared_lock<std::shared_mutex> shared_frame_directory_lock;
     std::unique_lock<std::shared_mutex> unique_frame_directory_lock;
     int bufferpool_size;

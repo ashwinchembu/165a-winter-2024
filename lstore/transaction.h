@@ -1,6 +1,6 @@
 #ifndef TRANSACTION_H
 #define TRANSACTION_H
-
+#include <thread>
 #include "table.h"
 #include "index.h"
 #include "query.h"
@@ -13,7 +13,7 @@ class QueryOperation {
 public:
     /* Data for things necessary to run query, i.e. table, key, columns... */
     Query* q = nullptr;
-    const OpCode type = OpCode::NOTHING;
+    OpCode type = OpCode::NOTHING;
     Table* table = nullptr;
 
     int* key = nullptr; // Update, Select, Select version, Increment
@@ -38,9 +38,9 @@ class Transaction {
 public:
     std::vector<QueryOperation> queries; // To hold onto queries
     int num_queries = 0;
-    int hash_key = 0;
-    int xact_id;
+    int xact_id = -1;
     Transaction ();
+    Transaction (const Transaction& rhs);
     virtual ~Transaction ();
     // I believe wrapper can simplify these function pointers
     // void add_query(bool (*insert_func)(std::vector<int>), Table& t, const std::vector<int>& columns);

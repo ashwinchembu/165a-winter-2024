@@ -1,5 +1,6 @@
 #include <thread>
 #include <iostream>
+#include <chrono>
 #include "config.h"
 #include "../DllConfig.h"
 #include "transaction_worker.h"
@@ -21,8 +22,14 @@ void TransactionWorker::add_transaction(const Transaction& t) {
 
 // Start all the transactions. Create thread and run.
 void TransactionWorker::run() {
-        thread = std::thread(&TransactionWorker::_run, this);
+    query_thread = std::thread(&TransactionWorker::_run, this);
+    std::cout << "Running transaction with id " << query_thread.get_id() << std::endl;
+    // thread = std::thread(&TransactionWorker::_run, this);
 }
+
+// void TransactionWorker::_run_visualize() {
+//
+// }
 
 void TransactionWorker::_run() {
     for (size_t i = 0; i < transactions.size(); i++) {
@@ -30,13 +37,14 @@ void TransactionWorker::_run() {
         if(!result){
           transactions.push_back(transactions[i]);
         }
-    }
+	}
 }
 
 // call all the join function for the thread we have.
 void TransactionWorker::join() {
-    if (thread.joinable()) {
-        thread.join();
+    if (query_thread.joinable()) {
+		std::cout << "Joining transaction " << query_thread.get_id() << std::endl;
+        query_thread.join();
     }
 }
 

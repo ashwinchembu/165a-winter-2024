@@ -9,7 +9,7 @@
 class TransactionWorker {
 public:
     std::vector<Transaction> transactions; // List of transactions to run
-    std::thread thread;
+    std::thread query_thread;
     std::vector<bool> stats;
     int result = 0;
     TransactionWorker ();
@@ -17,6 +17,7 @@ public:
     void add_transaction(const Transaction& t); // Append transaction t to the appropriate place.
     void run(); // Start all the transactions. Create thread and run.
     void _run(); // Start all the transactions. Create thread and run.
+    // void _run_visualize();
     void join(); // call all the join function for the thread we have.
 };
 #endif

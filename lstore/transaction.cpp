@@ -106,6 +106,11 @@ QueryOperation::~QueryOperation(){}
 
 Transaction::Transaction () {}
 Transaction::~Transaction () {}
+Transaction::Transaction (const Transaction& rhs) {
+  queries = rhs.queries;
+  num_queries = rhs.num_queries;
+  xact_id = rhs.xact_id;
+}
 // I believe wrapper can simplify these function pointers
 // Insert
 void Transaction::add_query(Query& q, Table& t, const std::vector<int>& columns) {
@@ -167,9 +172,12 @@ void Transaction::add_query(Query& q, Table& t, int& key, const int& column) {
 bool Transaction::run() {
     bool transaction_completed = true; //any case where transaction does not need to be redone
     bool _commit = true; //any case where transaction does not need to be redone
+	std::unique_lock db_shared(db_log.db_log_lock);
+    //db_log.lk.lock();
     db_log.num_transactions++;
     xact_id = db_log.num_transactions;
     db_log.entries.insert({xact_id, LogEntry(queries)}); //note in log that transaction has begun
+    db_shared.unlock();
 
     for (int i = 0; i < num_queries; i++) { //run all the queries
       int query_success = queries[i].run();
@@ -199,7 +207,9 @@ bool Transaction::run() {
 }
 
 void Transaction::abort() {
+  std::unique_lock lk_shared(db_log.db_log_lock);
   LogEntry log_entry = db_log.entries.find(xact_id)->second;
+  lk_shared.unlock();
 
   for(size_t i = 0; i < log_entry.queries.size(); i++){ //undo all queries in the transaction
     OpCode type = queries[i].type;
@@ -216,14 +226,16 @@ void Transaction::abort() {
             queries[i].q->deleteRecord(queries[i].columns[*(queries[i].key)]);
             break;
         case OpCode::UPDATE: //delete the update
-            queries[i].table->page_directory_shared.lock();
-            base_rid = queries[i].table->page_directory.find(queries[i].columns[*(queries[i].key)])->second;
-            queries[i].table->page_directory_shared.unlock();
+            {
+              std::unique_lock page_directory_shared(queries[i].table->page_directory_lock);
+              base_rid = queries[i].table->page_directory.find(queries[i].columns[*(queries[i].key)])->second;
+              page_directory_shared.unlock();
 
-            base_record_indirection = buffer_pool.get(base_rid, INDIRECTION_COLUMN);
-            queries[i].table->page_directory_shared.lock();
-            most_recent_update = queries[i].table->page_directory.find(base_record_indirection)->second;
-            queries[i].table->page_directory_shared.unlock();
+              base_record_indirection = buffer_pool.get(base_rid, INDIRECTION_COLUMN);
+              page_directory_shared.lock();
+              most_recent_update = queries[i].table->page_directory.find(base_record_indirection)->second;
+              page_directory_shared.unlock();
+            }
 
 
             for (size_t j = 0; j < queries[i].columns.size(); j++) {
@@ -240,9 +252,9 @@ void Transaction::abort() {
 
               int second_most_recent_update = buffer_pool.get(most_recent_update, INDIRECTION_COLUMN);
 
-              queries[i].table->page_directory_unique.lock();
+              std::unique_lock page_directory_unique(queries[i].table->page_directory_lock);
               queries[i].table->page_directory.find(most_recent_update.id)->second.id = 0; //delete in page directory
-              queries[i].table->page_directory_unique.unlock();
+              page_directory_unique.unlock();
 
               buffer_pool.pin(base_rid, SCHEMA_ENCODING_COLUMN, 'X');
               buffer_pool.set(base_rid, INDIRECTION_COLUMN, second_most_recent_update, false); //fix indirection
@@ -253,11 +265,18 @@ void Transaction::abort() {
             break;
     }
   }
+
+  std::unique_lock lk(db_log.db_log_lock);
   db_log.entries.erase(xact_id);
+  lk.unlock();
 }
 
 void Transaction::commit() {
-  db_log.entries.erase(xact_id);
+  	//db_log.lk.lock();
+	std::unique_lock db_shared(db_log.db_log_lock);
+  	db_log.entries.erase(xact_id);
+ 	//db_log.lk.unlock();
+	db_shared.unlock();
 }
 
 COMPILER_SYMBOL void Transaction_add_query_insert(

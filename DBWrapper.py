@@ -318,7 +318,7 @@ def c_intOrUnreasonable(number):
 #to a c++ vector ptr of ints. no need to delete the vector.
 #Elements of None are given an extreme value
 def fillAndReturnIntBuffer(*args):
-    lst = list(args)
+    lst = list(args[0])
     erase_buffer_vector()
     for i in lst:
         add_to_buffer_vector(c_intOrUnreasonable(i))
