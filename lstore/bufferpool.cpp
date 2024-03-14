@@ -13,6 +13,7 @@
 #include "config.h"
 #include "bufferpool.h"
 #include "../Toolkit.h"
+#include "../DllConfig.h"
 
 int id_counter = 0;
 
@@ -162,22 +163,22 @@ std::string BufferPool::buildDatPath(std::string tname,int first_rid_page,int fi
 
 	if(column < NUM_METADATA_COLUMNS){
 //		ptr+= sprintf(ptr," M ");
-		buildPath.append("_M_");
+		buildPath.append("M");
 
 	} else if(first_rid_page < 0){
 //		ptr+= sprintf(ptr," T ");
-		buildPath.append("_T_");
+		buildPath.append("T");
 
 	} else if(first_rid_page > 0){
 //		ptr+= sprintf(ptr," B ");
-		buildPath.append("_B_");
+		buildPath.append("B");
 		isBase = true;
 	}
 
 	buildPath.append(std::to_string(first_rid_page))
-			 .append("_")
+			 .append("")
 			 .append(std::to_string(first_rid_page_range))
-			 .append("_")
+			 .append("")
 			 .append(std::to_string(column));
 
 //	ptr+=sprintf(ptr,"%d %d %d",first_rid_page,first_rid_page_range,column);
@@ -185,7 +186,7 @@ std::string BufferPool::buildDatPath(std::string tname,int first_rid_page,int fi
 	if(isBase){
 //		ptr+=sprintf(ptr," %d",mergeNumber);
 
-		buildPath.append("_")
+		buildPath.append("")
 		         .append(std::to_string(tableVersions.find(tname)->second));
 	}
 
@@ -438,5 +439,9 @@ void Frame::operator=(const Frame& rhs)
   valid = rhs.valid; //whether the frame contains data
   pin = rhs.pin; //how many transactions have pinned the page
   dirty = rhs.dirty; //whether the page was modified
+}
+
+COMPILER_SYMBOL void force_write_back_all(){
+    buffer_pool.write_back_all();
 }
 

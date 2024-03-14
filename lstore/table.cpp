@@ -162,6 +162,10 @@ int Table::write(FILE *fp) {
     return 0;
 }
 
+// int Table::read(FILE *fp) {
+//     fread(&baseVersion, sizeof(long long int), 1, fp);
+// }
+
 int Table::read(FILE *fp) {
     fread(&baseVersion, sizeof(long long int), 1, fp);
 
@@ -213,7 +217,8 @@ int Table::merge() {
     if (!merge_queue.size()) {
         return 0;
     }
-    //std::cout << "call merge: " << std::endl;
+
+    // std::cout << "call merge" << std::endl;
 
     //    /*
     //     * we commit everything since we aren't editing the base pages anymore
@@ -347,25 +352,24 @@ int Table::merge() {
         }
     }
 
-    for (auto it = visited_rids.begin(); it != visited_rids.end(); ++it) {
-        if (*it < 0) {
-            continue;
-        }
-        for (int col = NUM_METADATA_COLUMNS; col < num_columns + NUM_METADATA_COLUMNS; col++) {
-            mergeBufferPool->write_back(mergeBufferPool->search(*it, col));
+    for (auto itr = visited_rids.begin(); itr != visited_rids.end(); itr++) {
+        if (*itr > 0) { // if rid is a base rid
+            for (int j = NUM_METADATA_COLUMNS; j < num_columns + NUM_METADATA_COLUMNS; j++) { // iterate through columns
+                RID rid = page_directory.find(*itr)->second;
+                mergeBufferPool->write_back(mergeBufferPool->search(rid, j));
+            }
         }
     }
 
-    // std::cout << "write back all: " << std::endl;
     // buffer_pool.write_back_all();
     // mergeBufferPool->write_back_all();
 
     delete mergeBufferPool;
 
-    // buffer_pool.tableVersions.erase(name);
-    // buffer_pool.tableVersions.insert({name,baseVersion+1});
+    buffer_pool.tableVersions.erase(name);
+    buffer_pool.tableVersions.insert({name, baseVersion + 1});
 
-    // baseVersion++;
+    baseVersion++;
 
     return 0;
 }
@@ -414,6 +418,57 @@ void Table::PrintData() {
     std::cout << "--Page Directory--" << std::endl;
     for (auto &e : page_directory) {
         std::cout << "Key: " << e.first << ", Value.id: " << e.second.id << std::endl;
+    }
+}
+
+void Table::PrintLineage() {
+    for (auto &rid : page_directory) {
+
+        if (rid.first > 0) {
+            std::cout << "-----" << rid.first << std::endl;
+
+            int nextId = buffer_pool.get(rid.second, INDIRECTION_COLUMN);
+
+            while (nextId < 0) {
+                RID nextRid = page_directory.find(nextId)->second;
+
+                std::cout << "    " << nextRid.id << std::endl;
+
+                nextId = buffer_pool.get(nextRid, INDIRECTION_COLUMN);
+
+                if (nextId > 0) {
+                    nextRid = page_directory.find(nextId)->second;
+                    std::cout << "    " << nextRid.id << std::endl;
+                }
+            }
+        }
+    }
+}
+
+std::string metacols[6] = {"INDIR", "RID", "TIME", "SCHEM", "BASE", "TPS"};
+
+void Table::PrintTable() {
+    int row = 0;
+    for (auto &rid : page_directory) {
+
+        if (row % 50 == 0) {
+
+            printf("\n\n");
+
+            for (int i = 0; i < 6; i++) {
+                printf("%15s", metacols[i].c_str());
+            }
+
+            printf("\n\n");
+        }
+
+        row++;
+
+        for (int i = 0; i < NUM_METADATA_COLUMNS + num_columns; i++) {
+            printf("%15d", buffer_pool.get(rid.second, i));
+        }
+
+        printf("\n");
     }
 }
 
@@ -509,4 +564,12 @@ COMPILER_SYMBOL int Table_merge(int *obj) {
 
 COMPILER_SYMBOL int Table_num_columns(int *obj) {
     return ((Table *)obj)->num_columns;
+}
+
+COMPILER_SYMBOL void Table_print_lineage(int *obj) {
+    ((Table *)obj)->PrintLineage();
+}
+
+COMPILER_SYMBOL void Table_print_table(int *obj) {
+    ((Table *)obj)->PrintTable();
 }
