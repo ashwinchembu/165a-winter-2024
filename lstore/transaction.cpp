@@ -170,15 +170,17 @@ void Transaction::add_query(Query& q, Table& t, int& key, const int& column) {
 }
 
 bool Transaction::run() {
-    bool transaction_completed = true; //any case where transaction does not need to be redone
-    bool _commit = true; //any case where transaction does not need to be redone
-	std::unique_lock db_shared(db_log.db_log_lock);
-    //db_log.lk.lock();
+    bool transaction_completed = true; //any case where transaction does not need to be redone, commit or ic abort
+    bool _commit = true;
+
+	  std::unique_lock db_shared(db_log.db_log_lock);
     db_log.num_transactions++;
     xact_id = db_log.num_transactions;
-    db_log.entries.insert({xact_id, LogEntry(queries)}); //note in log that transaction has begun
+    LogEntry log_entry(queries);
+    db_log.entries.insert({xact_id, log_entry}); //note in log that transaction has begun
     db_shared.unlock();
 
+    //GRAB ALL LOCKS HERE
     for (int i = 0; i < num_queries; i++) { //run all the queries
       int query_success = queries[i].run();
       switch (query_success) {
@@ -198,11 +200,13 @@ bool Transaction::run() {
           break;
         }
     }
+    
     if(_commit){
       commit();
     } else {
       abort();
     }
+    //UNDO ALL LOCKS HERE
     return transaction_completed; //transaction be reattempted if return is 0
 }
 

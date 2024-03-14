@@ -13,7 +13,6 @@ public:
   LogEntry (const std::vector<QueryOperation>& queries) : queries(queries){}
   virtual ~LogEntry () {}
   std::vector<QueryOperation> queries;
-  //int num_attempts = 0; //after three tries, abort to avoid loops
 };
 
 class Log{
