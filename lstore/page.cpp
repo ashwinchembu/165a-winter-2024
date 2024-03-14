@@ -109,8 +109,8 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
         // Lock the rid of record that we are inserting
         lock_manager_lock.lock();
 
-        // if (!(buffer_pool.lock_manager.find(new_rid.table_name)->second.find(new_rid.id)->second->unique_lock->try_lock())) {
-        if (!(uniq_lock_rid.try_lock())) {
+        if (!(buffer_pool.lock_manager.find(new_rid.table_name)->second.find(new_rid.id)->second->unique_lock->try_lock())) {
+        // if (!(uniq_lock_rid.try_lock())) {
             lock_manager_lock.unlock();
             return 1;
         }
@@ -150,8 +150,8 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
 
         // Lock the rid of record that we are inserting
         lock_manager_lock.lock();
-        // if (!(buffer_pool.lock_manager.find(new_rid.table_name)->second.find(new_rid.id)->second->unique_lock->try_lock())) {
-        if (!(uniq_lock_rid.try_lock())) {
+        if (!(buffer_pool.lock_manager.find(new_rid.table_name)->second.find(new_rid.id)->second->unique_lock->try_lock())) {
+        // if (!(uniq_lock_rid.try_lock())) {
             lock_manager_lock.unlock();
             return 1;
         }
@@ -172,8 +172,8 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
 
         // Unlock the rid of the record once we are done inserting
         lock_manager_lock.lock();
-        // buffer_pool.lock_manager.find(new_rid.table_name)->second.find(new_rid.id)->second->unique_lock->unlock();
-        uniq_lock_rid.unlock();
+        buffer_pool.lock_manager.find(new_rid.table_name)->second.find(new_rid.id)->second->unique_lock->unlock();
+        // uniq_lock_rid.unlock();
         lock_manager_lock.unlock();
     }
     return 0;
