@@ -184,11 +184,15 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
  * @return return RID of updated record upon successful insertion.
  *
  */
-int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, const std::map<int, RID>& page_directory, std::shared_mutex* lock) {
+int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, const std::map<int, RID>& page_directory, std::shared_mutex& lock) {
     // Protecting page directory from thread writing while another thread is reading
-    std::shared_lock pdlock(*lock);
+    std::cout << "pdlock locking" << std::endl;
+    std::shared_lock pdlock(lock);
+    std::cout << "pdlock locked" << std::endl;
     RID latest_rid = page_directory.find(buffer_pool.get(rid, INDIRECTION_COLUMN))->second;
+    std::cout << "pdlock unlocking" << std::endl;
     pdlock.unlock();
+    std::cout << "pdlock unlocked" << std::endl;
 
     // Declared here so that we can use after the if statement
     int schema_encoding = 0;
