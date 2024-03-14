@@ -186,7 +186,6 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
  */
 int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, const std::map<int, RID>& page_directory, std::shared_mutex* lock) {
     // Protecting page directory from thread writing while another thread is reading
-    std::cout << 1 << std::endl;
     std::shared_lock pdlock(*lock);
     RID latest_rid = page_directory.find(buffer_pool.get(rid, INDIRECTION_COLUMN))->second;
     pdlock.unlock();
