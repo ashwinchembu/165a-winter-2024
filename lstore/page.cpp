@@ -219,7 +219,8 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
 
         // Lock the rid of record that we are inserting
         lock_manager_lock.lock();
-        if (!(uniq_lock_rid.try_lock())) {
+        if (!(buffer_pool.lock_manager.find(rid_new.table_name)->second.find(rid_new.id)->second->unique_lock->try_lock())) {
+        // if (!(uniq_lock_rid.try_lock())) {
             lock_manager_lock.unlock();
             return 1;
         }
@@ -249,7 +250,8 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
 
         // Unlock the lock for the new record. If we reach here then we were able to lock it before.
         lock_manager_lock.lock();
-        uniq_lock_rid.unlock();
+        // uniq_lock_rid.unlock();
+        buffer_pool.lock_manager.find(rid_new.table_name)->second.find(rid_new.id)->second->unique_lock->unlock();
         lock_manager_lock.unlock();
 
         // Setting the new RID to be representation of the page if the page was newly created
@@ -270,7 +272,8 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
 
         // Lock the rid of record that we are inserting
         lock_manager_lock.lock();
-        if (!(uniq_lock_rid.try_lock())) {
+        if (!(buffer_pool.lock_manager.find(rid_new.table_name)->second.find(rid_new.id)->second->unique_lock->try_lock())) {
+        // if (!(uniq_lock_rid.try_lock())) {
             lock_manager_lock.unlock();
             return 1;
         }
@@ -301,7 +304,8 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
 
         // Unlock the lock for the new record. If we reach here then we were able to lock it before.
         lock_manager_lock.lock();
-        uniq_lock_rid.unlock();
+        buffer_pool.lock_manager.find(rid_new.table_name)->second.find(rid_new.id)->second->unique_lock->unlock();
+        // uniq_lock_rid.unlock();
         lock_manager_lock.unlock();
     }
 
