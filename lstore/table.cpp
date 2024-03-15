@@ -61,9 +61,6 @@ RID Table::insert(const std::vector<int>& columns) {
 	std::unique_lock insert_lock2_unique(insert_lock2);
 	num_insert++; // Should not need mutex here. num_insert is std::atomic and rid solely depend on that.
 	int rid_id = num_insert;
-	std::unique_lock unique_lock_manager_lock(buffer_pool.lock_manager_lock);
-	buffer_pool.lock_manager.find(name)->second.locks.insert({rid_id, new LockManagerEntry});
-	unique_lock_manager_lock.unlock();
 
 	insert_lock2_unique.unlock();
 	RID record(0);
@@ -116,9 +113,6 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 		merge();
 	}
 	const int rid_id = num_update * -1;
-	std::unique_lock unique_lock_manager_lock(buffer_pool.lock_manager_lock);
-	buffer_pool.lock_manager.find(name)->second.locks.insert({rid_id, new LockManagerEntry});
-	unique_lock_manager_lock.unlock();
 	update_lock_unique.unlock();
 	size_t i = 0;
 

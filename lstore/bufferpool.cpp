@@ -52,14 +52,13 @@ int BufferPool::hash_fun(unsigned int x) {
 
 int BufferPool::get (const RID& rid, const int& column) {
   int return_val = NONE - 10;
-  std::shared_lock<std::shared_mutex> lock;
-  Frame* found = pin(rid, column, 'S', lock);
+  Frame* found = pin(rid, column, 'S');
   if(found == nullptr){ //if not already in the bufferpool, load into bufferpool
     return return_val;
   }
   return_val = *(found->page->data + rid.offset);
   update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
-  unpin(rid, column, 'S', lock);
+  unpin(rid, column, 'S');
   return return_val; //return the value we want
 }
 

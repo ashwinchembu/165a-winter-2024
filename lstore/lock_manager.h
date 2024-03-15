@@ -2,6 +2,7 @@
 #define LOCKMANAGER_H
 #include <mutex>
 #include <thread>
+#include <unordered_map>
 #include <shared_mutex>
 
 class LockManagerEntry{

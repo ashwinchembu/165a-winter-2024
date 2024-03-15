@@ -78,6 +78,11 @@ void Database::read(const std::string& path){
 		Table* t = new Table();
 		t->read(fp);
 		tables.insert({{nameBuffer},t});
+
+		std::unique_lock<std::shared_mutex> unique_lock(buffer_pool.lock_manager_lock);
+		LockManager new_lock_manager;
+		buffer_pool.lock_manager.insert({t->name, new_lock_manager});
+		unique_lock.unlock();
 	}
 	if (e != numTables + 1) {
 		std::cerr << "Possible error (Database open : Number of read does not match)" << std::endl;

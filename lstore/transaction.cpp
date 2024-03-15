@@ -171,9 +171,9 @@ void Transaction::add_query(Query& q, Table& t, int& key, const int& column) {
 }
 
 inline bool lock_shared_key(std::string& table_name, int& key) {
-  LockManager lock_mng = bufferpool.lock_manager.find(table_name)->second;
+  LockManager lock_mng = buffer_pool.lock_manager.find(table_name)->second;
   auto lock = lock_mng.locks.find(key);
-  std::shared_lock* new_lock = nullptr;
+  std::shared_lock<std::shared_mutex>* new_lock = nullptr;
   if (lock == lock_mng.locks.end()) {
     LockManagerEntry* new_entry = new LockManagerEntry;
     new_lock = new std::shared_lock(*(new_entry->mutex), std::defer_lock);
@@ -186,7 +186,6 @@ inline bool lock_shared_key(std::string& table_name, int& key) {
   } else {
     new_lock = new std::shared_lock(*(lock->second->mutex), std::defer_lock);
     if(!(new_lock->try_lock())){
-      delete new_entry;
       delete new_lock;
       return false;
     }
@@ -196,9 +195,9 @@ inline bool lock_shared_key(std::string& table_name, int& key) {
 }
 
 inline bool lock_unique_key(std::string& table_name, int& key) {
-  LockManager lock_mng = bufferpool.lock_manager.find(table_name)->second;
+  LockManager lock_mng = buffer_pool.lock_manager.find(table_name)->second;
   auto lock = lock_mng.locks.find(key);
-  std::unique_lock* new_lock = nullptr;
+  std::unique_lock<std::shared_mutex>* new_lock = nullptr;
   if (lock == lock_mng.locks.end()) {
     LockManagerEntry* new_entry = new LockManagerEntry;
     new_lock = new std::unique_lock(*(new_entry->mutex), std::defer_lock);
@@ -211,12 +210,11 @@ inline bool lock_unique_key(std::string& table_name, int& key) {
   } else {
     new_lock = new std::unique_lock(*(lock->second->mutex), std::defer_lock);
     if(!(new_lock->try_lock())){
-      delete new_entry;
       delete new_lock;
       return false;
     }
   }
-  bufferpool.lock_manager.find(table_name)->second.active_unique_locks.insert({std::this_thread::get_id(), new_lock});
+  lock_mng.active_unique_locks.insert({std::this_thread::get_id(), new_lock});
   return true;
 }
 
@@ -233,7 +231,8 @@ bool Transaction::run() {
 
     //first phase of 2PL
     for (int i = 0; i < num_queries; i++){
-      QueryOperation q = queries[i]
+      QueryOperation q = queries[i];
+      int end = 0;
       switch(q.type){
         case OpCode::INSERT:
           if (!(lock_unique_key(q.table->name, q.columns[q.table->key]))) {
@@ -269,7 +268,7 @@ bool Transaction::run() {
 
         case OpCode::SUM:
         case OpCode::SUM_VER:
-          int end = *(q.range_end);
+          end = *(q.end_range);
           for (int i = *(q.start_range); i <= end; i++) {
             if (!(lock_shared_key(q.table->name, *(q.key)))) {
               return false;
@@ -307,20 +306,24 @@ bool Transaction::run() {
     } else {
       abort();
     }
-    LockManager lock_mng = bufferpool.lock_manager.find(table_name)->second;
-    auto uniq_locks = lock_mng.active_unique_locks.equal_range(std::this_thread::get_id());
-    for (auto iter = uniq_locks.first; iter != uniq_locks.second; iter++) {
-      iter->second->unlock();
-      delete iter->second;
-      lock_mng.active_unique_locks.erase(iter);
+
+    for (int i = 0; i < num_queries; i++) {
+      LockManager lock_mng = buffer_pool.lock_manager.find(queries[i].table->name)->second;
+      auto uniq_locks = lock_mng.active_unique_locks.equal_range(std::this_thread::get_id());
+      for (auto iter = uniq_locks.first; iter != uniq_locks.second; iter++) {
+        iter->second->unlock();
+        delete iter->second;
+        lock_mng.active_unique_locks.erase(iter);
+      }
+
+      auto shrd_locks = lock_mng.active_shared_locks.equal_range(std::this_thread::get_id());
+      for (auto iter = shrd_locks.first; iter != shrd_locks.second; iter++) {
+        iter->second->unlock();
+        delete iter->second;
+        lock_mng.active_shared_locks.erase(iter);
+      }
     }
 
-    auto shrd_locks = lock_mng.active_shared_locks.equal_range(std::this_thread::get_id());
-    for (auto iter = shrd_locks.first; iter != shrd_locks.second; iter++) {
-      iter->second->unlock();
-      delete iter->second;
-      lock_mng.active_shared_locks.erase(iter);
-    }
     return transaction_completed; //transaction be reattempted if return is 0
 }
 
