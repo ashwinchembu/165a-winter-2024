@@ -28,6 +28,7 @@ endif
 
 # Output library name
 LIBNAME := mylibrary
+CLEANCODE := -W -ansi -pedantic
 OPTIMIZATION := -Ofast -flto=auto -march=native -fopenmp -D_GLIBCXX_PARALLEL -frename-registers -funroll-loops
 # Ofast = optimize most aggressively
 # flto = optimization for linkers
@@ -40,7 +41,7 @@ OPTIMIZATION := -Ofast -flto=auto -march=native -fopenmp -D_GLIBCXX_PARALLEL -fr
 
 
 # Flags
-CFLAGS := -Wall -W -shared -fPIC -std=c++17 -pedantic -pipe
+CFLAGS := -Wall -shared -fPIC -std=c++17 -pipe
 
 # Combine flags
 CFLAGS += $(OS_FLAGS)
@@ -56,6 +57,10 @@ all: $(LIBRARY) #pre-build
 $(LIBRARY): $(SRC) $(DEPS)
 	mkdir -p $(OUTDIR)
 	$(CC) $(CFLAGS) $(INC) -o $(LIBRARY) $(SRC)
+
+warnings: $(SRC) $(DEPS)
+	mkdir -p $(OUTDIR)
+	$(CC) $(CFLAGS) $(INC) -o $(LIBRARY) $(SRC) $(CLEANCODE)
 
 profiling: $(SRC) $(DEPS)
 	mkdir -p $(OUTDIR)
