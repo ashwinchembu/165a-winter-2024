@@ -12,7 +12,6 @@ grades_table = db.create_table('Grades', 5, 0)
 query = Query(grades_table)
 keys = []
 records = {}
-seed(3562901)
 num_threads = 8
 number_of_records = 10000
 number_of_transactions = 100
