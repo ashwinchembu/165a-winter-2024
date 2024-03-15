@@ -92,7 +92,7 @@ std::vector<Record> Query::select_version(const int& search_key, const int& sear
 }
 
 bool Query::update(const int& primary_key, const std::vector<int>& columns) {
-
+    std::cout << primary_key << std::endl;
     if ((primary_key != columns[table->key] && table->index->locate(table->key, columns[table->key]).size() != 0) || (table->index->locate(table->key, primary_key).size() == 0)) {
         std::cerr << "Record with the primary key you are trying to update already exists or Update called on key that does not exist" << std::endl;
         return false;
