@@ -8,6 +8,7 @@ from statistics import mean
 def bench():
     # Student Id and 4 grades
     db = Database()
+    db.open("./Bench")
     grades_table = db.create_table('Grades', 5, 0)
     query = Query(grades_table)
     keys = []
@@ -84,3 +85,5 @@ print(f"Mean update time for 10k records over 10 runs: {mean(update)}")
 print(f"Mean select time for 10k records over 10 runs: {mean(select)}")
 print(f"Mean aggreg time for 10k records over 10 runs: {mean(agg)}")
 print(f"Mean delete time for 10k records over 10 runs: {mean(delete)}")
+
+db.close()

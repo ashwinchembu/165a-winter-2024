@@ -102,7 +102,6 @@ void Index::create_index(const int& column_number) {
         page_d_lock.unlock();
 
         if (loc->second.id != 0) { // if RID ID exist ie. not deleted
-            std::cout << "Hi" << std::endl;
             // table->page_directory_shared.lock();
             // page_d_lock.lock();
             // RID rid = table->page_directory.find(loc->second.id)->second;
