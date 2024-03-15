@@ -15,6 +15,7 @@ query = Query(grades_table)
 keys = []
 records = {}
 num_threads = int(sys.argv[1])
+print(num_threads)
 number_of_records = 2000
 number_of_transactions = 100
 
