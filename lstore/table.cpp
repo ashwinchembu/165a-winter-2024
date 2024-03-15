@@ -149,7 +149,7 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 		for (int i = deep_copy->pages.size() - 1; i >= 0; i--) {
 			pshared.lock();
 			RID rid = deep_copy->pages[i];
-			pshared.unlock()
+			pshared.unlock();
 			// load all of the pages in pagerange into bufferpool
 			for (int to_load_tail_page_col = 0; to_load_tail_page_col < num_columns + NUM_METADATA_COLUMNS; to_load_tail_page_col++){
 				Frame* new_frame = buffer_pool.get_page(rid, to_load_tail_page_col);
