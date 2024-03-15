@@ -13,7 +13,7 @@ grades_table = db.create_table('Grades', 5, 0)
 query = Query(grades_table)
 keys = []
 records = {}
-num_threads = 30
+num_threads = 40
 number_of_records = 2000
 number_of_transactions = 100
 
@@ -54,7 +54,7 @@ insert_time_1 = timeit.default_timer()
 
 
 
-print("Inserting 10K records took:  \t\t\t", insert_time_1 - insert_time_0)
+print("Inserting ", number_of_records, " records took:  \t\t\t", insert_time_1 - insert_time_0)
 # Measuring update Performance
 
 # for i in range(number_of_transactions):
@@ -89,7 +89,7 @@ print("Inserting 10K records took:  \t\t\t", insert_time_1 - insert_time_0)
 # for i in range(num_threads):
 #     transaction_workers[i].join()
 # update_time_1 = timeit.default_timer()
-# print("Updating 10k records took:  \t\t\t", update_time_1 - update_time_0)
+# print("Updating ", number_of_records, " records took:  \t\t\t", update_time_1 - update_time_0)
 
 
 for i in range(number_of_transactions):
@@ -116,7 +116,7 @@ for i in range(num_threads):
 for i in range(num_threads):
     transaction_workers[i].join()
 select_time_1 = timeit.default_timer()
-print("Selecting 10k records took:  \t\t\t", select_time_1 - select_time_0)
+print("Selecting ", number_of_records, " records took:  \t\t\t", select_time_1 - select_time_0)
 
 #
 # for i in range(number_of_transactions):
@@ -144,6 +144,6 @@ print("Selecting 10k records took:  \t\t\t", select_time_1 - select_time_0)
 # for i in range(num_threads):
 #     transaction_workers[i].join()
 # agg_time_1 = timeit.default_timer()
-# print("Aggregate 10k of 100 record batch took:\t", agg_time_1 - agg_time_0)
+# print("Aggregate ", number_of_records, " of 100 record batch took:\t", agg_time_1 - agg_time_0)
 
 db.close()
