@@ -31,9 +31,9 @@ Table::Table(const std::string& name, const int& num_columns, const int& key): n
 };
 
 Table::~Table() {
-	// for (size_t i = 0; i <page_range.size(); i++) {
-	// 	page_range[i].reset();
-	// }
+	for (size_t i = 0; i <page_range.size(); i++) {
+		page_range[i].reset();
+	}
 }
 
 Table::Table (const Table& rhs) {
@@ -49,13 +49,14 @@ Table::Table (const Table& rhs) {
 	num_insert = num_insert_now;
 	page_directory = rhs.page_directory;
 
-	// transform(
- //        rhs.page_range.begin(),
- //        rhs.page_range.end(),
- //        back_inserter(page_range),
- //        [](const std::shared_ptr<PageRange>& ptr) -> std::shared_ptr<PageRange> { return ptr->clone(); }
- //    );
-	page_range = rhs.page_range;
+	transform(
+        rhs.page_range.begin(),
+        rhs.page_range.end(),
+        back_inserter(page_range),
+        [](const std::shared_ptr<PageRange>& ptr) -> std::shared_ptr<PageRange> { return ptr->clone(); }
+    );
+	std::cout << "table copied" << std::endl;
+	// page_range = rhs.page_range;
 }
 
 
@@ -81,19 +82,16 @@ RID Table::insert(const std::vector<int>& columns) {
 	std::unique_lock insert_lock_unique(insert_lock);
 	{
 		std::unique_lock page_range_shared(page_range_lock);
-		if (page_range.size() == 0 || !(page_range.back()->base_has_capacity())) {
-		// if (page_range.size() == 0 || !(page_range.back().get()->base_has_capacity())) {
+		if (page_range.size() == 0 || !(page_range.back().get()->base_has_capacity())) {
 			page_range_shared.unlock();
-			PageRange* newPageRange = new PageRange(record, columns);
-			// std::shared_ptr<PageRange>newPageRange{new PageRange(record, columns)};
+			std::shared_ptr<PageRange>newPageRange{new PageRange(record, columns)};
 			std::unique_lock page_range_unique(page_range_lock);
 			page_range.push_back(newPageRange); // Make a base page with given record
 			page_range_unique.unlock();
 			insert_lock_unique.unlock();
 		} else { // If there are base page already, just insert it normally.
 
-			PageRange* prange = page_range.back();
-			// PageRange* prange = (page_range.back().get());
+			PageRange* prange = (page_range.back().get());
 			std::shared_lock pshared(prange->page_lock);
 			record.first_rid_page_range = prange->pages[0].first_rid_page_range;
 			pshared.unlock();
@@ -133,10 +131,8 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 	std::unique_lock page_range_shared(page_range_lock);
 	size_t i = 0;
 	for (; i < page_range.size(); i++) {
-		std::shared_lock pshared((page_range[i])->page_lock);
-		// std::shared_lock pshared((page_range[i].get())->page_lock);
-		if ((page_range[i])->pages[0].first_rid_page_range == rid.first_rid_page_range) {
-		// if ((page_range[i].get())->pages[0].first_rid_page_range == rid.first_rid_page_range) {
+		std::shared_lock pshared((page_range[i].get())->page_lock);
+		if ((page_range[i].get())->pages[0].first_rid_page_range == rid.first_rid_page_range) {
 			pshared.unlock();
 			break;
 		}
@@ -148,8 +144,7 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 	new_rid.first_rid_page_range = rid.first_rid_page_range;
 
 	page_range_shared.lock();
-	PageRange* prange = (page_range[i]);
-	// PageRange* prange = (page_range[i].get());
+	PageRange* prange = (page_range[i].get());
 	page_range_shared.unlock();
 	if (prange->update(rid, new_rid, columns, page_directory, &page_range_lock)) {
 		return RID(0);
@@ -157,8 +152,7 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 	page_range_update[i]++;
 	if (page_range_update[i] >= MAX_PAGE_RANGE_UPDATES){
 		// Make a deep copy of page_range[i]
-		std::shared_ptr<PageRange> deep_copy = std::make_shared<PageRange>(*(page_range[i]));
-		// std::shared_ptr<PageRange> deep_copy = std::make_shared<PageRange>(*(page_range[i].get()));
+		std::shared_ptr<PageRange> deep_copy = std::make_shared<PageRange>(*(page_range[i].get()));
 		std::vector<Frame*> insert_to_queue;
 		for (int i = deep_copy->pages.size() - 1; i >= 0; i--) {
 			RID rid = deep_copy->pages[i];
@@ -194,8 +188,7 @@ int Table::write(FILE* fp) {
 	int num_page_range = page_range.size();
 	fwrite(&(num_page_range), sizeof(int), 1, fp);
 	for (int i = 0; i < num_page_range; i++) {
-		page_range[i]->write(fp);
-		// page_range[i].get()->write(fp);
+		page_range[i].get()->write(fp);
 	}
 
 	return 0;
@@ -223,10 +216,8 @@ int Table::read(FILE* fp) {
 	int num_page_range = 0;
 	e = e + fread(&(num_page_range), sizeof(int), 1, fp);
 	for (int i = 0; i < num_page_range; i++) {
-		PageRange* newPageRange = new PageRange();
-		// std::shared_ptr<PageRange>newPageRange{new PageRange()};
-		newPageRange->read(fp);
-		// newPageRange.get()->read(fp);
+		std::shared_ptr<PageRange>newPageRange{new PageRange()};
+		newPageRange.get()->read(fp);
 		page_range.push_back(newPageRange);
 	}
 	delete index;
