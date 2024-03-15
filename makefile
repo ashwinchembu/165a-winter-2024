@@ -28,7 +28,7 @@ endif
 
 # Output library name
 LIBNAME := mylibrary
-CLEANCODE := -W -Wextra -pedantic -O2 -fstack-check -d
+CLEANCODE := -W -Wextra -pedantic -O2 -fstack-check -g
 OPTIMIZATION := -Ofast -flto=auto -march=native -fopenmp -D_GLIBCXX_PARALLEL -frename-registers -funroll-loops
 # Ofast = optimize most aggressively
 # flto = optimization for linkers
