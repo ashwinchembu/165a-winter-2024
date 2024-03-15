@@ -283,7 +283,7 @@ def durability_tester2():
     if True:
         db = Database()
         db.open('./M2')
-
+        print("DB is opened")
         # Getting the existing Grades table
         grades_table = db.get_table('Grades')
 

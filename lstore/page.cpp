@@ -209,7 +209,6 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
         std::unique_lock plock(page_lock);
         pages.push_back(rid_new);
         plock.unlock();
-    std::cout << 5 << std::endl;
 
     } else {
 
