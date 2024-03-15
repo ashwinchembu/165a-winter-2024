@@ -15,6 +15,11 @@ number_of_records = 10000
 number_of_transactions = 100
 
 
+insert_transactions = []
+update_transactions = []
+select_transactions = []
+aggre_transactions = []
+
 for i in range(number_of_transactions):
     insert_transactions.append(Transaction())
 
