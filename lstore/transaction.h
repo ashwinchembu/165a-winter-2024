@@ -7,7 +7,6 @@
 #include "config.h"
 
 enum OpCode { NOTHING, INSERT, UPDATE, SELECT, SELECT_VER, SUM, SUM_VER, INCREMENT };
-enum QueryResult { QUERY_SUCCESS, QUERY_LOCK, QUERY_IC };
 
 class QueryOperation {
 public:
@@ -30,7 +29,7 @@ public:
 
     QueryOperation (Query* query, const OpCode& op, Table* t) : q(query), type(op), table(t) {}
     virtual ~QueryOperation ();
-    int run(); // Run the operation
+    bool run(); // Run the operation
     bool check_req();
 };
 
