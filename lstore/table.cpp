@@ -2,21 +2,22 @@
 #include <vector>
 #include <map>
 #include <string>
-#include "RID.h"
-#include "index.h"
-#include "page.h"
 #include <cstring>
-#include "table.h"
 #include <cstdio>
 #include <memory>
 #include <sys/stat.h>
-#include "bufferpool.h"
-#include "config.h"
 #include <set>
 #include <map>
+#include <iterator>
+
+
+#include "RID.h"
+#include "index.h"
+#include "page.h"
+#include "table.h"
+#include "bufferpool.h"
+#include "config.h"
 #include "lock_manager.h"
-
-
 #include "../DllConfig.h"
 #include "../Toolkit.h"
 
@@ -47,7 +48,15 @@ Table::Table (const Table& rhs) {
 	int num_insert_now = rhs.num_insert;
 	num_insert = num_insert_now;
 	page_directory = rhs.page_directory;
-	page_range = rhs.page_range;
+
+	transform(
+        rhs.page_range.begin(),
+        rhs.page_range.end(),
+        back_inserter(page_range),
+        [](const std::shared_ptr<PageRange>& ptr) -> std::shared_ptr<PageRange> { return ptr->clone(); }
+    );
+
+	// page_range = rhs.page_range;
 }
 
 
@@ -121,11 +130,8 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 
 	std::unique_lock page_range_shared(page_range_lock);
 	size_t i = 0;
-	std::cout << "size of prange: " << page_range.size() << std::endl;
-	std::cout << "rid.first: " << rid.first_rid_page_range << std::endl;
 	for (; i < page_range.size(); i++) {
 		std::shared_lock pshared((page_range[i].get())->page_lock);
-		std::cout << "i: " << i << std::endl;
 		std::cout << "prange: " << (page_range[i].get())->pages[0].first_rid_page_range << std::endl;
 		if ((page_range[i].get())->pages[0].first_rid_page_range == rid.first_rid_page_range) {
 			pshared.unlock();

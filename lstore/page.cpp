@@ -1,3 +1,4 @@
+#include <memory>
 #include <thread>
 #include <vector>
 #include <iostream>
@@ -62,7 +63,9 @@ PageRange::PageRange (const PageRange& rhs) {
     tail_last_wasfull = current_bool;
 }
 
-
+std::shared_ptr<PageRange> PageRange::clone() {
+    return std::make_shared<PageRange>(*this);
+}
 /***
  *
  * Return if there are more space to insert record or not

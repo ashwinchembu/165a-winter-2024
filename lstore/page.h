@@ -1,6 +1,7 @@
 #ifndef PAGEH
 #define PAGEH
 /// This is for clang
+#include <memory>
 #include <vector>
 #include <iostream>
 #include <cstdlib>
@@ -47,6 +48,7 @@ public:
     PageRange (const PageRange& rhs);
     PageRange (RID& new_rid, const std::vector<int>& columns);
     ~PageRange();
+    std::shared_ptr<PageRange> clone();
     int insert(RID& new_rid, const std::vector<int>& columns);
     int update(RID& rid, RID& rid_new, const std::vector<int>& columns, const std::map<int, RID>& page_directory, std::shared_mutex* lock);
     // int update(RID& rid, RID& rid_new, const std::vector<int>& columns, const std::map<int, RID>& page_directory, std::shared_lock<std::shared_mutex>* lock);
