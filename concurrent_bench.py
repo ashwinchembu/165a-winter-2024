@@ -123,7 +123,6 @@ for i in range(number_of_transactions):
     transaction_workers[i % num_threads].add_transaction(aggre_transactions[i])
 # Measuring Aggregate Performance
 agg_time_0 = process_time()
-for i in range(0, number_of_records, 100):
 # run transaction workers
 for i in range(num_threads):
     transaction_workers[i].run()
