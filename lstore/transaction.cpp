@@ -223,18 +223,22 @@ bool Transaction::run() {
     db_log.entries.insert({xact_id, log_entry}); //note in log that transaction has begun
     db_shared.unlock();
 
+
     //first phase of 2PL
     for (int i = 0; i < num_queries; i++){
       QueryOperation q = queries[i];
       int end = 0;
+      std::unique_lock<std::shared_mutex> unique_lock(buffer_pool.lock_manager_lock);
       switch(q.type){
         case OpCode::INSERT:
           if (!(lock_unique_key(q.table->name, q.columns[q.table->key]))) {
             for (int j = i; j >= 0; j--) {
               release_locks(queries[j].table->name);
             }
+            unique_lock.unlock();
             return false;
           }
+          unique_lock.unlock();
           break;
 
         case OpCode::UPDATE:
@@ -242,18 +246,21 @@ bool Transaction::run() {
             for (int j = i; j >= 0; j--) {
               release_locks(queries[j].table->name);
             }
+            unique_lock.unlock();
             return false;
           }
           //we are updating primary key
           if(q.columns[q.table->key] >= NONE && q.columns[q.table->key] != *(q.key)){
             if (!(lock_unique_key(q.table->name, q.columns[q.table->key]))) {
               // If we fail to acquire lock here, some other thread is probably using the "existing" primary key
-            for (int j = i; j >= 0; j--) {
-              release_locks(queries[j].table->name);
-            }
+              for (int j = i; j >= 0; j--) {
+                release_locks(queries[j].table->name);
+              }
+              unique_lock.unlock();
               return true;
             }
           }
+          unique_lock.unlock();
           break;
 
         case OpCode::INCREMENT:
@@ -261,8 +268,10 @@ bool Transaction::run() {
             for (int j = i; j >= 0; j--) {
               release_locks(queries[j].table->name);
             }
+            unique_lock.unlock();
             return false;
           }
+          unique_lock.unlock();
           break;
 
         case OpCode::SELECT:
@@ -271,8 +280,10 @@ bool Transaction::run() {
             for (int j = i; j >= 0; j--) {
               release_locks(queries[j].table->name);
             }
+            unique_lock.unlock();
             return false;
           }
+          unique_lock.unlock();
           break;
 
         case OpCode::SUM:
@@ -283,12 +294,15 @@ bool Transaction::run() {
               for (int j = i; j >= 0; j--) {
                 release_locks(queries[j].table->name);
               }
+              unique_lock.unlock();
               return false;
             }
           }
+          unique_lock.unlock();
           break;
         case OpCode::NOTHING:
         default:
+          unique_lock.unlock();
           break;
       }
     }

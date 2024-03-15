@@ -195,7 +195,6 @@ int Table::read(FILE* fp) {
 		value.read(fp);
 		value.table_name = name;
 		page_directory.insert({key, value});
-
 	}
 	page_range.clear();
 	int num_page_range = 0;
