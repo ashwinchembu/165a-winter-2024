@@ -90,8 +90,6 @@ PageRange::~PageRange(){
 int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
     // Lock to protect variable in Page range.
     std::unique_lock lock(mutex_insert);
-    std::unique_lock lock_manager_lock(buffer_pool.lock_manager_lock, std::defer_lock);
-    std::unique_lock uniq_lock_rid(*(buffer_pool.lock_manager.find(new_rid.table_name)->second.locks.find(new_rid.id)->second->mutex), std::defer_lock);
 
     if (base_last_wasfull) {
         // Update status of the page range
@@ -105,14 +103,6 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
         new_rid.offset = 0;
         new_rid.first_rid_page = new_rid.id;
 
-        // Lock the rid of record that we are inserting
-        lock_manager_lock.lock();
-
-        if (!uniq_lock_rid.try_lock()) {
-            lock_manager_lock.unlock();
-            return 1;
-        }
-        lock_manager_lock.unlock();
         // Write in the metadatas
         buffer_pool.insert_new_page(new_rid, INDIRECTION_COLUMN, new_rid.id);
         buffer_pool.insert_new_page(new_rid, RID_COLUMN, new_rid.id);
@@ -124,11 +114,6 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
         for (int i = NUM_METADATA_COLUMNS; i < num_column; i++) {
             buffer_pool.insert_new_page(new_rid, i, columns[i - NUM_METADATA_COLUMNS]);
         }
-
-        // Unlock the rid of the record once we are done inserting
-        lock_manager_lock.lock();
-        uniq_lock_rid.unlock();
-        lock_manager_lock.unlock();
 
         // Protecting pages vector from multiple thread writing simultaneously
         std::unique_lock plock(page_lock);
@@ -145,14 +130,6 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
         new_rid.offset = num_slot_used_base - 1;
         new_rid.first_rid_page = pages[base_last].id;
 
-        // Lock the rid of record that we are inserting
-        lock_manager_lock.lock();
-        if (!uniq_lock_rid.try_lock()) {
-            lock_manager_lock.unlock();
-            return 1;
-        }
-        lock_manager_lock.unlock();
-
         // Write in the metadatas
         buffer_pool.set(new_rid, INDIRECTION_COLUMN, new_rid.id, true);
         buffer_pool.set(new_rid, RID_COLUMN, new_rid.id, true);
@@ -166,10 +143,6 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
             buffer_pool.set(new_rid, i, columns[i - NUM_METADATA_COLUMNS], true);
         }
 
-        // Unlock the rid of the record once we are done inserting
-        lock_manager_lock.lock();
-        uniq_lock_rid.unlock();
-        lock_manager_lock.unlock();
     }
     return 0;
 }
@@ -195,8 +168,7 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
 
     // Lock to protect the variable in page range
     std::unique_lock mlock(mutex_update);
-    std::unique_lock lock_manager_lock(buffer_pool.lock_manager_lock, std::defer_lock);
-    std::unique_lock uniq_lock_rid(*(buffer_pool.lock_manager.find(rid_new.table_name)->second.locks.find(rid_new.id)->second->mutex), std::defer_lock);
+
     // Create new tail pages if there are no space left or tail page does not exist.
     // Otherwise just insert the update in the last tail page
     if (tail_last_wasfull) {
@@ -211,24 +183,13 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
         rid_new.offset = 0;
         rid_new.first_rid_page = rid_new.id;
 
-        // Lock the rid of record that we are inserting
-        lock_manager_lock.lock();
-        if (!(uniq_lock_rid.try_lock())) {
-            lock_manager_lock.unlock();
-            return 1;
-        }
-        lock_manager_lock.unlock();
-
-    std::cout << 1 << std::endl;
         // Write in the metadata except for schema encoding column
         buffer_pool.insert_new_page(rid_new, INDIRECTION_COLUMN, latest_rid.id);
-    std::cout << 2 << std::endl;
         buffer_pool.insert_new_page(rid_new, RID_COLUMN, rid_new.id);
         buffer_pool.insert_new_page(rid_new, TIMESTAMP_COLUMN, 0);
         buffer_pool.insert_new_page(rid_new, BASE_RID_COLUMN, rid.id);
         buffer_pool.insert_new_page(rid_new, TPS, 0);
 
-    std::cout << 3 << std::endl;
         // Write in the data
         for (int i = NUM_METADATA_COLUMNS; i < num_column; i++) {
             if (std::isnan(columns[i - NUM_METADATA_COLUMNS]) || columns[i-NUM_METADATA_COLUMNS] < NONE) { // Wrapper changes None to smallest integer possible
@@ -241,14 +202,8 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
             }
         }
 
-    std::cout << 4 << std::endl;
         // Write in the schema encoding once we know which one is updated.
         buffer_pool.insert_new_page(rid_new, SCHEMA_ENCODING_COLUMN, schema_encoding);
-
-        // Unlock the lock for the new record. If we reach here then we were able to lock it before.
-        lock_manager_lock.lock();
-        uniq_lock_rid.unlock();
-        lock_manager_lock.unlock();
 
         // Setting the new RID to be representation of the page if the page was newly created
         std::unique_lock plock(page_lock);
@@ -266,14 +221,6 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
         // Update the information in the new rid class
         rid_new.first_rid_page = pages.back().first_rid_page;
         rid_new.offset = num_slot_used_tail - 1;
-
-        // Lock the rid of record that we are inserting
-        lock_manager_lock.lock();
-        if (!(uniq_lock_rid.try_lock())) {
-            lock_manager_lock.unlock();
-            return 1;
-        }
-        lock_manager_lock.unlock();
 
         // Write in the metadata except for schema encoding column
         buffer_pool.set(rid_new, INDIRECTION_COLUMN, latest_rid.id, true);
@@ -296,11 +243,6 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
 
         // Write in the schema encoding once we know which one is updated.
         buffer_pool.set(rid_new, SCHEMA_ENCODING_COLUMN, schema_encoding, true);
-
-        // Unlock the lock for the new record. If we reach here then we were able to lock it before.
-        lock_manager_lock.lock();
-        uniq_lock_rid.unlock();
-        lock_manager_lock.unlock();
     }
 
     // Updating indirection column and schema encoding column for the base page
