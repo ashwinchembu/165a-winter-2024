@@ -22,7 +22,8 @@ bool QueryOperation::run() {
             }
         case OpCode::UPDATE:
             if (check_req()) {
-              return q->update(*key, columns);
+              std::cout << key << std::endl;
+              return q->update(key, columns);
             } else {
                 std::cerr << "Query with Not enough data : Update" << std::endl;
                 return false;
@@ -30,7 +31,7 @@ bool QueryOperation::run() {
         case OpCode::SELECT:
         case OpCode::SELECT_VER:
             if (check_req()) {
-                select_result = q->select_version(*key, search_key_index, columns, relative_version);
+                select_result = q->select_version(key, search_key_index, columns, relative_version);
                 return select_result.size();
             } else {
                 std::cerr << "Query with Not enough data : Select or Select_ver" << std::endl;
@@ -39,7 +40,7 @@ bool QueryOperation::run() {
         case OpCode::SUM:
         case OpCode::SUM_VER:
             if (check_req()) {
-                *sum_result = q->sum_version(*start_range, *end_range, aggregate_column_index, relative_version);
+                *sum_result = q->sum_version(start_range, end_range, aggregate_column_index, relative_version);
                 return sum_result != nullptr;
             } else {
                 std::cerr << "Query with Not enough data : Sum or Sum_ver" << std::endl;
@@ -47,7 +48,7 @@ bool QueryOperation::run() {
             }
         case OpCode::INCREMENT:
             if (check_req()) {
-              return q->increment(*key, aggregate_column_index);
+              return q->increment(key, aggregate_column_index);
             } else {
                 std::cerr << "Query with Not enough data : Increment" << std::endl;
                 return false;
@@ -66,15 +67,15 @@ bool QueryOperation::check_req() {
         case OpCode::INSERT:
             return (!columns.empty() && (table != nullptr) && (q != nullptr));
         case OpCode::UPDATE:
-            return (!columns.empty() && (table != nullptr) && (key != nullptr) && (q != nullptr));
+            return (!columns.empty() && (table != nullptr) && (key != NONE) && (q != nullptr));
         case OpCode::INCREMENT:
-            return ((aggregate_column_index != -1) && (table != nullptr) && (key != nullptr) && (q != nullptr));
+            return ((aggregate_column_index != -1) && (table != nullptr) && (key != NONE) && (q != nullptr));
         case OpCode::SELECT:
         case OpCode::SELECT_VER:
-            return (!columns.empty() && (search_key_index != -1) && (table != nullptr) && (key != nullptr) && (relative_version != 1) && (q != nullptr));
+            return (!columns.empty() && (search_key_index != -1) && (table != nullptr) && (key != NONE) && (relative_version != 1) && (q != nullptr));
         case OpCode::SUM_VER:
         case OpCode::SUM:
-            return ((start_range != nullptr) && (end_range != nullptr) && (aggregate_column_index != -1) && (table != nullptr) && (relative_version != 1) && (q != nullptr));
+            return ((start_range != NONE) && (end_range != NONE) && (aggregate_column_index != -1) && (table != nullptr) && (relative_version != 1) && (q != nullptr));
         default:
             return 0;
     }
@@ -100,14 +101,14 @@ void Transaction::add_query(Query& q, Table& t, const std::vector<int>& columns)
 void Transaction::add_query(Query& q, Table& t, int& key, const std::vector<int>& columns) {
     queries.push_back(QueryOperation(&q, OpCode::UPDATE, &t));
     num_queries++;
-    queries[num_queries - 1].key = &key;
+    queries[num_queries - 1].key = key;
     queries[num_queries - 1].columns = columns;
 }
 // Select
 void Transaction::add_query(Query& q, Table& t, int& key, const int& search_key_index, const std::vector<int>& projected_columns_index) {
     queries.push_back(QueryOperation(&q, OpCode::SELECT, &t));
     num_queries++;
-    queries[num_queries - 1].key = &key;
+    queries[num_queries - 1].key = key;
     queries[num_queries - 1].search_key_index = search_key_index;
     queries[num_queries - 1].columns = projected_columns_index;
     queries[num_queries - 1].relative_version = 0;
@@ -116,7 +117,7 @@ void Transaction::add_query(Query& q, Table& t, int& key, const int& search_key_
 void Transaction::add_query(Query& q, Table& t, int& key, const int& search_key_index, const std::vector<int>& projected_columns_index,  const int& relative_version) {
     queries.push_back(QueryOperation(&q, OpCode::SELECT_VER, &t));
     num_queries++;
-    queries[num_queries - 1].key = &key;
+    queries[num_queries - 1].key = key;
     queries[num_queries - 1].search_key_index = search_key_index;
     queries[num_queries - 1].columns = projected_columns_index;
     queries[num_queries - 1].relative_version = relative_version;
@@ -125,8 +126,8 @@ void Transaction::add_query(Query& q, Table& t, int& key, const int& search_key_
 void Transaction::add_query(Query& q, Table& t, int& start_range, int& end_range, const int& aggregate_column_index) {
     queries.push_back(QueryOperation(&q, OpCode::SUM, &t));
     num_queries++;
-    queries[num_queries - 1].start_range = &start_range;
-    queries[num_queries - 1].end_range = &end_range;
+    queries[num_queries - 1].start_range = start_range;
+    queries[num_queries - 1].end_range = end_range;
     queries[num_queries - 1].aggregate_column_index = aggregate_column_index;
     queries[num_queries - 1].relative_version = 0;
 }
@@ -134,8 +135,8 @@ void Transaction::add_query(Query& q, Table& t, int& start_range, int& end_range
 void Transaction::add_query(Query& q, Table& t, int& start_range, int& end_range, const int& aggregate_column_index, const int& relative_version) {
     queries.push_back(QueryOperation(&q, OpCode::SUM_VER, &t));
     num_queries++;
-    queries[num_queries - 1].start_range = &start_range;
-    queries[num_queries - 1].end_range = &end_range;
+    queries[num_queries - 1].start_range = start_range;
+    queries[num_queries - 1].end_range = end_range;
     queries[num_queries - 1].aggregate_column_index = aggregate_column_index;
     queries[num_queries - 1].relative_version = relative_version;
 }
@@ -144,7 +145,7 @@ void Transaction::add_query(Query& q, Table& t, int& key, const int& column) {
     queries.push_back(QueryOperation(&q, OpCode::INCREMENT, &t));
     num_queries++;
     queries[num_queries - 1].aggregate_column_index = column;
-    queries[num_queries - 1].key = &key;
+    queries[num_queries - 1].key = key;
 }
 
 inline bool lock_shared_key(std::string& table_name, int& key) {
@@ -242,7 +243,7 @@ bool Transaction::run() {
           break;
 
         case OpCode::UPDATE:
-          if (!(lock_unique_key(q.table->name, *(q.key)))) {
+          if (!(lock_unique_key(q.table->name, q.key))) {
             for (int j = i; j >= 0; j--) {
               release_locks(queries[j].table->name);
             }
@@ -250,7 +251,7 @@ bool Transaction::run() {
             return false;
           }
           //we are updating primary key
-          if(q.columns[q.table->key] >= NONE && q.columns[q.table->key] != *(q.key)){
+          if(q.columns[q.table->key] >= NONE && q.columns[q.table->key] != q.key){
             if (!(lock_unique_key(q.table->name, q.columns[q.table->key]))) {
               // If we fail to acquire lock here, some other thread is probably using the "existing" primary key
               for (int j = i; j >= 0; j--) {
@@ -264,7 +265,7 @@ bool Transaction::run() {
           break;
 
         case OpCode::INCREMENT:
-          if (!(lock_unique_key(q.table->name, *(q.key)))) {
+          if (!(lock_unique_key(q.table->name, q.key))) {
             for (int j = i; j >= 0; j--) {
               release_locks(queries[j].table->name);
             }
@@ -276,7 +277,7 @@ bool Transaction::run() {
 
         case OpCode::SELECT:
         case OpCode::SELECT_VER:
-          if (!(lock_shared_key(q.table->name, *(q.key)))) {
+          if (!(lock_shared_key(q.table->name, q.key))) {
             for (int j = i; j >= 0; j--) {
               release_locks(queries[j].table->name);
             }
@@ -288,8 +289,8 @@ bool Transaction::run() {
 
         case OpCode::SUM:
         case OpCode::SUM_VER:
-          end = *(q.end_range);
-          for (int k = *(q.start_range); k <= end; k++) {
+          end = q.end_range;
+          for (int k = q.start_range; k <= end; k++) {
             if (!(lock_shared_key(q.table->name, k))) {
               for (int j = i; j >= 0; j--) {
                 release_locks(queries[j].table->name);
@@ -343,12 +344,12 @@ void Transaction::abort() {
             std::cerr << "Query with No type" << std::endl;
             break;
         case OpCode::INSERT: //delete the newly added record
-            queries[i].q->deleteRecord(queries[i].columns[*(queries[i].key)]);
+            queries[i].q->deleteRecord(queries[i].columns[queries[i].key]);
             break;
         case OpCode::UPDATE: //delete the update
             {
               std::unique_lock page_directory_shared(queries[i].table->page_directory_lock);
-              base_rid = queries[i].table->page_directory.find(queries[i].columns[*(queries[i].key)])->second;
+              base_rid = queries[i].table->page_directory.find(queries[i].columns[queries[i].key])->second;
               page_directory_shared.unlock();
 
               base_record_indirection = buffer_pool.get(base_rid, INDIRECTION_COLUMN);

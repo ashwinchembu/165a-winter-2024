@@ -15,12 +15,12 @@ public:
     OpCode type = OpCode::NOTHING;
     Table* table = nullptr;
 
-    int* key = nullptr; // Update, Select, Select version, Increment
+    int key = NONE; // Update, Select, Select version, Increment
     std::vector<int> columns; // Columns and projected_columns_index combined. For insert, update, select, select ver.
     int search_key_index = -1; // Select and Select ver
     int relative_version = 1; // Select ver and Sum ver
-    int* start_range = nullptr; // Sum and Sum ver
-    int* end_range = nullptr; // Sum and Sum ver
+    int start_range = NONE; // Sum and Sum ver
+    int end_range = NONE; // Sum and Sum ver
     int aggregate_column_index = -1; // Sum and Sum ver and Increment
 
     /* Return values */
