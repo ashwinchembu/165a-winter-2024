@@ -38,12 +38,12 @@ class Transaction:
         elif queryCode == Query.select.__code__:
             
             Transaction_add_query_select(self.selfPtr,queryObj.selfPtr,
-                    table.selfPtr,args[0],args[1],fillAndReturnIntBuffer(args[2][0]))
+                    table.selfPtr,args[0],args[1],fillAndReturnIntBuffer(args[2]))
       
         elif queryCode == Query.select_version.__code__:
             
             Transaction_add_query_select_version(self.selfPtr,queryObj.selfPtr,
-                    table.selfPtr,args[0],args[1],fillAndReturnIntBuffer(args[2][0]),
+                    table.selfPtr,args[0],args[1],fillAndReturnIntBuffer(args[2]),
                     args[3])
  
         elif queryCode == Query.sum.__code__:
