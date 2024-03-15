@@ -46,6 +46,8 @@ Table::Table (const Table& rhs) {
 	num_update = num_update_now;
 	int num_insert_now = rhs.num_insert;
 	num_insert = num_insert_now;
+	page_directory = rhs.page_directory;
+	page_range = rhs.page_range;
 }
 
 
@@ -195,9 +197,7 @@ int Table::read(FILE* fp) {
 		value.read(fp);
 		value.table_name = name;
 		page_directory.insert({key, value});
-		std::cout << "PD, " << key << ", " << value.id << std::endl;
 	}
-	std::cout << page_directory.find(1)->second.id << std::endl;
 	page_range.clear();
 	int num_page_range = 0;
 	e = e + fread(&(num_page_range), sizeof(int), 1, fp);
