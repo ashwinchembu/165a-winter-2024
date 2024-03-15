@@ -132,7 +132,7 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 	size_t i = 0;
 	for (; i < page_range.size(); i++) {
 		std::shared_lock pshared((page_range[i].get())->page_lock);
-		std::cout << "prange: " << (page_range[i].get())->num_column << std::endl;
+		std::cout << "prange: " << (page_range[i].get())->tail_last << std::endl;
 		std::cout << "prange: " << (page_range[i].get())->pages.size() << std::endl;
 		if ((page_range[i].get())->pages[0].first_rid_page_range == rid.first_rid_page_range) {
 			pshared.unlock();
