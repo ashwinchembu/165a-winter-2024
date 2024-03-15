@@ -3,6 +3,7 @@ from lstore.py.query import Query
 from lstore.py.transaction import Transaction
 from lstore.py.transaction_worker import TransactionWorker
 from time import process_time
+import timeit
 from random import choice, randrange
 
 # Student Id and 4 grades
