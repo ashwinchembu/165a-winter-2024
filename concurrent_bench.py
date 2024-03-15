@@ -39,7 +39,8 @@ for i in range(num_threads):
 for i in range(number_of_transactions):
     transaction_workers[i % num_threads].add_transaction(insert_transactions[i])
 
-insert_time_0 = process_time()
+# insert_time_0 = process_time()
+insert_time_0 = timeit.default_timer()
 # run transaction workers
 for i in range(num_threads):
     transaction_workers[i].run()
@@ -47,7 +48,8 @@ for i in range(num_threads):
 # wait for workers to finish
 for i in range(num_threads):
     transaction_workers[i].join()
-insert_time_1 = process_time()
+insert_time_1 = timeit.default_timer()
+# insert_time_1 = process_time()
 
 
 
