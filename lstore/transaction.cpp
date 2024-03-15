@@ -43,7 +43,7 @@ bool QueryOperation::run() {
                 return sum_result != nullptr;
             } else {
                 std::cerr << "Query with Not enough data : Sum or Sum_ver" << std::endl;
-                false;
+                return false;
             }
         case OpCode::INCREMENT:
             if (check_req()) {
