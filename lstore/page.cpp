@@ -128,7 +128,9 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
 
         // Update information in the rid class
         new_rid.offset = num_slot_used_base - 1;
+        std::shared_lock pshared(page_lock);
         new_rid.first_rid_page = pages[base_last].id;
+        pshared.unlock();
 
         // Write in the metadatas
         buffer_pool.set(new_rid, INDIRECTION_COLUMN, new_rid.id, true);
@@ -218,7 +220,9 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
         mlock.unlock();
 
         // Update the information in the new rid class
+        std::shared_lock pshared(page_lock);
         rid_new.first_rid_page = pages.back().first_rid_page;
+        pshared.unlock();
         rid_new.offset = num_slot_used_tail - 1;
 
         // Write in the metadata except for schema encoding column

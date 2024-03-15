@@ -82,8 +82,10 @@ RID Table::insert(const std::vector<int>& columns) {
 			insert_lock_unique.unlock();
 		} else { // If there are base page already, just insert it normally.
 
-			record.first_rid_page_range = (page_range.back().get())->pages[0].first_rid_page_range;
 			PageRange* prange = (page_range.back().get());
+			std::shared_lock pshared(prange->page_lock);
+			record.first_rid_page_range = prange->pages[0].first_rid_page_range;
+			pshared.unlock();
 			page_range_shared.unlock();
 			insert_lock_unique.unlock();
 
@@ -119,11 +121,15 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 	size_t i = 0;
 
 	std::unique_lock page_range_shared(page_range_lock);
+
+	std::shared_lock pshared((page_range[i].get())->page_lock);
 	for (; i < page_range.size(); i++) {
+
 		if ((page_range[i].get())->pages[0].first_rid_page_range == rid.first_rid_page_range) {
 			break;
 		}
 	}
+	pshared.unlock();
 	page_range_shared.unlock();
 	RID new_rid(rid_id);
 	new_rid.table_name = name;
@@ -141,7 +147,9 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 		std::shared_ptr<PageRange> deep_copy = std::make_shared<PageRange>(*(page_range[i].get()));
 		std::vector<Frame*> insert_to_queue;
 		for (int i = deep_copy->pages.size() - 1; i >= 0; i--) {
+			pshared.lock();
 			RID rid = deep_copy->pages[i];
+			pshared.unlock()
 			// load all of the pages in pagerange into bufferpool
 			for (int to_load_tail_page_col = 0; to_load_tail_page_col < num_columns + NUM_METADATA_COLUMNS; to_load_tail_page_col++){
 				Frame* new_frame = buffer_pool.get_page(rid, to_load_tail_page_col);

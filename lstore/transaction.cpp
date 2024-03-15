@@ -7,6 +7,7 @@
 #include "table.h"
 #include "config.h"
 #include "lock_manager.h"
+#include <thread>
 
 bool QueryOperation::run() {
     switch (type) {
@@ -22,7 +23,6 @@ bool QueryOperation::run() {
             }
         case OpCode::UPDATE:
             if (check_req()) {
-              std::cout << key << std::endl;
               return q->update(key, columns);
             } else {
                 std::cerr << "Query with Not enough data : Update" << std::endl;
@@ -102,7 +102,6 @@ void Transaction::add_query(Query& q, Table& t, int& key, const std::vector<int>
     queries.push_back(QueryOperation(&q, OpCode::UPDATE, &t));
     num_queries++;
     queries[num_queries - 1].key = key;
-    std::cout << key << ", " << queries[num_queries - 1].key << std::endl;
     queries[num_queries - 1].columns = columns;
 }
 // Select
@@ -329,6 +328,7 @@ bool Transaction::run() {
 }
 
 void Transaction::abort() {
+  std::cout << "aborting " << std::this_thread::get_id() << std::endl;
   std::unique_lock lk_shared(db_log.db_log_lock);
   LogEntry log_entry = db_log.entries.find(xact_id)->second;
   lk_shared.unlock();

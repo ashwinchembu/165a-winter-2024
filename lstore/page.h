@@ -28,7 +28,7 @@ class PageRange {
 public:
     std::mutex mutex_insert;
     std::mutex mutex_update;
-    std::mutex page_lock; /// TODO Make this shared mutex
+    std::shared_mutex page_lock; /// TODO Make this shared mutex
 
     // Toolkit::BasicSharedPtr<std::mutex>mutex_insert = Toolkit::BasicSharedPtr<std::mutex>(new std::mutex());
     // Toolkit::BasicSharedPtr<std::mutex>mutex_update = Toolkit::BasicSharedPtr<std::mutex>(new std::mutex());
