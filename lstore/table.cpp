@@ -361,9 +361,6 @@ int Table::merge() {
         }
     }
 
-    // buffer_pool.write_back_all();
-    // mergeBufferPool->write_back_all();
-
     delete mergeBufferPool;
 
     buffer_pool.tableVersions.erase(name);
