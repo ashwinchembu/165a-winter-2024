@@ -102,6 +102,7 @@ void Transaction::add_query(Query& q, Table& t, int& key, const std::vector<int>
     queries.push_back(QueryOperation(&q, OpCode::UPDATE, &t));
     num_queries++;
     queries[num_queries - 1].key = key;
+    std::cout << key << ", " << queries[num_queries - 1].key << std::endl;
     queries[num_queries - 1].columns = columns;
 }
 // Select
