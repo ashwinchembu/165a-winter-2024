@@ -1,4 +1,5 @@
-if [ $1 -eq 1 ] then
+if [ "$1" -eq "1" ]
+then
     make clean
     make optimized
 fi
