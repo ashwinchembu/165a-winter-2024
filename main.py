@@ -11,7 +11,7 @@ from shutil import rmtree
 
 def validate():
 	db = Database()
-	db.open('./meme')
+	db.open('./ECS165')
 	# Create a table  with 5 columns
 	#   Student Id and 4 grades
 	#   The first argument is name of the table
@@ -141,6 +141,7 @@ def benchmark():
 
 	insert_time_0 = perf_counter()
 	for i in range(0, num_its):
+		print("???")
 		query.insert(906659671 + i, 93, 0, 0, 0)
 		keys.append(906659671 + i)
 	insert_time_1 = perf_counter()
