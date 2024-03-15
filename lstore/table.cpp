@@ -111,16 +111,24 @@ RID Table::insert(const std::vector<int>& columns) {
  *
  */
 RID Table::update(RID& rid, const std::vector<int>& columns) {
+	std::cout << 1 << std::endl;
 	std::unique_lock update_lock_unique(update_lock);
+	std::cout << 2 << std::endl;
 	num_update++;
+	std::cout << 3 << std::endl;
+	const int rid_id = num_update * -1;
+	std::cout << 4 << std::endl;
 	if (num_update >= MAX_TABLE_UPDATES){
 		merge();
 	}
-	const int rid_id = num_update * -1;
+	std::cout << 5 << std::endl;
 	update_lock_unique.unlock();
+	std::cout << 6 << std::endl;
 	size_t i = 0;
+	std::cout << 7 << std::endl;
 
 	std::unique_lock page_range_shared(page_range_lock);
+	std::cout << 8 << std::endl;
 
 	for (; i < page_range.size(); i++) {
 		std::shared_lock pshared((page_range[i].get())->page_lock);
@@ -130,10 +138,15 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 		}
 		pshared.unlock();
 	}
+	std::cout << 9 << std::endl;
 	page_range_shared.unlock();
+	std::cout << 10 << std::endl;
 	RID new_rid(rid_id);
+	std::cout << 11 << std::endl;
 	new_rid.table_name = name;
+	std::cout << 12 << std::endl;
 	new_rid.first_rid_page_range = rid.first_rid_page_range;
+	std::cout << 13 << std::endl;
 
 	page_range_shared.lock();
 	PageRange* prange = (page_range[i].get());
@@ -142,6 +155,7 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 		return RID(0);
 	}
 	page_range_update[i]++;
+	std::cout << 14 << std::endl;
 	if (page_range_update[i] >= MAX_PAGE_RANGE_UPDATES){
 		// Make a deep copy of page_range[i]
 		std::shared_ptr<PageRange> deep_copy = std::make_shared<PageRange>(*(page_range[i].get()));
@@ -159,6 +173,7 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 	std::unique_lock page_directory_unique(page_directory_lock);
 	page_directory.insert({rid_id, new_rid});
 	page_directory_unique.unlock();
+	std::cout << 15 << std::endl;
 	return new_rid;
 }
 
