@@ -5,6 +5,7 @@ from lstore.py.transaction_worker import TransactionWorker
 from time import process_time
 import timeit
 from random import choice, randrange
+import sys
 
 # Student Id and 4 grades
 db = Database()
@@ -13,7 +14,7 @@ grades_table = db.create_table('Grades', 5, 0)
 query = Query(grades_table)
 keys = []
 records = {}
-num_threads = 40
+num_threads = int(sys.argv[1])
 number_of_records = 2000
 number_of_transactions = 100
 
