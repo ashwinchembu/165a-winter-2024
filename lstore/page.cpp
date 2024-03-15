@@ -286,7 +286,7 @@ int PageRange::read(FILE* fp) {
     e = e + fread(&tail_last, sizeof(int), 1, fp);
     pages.clear();
     std::cout << base_last << std::endl;
-    for (int i = 0; i <tail_last; i++) {
+    for (int i = 0; i <= tail_last; i++) {
         RID temp(0);
         temp.read(fp);
         pages.push_back(temp);
