@@ -13,7 +13,7 @@ query = Query(grades_table)
 keys = []
 records = {}
 num_threads = 8
-number_of_records = 10000
+number_of_records = 1000
 number_of_transactions = 100
 
 
