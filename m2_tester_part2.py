@@ -35,6 +35,7 @@ keys = sorted(list(records.keys()))
 
 # Check records that were presisted in part 1
 for key in keys:
+    print("selecting ", key)
     record = query.select(key, 0, [1, 1, 1, 1, 1])[0]
     error = False
     for i, column in enumerate(record.columns):
