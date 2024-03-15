@@ -91,7 +91,7 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
     // Lock to protect variable in Page range.
     std::unique_lock lock(mutex_insert);
     std::unique_lock lock_manager_lock(buffer_pool.lock_manager_lock, std::defer_lock);
-    std::unique_lock uniq_lock_rid(*(buffer_pool.lock_manager.find(new_rid.table_name)->second.find(new_rid.id)->second->mutex), std::defer_lock);
+    std::unique_lock uniq_lock_rid(*(buffer_pool.lock_manager.find(new_rid.table_name)->second.locks.find(new_rid.id)->second->mutex), std::defer_lock);
 
     if (base_last_wasfull) {
         // Update status of the page range
@@ -196,7 +196,7 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
     // Lock to protect the variable in page range
     std::unique_lock mlock(mutex_update);
     std::unique_lock lock_manager_lock(buffer_pool.lock_manager_lock, std::defer_lock);
-    std::unique_lock uniq_lock_rid(*(buffer_pool.lock_manager.find(rid_new.table_name)->second.find(rid_new.id)->second->mutex), std::defer_lock);
+    std::unique_lock uniq_lock_rid(*(buffer_pool.lock_manager.find(rid_new.table_name)->second.locks.find(rid_new.id)->second->mutex), std::defer_lock);
     // Create new tail pages if there are no space left or tail page does not exist.
     // Otherwise just insert the update in the last tail page
     if (tail_last_wasfull) {
@@ -273,7 +273,6 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
             lock_manager_lock.unlock();
             return 1;
         }
-        // buffer_pool.unique_lock_manager_lock.unlock();
         lock_manager_lock.unlock();
 
         // Write in the metadata except for schema encoding column

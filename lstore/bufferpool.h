@@ -11,7 +11,7 @@
 #include <atomic>
 #include <shared_mutex>
 #include <unordered_map>
-#include "lock_manager_entry.h"
+#include "lock_manager.h"
 
 class Page;
 
@@ -56,13 +56,11 @@ public:
     void write_back(Frame* frame); //write back to disk if dirty
     void write_back_all();
     Frame* pin (const RID& rid, const int& column, const char& pin_type);
-    Frame* pin (const RID& rid, const int& column, const char& pin_type, std::shared_lock<std::shared_mutex>& lock_mng_shared);
     void unpin (const RID& rid, const int& column, const char& pin_type);
-    void unpin (const RID& rid, const int& column, const char& pin_type, std::shared_lock<std::shared_mutex>& lock_mng_shared);
     void set_path (const std::string& path_rhs);
     std::vector<Frame*> hash_vector; //the starting frame of each hash range
 
-    std::unordered_map<std::string, std::unordered_map<int, LockManagerEntry*>> lock_manager; //<table_name, <rid_id, lock_manager_entry>>
+    std::unordered_map<std::string, LockManager> lock_manager; //<table_name, LockManager>
 
     std::vector<int> frame_directory; //keep track of how many open frames in each hash range
     std::shared_mutex frame_directory_lock;

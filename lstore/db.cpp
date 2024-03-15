@@ -13,7 +13,7 @@
 #include <cstring>
 #include "config.h"
 #include "../DllConfig.h"
-#include "lock_manager_entry.h"
+#include "lock_manager.h"
 
 BufferPool buffer_pool(BUFFER_POOL_SIZE);
 Log db_log;
@@ -126,13 +126,9 @@ Table* Database::create_table(const std::string& name, const int& num_columns, c
 	if (insert.second == false) {
 		throw std::invalid_argument("A table with this name already exists in the database. The table was not added. (Is old data removed?)");
 	}
-	std::unordered_map<int, LockManagerEntry*> new_lock_manager;
-	// buffer_pool.unique_lock_manager_lock.lock();
 	std::unique_lock<std::shared_mutex> unique_lock(buffer_pool.lock_manager_lock);
-
-
+	LockManager new_lock_manager;
 	buffer_pool.lock_manager.insert({name, new_lock_manager});
-	// buffer_pool.unique_lock_manager_lock.unlock();
 	  unique_lock.unlock();
 	return table;
 }
@@ -150,10 +146,8 @@ void Database::drop_table(const std::string& name){
 	}
 	delete tables.find(name)->second;
 	tables.erase(name);
-	// buffer_pool.unique_lock_manager_lock.lock();
 	std::unique_lock<std::shared_mutex> unique_lock(buffer_pool.lock_manager_lock);
 	buffer_pool.lock_manager.erase(name);
-	// buffer_pool.unique_lock_manager_lock.unlock();
 	unique_lock.unlock();
 	return;
 }

@@ -14,7 +14,7 @@
 #include "config.h"
 #include <set>
 #include <map>
-#include "lock_manager_entry.h"
+#include "lock_manager.h"
 
 
 #include "../DllConfig.h"
@@ -62,7 +62,7 @@ RID Table::insert(const std::vector<int>& columns) {
 	num_insert++; // Should not need mutex here. num_insert is std::atomic and rid solely depend on that.
 	int rid_id = num_insert;
 	std::unique_lock unique_lock_manager_lock(buffer_pool.lock_manager_lock);
-	buffer_pool.lock_manager.find(name)->second.insert({rid_id, new LockManagerEntry});
+	buffer_pool.lock_manager.find(name)->second.locks.insert({rid_id, new LockManagerEntry});
 	unique_lock_manager_lock.unlock();
 
 	insert_lock2_unique.unlock();
@@ -117,7 +117,7 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 	}
 	const int rid_id = num_update * -1;
 	std::unique_lock unique_lock_manager_lock(buffer_pool.lock_manager_lock);
-	buffer_pool.lock_manager.find(name)->second.insert({rid_id, new LockManagerEntry});
+	buffer_pool.lock_manager.find(name)->second.locks.insert({rid_id, new LockManagerEntry});
 	unique_lock_manager_lock.unlock();
 	update_lock_unique.unlock();
 	size_t i = 0;
@@ -215,10 +215,10 @@ int Table::read(FILE* fp) {
 	index = new Index();
 	index->setTable(this);
 	for (int i = (-1) * num_update; i < 0; i++) {
-		buffer_pool.lock_manager.find(name)->second.insert({i, new LockManagerEntry});
+		buffer_pool.lock_manager.find(name)->second.locks.insert({i, new LockManagerEntry});
 	}
 	for (int i = 1; i < num_insert; i++) {
-		buffer_pool.lock_manager.find(name)->second.insert({i, new LockManagerEntry});
+		buffer_pool.lock_manager.find(name)->second.locks.insert({i, new LockManagerEntry});
 	}
 	return e;
 }
