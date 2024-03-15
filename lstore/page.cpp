@@ -177,6 +177,7 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
 
     // Create new tail pages if there are no space left or tail page does not exist.
     // Otherwise just insert the update in the last tail page
+    std::cout << "update" << 2 << std::endl;
     if (tail_last_wasfull) {
 
         // Update the variable of the page range
@@ -195,6 +196,7 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
         buffer_pool.insert_new_page(rid_new, TIMESTAMP_COLUMN, 0);
         buffer_pool.insert_new_page(rid_new, BASE_RID_COLUMN, rid.id);
         buffer_pool.insert_new_page(rid_new, TPS, 0);
+    std::cout << "update" << 3 << std::endl;
 
         // Write in the data
         for (int i = NUM_METADATA_COLUMNS; i < num_column; i++) {
@@ -208,6 +210,7 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
             }
         }
 
+    std::cout << "update" << 4 << std::endl;
         // Write in the schema encoding once we know which one is updated.
         buffer_pool.insert_new_page(rid_new, SCHEMA_ENCODING_COLUMN, schema_encoding);
 
@@ -251,6 +254,7 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
         // Write in the schema encoding once we know which one is updated.
         buffer_pool.set(rid_new, SCHEMA_ENCODING_COLUMN, schema_encoding, true);
     }
+    std::cout << "update" << 5 << std::endl;
 
     // Updating indirection column and schema encoding column for the base page
     int base_schema = buffer_pool.get(rid, SCHEMA_ENCODING_COLUMN);
@@ -286,13 +290,11 @@ int PageRange::read(FILE* fp) {
     e = e + fread(&base_last, sizeof(int), 1, fp);
     e = e + fread(&tail_last, sizeof(int), 1, fp);
     pages.clear();
-    std::cout << base_last << std::endl;
     for (int i = 0; i <= tail_last; i++) {
         RID temp(0);
         temp.read(fp);
         pages.push_back(temp);
     }
-    std::cout << "psize" << pages.size() << std::endl;
     base_last_wasfull = (num_slot_used_base == PAGE_SIZE);
     tail_last_wasfull = (num_slot_used_tail == PAGE_SIZE);
     e = e + fread(&num_column, sizeof(int), 1, fp);
