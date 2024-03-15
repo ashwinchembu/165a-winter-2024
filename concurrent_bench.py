@@ -8,7 +8,7 @@ from random import choice, randrange
 
 # Student Id and 4 grades
 db = Database()
-# db.open('./Bench')
+db.open('./Bench')
 grades_table = db.create_table('Grades', 5, 0)
 query = Query(grades_table)
 keys = []
@@ -146,4 +146,4 @@ print("Selecting 10k records took:  \t\t\t", select_time_1 - select_time_0)
 # agg_time_1 = timeit.default_timer()
 # print("Aggregate 10k of 100 record batch took:\t", agg_time_1 - agg_time_0)
 
-# db.close()
+db.close()
