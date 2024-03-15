@@ -7,9 +7,12 @@ from random import choice, randrange
 
 # Student Id and 4 grades
 db = Database()
+db.open('./Bench')
 grades_table = db.create_table('Grades', 5, 0)
 query = Query(grades_table)
 keys = []
+records = {}
+seed(3562901)
 num_threads = 8
 number_of_records = 10000
 number_of_transactions = 100
@@ -137,3 +140,5 @@ for i in range(num_threads):
     transaction_workers[i].join()
 agg_time_1 = process_time()
 print("Aggregate 10k of 100 record batch took:\t", agg_time_1 - agg_time_0)
+
+db.close()
