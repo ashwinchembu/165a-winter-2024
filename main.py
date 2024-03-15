@@ -131,13 +131,14 @@ def validate():
 	db.close()
 
 def benchmark():
+	print("???")
 	db = Database()
+	print("???")
 	db.open('./ECS165')
 	print("???")
 	grades_table = db.create_table('Grades', 5, 0)
 	print("???")
 	query = Query(grades_table)
-	print("???")
 	keys = []
 
 	num_its = 20000
