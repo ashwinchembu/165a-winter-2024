@@ -29,7 +29,7 @@ endif
 # Output library name
 LIBNAME := mylibrary
 CLEANCODE := -W -Wextra -pedantic -O2 -fstack-check -g
-OPTIMIZATION := -Ofast -flto=auto -march=native -fopenmp -D_GLIBCXX_PARALLEL -frename-registers -funroll-loops
+OPTIMIZATION := -Ofast -flto=auto -march=native -D_GLIBCXX_PARALLEL -frename-registers -funroll-loops
 # Ofast = optimize most aggressively
 # flto = optimization for linkers
 # march = use machine(architecture) specific instructions
@@ -41,7 +41,7 @@ OPTIMIZATION := -Ofast -flto=auto -march=native -fopenmp -D_GLIBCXX_PARALLEL -fr
 
 
 # Flags
-CFLAGS := -Wall -shared -fPIC -std=c++17 -pipe
+CFLAGS := -Wall -shared -fPIC -std=c++17 -pipe -pthread
 
 # Combine flags
 CFLAGS += $(OS_FLAGS)
