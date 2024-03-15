@@ -132,7 +132,7 @@ def validate():
 
 def benchmark():
 	db = Database()
-	db.open('./meme')
+	db.open('./ECS165')
 	grades_table = db.create_table('Grades', 5, 0)
 	query = Query(grades_table)
 	keys = []
