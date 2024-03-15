@@ -287,7 +287,7 @@ int PageRange::read(FILE* fp) {
     pages.resize(tail_last);
     for (int i = 0; i <tail_last; i++) {
         RID temp(0);
-        temp.read();
+        temp.read(fp);
         pages[i] = temp;
     }
     std::cout << "psize" << pages.size() << std::endl;
