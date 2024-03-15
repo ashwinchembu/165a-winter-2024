@@ -22,7 +22,6 @@ public:
     int first_rid_page = 0;
     int offset = 0;
     std::string table_name = "";
-
 };
 
 #endif

@@ -55,11 +55,9 @@ std::vector<Record> Query::select_version(const int& search_key, const int& sear
     const int relative_version = _relative_version * (-1);
     std::vector<Record> records;
     std::vector<int> rids = table->index->locate(search_key_index, search_key); //this returns the RIDs of the base pages
-        std::cout << "index " << rids[0] << std::endl;
     for(size_t i = 0; i < rids.size(); i++){ //go through each matching RID that was returned from index
         std::shared_lock page_directory_shared(table->page_directory_lock);
-        RID rid = table->page_directory.find(rids[i])->second;
-        std::cout << "PD " << rid.id << std::endl;
+        RID rid(table->page_directory.find(rids[i])->second);
         page_directory_shared.unlock();
         if(rid.id != 0){
             for(int j = 0; j <= relative_version; j++){ //go through indirection to get to correct version

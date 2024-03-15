@@ -195,7 +195,9 @@ int Table::read(FILE* fp) {
 		value.read(fp);
 		value.table_name = name;
 		page_directory.insert({key, value});
+		std::cout << "PD, " << key << ", " << value.id << std::endl;
 	}
+	std::cout << page_directory.find(1)->second.id << std::endl;
 	page_range.clear();
 	int num_page_range = 0;
 	e = e + fread(&(num_page_range), sizeof(int), 1, fp);
