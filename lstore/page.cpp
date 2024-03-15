@@ -286,7 +286,9 @@ int PageRange::read(FILE* fp) {
     e = e + fread(&tail_last, sizeof(int), 1, fp);
     pages.resize(tail_last);
     for (int i = 0; i <tail_last; i++) {
-        pages[i].read(fp);
+        RID temp(0);
+        temp.read();
+        pages[i] = temp;
     }
     std::cout << "psize" << pages.size() << std::endl;
     base_last_wasfull = (num_slot_used_base == PAGE_SIZE);
