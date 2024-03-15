@@ -79,7 +79,6 @@ bool PageRange::base_has_capacity () const {
 }
 
 PageRange::~PageRange(){
-    std::cout << "prange dest" << std::endl;
 }
 
 /***

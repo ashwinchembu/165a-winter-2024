@@ -168,13 +168,13 @@ void Database::drop_table(const std::string& name){
  * @return Table Return the specified table
  *
  */
-Table Database::get_table(const std::string& name){
+Table* Database::get_table(const std::string& name){
 	std::map<std::string, Table*>::iterator table = tables.find(name);
 	if(table == tables.end()){
 		throw std::invalid_argument("No table with that name was located.");
 	}
 
-	return *(table->second);
+	return (table->second);
 }
 
 /*
@@ -203,7 +203,7 @@ COMPILER_SYMBOL void Database_drop_table(int* obj, char* name){
 
 COMPILER_SYMBOL int* Database_get_table(int* obj,char* name){
 	Database* self = ((Database*)obj);
-	Table* ret = new Table(self->get_table({name}));
+	Table* ret = self->get_table({name});
 
 	return (int*)ret;
 }

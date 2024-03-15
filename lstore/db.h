@@ -19,7 +19,7 @@ class Database{
     void close();
     Table* create_table(const std::string& name, const int& num_columns, const int& key_index);
     void drop_table(const std::string& name);
-    Table get_table(const std::string& name);
+    Table* get_table(const std::string& name);
     std::string file_path = "./ECS165";
     std::map<std::string, Table*> tables;
 
