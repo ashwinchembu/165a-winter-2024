@@ -164,7 +164,6 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
  */
 int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, const std::map<int, RID>& page_directory, std::shared_mutex* lock) {
     // Protecting page directory from thread writing while another thread is reading
-    std::cout << "update" << 1 << std::endl;
     std::shared_lock pdlock(*lock);
     RID latest_rid = page_directory.find(buffer_pool.get(rid, INDIRECTION_COLUMN))->second;
     pdlock.unlock();
@@ -173,11 +172,12 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
     int schema_encoding = 0;
 
     // Lock to protect the variable in page range
+    std::cout << "update" << 1 << std::endl;
     std::unique_lock mlock(mutex_update);
+    std::cout << "update" << 2 << std::endl;
 
     // Create new tail pages if there are no space left or tail page does not exist.
     // Otherwise just insert the update in the last tail page
-    std::cout << "update" << 2 << std::endl;
     if (tail_last_wasfull) {
 
         // Update the variable of the page range
