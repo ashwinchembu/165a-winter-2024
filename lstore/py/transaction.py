@@ -28,7 +28,7 @@ class Transaction:
         if queryCode == Query.insert.__code__:
 
             Transaction_add_query_insert(self.selfPtr, queryObj.selfPtr,
-                    table.selfPtr, fillAndReturnIntBuffer(args))
+                    table.selfPtr, fillAndReturnIntBuffer(args[0]))
            
         elif queryCode == Query.update.__code__:
             

@@ -75,4 +75,4 @@ clean:
 .PHONY: all clean #pre-build
 
 a:
-	rm -rf tables CT ECS165 M2 MT
+	rm -rf tables CT ECS165 M2 MT Bench

@@ -50,13 +50,13 @@ public:
     // void add_query(unsigned long int (*sum_version_func)(int, int, int, int), Table& t, const int& start_range, const int& end_range, const int& aggregate_column_index, const int& relative_version);
 
 
-    void add_query(Query& q, Table& t, const std::vector<int>& columns);
-    void add_query(Query& q, Table& t, int& key, const std::vector<int>& columns);
-    void add_query(Query& q, Table& t, int& key, const int& search_key_index, const std::vector<int>& projected_columns_index);
-    void add_query(Query& q, Table& t, int& key, const int& search_key_index, const std::vector<int>& projected_columns_index,  const int& relative_version);
-    void add_query(Query& q, Table& t, int& start_range, int& end_range, const int& aggregate_column_index);
-    void add_query(Query& q, Table& t, int& start_range, int& end_range, const int& aggregate_column_index, const int& relative_version);
-    void add_query(Query& q, Table& t, int& key, const int& column);
+    void add_query(Query& q, Table& t, const std::vector<int>& columns); // Insert
+    void add_query(Query& q, Table& t, int& key, const std::vector<int>& columns); // Update
+    void add_query(Query& q, Table& t, int& key, const int& search_key_index, const std::vector<int>& projected_columns_index); // Select
+    void add_query(Query& q, Table& t, int& key, const int& search_key_index, const std::vector<int>& projected_columns_index,  const int& relative_version); // Select Ver
+    void add_query(Query& q, Table& t, int& start_range, int& end_range, const int& aggregate_column_index); // Sum
+    void add_query(Query& q, Table& t, int& start_range, int& end_range, const int& aggregate_column_index, const int& relative_version); // Sum ver
+    void add_query(Query& q, Table& t, int& key, const int& column); // Increment
 
     bool run(); // Called by transaction worker. Return 0 if need to re-attempt
     void abort(); // Transaction worker check the work. If it contain anomaly, abort.
