@@ -218,6 +218,24 @@ inline bool lock_unique_key(std::string& table_name, int& key) {
   return true;
 }
 
+void release_locks(const std::string& table_name){
+    LockManager lock_mng = buffer_pool.lock_manager.find(table_name)->second;
+    auto uniq_locks = lock_mng.active_unique_locks.equal_range(std::this_thread::get_id());
+    for (auto iter = uniq_locks.first; iter != uniq_locks.second; iter++) {
+      iter->second->unlock();
+      delete iter->second;
+      lock_mng.active_unique_locks.erase(iter);
+    }
+
+    auto shrd_locks = lock_mng.active_shared_locks.equal_range(std::this_thread::get_id());
+    for (auto iter = shrd_locks.first; iter != shrd_locks.second; iter++) {
+      iter->second->unlock();
+      delete iter->second;
+      lock_mng.active_shared_locks.erase(iter);
+    }
+
+}
+
 bool Transaction::run() {
     bool transaction_completed = true; //any case where transaction does not need to be redone, commit or ic abort
     bool _commit = true;
@@ -236,18 +254,27 @@ bool Transaction::run() {
       switch(q.type){
         case OpCode::INSERT:
           if (!(lock_unique_key(q.table->name, q.columns[q.table->key]))) {
+            for (int j = i; j >= 0; j--) {
+              release_locks(queries[j].table->name);
+            }
             return false;
           }
           break;
 
         case OpCode::UPDATE:
           if (!(lock_unique_key(q.table->name, *(q.key)))) {
+            for (int j = i; j >= 0; j--) {
+              release_locks(queries[j].table->name);
+            }
             return false;
           }
           //we are updating primary key
           if(q.columns[q.table->key] >= NONE && q.columns[q.table->key] != *(q.key)){
             if (!(lock_unique_key(q.table->name, q.columns[q.table->key]))) {
               // If we fail to acquire lock here, some other thread is probably using the "existing" primary key
+            for (int j = i; j >= 0; j--) {
+              release_locks(queries[j].table->name);
+            }
               return true;
             }
           }
@@ -255,6 +282,9 @@ bool Transaction::run() {
 
         case OpCode::INCREMENT:
           if (!(lock_unique_key(q.table->name, *(q.key)))) {
+            for (int j = i; j >= 0; j--) {
+              release_locks(queries[j].table->name);
+            }
             return false;
           }
           break;
@@ -262,6 +292,9 @@ bool Transaction::run() {
         case OpCode::SELECT:
         case OpCode::SELECT_VER:
           if (!(lock_shared_key(q.table->name, *(q.key)))) {
+            for (int j = i; j >= 0; j--) {
+              release_locks(queries[j].table->name);
+            }
             return false;
           }
           break;
@@ -269,8 +302,11 @@ bool Transaction::run() {
         case OpCode::SUM:
         case OpCode::SUM_VER:
           end = *(q.end_range);
-          for (int i = *(q.start_range); i <= end; i++) {
-            if (!(lock_shared_key(q.table->name, *(q.key)))) {
+          for (int k = *(q.start_range); k <= end; k++) {
+            if (!(lock_shared_key(q.table->name, k))) {
+              for (int j = i; j >= 0; j--) {
+                release_locks(queries[j].table->name);
+              }
               return false;
             }
           }
@@ -307,23 +343,9 @@ bool Transaction::run() {
       abort();
     }
 
-    for (int i = 0; i < num_queries; i++) {
-      LockManager lock_mng = buffer_pool.lock_manager.find(queries[i].table->name)->second;
-      auto uniq_locks = lock_mng.active_unique_locks.equal_range(std::this_thread::get_id());
-      for (auto iter = uniq_locks.first; iter != uniq_locks.second; iter++) {
-        iter->second->unlock();
-        delete iter->second;
-        lock_mng.active_unique_locks.erase(iter);
-      }
-
-      auto shrd_locks = lock_mng.active_shared_locks.equal_range(std::this_thread::get_id());
-      for (auto iter = shrd_locks.first; iter != shrd_locks.second; iter++) {
-        iter->second->unlock();
-        delete iter->second;
-        lock_mng.active_shared_locks.erase(iter);
-      }
+    for (int i = 0; i < num_queries; i--) {
+      release_locks(queries[i].table->name);
     }
-
     return transaction_completed; //transaction be reattempted if return is 0
 }
 
