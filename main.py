@@ -133,15 +133,17 @@ def validate():
 def benchmark():
 	db = Database()
 	db.open('./ECS165')
+	print("???")
 	grades_table = db.create_table('Grades', 5, 0)
+	print("???")
 	query = Query(grades_table)
+	print("???")
 	keys = []
 
 	num_its = 20000
 
 	insert_time_0 = perf_counter()
 	for i in range(0, num_its):
-		print("???")
 		query.insert(906659671 + i, 93, 0, 0, 0)
 		keys.append(906659671 + i)
 	insert_time_1 = perf_counter()
