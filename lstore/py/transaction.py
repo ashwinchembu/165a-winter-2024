@@ -30,7 +30,8 @@ class Transaction:
                     table.selfPtr, fillAndReturnIntBuffer_Insert(args))
            
         elif queryCode == Query.update.__code__:
-            
+            print(args[0])
+            print(fillAndReturnIntBuffer(args[1]))
             Transaction_add_query_update(self.selfPtr,queryObj.selfPtr,
                     table.selfPtr,args[0],fillAndReturnIntBuffer(args[1]))
          
