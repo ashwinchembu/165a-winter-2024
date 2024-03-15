@@ -101,13 +101,14 @@ void Index::create_index(const int& column_number) {
         // table->page_directory_shared.unlock();
         page_d_lock.unlock();
 
-        if (loc != table->page_directory.end()) { // if RID ID exist ie. not deleted
+        if (loc->second.id != 0) { // if RID ID exist ie. not deleted
             std::cout << "Hi" << std::endl;
             // table->page_directory_shared.lock();
-            page_d_lock.lock();
-            RID rid = table->page_directory.find(loc->second.id)->second;
-            // table->page_directory_shared.unlock();
-            page_d_lock.unlock();
+            // page_d_lock.lock();
+            // RID rid = table->page_directory.find(loc->second.id)->second;
+            // // table->page_directory_shared.unlock();
+            // page_d_lock.unlock();
+            RID rid = loc->second;
             int value;
             int indirection_num = buffer_pool.get(rid, INDIRECTION_COLUMN);
 
