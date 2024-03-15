@@ -306,7 +306,7 @@ bool Transaction::run() {
       abort();
     }
 
-    for (int i = 0; i < num_queries; i--) {
+    for (int i = 0; i < num_queries; i++) {
       release_locks(queries[i].table->name);
     }
     return true; //transaction be reattempted if return is 0
