@@ -8,7 +8,7 @@
 #include <sys/stat.h>
 #include <set>
 #include <map>
-#include <iterator>
+#include <algorithm>
 
 
 #include "RID.h"
