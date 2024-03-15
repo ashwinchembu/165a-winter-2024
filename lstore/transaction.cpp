@@ -8,76 +8,53 @@
 #include "config.h"
 #include "lock_manager.h"
 
-int QueryOperation::run() {
+bool QueryOperation::run() {
     switch (type) {
         case OpCode::NOTHING:
             std::cerr << "Query with No type" << std::endl;
-            return QueryResult::QUERY_IC;
+            return false;
         case OpCode::INSERT:
             if (check_req()) {
-                bool result = q->insert(columns);
-                if(!result){
-                  return QueryResult::QUERY_LOCK;
-                } else {
-                  return QueryResult::QUERY_SUCCESS;
-                }
+                return q->insert(columns);
             } else {
                 std::cerr << "Query with Not enough data : Insert" << std::endl;
-                return QueryResult::QUERY_IC;
+                return false;
             }
         case OpCode::UPDATE:
             if (check_req()) {
-              bool result = q->update(*key, columns);
-              if(!result){
-                return QueryResult::QUERY_LOCK;
-              } else {
-                return QueryResult::QUERY_SUCCESS;
-              }
+              return q->update(*key, columns);
             } else {
                 std::cerr << "Query with Not enough data : Update" << std::endl;
-                return QueryResult::QUERY_IC;
+                return false;
             }
         case OpCode::SELECT:
         case OpCode::SELECT_VER:
             if (check_req()) {
                 select_result = q->select_version(*key, search_key_index, columns, relative_version);
-                if(select_result.size() == 0){
-                  return QueryResult::QUERY_LOCK;
-                } else {
-                  return QueryResult::QUERY_SUCCESS;
-                }
+                return select_result.size();
             } else {
                 std::cerr << "Query with Not enough data : Select or Select_ver" << std::endl;
-                return QueryResult::QUERY_IC;
+                return false;
             }
         case OpCode::SUM:
         case OpCode::SUM_VER:
             if (check_req()) {
                 *sum_result = q->sum_version(*start_range, *end_range, aggregate_column_index, relative_version);
-                if(sum_result == nullptr){
-                  return QueryResult::QUERY_LOCK;
-                } else {
-                  return QueryResult::QUERY_SUCCESS;
-                }
+                return sum_result != nullptr;
             } else {
                 std::cerr << "Query with Not enough data : Sum or Sum_ver" << std::endl;
-                return QueryResult::QUERY_IC;
+                false;
             }
         case OpCode::INCREMENT:
             if (check_req()) {
-              bool result = q->increment(*key, aggregate_column_index);
-              if(!result){
-                return QueryResult::QUERY_LOCK;
-              } else {
-                return QueryResult::QUERY_SUCCESS;
-              }
+              return q->increment(*key, aggregate_column_index);
             } else {
                 std::cerr << "Query with Not enough data : Increment" << std::endl;
-                return QueryResult::QUERY_IC;
+                return false;
             }
         default:
             std::cerr << "Query with unknown type" << std::endl;
-            return QueryResult::QUERY_IC;
+            return false;
     }
 }
 
@@ -237,7 +214,6 @@ void release_locks(const std::string& table_name){
 }
 
 bool Transaction::run() {
-    bool transaction_completed = true; //any case where transaction does not need to be redone, commit or ic abort
     bool _commit = true;
 
 	  std::unique_lock db_shared(db_log.db_log_lock);
@@ -318,23 +294,10 @@ bool Transaction::run() {
     }
 
     for (int i = 0; i < num_queries; i++) { //run all the queries
-      int query_success = queries[i].run();
-      switch (query_success) {
-          case QueryResult::QUERY_SUCCESS: //query completed successfully
-            break;
-          case QueryResult::QUERY_LOCK: //failed to fetch lock, re-add to transaction queue
-            _commit = false;
-            transaction_completed = false;
-            break;
-          case QueryResult::QUERY_IC: //integrity contraint violated, do not re-attempt
-            _commit = false;
-            break;
-          default:
-          std::cerr << "unexpected behavior in QueryOperation::run()" << std::endl;
-        }
-        if(!_commit){ //no need to complete transaction if one query fails
+      if(!queries[i].run()){
+          _commit = false;
           break;
-        }
+      }
     }
 
     if(_commit){
@@ -346,7 +309,7 @@ bool Transaction::run() {
     for (int i = 0; i < num_queries; i--) {
       release_locks(queries[i].table->name);
     }
-    return transaction_completed; //transaction be reattempted if return is 0
+    return true; //transaction be reattempted if return is 0
 }
 
 void Transaction::abort() {
