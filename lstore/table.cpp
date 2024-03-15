@@ -55,7 +55,7 @@ Table::Table (const Table& rhs) {
         back_inserter(page_range),
         [](const std::shared_ptr<PageRange>& ptr) -> std::shared_ptr<PageRange> { return ptr->clone(); }
     );
-
+	std::cout << "table copied" << std::endl;
 	// page_range = rhs.page_range;
 }
 
