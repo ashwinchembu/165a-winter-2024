@@ -132,15 +132,13 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 	size_t i = 0;
 	for (; i < page_range.size(); i++) {
 		std::shared_lock pshared((page_range[i].get())->page_lock);
-		std::cout << "prange: " << (page_range[i].get())->tail_last << std::endl;
-		std::cout << "prange: " << (page_range[i].get())->pages.size() << std::endl;
 		if ((page_range[i].get())->pages[0].first_rid_page_range == rid.first_rid_page_range) {
 			pshared.unlock();
 			break;
 		}
 		pshared.unlock();
 	}
-	std::cout << 9 << std::endl;
+	std::cout << 1 << std::endl;
 	page_range_shared.unlock();
 	RID new_rid(rid_id);
 	new_rid.table_name = name;
@@ -153,6 +151,7 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 		return RID(0);
 	}
 	page_range_update[i]++;
+	std::cout << 2 << std::endl;
 	if (page_range_update[i] >= MAX_PAGE_RANGE_UPDATES){
 		// Make a deep copy of page_range[i]
 		std::shared_ptr<PageRange> deep_copy = std::make_shared<PageRange>(*(page_range[i].get()));

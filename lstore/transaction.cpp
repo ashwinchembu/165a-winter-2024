@@ -32,6 +32,7 @@ bool QueryOperation::run() {
         case OpCode::SELECT_VER:
             if (check_req()) {
                 select_result = q->select_version(key, search_key_index, columns, relative_version);
+                std::cout << "Select!" << std::endl;
                 return select_result.size();
             } else {
                 std::cerr << "Query with Not enough data : Select or Select_ver" << std::endl;
