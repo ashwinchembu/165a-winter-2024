@@ -419,8 +419,8 @@ COMPILER_SYMBOL void Transaction_add_query_select(
 		int* self,int* query, int* table, int key, int search_key_index,
 		int* projected_columns_index){
 
-	((Transaction*)self)->add_query(*((Query*)query),*((Table*)table), search_key_index,
-			*((std::vector<int>*)projected_columns_index));
+	((Transaction*)self)->add_query(*((Query*)query),*((Table*)table), key,
+            search_key_index, *((std::vector<int>*)projected_columns_index));
 }
 
 COMPILER_SYMBOL void Transaction_add_query_select_version(

@@ -41,14 +41,6 @@ public:
     Transaction ();
     Transaction (const Transaction& rhs);
     virtual ~Transaction ();
-    // I believe wrapper can simplify these function pointers
-    // void add_query(bool (*insert_func)(std::vector<int>), Table& t, const std::vector<int>& columns);
-    // void add_query(bool (*update_func)(int, std::vector<int>), Table& t, const int& key, const std::vector<int>& columns);
-    // void add_query(std::vector<Record> (*select_func)(int, int, std::vector<int>), Table& t, const int& key, const int& search_key_index, const std::vector<int>& projected_columns_index);
-    // void add_query(std::vector<Record> (*select_version_func)(int, int, std::vector<int>, int), Table& t, const int& key, const int& search_key_index, const std::vector<int>& projected_columns_index,  const int& relative_version);
-    // void add_query(unsigned long int (*sum_func)(int, int, int), Table& t, const int& start_range, const int& end_range, const int& aggregate_column_index);
-    // void add_query(unsigned long int (*sum_version_func)(int, int, int, int), Table& t, const int& start_range, const int& end_range, const int& aggregate_column_index, const int& relative_version);
-
 
     void add_query(Query& q, Table& t, const std::vector<int>& columns); // Insert
     void add_query(Query& q, Table& t, int& key, const std::vector<int>& columns); // Update
