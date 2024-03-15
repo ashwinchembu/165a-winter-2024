@@ -28,7 +28,7 @@ endif
 
 # Output library name
 LIBNAME := mylibrary
-CLEANCODE := -W -ansi -pedantic
+CLEANCODE := -W -pedantic
 OPTIMIZATION := -Ofast -flto=auto -march=native -fopenmp -D_GLIBCXX_PARALLEL -frename-registers -funroll-loops
 # Ofast = optimize most aggressively
 # flto = optimization for linkers
@@ -60,7 +60,7 @@ $(LIBRARY): $(SRC) $(DEPS)
 
 warnings: $(SRC) $(DEPS)
 	mkdir -p $(OUTDIR)
-	$(CC) $(CFLAGS) $(INC) -o $(LIBRARY) $(SRC) $(CLEANCODE)
+	$(CC) $(CFLAGS) $(CLEANCODE) $(INC) -o $(LIBRARY) $(SRC)
 
 profiling: $(SRC) $(DEPS)
 	mkdir -p $(OUTDIR)
