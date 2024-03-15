@@ -51,7 +51,8 @@ public:
     std::map<int, RID> page_directory; //<RID.id, RID>
     std::shared_mutex page_directory_lock;
 
-    std::vector<std::shared_ptr<PageRange>> page_range;
+    std::vector<PageRange*> page_range;
+    // std::vector<std::shared_ptr<PageRange>> page_range;
     std::shared_mutex page_range_lock;
 
     std::string name;
