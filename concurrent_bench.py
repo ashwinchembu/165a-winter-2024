@@ -42,6 +42,7 @@ for i in range(number_of_transactions):
 insert_time_0 = process_time()
 # run transaction workers
 for i in range(num_threads):
+    print("??")
     transaction_workers[i].run()
 
 # wait for workers to finish
