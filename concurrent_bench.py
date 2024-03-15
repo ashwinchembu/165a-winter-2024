@@ -14,8 +14,8 @@ query = Query(grades_table)
 keys = []
 records = {}
 num_threads = 30
-number_of_records = 1000
-number_of_transactions = 100
+number_of_records = 10000
+number_of_transactions = 1000
 
 
 insert_transactions = []
@@ -118,32 +118,32 @@ for i in range(num_threads):
 select_time_1 = timeit.default_timer()
 print("Selecting 10k records took:  \t\t\t", select_time_1 - select_time_0)
 
-
-for i in range(number_of_transactions):
-    aggre_transactions.append(Transaction())
-
-for i in range(0, number_of_records, 100):
-    start_value = 906659671 + i
-    end_value = start_value + 100
-    t = aggre_transactions[i % number_of_transactions]
-    t.add_query(query.sum, grades_table, start_value, end_value - 1, randrange(0, 5))
-
-transaction_workers = []
-for i in range(num_threads):
-    transaction_workers.append(TransactionWorker())
-
-for i in range(number_of_transactions):
-    transaction_workers[i % num_threads].add_transaction(aggre_transactions[i])
-# Measuring Aggregate Performance
-agg_time_0 = timeit.default_timer()
-# run transaction workers
-for i in range(num_threads):
-    transaction_workers[i].run()
-
-# wait for workers to finish
-for i in range(num_threads):
-    transaction_workers[i].join()
-agg_time_1 = timeit.default_timer()
-print("Aggregate 10k of 100 record batch took:\t", agg_time_1 - agg_time_0)
+#
+# for i in range(number_of_transactions):
+#     aggre_transactions.append(Transaction())
+#
+# for i in range(0, number_of_records, 100):
+#     start_value = 906659671 + i
+#     end_value = start_value + 100
+#     t = aggre_transactions[i % number_of_transactions]
+#     t.add_query(query.sum, grades_table, start_value, end_value - 1, randrange(0, 5))
+#
+# transaction_workers = []
+# for i in range(num_threads):
+#     transaction_workers.append(TransactionWorker())
+#
+# for i in range(number_of_transactions):
+#     transaction_workers[i % num_threads].add_transaction(aggre_transactions[i])
+# # Measuring Aggregate Performance
+# agg_time_0 = timeit.default_timer()
+# # run transaction workers
+# for i in range(num_threads):
+#     transaction_workers[i].run()
+#
+# # wait for workers to finish
+# for i in range(num_threads):
+#     transaction_workers[i].join()
+# agg_time_1 = timeit.default_timer()
+# print("Aggregate 10k of 100 record batch took:\t", agg_time_1 - agg_time_0)
 
 db.close()
