@@ -325,6 +325,14 @@ def fillAndReturnIntBuffer(*args):
         
     return get_buffer_vector()
 
+def fillAndReturnIntBuffer_Insert(*args):
+    lst = list(args[0])
+    erase_buffer_vector()
+    for i in lst:
+        add_to_buffer_vector(c_intOrUnreasonable(i))
+
+    return get_buffer_vector()
+
 # Functions from page.cpp
 
 # Page_PAGE_SIZE=DB.Page_PAGE_SIZE;
