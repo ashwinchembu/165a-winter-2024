@@ -51,6 +51,7 @@ int BufferPool::hash_fun(unsigned int x) {
 }
 
 int BufferPool::get (const RID& rid, const int& column) {
+  std::cout << rid.id << std::endl;
   int return_val = NONE - 10;
   Frame* found = pin(rid, column, 'S');
   if(found == nullptr){ //if not already in the bufferpool, load into bufferpool
