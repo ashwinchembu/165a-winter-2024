@@ -138,8 +138,8 @@ int test3Part1(){
 			std::vector<int> toPrint = records.find(key)->second;
 			std::string msg = printArray(toPrint);
 
-			std::cout<<"Select error on"<<key<<":"<<r.rid<<"correct:"
-					<<msg<<std::endl;
+			std::cout<<"Select error on"<<key<<":"<<printArray(r.columns)<<"correct:"
+					/*<<msg*/<<std::endl;
 		}
 	}
 
