@@ -42,15 +42,17 @@ std::string printArray(std::vector<int> data) {
 int main(int argc,char**argv){
     if (argc != 2) {
         std::cerr << "Usage: " << argv[0] << " <part>" << std::endl;
+		std::cerr << "Part 1: ./bin/my_executable 1" << std::endl;
+		std::cerr << "Part 2: ./bin/my_executable 2" << std::endl;
         return 1;
     }
 
     std::string part = argv[1];
 
-    if (part == "part1") {
+    if (part == "1") {
         std::cout << "Selected: Part 1" << std::endl;
         test3Part1();
-    } else if (part == "part2") {
+    } else if (part == "2") {
         std::cout << "Selected: Part 2" << std::endl;
         test3Part2();
     } else {
