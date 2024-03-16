@@ -19,7 +19,7 @@ public:
     Page (const Page& rhs);
     void DeepCopy (const Page& rhs);
     virtual ~Page ();
-    const bool has_capacity() const;
+    bool has_capacity() const;
     int write(const int& value);
     int* data = nullptr; // Data location(pointer)
     friend std::ostream& operator<<(std::ostream& os, const Page& p);

@@ -332,7 +332,7 @@ Page::~Page() {
  * @return True if page has capacity left, False if not
  *
  */
-const bool Page::has_capacity() const {
+bool Page::has_capacity() const {
     return(num_rows < PAGE_SIZE);
 }
 
