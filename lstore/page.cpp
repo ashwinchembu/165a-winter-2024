@@ -273,7 +273,7 @@ int PageRange::write(FILE* fp) {
     fwrite(&num_slot_used_tail, sizeof(int), 1, fp);
     fwrite(&base_last, sizeof(int), 1, fp);
     fwrite(&tail_last, sizeof(int), 1, fp);
-    for (int i = 0; i <tail_last; i++) {
+    for (int i = 0; i <= tail_last; i++) {
         pages[i].write(fp);
     }
     base_last_wasfull = (num_slot_used_base == PAGE_SIZE);
