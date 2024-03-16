@@ -4,10 +4,10 @@
 CC := g++
 
 # Source files
-SRC := Toolkit.cpp lstore/db.cpp lstore/index.cpp lstore/page.cpp lstore/query.cpp lstore/RID.cpp lstore/table.cpp lstore/config.cpp lstore/bufferpool.cpp lstore/transaction.cpp lstore/transaction_worker.cpp
+SRC := Toolkit.cpp lstore/db.cpp lstore/index.cpp lstore/page.cpp lstore/query.cpp lstore/RID.cpp lstore/table.cpp lstore/config.cpp lstore/bufferpool.cpp lstore/transaction.cpp lstore/transaction_worker.cpp lstore/lock_manager.cpp
 
 # Dependencies
-DEPS := lstore/db.h lstore/index.h lstore/page.h lstore/query.h lstore/RID.h lstore/table.h DllConfig.h Toolkit.h lstore/bufferpool.h lstore/config.h lstore/transaction.h lstore/transaction_worker.h
+DEPS := lstore/db.h lstore/index.h lstore/page.h lstore/query.h lstore/RID.h lstore/table.h DllConfig.h Toolkit.h lstore/bufferpool.h lstore/config.h lstore/transaction.h lstore/transaction_worker.h lstore/lock_manager.h lstore/log.h
 
 # Header files
 INC := -I.
@@ -28,6 +28,7 @@ endif
 
 # Output library name
 LIBNAME := mylibrary
+CLEANCODE := -W -Wextra -pedantic -O2 -fstack-check -g
 OPTIMIZATION := -Ofast -flto=auto -march=native -fopenmp -D_GLIBCXX_PARALLEL -frename-registers -funroll-loops
 # Ofast = optimize most aggressively
 # flto = optimization for linkers
@@ -57,6 +58,10 @@ $(LIBRARY): $(SRC) $(DEPS)
 	mkdir -p $(OUTDIR)
 	$(CC) $(CFLAGS) $(INC) -o $(LIBRARY) $(SRC)
 
+warnings: $(SRC) $(DEPS)
+	mkdir -p $(OUTDIR)
+	$(CC) $(CFLAGS) $(CLEANCODE) $(INC) -o $(LIBRARY) $(SRC)
+
 profiling: $(SRC) $(DEPS)
 	mkdir -p $(OUTDIR)
 	$(CC) $(CFLAGS) $(INC) -o $(LIBRARY) $(SRC) $(OPTIMIZATION) -fprofile-generate -fprofile-partial-training
@@ -75,4 +80,10 @@ clean:
 .PHONY: all clean #pre-build
 
 a:
-	rm -rf tables CT ECS165 M2 MT
+	rm -rf tables CT ECS165 M2 MT Bench
+
+q:
+	make a; \
+	make; \
+	clear;
+
