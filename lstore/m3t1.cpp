@@ -40,7 +40,7 @@ std::string printArray(std::vector<int> data) {
     return buffer.str();
 }
 
-int main(int argc,char**argv){
+int mc3t1(int argc,char**argv){
     if (argc != 2) {
         std::cerr << "Usage: " << argv[0] << " <part>" << std::endl;
 		std::cerr << "Part 1: ./bin/my_executable 1" << std::endl;
