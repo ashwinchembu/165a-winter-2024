@@ -2,22 +2,20 @@
 #include <stdio.h>
 #include <string>
 #include <algorithm>
-#include<sys/stat.h>
 #include <cstring>
 #include <fcntl.h>
 #include <cmath>
 #include <stdexcept> // Throwing errors
 #include <iostream>
+#include <thread>
 
 #include "page.h"
 #include "config.h"
 #include "bufferpool.h"
+#include "lock_manager.h"
 #include "../Toolkit.h"
-#include "../DllConfig.h"
 
-int id_counter = 0;
-
-BufferPool::BufferPool (const int& num_pages) : bufferpool_size(num_pages){ // @suppress("Class members should be properly initialized")
+BufferPool::BufferPool (const int& num_pages) : bufferpool_size(num_pages){
   head = new Frame; //create head
   hash_vector.push_back(head); //head will be the first hash range beginning
   frame_directory.push_back(0); //each hash range begins empty
@@ -53,16 +51,15 @@ int BufferPool::hash_fun(unsigned int x) {
 }
 
 int BufferPool::get (const RID& rid, const int& column) {
-  Frame* found = search(rid, column);
-  if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
-    Frame* current_frame = head;
-    while(current_frame != nullptr){ //iterate through entire bufferpool
-      current_frame = current_frame->next;
-    }
-    found = load(rid, column);
+  int return_val = NONE - 10;
+  Frame* found = pin(rid, column, 'S');
+  if(found == nullptr){ //if not already in the bufferpool, load into bufferpool
+    return return_val;
   }
+  return_val = *(found->page->data + rid.offset);
   update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
-  return *(found->page->data + rid.offset); //return the value we want
+  unpin(rid, column, 'S');
+  return return_val; //return the value we want
 }
 
 Frame* BufferPool::get_page(const RID& rid, const int& column){
@@ -74,57 +71,44 @@ Frame* BufferPool::get_page(const RID& rid, const int& column){
   return found; //return the value we want
 }
 
-void BufferPool::set (const RID& rid, const int& column, const int& value, const bool& is_new){
-  pin(rid, column);
-  Frame* found = search(rid, column);
-  if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
-    Frame* current_frame = head;
-    while(current_frame != nullptr){ //iterate through entire bufferpool
-      current_frame = current_frame->next;
-    }
-    found = load(rid, column);
+bool BufferPool::set (const RID& rid, const int& column, const int& value, const bool& is_new){
+  Frame* found = pin(rid, column, 'N');
+  if(found == nullptr){ //if not already in the bufferpool, load into bufferpool
+    return false;
   }
   *(found->page->data + rid.offset) = value;
   if(is_new){
     found->page->num_rows++;
   }
   found->dirty = true; //the page has been modified
-  unpin(rid, column);
   update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
-  return;
+  unpin(rid, column, 'N');
+  return true;
 }
 
 Frame* BufferPool::search(const RID& rid, const int& column){
+  std::shared_lock lock(update_age_lock, std::defer_lock);
   size_t hash = hash_fun(rid.first_rid_page); //perform hash on rid
+  lock.lock();
   Frame* range_begin = hash_vector[hash]; //beginning of hash range
   Frame* range_end = (hash == hash_vector.size() - 1) ? tail : hash_vector[hash + 1]->prev; //end of hash range
   Frame* current_frame = range_begin; //iterate through range
   while(current_frame != range_end->next){
     if ((current_frame->valid)) {
       if(rid.first_rid_page == current_frame->first_rid_page && column == current_frame->column){
+        lock.unlock();
         return current_frame;
       }
     }
     current_frame = current_frame->next;
   }
+  lock.unlock();
   return nullptr; //if not found in the range
 }
 
-/*
- * Frame* BufferPool::search(const RID& rid, const int& column, std::string merge){
- *  Frame* current_frame = head; //iterate through range
- *  while(current_frame != nullptr){
- *    if ((current_frame->valid)) {
- *      if(rid.first_rid_page == current_frame->first_rid_page && column == current_frame->column){
- *        return current_frame;
- *      }
- *    }
- *    current_frame = current_frame->next;
- *  }
- *  return nullptr; //if not found in the range
- * }*/
-
 void BufferPool::update_ages(Frame*& just_accessed, Frame*& range_begin){ //change ages and reorder linked list
+  std::unique_lock lock(update_age_lock);
+  // update_age_lock.lock();
   if(just_accessed != range_begin){ //if not already the range beginning / most recently accessed
     if(just_accessed->next == nullptr ){ //if just_accessed is the tail
       tail = just_accessed->prev;
@@ -144,115 +128,28 @@ void BufferPool::update_ages(Frame*& just_accessed, Frame*& range_begin){ //chan
     range_begin->prev = just_accessed;
     range_begin = just_accessed;
   }
+  // update_age_lock.unlock();
+  lock.unlock();
   return;
-}
-
-std::string BufferPool::buildDatPath(std::string tname,int first_rid_page,int first_rid_page_range,int column){
-//	char ret[1024];
-//	char* ptr =  ret;
-
-	bool isBase = false;
-
-	std::string buildPath = this->path;
-	buildPath.append("/")
-			 .append(tname);
-
-//	ptr += sprintf(ptr,"%s/",path.c_str());
-//
-//	ptr += sprintf(ptr, "%s",tname.c_str());
-
-	if(column < NUM_METADATA_COLUMNS){
-//		ptr+= sprintf(ptr," M ");
-		buildPath.append("_M_");
-
-	} else if(first_rid_page < 0){
-//		ptr+= sprintf(ptr," T ");
-		buildPath.append("_T_");
-
-	} else if(first_rid_page > 0){
-//		ptr+= sprintf(ptr," B ");
-		buildPath.append("_B_");
-		isBase = true;
-	}
-
-	buildPath.append(std::to_string(first_rid_page))
-			 .append("_")
-			 .append(std::to_string(first_rid_page_range))
-			 .append("_")
-			 .append(std::to_string(column));
-
-//	ptr+=sprintf(ptr,"%d %d %d",first_rid_page,first_rid_page_range,column);
-
-	if(isBase){
-//		ptr+=sprintf(ptr," %d",mergeNumber);
-
-		buildPath.append("_")
-		         .append(std::to_string(tableVersions.find(tname)->second));
-	}
-
-	buildPath.append(".dat");
-
-//	sprintf(ptr, ".dat");
-//
-//	return {ret};
-
-	return buildPath;
-}
-
-std::string BufferPool::buildTxtPath(std::string tname,int first_rid_page,int first_rid_page_range,int column){
-	char ret[2048];
-	char* ptr =  ret;
-
-	bool isBase = false;
-
-	if(!textOutputEnabled){
-		struct stat checkTextDir;
-
-		if(stat(textPath.c_str(),&checkTextDir)!=0
-			|| !S_ISDIR(checkTextDir.st_mode)){
-			mkdir(textPath.c_str(),0777);
-		}
-
-		textOutputEnabled = true;
-	}
-
-	ptr+=sprintf(ptr,"%s/",textPath.c_str());
-
-	ptr += sprintf(ptr, "%-10s%-40s%-10s", "NAME_",tname.c_str(),"TYPE_");
-
-	if(column < NUM_METADATA_COLUMNS){
-		ptr+= sprintf(ptr,"%-10s","META");
-
-	} else if(first_rid_page < 0){
-		ptr+= sprintf(ptr,"%-10s","TAIL");
-
-	} else if(first_rid_page > 0){
-		ptr+= sprintf(ptr,"%-10s","BASE");
-		isBase = true;
-	}
-
-	ptr+=sprintf(ptr,"%-10s%-10d%-10s%-10d%-10s%-10d","FRP_",first_rid_page,"FRPR_",first_rid_page_range,
-			"COL_",column);
-
-	if(isBase){
-		ptr+=sprintf(ptr,"%-10s%-10lld","MERGE_",tableVersions.find(tname)->second);
-	}
-
-	sprintf(ptr, ".txt");
-
-	return {ret};
 }
 
 // Called by get and set
 Frame* BufferPool::load (const RID& rid, const int& column){ //return the frame that the page was loaded into
-  std::string data_path = buildDatPath(rid.table_name,rid.first_rid_page,
-          rid.first_rid_page_range,column);
+	std::string data_path = buildDatPath(rid.table_name,rid.first_rid_page,rid.first_rid_page_range,column);
+//  int frp = rid.first_rid_page;
+//  std::string frp_s = std::to_string(rid.first_rid_page);
+//  if (frp < 0) {
+//    frp_s = "M" + std::to_string(-1 * (frp));
+//  }
+//  std::string data_path = path + "/" + rid.table_name
+//  + "_" + std::to_string(rid.first_rid_page_range)
+//  + "_" + frp_s
+//  + "_" + std::to_string(column) + ".dat";
 
   FILE* fp = fopen((data_path).c_str(),"r");
   if (!fp) {
-    throw std::invalid_argument("Couldn't open file " + data_path);
+    throw std::invalid_argument("Load : Couldn't open file " + data_path);
   }
-
   Frame* frame = nullptr;
   Page* p = new Page();
   int e = fread(&(p->num_rows), sizeof(int), 1, fp);
@@ -269,9 +166,15 @@ Frame* BufferPool::load (const RID& rid, const int& column){ //return the frame 
 Frame* BufferPool::insert_into_frame(const RID& rid, const int& column, Page* page){ //return the frame that the page was placed into
   Frame* frame = nullptr;
   size_t hash = hash_fun(rid.first_rid_page); //determine correct hash range
+  std::shared_lock<std::shared_mutex> share_lock(frame_directory_lock);
+  // shared_frame_directory_lock.lock();
   if(frame_directory[hash] == (bufferpool_size / NUM_BUFFERPOOL_HASH_PARTITIONS)){ //if hash range is full
+    // shared_frame_directory_lock.unlock();
+    share_lock.unlock();
     frame = evict(rid);
   } else{ //find empty frame to fill
+    // shared_frame_directory_lock.unlock();
+    share_lock.unlock();
     Frame* range_begin = hash_vector[hash]; //beginning of hash range
     Frame* range_end = hash == (hash_vector.size() - 1) ? tail : hash_vector[hash + 1]->prev; //end of hash range
     Frame* current_frame = range_begin; //iterate through range
@@ -292,26 +195,31 @@ Frame* BufferPool::insert_into_frame(const RID& rid, const int& column, Page* pa
   frame->first_rid_page_range = rid.first_rid_page_range;
   frame->column = column;
   frame->valid = true;
+  std::unique_lock<std::shared_mutex> unique_lock(frame_directory_lock);
+
+  // unique_frame_directory_lock.lock();
   frame_directory[hash]++; //a frame has been filled
+  // unique_frame_directory_lock.unlock();
+  unique_lock.unlock();
   return frame;
 }
 
 void BufferPool::insert_new_page(const RID& rid, const int& column, const int& value) {
-
   Page* page = new Page();
   *(page->data + rid.offset) = value;
   page->num_rows++;
 
   Frame* frame = insert_into_frame(rid, column, page); //insert the page into a frame in the bufferpool
-  pin(rid, column);
+  pin(rid, column, 'N');
   frame->dirty = true; //make sure data will be written back to disk
-  unpin(rid, column);
+  unpin(rid, column, 'N');
   update_ages(frame, hash_vector[hash_fun(rid.first_rid_page)]);
 
   return;
 }
 
 Frame* BufferPool::evict(const RID& rid){ //return the frame that was evicted
+  // std::unique_lock lock(update_age_lock);
   size_t hash = hash_fun(rid.first_rid_page); //determine correct hash range
   Frame* range_begin = hash_vector[hash]; //beginning of hash range
   Frame* range_end = (hash == (hash_vector.size() - 1)) ? tail : hash_vector[hash + 1]->prev; //end of hash range
@@ -322,8 +230,14 @@ Frame* BufferPool::evict(const RID& rid){ //return the frame that was evicted
       if(current_frame->dirty && current_frame->valid){ //if dirty and valid write back to disk
         write_back(current_frame);
       }
+      std::unique_lock<std::shared_mutex> unique_lock(frame_directory_lock);
+      // unique_frame_directory_lock.lock();
       frame_directory[hash]--;
+      // unique_frame_directory_lock.unlock();
+      unique_lock.unlock();
+
       current_frame->valid = false; //frame is now empty
+      // lock.unlock();
       return current_frame;
     }
     current_frame = current_frame->prev;
@@ -334,42 +248,26 @@ Frame* BufferPool::evict(const RID& rid){ //return the frame that was evicted
 }
 
 void BufferPool::write_back(Frame* frame){
-  std::string data_path = buildDatPath(frame->table_name,frame->first_rid_page,
-          frame->first_rid_page_range,frame->column);
-
-  FILE* fp = fopen((data_path).c_str(),"w");
-  if (!fp) {
-    throw std::invalid_argument("Couldn't open file " + data_path);
-  }
-
-//  std::string text_copy_path = buildTxtPath(frame->table_name,frame->first_rid_page,
-//          frame->first_rid_page_range,frame->column);
-//
-//  FILE* textFilePtr = fopen((text_copy_path).c_str(),"w");
-//
-//  if(!textFilePtr){
-//	  creat(text_copy_path.c_str(),0666);
-//	  textFilePtr = fopen(text_copy_path.c_str(),"w");
+  std::string data_path = buildDatPath(frame->table_name,frame->first_rid_page,frame->first_rid_page_range,frame->column);
+//  int frp = frame->first_rid_page;
+//  std::string frp_s = std::to_string(frame->first_rid_page);
+//  if (frp < 0) {
+//    frp_s = "M" + std::to_string(-1 * (frp));
 //  }
+//  std::string data_path = path + "/" + frame->table_name
+//    + "_" + std::to_string(frame->first_rid_page_range)
+//    + "_" + frp_s
+//    + "_" + std::to_string(frame->column) + ".dat";
+  FILE* fp = fopen((data_path).c_str(),"w");
 
-//  std::string buffer;
-
+  if (!fp) {
+    throw std::invalid_argument("Write Back : Couldn't open file " + data_path);
+  }
   if (frame->page != nullptr) {
     fwrite(&(frame->page->num_rows), sizeof(int), 1, fp);
     fwrite(frame->page->data, sizeof(int), frame->page->num_rows, fp);
-
-//    buffer = std::to_string(frame->page->num_rows) + " ";
-//    fwrite(buffer.c_str(), buffer.size(), 1, textFilePtr);
-
-//    int* ptr = frame->page->data;
-//    for(int i = 0; i < frame->page->num_rows; i++){
-//    	buffer = std::to_string(ptr[i]) + " ";
-////    	fwrite(buffer.c_str(), buffer.size(), 1, textFilePtr);
-//    }
-
   }
   fclose(fp);
-//  fclose(textFilePtr);
 
   if(frame->page != nullptr){
     delete frame->page;
@@ -384,25 +282,25 @@ void BufferPool::write_back_all (){
     } else if(current_frame->page != nullptr && !current_frame->dirty && current_frame->valid){
       delete current_frame->page;
     }
-
     current_frame->valid = false;
     current_frame = current_frame->next;
   }
   return;
 }
 
-void BufferPool::pin (const RID& rid, const int& column) {
-  Frame* found = search(rid, column);
+Frame* BufferPool::pin (const RID& rid, const int& column, const char& pin_type) {
+  Frame* found = nullptr;
+  found = search(rid, column);
   if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
     found = load(rid, column);
   }
   (found->pin)++;
-
-  return;
+  return found;
 }
 
-void BufferPool::unpin (const RID& rid, const int& column) {
+void BufferPool::unpin (const RID& rid, const int& column, const char& pin_type) {
   Frame* found = search(rid, column);
+
   if(found == nullptr || !found->valid){ //if not in the bufferpool
     throw std::invalid_argument("Attempt to unpin record that was not already pinned (No record found)");
   }
@@ -418,6 +316,57 @@ void BufferPool::set_path (const std::string& path_rhs) {
   path = path_rhs;
 }
 
+std::string BufferPool::buildDatPath(std::string tname,int first_rid_page,int first_rid_page_range,int column){
+//	char ret[1024];
+//	char* ptr =  ret;
+
+//	bool isBase = false;
+
+	std::string buildPath = this->path;
+	buildPath.append("/")
+			 .append(tname);
+
+//	ptr += sprintf(ptr,"%s/",path.c_str());
+//
+//	ptr += sprintf(ptr, "%s",tname.c_str());
+
+	if(column < NUM_METADATA_COLUMNS){
+//		ptr+= sprintf(ptr," M ");
+		buildPath.append("_M_");
+
+	} else if(first_rid_page < 0){
+//		ptr+= sprintf(ptr," T ");
+		buildPath.append("_T_");
+
+	} else if(first_rid_page > 0){
+//		ptr+= sprintf(ptr," B ");
+		buildPath.append("_B_");
+//		isBase = true;
+	}
+
+	buildPath.append(std::to_string(first_rid_page))
+			 .append("_")
+			 .append(std::to_string(first_rid_page_range))
+			 .append("_")
+			 .append(std::to_string(column));
+
+//	ptr+=sprintf(ptr,"%d %d %d",first_rid_page,first_rid_page_range,column);
+
+//	if(isBase){
+////		ptr+=sprintf(ptr," %d",mergeNumber);
+//
+//		buildPath.append("_")
+//		         .append(std::to_string(tableVersions.find(tname)->second));
+//	}
+
+	buildPath.append(".dat");
+
+//	sprintf(ptr, ".dat");
+//
+//	return {ret};
+
+	return buildPath;
+}
 
 Frame::Frame () {
 }
@@ -436,11 +385,10 @@ void Frame::operator=(const Frame& rhs)
   table_name = rhs.table_name;
   first_rid_page_range = rhs.first_rid_page_range; //first rid in the page range
   column = rhs.column;
-  valid = rhs.valid; //whether the frame contains data
-  pin = rhs.pin; //how many transactions have pinned the page
-  dirty = rhs.dirty; //whether the page was modified
-}
-
-COMPILER_SYMBOL void force_write_back_all(){
-	buffer_pool.write_back_all();
+  bool current_flag = rhs.valid;
+  valid = current_flag; //whether the frame contains data
+  int current_pin = rhs.pin;
+  pin = current_pin; //how many transactions have pinned the page
+  current_flag = rhs.dirty;
+  dirty = current_flag; //whether the page was modified
 }
