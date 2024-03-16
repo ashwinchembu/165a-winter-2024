@@ -52,13 +52,13 @@ int BufferPool::hash_fun(unsigned int x) {
 
 int BufferPool::get (const RID& rid, const int& column) {
   int return_val = NONE - 10;
-  Frame* found = pin(rid, column, 'S');
+  Frame* found = pin(rid, column);
   if(found == nullptr){ //if not already in the bufferpool, load into bufferpool
     return return_val;
   }
   return_val = *(found->page->data + rid.offset);
   update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
-  unpin(rid, column, 'S');
+  unpin(rid, column);
   return return_val; //return the value we want
 }
 
@@ -72,7 +72,7 @@ Frame* BufferPool::get_page(const RID& rid, const int& column){
 }
 
 bool BufferPool::set (const RID& rid, const int& column, const int& value, const bool& is_new){
-  Frame* found = pin(rid, column, 'N');
+  Frame* found = pin(rid, column);
   if(found == nullptr){ //if not already in the bufferpool, load into bufferpool
     return false;
   }
@@ -82,7 +82,7 @@ bool BufferPool::set (const RID& rid, const int& column, const int& value, const
   }
   found->dirty = true; //the page has been modified
   update_ages(found, hash_vector[hash_fun(rid.first_rid_page)]);
-  unpin(rid, column, 'N');
+  unpin(rid, column);
   return true;
 }
 
@@ -209,9 +209,9 @@ void BufferPool::insert_new_page(const RID& rid, const int& column, const int& v
   page->num_rows++;
 
   Frame* frame = insert_into_frame(rid, column, page); //insert the page into a frame in the bufferpool
-  pin(rid, column, 'N');
+  pin(rid, column);
   frame->dirty = true; //make sure data will be written back to disk
-  unpin(rid, column, 'N');
+  unpin(rid, column);
   update_ages(frame, hash_vector[hash_fun(rid.first_rid_page)]);
 
   return;
@@ -285,7 +285,7 @@ void BufferPool::write_back_all (){
   return;
 }
 
-Frame* BufferPool::pin (const RID& rid, const int& column, const char& pin_type) {
+Frame* BufferPool::pin (const RID& rid, const int& column) {
   Frame* found = nullptr;
   found = search(rid, column);
   if(found == nullptr || !found->valid){ //if not already in the bufferpool, load into bufferpool
@@ -295,7 +295,7 @@ Frame* BufferPool::pin (const RID& rid, const int& column, const char& pin_type)
   return found;
 }
 
-void BufferPool::unpin (const RID& rid, const int& column, const char& pin_type) {
+void BufferPool::unpin (const RID& rid, const int& column) {
   Frame* found = search(rid, column);
 
   if(found == nullptr || !found->valid){ //if not in the bufferpool

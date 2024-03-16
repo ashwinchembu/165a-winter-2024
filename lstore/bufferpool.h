@@ -55,8 +55,8 @@ public:
     Frame* evict (const RID& rid); //evict the oldest frame that is not pinned
     void write_back(Frame* frame); //write back to disk if dirty
     void write_back_all();
-    Frame* pin (const RID& rid, const int& column, const char& pin_type);
-    void unpin (const RID& rid, const int& column, const char& pin_type);
+    Frame* pin (const RID& rid, const int& column);
+    void unpin (const RID& rid, const int& column);
     void set_path (const std::string& path_rhs);
     std::vector<Frame*> hash_vector; //the starting frame of each hash range
 

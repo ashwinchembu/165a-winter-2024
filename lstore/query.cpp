@@ -191,12 +191,12 @@ bool Query::increment(const int& key, const int& column) {
     if (value < NONE){
       return false;
     }
-    buffer_pool.pin(rid, NUM_METADATA_COLUMNS+column, 'X');
+    buffer_pool.pin(rid, NUM_METADATA_COLUMNS+column);
     bool set_success = buffer_pool.set(rid, NUM_METADATA_COLUMNS+column, value++, false); //increment the column in record
     if (!set_success){
       return false;
     }
-    buffer_pool.unpin(rid, NUM_METADATA_COLUMNS+column, 'X');
+    buffer_pool.unpin(rid, NUM_METADATA_COLUMNS+column);
     // void Index::update_index(RID rid, std::vector<int>columns, std::vector<int>old_columns){
     std::vector<int> columns;
     std::vector<int> old_columns;

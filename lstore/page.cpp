@@ -258,10 +258,10 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
 
     // Updating indirection column and schema encoding column for the base page
     int base_schema = buffer_pool.get(rid, SCHEMA_ENCODING_COLUMN);
-    buffer_pool.pin(rid, SCHEMA_ENCODING_COLUMN, 'X');
+    buffer_pool.pin(rid, SCHEMA_ENCODING_COLUMN);
     buffer_pool.set(rid, INDIRECTION_COLUMN, rid_new.id, false);
     buffer_pool.set(rid, SCHEMA_ENCODING_COLUMN, base_schema | schema_encoding, false);
-    buffer_pool.unpin(rid, SCHEMA_ENCODING_COLUMN, 'X');
+    buffer_pool.unpin(rid, SCHEMA_ENCODING_COLUMN);
     return 0;
 }
 

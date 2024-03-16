@@ -139,7 +139,7 @@ int test3Part2(){
 		query = new Query(grades_table);
 
 		std::vector<int> result = query->select_version(key, 0, std::vector<int>{1, 1, 1, 1, 1}, -1)[0].columns;
-		for (int i = 0; i < result.size(); i++) {
+		for (size_t i = 0; i < result.size(); i++) {
 			if (result[i] != correct[i]) {
 				score--;
 				std::cout << "select error on primary key" << key << " : [" << printArray(result) << "], correct : [" << printArray(correct) << "]" << std::endl;
@@ -155,7 +155,7 @@ int test3Part2(){
 		query = new Query(grades_table);
 
 		std::vector<int> result = query->select_version(key, 0, std::vector<int>{1, 1, 1, 1, 1}, -2)[0].columns;
-		for (int i = 0; i < result.size(); i++) {
+		for (size_t i = 0; i < result.size(); i++) {
 			if (result[i] != correct[i]) {
 				v2_score--;
 				std::cout << "select error on primary key" << key << " : [" << printArray(result) << "], correct : [" << printArray(correct) << "]" << std::endl;
@@ -175,7 +175,7 @@ int test3Part2(){
 		query = new Query(grades_table);
 
 		std::vector<int> result = query->select_version(key, 0, std::vector<int>{1, 1, 1, 1, 1}, 0)[0].columns;
-		for (int i = 0; i < result.size(); i++) {
+		for (size_t i = 0; i < result.size(); i++) {
 			if (result[i] != correct[i]) {
 				score--;
 				std::cout << "select error on primary key" << key << " : [" << printArray(result) << "], correct : [" << printArray(correct) << "]" << std::endl;

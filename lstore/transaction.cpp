@@ -378,9 +378,9 @@ void Transaction::abort() {
               queries[i].table->page_directory.find(most_recent_update.id)->second.id = 0; //delete in page directory
               page_directory_unique.unlock();
 
-              buffer_pool.pin(base_rid, SCHEMA_ENCODING_COLUMN, 'X');
+              buffer_pool.pin(base_rid, SCHEMA_ENCODING_COLUMN);
               buffer_pool.set(base_rid, INDIRECTION_COLUMN, second_most_recent_update, false); //fix indirection
-              buffer_pool.unpin(base_rid, SCHEMA_ENCODING_COLUMN, 'X');
+              buffer_pool.unpin(base_rid, SCHEMA_ENCODING_COLUMN);
               break;
             }
         default:
