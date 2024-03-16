@@ -41,7 +41,7 @@ OPTIMIZATION := -Ofast -flto=auto -march=native -fopenmp -D_GLIBCXX_PARALLEL -fr
 
 
 # Flags
-CFLAGS := -Wall -shared -fPIC -std=c++17 -pipe -pthread
+CFLAGS := -Wall -shared -fPIC -std=c++17 -pipe
 
 # Combine flags
 CFLAGS += $(OS_FLAGS)
@@ -81,3 +81,9 @@ clean:
 
 a:
 	rm -rf tables CT ECS165 M2 MT Bench
+
+q:
+	make a; \
+	make; \
+	clear;
+
