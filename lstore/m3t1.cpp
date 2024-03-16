@@ -104,13 +104,15 @@ int test3Part2(){
 	}
 
 	std::map<int,std::vector<int>> updated_records;
-	std::map<int,std::vector<int>> one_ver_ago = records;
-	std::map<int,std::vector<int>> two_ver_ago = records;
+	std::map<int,std::vector<int>> one_ver_ago;
+	std::map<int,std::vector<int>> two_ver_ago;
 
 	for (int j = 0; j < number_of_operations_per_record; j++) {
 		for (int key : keys) {
 			std::vector<int> updated_columns{_NONE, _NONE, _NONE, _NONE, _NONE};
 			updated_records.insert({key,records.find(key)->second});
+			one_ver_ago.insert({key,records.find(key)->second});
+			two_ver_ago.insert({key,records.find(key)->second});
 			for (int i = 2; i < grades_table->num_columns; i++) {
 				int value = rand() % 20;
 				updated_columns[i] = value;
@@ -176,7 +178,7 @@ int test3Part2(){
 
 	score = keys.size();
 	for (int key : keys) {
-		std::vector<int> correct = records.find(key)->second;
+		std::vector<int> correct = updated_records.find(key)->second;
 		query = new Query(grades_table);
 
 		std::vector<int> result = query->select_version(key, 0, std::vector<int>{1, 1, 1, 1, 1}, 0)[0].columns;
