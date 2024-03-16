@@ -172,9 +172,7 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
     int schema_encoding = 0;
 
     // Lock to protect the variable in page range
-    std::cout << "update" << 1 << std::endl;
     std::unique_lock mlock(mutex_update);
-    std::cout << "update" << 2 << std::endl;
 
     // Create new tail pages if there are no space left or tail page does not exist.
     // Otherwise just insert the update in the last tail page
@@ -196,8 +194,6 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
         buffer_pool.insert_new_page(rid_new, TIMESTAMP_COLUMN, 0);
         buffer_pool.insert_new_page(rid_new, BASE_RID_COLUMN, rid.id);
         buffer_pool.insert_new_page(rid_new, TPS, 0);
-    std::cout << "update" << 3 << std::endl;
-
         // Write in the data
         for (int i = NUM_METADATA_COLUMNS; i < num_column; i++) {
             if (std::isnan(columns[i - NUM_METADATA_COLUMNS]) || columns[i-NUM_METADATA_COLUMNS] < NONE) { // Wrapper changes None to smallest integer possible
@@ -209,8 +205,6 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
                 schema_encoding = schema_encoding | (0b1 << (num_column - (i - NUM_METADATA_COLUMNS) - 1));
             }
         }
-
-    std::cout << "update" << 4 << std::endl;
         // Write in the schema encoding once we know which one is updated.
         buffer_pool.insert_new_page(rid_new, SCHEMA_ENCODING_COLUMN, schema_encoding);
 
@@ -254,8 +248,6 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
         // Write in the schema encoding once we know which one is updated.
         buffer_pool.set(rid_new, SCHEMA_ENCODING_COLUMN, schema_encoding, true);
     }
-    std::cout << "update" << 5 << std::endl;
-
     // Updating indirection column and schema encoding column for the base page
     int base_schema = buffer_pool.get(rid, SCHEMA_ENCODING_COLUMN);
     buffer_pool.pin(rid, SCHEMA_ENCODING_COLUMN);

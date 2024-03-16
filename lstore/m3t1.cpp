@@ -3,6 +3,7 @@
 #include "table.h"
 #include "transaction_worker.h"
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <stdlib.h>
 #include <string>
@@ -129,7 +130,6 @@ int test3Part2(){
 		transaction_workers[i%num_threads]->add_transaction(*transactions[i]);
 	}
 
-
 	for(int i = 0; i < num_threads;i++){
 		transaction_workers[i]->run();
 	}
@@ -147,7 +147,7 @@ int test3Part2(){
 		for (size_t i = 0; i < result.size(); i++) {
 			if (result[i] != correct[i]) {
 				score--;
-				std::cout << "select error on primary key" << key << " : [" << printArray(result) << "], correct : [" << printArray(correct) << "]" << std::endl;
+				std::cout << "select error on primary key " << key << " : [" << std::setw(20) << printArray(result) << "], correct : [" << std::setw(20) << printArray(correct) << "]" << std::endl;
 				break;
 			}
 		}
@@ -163,7 +163,7 @@ int test3Part2(){
 		for (size_t i = 0; i < result.size(); i++) {
 			if (result[i] != correct[i]) {
 				v2_score--;
-				std::cout << "select error on primary key" << key << " : [" << printArray(result) << "], correct : [" << printArray(correct) << "]" << std::endl;
+				std::cout << "select error on primary key " << key << " : [" << std::setw(20) << printArray(result) << "], correct : [" << std::setw(20) << printArray(correct) << "]" << std::endl;
 				break;
 			}
 		}
@@ -183,7 +183,7 @@ int test3Part2(){
 		for (size_t i = 0; i < result.size(); i++) {
 			if (result[i] != correct[i]) {
 				score--;
-				std::cout << "select error on primary key" << key << " : [" << printArray(result) << "], correct : [" << printArray(correct) << "]" << std::endl;
+				std::cout << "select error on primary key " << key << " : [" << std::setw(20) << printArray(result) << "], correct : [" << std::setw(20) << printArray(correct) << "]" << std::endl;
 				break;
 			}
 		}
