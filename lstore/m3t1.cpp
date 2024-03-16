@@ -46,6 +46,7 @@ int main(int argc,char**argv){
 		std::cerr << "Usage: " << argv[0] << " <part>" << std::endl;
 		std::cerr << "Part 1:  " << argv[0] << "  1" << std::endl;
 		std::cerr << "Part 2:  " << argv[0] << "  2" << std::endl;
+		std::cerr << "Bench :  " << argv[0] << "  4" << std::endl;
 		return 1;
 	}
 
@@ -388,7 +389,7 @@ int bench() {
 		insert_transaction_workers[i]->join();
 	}
 
-	std::cout << "Inserting " << number_of_records << "records took :" << std::endl;
+	std::cout << "Inserting " << number_of_records << " records took :" << std::endl;
 
 	for(int i =0; i < number_of_records;i++){
 		std::vector<int> toUpdate0{_NONE, _NONE, _NONE, _NONE, _NONE};
@@ -414,7 +415,7 @@ int bench() {
 		update_transaction_workers[i]->join();
 	}
 
-	std::cout << "Updating " << number_of_records << "records took :" << std::endl;
+	std::cout << "Updating " << number_of_records << " records took :" << std::endl;
 
 
 	for(int i =0; i < number_of_records;i++){
@@ -434,7 +435,7 @@ int bench() {
 		select_transaction_workers[i]->join();
 	}
 
-	std::cout << "Selecting " << number_of_records << "records took :" << std::endl;
+	std::cout << "Selecting " << number_of_records << " records took :" << std::endl;
 
 
 	for(int i =0; i < number_of_records; i = i + aggregate_size){
