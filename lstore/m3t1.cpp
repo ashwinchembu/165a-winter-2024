@@ -85,6 +85,9 @@ int test3Part1(){
 		insert_transactions.push_back(new Transaction());
 	}
 
+	 std::random_device rd;
+	 std::mt19937 gen(rd());
+
 	for(int i =0; i < number_of_records;i++){
 		int key = 92106429 + i;
 
