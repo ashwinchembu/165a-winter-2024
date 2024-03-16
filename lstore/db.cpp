@@ -177,11 +177,6 @@ Table* Database::get_table(const std::string& name){
 	return (table->second);
 }
 
-/*
- * was having compiler issues with one of my makefiles
- * so I chucked the main here for now
- */
-int main(){}
 
 COMPILER_SYMBOL int* Database_constructor(){
 	return (int*)(new Database());
