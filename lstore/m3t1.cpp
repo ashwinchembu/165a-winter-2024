@@ -13,7 +13,7 @@
 #include <iterator>
 #include <random>
 
-extern const int NONE;
+const int NONE = -2147481000;
 
 
 int number_of_records = 1000;
@@ -21,10 +21,11 @@ int number_of_transactions = 100;
 int number_of_operations_per_record = 1;
 int num_threads = 8;
 int number_of_aggregates = 100;
-
+int aggregate_size = 100;
 
 int test3Part1();
 int test3Part2();
+int bench();
 
 inline std::string rtrim(std::string &s) {
     s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
@@ -56,6 +57,9 @@ int main(int argc,char**argv){
 	} else if (part == "2") {
 		std::cout << "Selected: Part 2" << std::endl;
 		test3Part2();
+	} else if (part == "4") {
+		std::cout << "Selected: Bench" << std::endl;
+		bench();
 	} else {
 		std::cerr << "Invalid part. Please specify either 'part1' or 'part2'." << std::endl;
 		return 1;
@@ -82,7 +86,7 @@ int test3Part2(){
 	for(int i =0; i < number_of_records;i++){
 		int key = 92106429 + i;
 		keys.push_back(key);
-		std::vector<int>toInsert{key, rand() % 20 + i * 20,  rand() % 20 + i * 20, rand() % 20 + i * 20, rand() % 20 + i * 20,};
+		std::vector<int>toInsert{key, rand() % 20 + i * 20,  rand() % 20 + i * 20, rand() % 20 + i * 20, rand() % 20 + i * 20};
 		records.insert({key,toInsert});
 	}
 
@@ -275,7 +279,7 @@ int test3Part1(){
 
 		keys.push_back(key);
 
-		std::vector<int>toInsert{key, rand() % 20 + i * 20,  rand() % 20 + i * 20, rand() % 20 + i * 20, rand() % 20 + i * 20,};
+		std::vector<int>toInsert{key, rand() % 20 + i * 20,  rand() % 20 + i * 20, rand() % 20 + i * 20, rand() % 20 + i * 20};
 
 		records.insert({key,toInsert});
 
@@ -329,5 +333,131 @@ int test3Part1(){
 
 	db->close();
 
+	return 0;
+}
+
+int bench() {
+	Database* db = new Database();
+
+	db->open("./Bench");
+	Table* grades_table = db->create_table("Grades",5,0);
+	Query* query = new Query(grades_table);
+	std::map<int,std::vector<int>>records;
+	std::vector<int>keys;
+	std::vector<Transaction*> insert_transactions;
+	std::vector<TransactionWorker*> insert_transaction_workers;
+	std::vector<Transaction*> update_transactions;
+	std::vector<TransactionWorker*> update_transaction_workers;
+	std::vector<Transaction*> select_transactions;
+	std::vector<TransactionWorker*> select_transaction_workers;
+	std::vector<Transaction*> aggreg_transactions;
+	std::vector<TransactionWorker*> aggreg_transaction_workers;
+
+	for(int i = 0;i<number_of_transactions;i++){
+		insert_transactions.push_back(new Transaction());
+		update_transactions.push_back(new Transaction());
+		select_transactions.push_back(new Transaction());
+		aggreg_transactions.push_back(new Transaction());
+	}
+
+	for(int i = 0; i < num_threads;i++){
+		insert_transaction_workers.push_back(new TransactionWorker());
+		update_transaction_workers.push_back(new TransactionWorker());
+		select_transaction_workers.push_back(new TransactionWorker());
+		aggreg_transaction_workers.push_back(new TransactionWorker());
+	}
+
+	for(int i =0; i < number_of_records;i++){
+		int key = 906659671 + i;
+		keys.push_back(key);
+		std::vector<int>toInsert{key, rand() % 20 + i * 20,  rand() % 20 + i * 20, rand() % 20 + i * 20, rand() % 20 + i * 20};
+		records.insert({key,toInsert});
+		Transaction* t = insert_transactions[i%number_of_transactions];
+		t->add_query(*query,*grades_table,toInsert);
+	}
+
+	for(int i = 0;i<number_of_transactions;i++){
+		insert_transaction_workers[i%num_threads]->add_transaction(*insert_transactions[i]);
+	}
+
+	for(int i = 0; i < num_threads;i++){
+		insert_transaction_workers[i]->run();
+	}
+
+	for(int i = 0; i < num_threads;i++){
+		insert_transaction_workers[i]->join();
+	}
+
+	std::cout << "Inserting " << number_of_records << "records took :" << std::endl;
+
+	for(int i =0; i < number_of_records;i++){
+		std::vector<int> toUpdate0{NONE, NONE, NONE, NONE, NONE};
+		std::vector<int> toUpdate1{NONE, rand() % 20 + i * 20,  NONE, NONE, NONE};
+		std::vector<int> toUpdate2{NONE, NONE,  rand() % 20 + i * 20, NONE, NONE};
+		std::vector<int> toUpdate3{NONE, NONE, NONE, rand() % 20 + i * 20, NONE};
+		std::vector<int> toUpdate4{NONE, NONE, NONE, NONE, rand() % 20 + i * 20};
+		std::vector<std::vector<int>> update_cols{toUpdate0, toUpdate1, toUpdate2, toUpdate3, toUpdate4};
+
+		Transaction* t = update_transactions[i%number_of_transactions];
+		t->add_query(*query,*grades_table,keys[rand()%keys.size()], update_cols[rand()%5]);
+	}
+
+	for(int i = 0;i<number_of_transactions;i++){
+		update_transaction_workers[i%num_threads]->add_transaction(*update_transactions[i]);
+	}
+
+	for(int i = 0; i < num_threads;i++){
+		update_transaction_workers[i]->run();
+	}
+
+	for(int i = 0; i < num_threads;i++){
+		update_transaction_workers[i]->join();
+	}
+
+	std::cout << "Updating " << number_of_records << "records took :" << std::endl;
+
+
+	for(int i =0; i < number_of_records;i++){
+		Transaction* t = select_transactions[i%number_of_transactions];
+		t->add_query(*query,*grades_table,keys[rand()%keys.size()], 0, std::vector<int>{1, 1, 1, 1, 1});
+	}
+
+	for(int i = 0;i<number_of_transactions;i++){
+		select_transaction_workers[i%num_threads]->add_transaction(*select_transactions[i]);
+	}
+
+	for(int i = 0; i < num_threads;i++){
+		select_transaction_workers[i]->run();
+	}
+
+	for(int i = 0; i < num_threads;i++){
+		select_transaction_workers[i]->join();
+	}
+
+	std::cout << "Selecting " << number_of_records << "records took :" << std::endl;
+
+
+	for(int i =0; i < number_of_records; i = i + aggregate_size){
+		int start_value = 906659671 + i;
+		int end_value = start_value + aggregate_size - 1;
+		Transaction* t = aggreg_transactions[i%number_of_transactions];
+		t->add_query(*query,*grades_table,start_value,end_value,rand()%5);
+	}
+
+	for(int i = 0;i<number_of_transactions;i++){
+		aggreg_transaction_workers[i%num_threads]->add_transaction(*aggreg_transactions[i]);
+	}
+
+	for(int i = 0; i < num_threads;i++){
+		aggreg_transaction_workers[i]->run();
+	}
+
+	for(int i = 0; i < num_threads;i++){
+		aggreg_transaction_workers[i]->join();
+	}
+
+	std::cout << "Aggregate " << number_of_records << " of " << aggregate_size << " record batch took:" << std::endl;
+
+	db->close();
 	return 0;
 }

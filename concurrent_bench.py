@@ -58,39 +58,39 @@ insert_time_1 = timeit.default_timer()
 print("Inserting ", number_of_records, " records took:  \t\t\t", insert_time_1 - insert_time_0)
 # Measuring update Performance
 
-# for i in range(number_of_transactions):
-#     update_transactions.append(Transaction())
-#
-#
-# update_cols = [
-#     [None, None, None, None, None],
-#     [None, randrange(0, 100), None, None, None],
-#     [None, None, randrange(0, 100), None, None],
-#     [None, None, None, randrange(0, 100), None],
-#     [None, None, None, None, randrange(0, 100)],
-# ]
-#
-# for i in range(0, number_of_records):
-#     t = update_transactions[i % number_of_transactions]
-#     t.add_query(query.update, grades_table, choice(keys), *(choice(update_cols)))
-#
-# transaction_workers = []
-# for i in range(num_threads):
-#     transaction_workers.append(TransactionWorker())
-#
-# for i in range(number_of_transactions):
-#     transaction_workers[i % num_threads].add_transaction(update_transactions[i])
-#
-# update_time_0 = timeit.default_timer()
-# # run transaction workers
-# for i in range(num_threads):
-#     transaction_workers[i].run()
-#
-# # wait for workers to finish
-# for i in range(num_threads):
-#     transaction_workers[i].join()
-# update_time_1 = timeit.default_timer()
-# print("Updating ", number_of_records, " records took:  \t\t\t", update_time_1 - update_time_0)
+for i in range(number_of_transactions):
+    update_transactions.append(Transaction())
+
+
+update_cols = [
+    [None, None, None, None, None],
+    [None, randrange(0, 100), None, None, None],
+    [None, None, randrange(0, 100), None, None],
+    [None, None, None, randrange(0, 100), None],
+    [None, None, None, None, randrange(0, 100)],
+]
+
+for i in range(0, number_of_records):
+    t = update_transactions[i % number_of_transactions]
+    t.add_query(query.update, grades_table, choice(keys), *(choice(update_cols)))
+
+transaction_workers = []
+for i in range(num_threads):
+    transaction_workers.append(TransactionWorker())
+
+for i in range(number_of_transactions):
+    transaction_workers[i % num_threads].add_transaction(update_transactions[i])
+
+update_time_0 = timeit.default_timer()
+# run transaction workers
+for i in range(num_threads):
+    transaction_workers[i].run()
+
+# wait for workers to finish
+for i in range(num_threads):
+    transaction_workers[i].join()
+update_time_1 = timeit.default_timer()
+print("Updating ", number_of_records, " records took:  \t\t\t", update_time_1 - update_time_0)
 
 
 for i in range(number_of_transactions):
@@ -120,31 +120,31 @@ select_time_1 = timeit.default_timer()
 print("Selecting ", number_of_records, " records took:  \t\t\t", select_time_1 - select_time_0)
 
 #
-# for i in range(number_of_transactions):
-#     aggre_transactions.append(Transaction())
-#
-# for i in range(0, number_of_records, 100):
-#     start_value = 906659671 + i
-#     end_value = start_value + 100
-#     t = aggre_transactions[i % number_of_transactions]
-#     t.add_query(query.sum, grades_table, start_value, end_value - 1, randrange(0, 5))
-#
-# transaction_workers = []
-# for i in range(num_threads):
-#     transaction_workers.append(TransactionWorker())
-#
-# for i in range(number_of_transactions):
-#     transaction_workers[i % num_threads].add_transaction(aggre_transactions[i])
-# # Measuring Aggregate Performance
-# agg_time_0 = timeit.default_timer()
-# # run transaction workers
-# for i in range(num_threads):
-#     transaction_workers[i].run()
-#
-# # wait for workers to finish
-# for i in range(num_threads):
-#     transaction_workers[i].join()
-# agg_time_1 = timeit.default_timer()
-# print("Aggregate ", number_of_records, " of 100 record batch took:\t", agg_time_1 - agg_time_0)
+for i in range(number_of_transactions):
+    aggre_transactions.append(Transaction())
+
+for i in range(0, number_of_records, 100):
+    start_value = 906659671 + i
+    end_value = start_value + 100
+    t = aggre_transactions[i % number_of_transactions]
+    t.add_query(query.sum, grades_table, start_value, end_value - 1, randrange(0, 5))
+
+transaction_workers = []
+for i in range(num_threads):
+    transaction_workers.append(TransactionWorker())
+
+for i in range(number_of_transactions):
+    transaction_workers[i % num_threads].add_transaction(aggre_transactions[i])
+# Measuring Aggregate Performance
+agg_time_0 = timeit.default_timer()
+# run transaction workers
+for i in range(num_threads):
+    transaction_workers[i].run()
+
+# wait for workers to finish
+for i in range(num_threads):
+    transaction_workers[i].join()
+agg_time_1 = timeit.default_timer()
+print("Aggregate ", number_of_records, " of 100 record batch took:\t", agg_time_1 - agg_time_0)
 
 db.close()
