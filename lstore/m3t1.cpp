@@ -90,7 +90,7 @@ int test3Part1(){
 		keys.push_back(key);
 
 		std::vector<int>toInsert;
-		toInsert.push_back(i);
+		toInsert.push_back(key);
 
 		for(int j = 0;j<4;j++){
 			toInsert.push_back(rand()%20);
