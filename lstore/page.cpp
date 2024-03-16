@@ -189,7 +189,8 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
         rid_new.first_rid_page = rid_new.id;
 
         // Write in the metadata except for schema encoding column
-        buffer_pool.insert_new_page(rid_new, INDIRECTION_COLUMN, latest_rid.id);
+        // buffer_pool.insert_new_page(rid_new, INDIRECTION_COLUMN, latest_rid.id);
+        buffer_pool.insert_new_page(rid_new, INDIRECTION_COLUMN, rid.id);
         buffer_pool.insert_new_page(rid_new, RID_COLUMN, rid_new.id);
         buffer_pool.insert_new_page(rid_new, TIMESTAMP_COLUMN, 0);
         buffer_pool.insert_new_page(rid_new, BASE_RID_COLUMN, rid.id);
@@ -227,7 +228,8 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
         rid_new.offset = num_slot_used_tail - 1;
 
         // Write in the metadata except for schema encoding column
-        buffer_pool.set(rid_new, INDIRECTION_COLUMN, latest_rid.id, true);
+        // buffer_pool.set(rid_new, INDIRECTION_COLUMN, latest_rid.id, true);
+        buffer_pool.set(rid_new, INDIRECTION_COLUMN, rid.id, true);
         buffer_pool.set(rid_new, RID_COLUMN, rid_new.id, true);
         buffer_pool.set(rid_new, TIMESTAMP_COLUMN, 0, true);
         buffer_pool.set(rid_new, BASE_RID_COLUMN, rid.id, true);
@@ -249,9 +251,9 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
         buffer_pool.set(rid_new, SCHEMA_ENCODING_COLUMN, schema_encoding, true);
     }
     // Updating indirection column and schema encoding column for the base page
-    int base_schema = buffer_pool.get(rid, SCHEMA_ENCODING_COLUMN);
-    buffer_pool.pin(rid, SCHEMA_ENCODING_COLUMN);
     buffer_pool.set(rid, INDIRECTION_COLUMN, rid_new.id, false);
+    buffer_pool.pin(rid, SCHEMA_ENCODING_COLUMN);
+    int base_schema = buffer_pool.get(rid, SCHEMA_ENCODING_COLUMN);
     buffer_pool.set(rid, SCHEMA_ENCODING_COLUMN, base_schema | schema_encoding, false);
     buffer_pool.unpin(rid, SCHEMA_ENCODING_COLUMN);
     return 0;
