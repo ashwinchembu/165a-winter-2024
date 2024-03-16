@@ -96,7 +96,7 @@ int test3Part1(){
 			toInsert.push_back(rand()%20);
 		}
 
-		records.insert({i,toInsert});
+		records.insert({key,toInsert});
 
 		Transaction* t = insert_transactions[i%number_of_transactions];
 
@@ -126,7 +126,6 @@ int test3Part1(){
 
 		int i =0;
 		std::vector<int> record = records.find(key)->second;
-		std::cout << record.size() << std::endl;
 		for(int column : r.columns){
 			if(column != record[i]){
 				error = true;
@@ -140,7 +139,7 @@ int test3Part1(){
 			std::vector<int> toPrint = records.find(key)->second;
 			std::string msg = printArray(toPrint);
 
-			std::cout<<"Select error on "<<key<<" : ["<<printArray(r.columns)<<"] correct: ["
+			std::cout<<"Select error on "<<key<<" : [ "<<printArray(r.columns)<<"] correct: [ "
 					<<msg << "]"<<std::endl;
 		}
 	}
