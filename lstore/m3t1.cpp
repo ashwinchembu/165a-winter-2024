@@ -325,7 +325,6 @@ int test3Part1(){
 			std::vector<int> toPrint = records.find(key)->second;
 			std::string msg = printArray(toPrint);
 
-			std::cout << "select error on primary key " << key << " : " << std::setw(25) << printArray(result) << ", correct : " << std::setw(25) << printArray(correct) << std::endl;
 			std::cout<<"Select error on "<<key<<" : " << std::setw(25) <<printArray(r.columns)<<" correct: "
 					 << std::setw(25) <<msg << ""<<std::endl;
 		}
