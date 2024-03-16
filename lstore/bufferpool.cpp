@@ -135,16 +135,16 @@ void BufferPool::update_ages(Frame*& just_accessed, Frame*& range_begin){ //chan
 
 // Called by get and set
 Frame* BufferPool::load (const RID& rid, const int& column){ //return the frame that the page was loaded into
-  int frp = rid.first_rid_page;
-  std::string frp_s = std::to_string(rid.first_rid_page);
-  if (frp < 0) {
-    frp_s = "M" + std::to_string(-1 * (frp));
-  }
-  std::string data_path = path + "/" + rid.table_name
-  + "_" + std::to_string(rid.first_rid_page_range)
-  + "_" + frp_s
-  + "_" + std::to_string(column) + ".dat";
-
+	std::string data_path = buildDatPath(rid.table_name,rid.first_rid_page,rid.first_rid_page_range,column);
+//  int frp = rid.first_rid_page;
+//  std::string frp_s = std::to_string(rid.first_rid_page);
+//  if (frp < 0) {
+//    frp_s = "M" + std::to_string(-1 * (frp));
+//  }
+//  std::string data_path = path + "/" + rid.table_name
+//  + "_" + std::to_string(rid.first_rid_page_range)
+//  + "_" + frp_s
+//  + "_" + std::to_string(column) + ".dat";
   FILE* fp = fopen((data_path).c_str(),"r");
   if (!fp) {
     throw std::invalid_argument("Load : Couldn't open file " + data_path);
@@ -246,16 +246,69 @@ Frame* BufferPool::evict(const RID& rid){ //return the frame that was evicted
   }
 }
 
+std::string BufferPool::buildDatPath(std::string tname,int first_rid_page,int first_rid_page_range,int column){
+//	char ret[1024];
+//	char* ptr =  ret;
+
+//	bool isBase = false;
+
+	std::string buildPath = this->path;
+	buildPath.append("/")
+			 .append(tname);
+
+//	ptr += sprintf(ptr,"%s/",path.c_str());
+//
+//	ptr += sprintf(ptr, "%s",tname.c_str());
+
+	if(column < NUM_METADATA_COLUMNS){
+//		ptr+= sprintf(ptr," M ");
+		buildPath.append("_M_");
+
+	} else if(first_rid_page < 0){
+//		ptr+= sprintf(ptr," T ");
+		buildPath.append("_T_");
+
+	} else if(first_rid_page > 0){
+//		ptr+= sprintf(ptr," B ");
+		buildPath.append("_B_");
+//		isBase = true;
+	}
+
+	buildPath.append(std::to_string(first_rid_page))
+			 .append("_")
+			 .append(std::to_string(first_rid_page_range))
+			 .append("_")
+			 .append(std::to_string(column));
+
+//	ptr+=sprintf(ptr,"%d %d %d",first_rid_page,first_rid_page_range,column);
+
+//	if(isBase){
+////		ptr+=sprintf(ptr," %d",mergeNumber);
+//
+//		buildPath.append("_")
+//		         .append(std::to_string(tableVersions.find(tname)->second));
+//	}
+
+	buildPath.append(".dat");
+
+//	sprintf(ptr, ".dat");
+//
+//	return {ret};
+
+	return buildPath;
+}
+
 void BufferPool::write_back(Frame* frame){
-  int frp = frame->first_rid_page;
-  std::string frp_s = std::to_string(frame->first_rid_page);
-  if (frp < 0) {
-    frp_s = "M" + std::to_string(-1 * (frp));
-  }
-  std::string data_path = path + "/" + frame->table_name
-    + "_" + std::to_string(frame->first_rid_page_range)
-    + "_" + frp_s
-    + "_" + std::to_string(frame->column) + ".dat";
+  std::string data_path = buildDatPath(frame->table_name,frame->first_rid_page,frame->first_rid_page_range,frame->column);
+//  int frp = frame->first_rid_page;
+//  std::string frp_s = std::to_string(frame->first_rid_page);
+//  if (frp < 0) {
+//    frp_s = "M" + std::to_string(-1 * (frp));
+//  }
+//  std::string data_path = path + "/" + frame->table_name
+//    + "_" + std::to_string(frame->first_rid_page_range)
+//    + "_" + frp_s
+//    + "_" + std::to_string(frame->column) + ".dat";
   FILE* fp = fopen((data_path).c_str(),"w");
   if (!fp) {
     throw std::invalid_argument("Write Back : Couldn't open file " + data_path);
