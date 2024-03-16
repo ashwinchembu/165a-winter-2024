@@ -10,6 +10,7 @@
 #include <sstream>
 #include <algorithm>
 #include <iterator>
+#include <random>
 
 Database* db = new Database();
 
@@ -89,12 +90,10 @@ int test3Part1(){
 
 		keys.push_back(key);
 
-		std::vector<int>toInsert;
-		toInsert.push_back(key);
+		std::uniform_int_distribution<int> distribution( i * 20, (i + 1) * 20);
 
-		for(int j = 0;j<4;j++){
-			toInsert.push_back(rand()%20);
-		}
+		std::vector<int>toInsert{key, distribution(gen), distribution(gen),
+		        distribution(gen), distribution(gen)};
 
 		records.insert({key,toInsert});
 
