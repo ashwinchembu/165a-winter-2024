@@ -147,7 +147,7 @@ int test3Part2(){
 		for (size_t i = 0; i < result.size(); i++) {
 			if (result[i] != correct[i]) {
 				score--;
-				std::cout << "select error on primary key " << key << " : " << std::setw(25) << printArray(result) << ", correct : " << std::setw(25) << printArray(correct) << std::endl;
+				std::cout << "select error on primary key " << key << " : " << printArray(result) << "," << std::setw(10) << "correct : " << printArray(correct) << std::endl;
 				break;
 			}
 		}
@@ -163,7 +163,7 @@ int test3Part2(){
 		for (size_t i = 0; i < result.size(); i++) {
 			if (result[i] != correct[i]) {
 				v2_score--;
-				std::cout << "select error on primary key " << key << " : " << std::setw(25) << printArray(result) << ", correct : " << std::setw(25) << printArray(correct) << std::endl;
+				std::cout << "select error on primary key " << key << " : " << printArray(result) << "," << std::setw(10) << "correct : " << printArray(correct) << std::endl;
 				break;
 			}
 		}
@@ -183,7 +183,7 @@ int test3Part2(){
 		for (size_t i = 0; i < result.size(); i++) {
 			if (result[i] != correct[i]) {
 				score--;
-				std::cout << "select error on primary key " << key << " : " << std::setw(25) << printArray(result) << ", correct : " << std::setw(25) << printArray(correct) << std::endl;
+				std::cout << "select error on primary key " << key << " : " << printArray(result) << "," << std::setw(10) << "correct : " << printArray(correct) << std::endl;
 				break;
 			}
 		}
