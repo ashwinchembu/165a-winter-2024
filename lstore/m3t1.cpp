@@ -103,16 +103,13 @@ int test3Part2(){
 		transaction_workers.push_back(new TransactionWorker());
 	}
 
-	std::map<int,std::vector<int>> updated_records;
-	std::map<int,std::vector<int>> one_ver_ago;
-	std::map<int,std::vector<int>> two_ver_ago;
+	std::map<int,std::vector<int>> updated_records = records;
+	std::map<int,std::vector<int>> one_ver_ago = records;
+	std::map<int,std::vector<int>> two_ver_ago = records;
 
 	for (int j = 0; j < number_of_operations_per_record; j++) {
 		for (int key : keys) {
 			std::vector<int> updated_columns{_NONE, _NONE, _NONE, _NONE, _NONE};
-			updated_records.insert({key,records.find(key)->second});
-			one_ver_ago.insert({key,records.find(key)->second});
-			two_ver_ago.insert({key,records.find(key)->second});
 			for (int i = 2; i < grades_table->num_columns; i++) {
 				int value = rand() % 20;
 				updated_columns[i] = value;
