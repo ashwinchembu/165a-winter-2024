@@ -125,8 +125,10 @@ int test3Part1(){
 		bool error = false;
 
 		int i =0;
+		std::vector<int> record = records.find(key)->second;
+		std::cout << record.size() << std::endl;
 		for(int column : r.columns){
-			if(column != (records.find(key)->second)[i]){
+			if(column != record[i]){
 				error = true;
 			}
 
@@ -138,8 +140,8 @@ int test3Part1(){
 			std::vector<int> toPrint = records.find(key)->second;
 			std::string msg = printArray(toPrint);
 
-			std::cout<<"Select error on"<<key<<":"<<printArray(r.columns)<<"correct:"
-					/*<<msg*/<<std::endl;
+			std::cout<<"Select error on "<<key<<" : ["<<printArray(r.columns)<<"] correct: ["
+					<<msg << "]"<<std::endl;
 		}
 	}
 
