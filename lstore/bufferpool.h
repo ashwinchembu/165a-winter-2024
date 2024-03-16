@@ -55,6 +55,9 @@ public:
     Frame* evict (const RID& rid); //evict the oldest frame that is not pinned
     void write_back(Frame* frame); //write back to disk if dirty
     void write_back_all();
+
+    std::string buildDatPath(std::string tname,int first_rid_page,int first_rid_page_range,int column);
+
     Frame* pin (const RID& rid, const int& column);
     void unpin (const RID& rid, const int& column);
     void set_path (const std::string& path_rhs);
