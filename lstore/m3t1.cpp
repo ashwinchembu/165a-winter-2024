@@ -71,8 +71,6 @@ int test3Part2(){
 int test3Part1(){
 	db->open("./ECS165");
 
-	srand(3562901);
-
 	try{
 		grades_table->index->create_index(2);
 		grades_table->index->create_index(3);
