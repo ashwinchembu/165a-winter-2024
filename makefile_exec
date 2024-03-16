@@ -1,0 +1,36 @@
+# Compiler
+CXX = g++
+# Compiler flags
+CXXFLAGS = -std=c++17 -Wall -Wextra
+
+# Directories
+SRC_DIR = lstore
+BIN_DIR = bin
+OBJ_DIR = obj
+
+# Source files
+SRCS = $(wildcard $(SRC_DIR)/*.cpp)
+# Object files
+OBJS = $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(SRCS))
+
+# Executable name
+EXE_NAME = my_executable
+
+.PHONY: all clean
+
+all: $(BIN_DIR)/$(EXE_NAME)
+
+$(BIN_DIR)/$(EXE_NAME): $(OBJS) | $(BIN_DIR)
+	$(CXX) $(CXXFLAGS) $^ -o $@
+
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp | $(OBJ_DIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(BIN_DIR):
+	mkdir -p $(BIN_DIR)
+
+$(OBJ_DIR):
+	mkdir -p $(OBJ_DIR)
+
+clean:
+	rm -rf $(BIN_DIR) $(OBJ_DIR)
