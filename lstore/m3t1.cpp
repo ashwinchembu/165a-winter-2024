@@ -39,7 +39,7 @@ std::string printArray(std::vector<int> data) {
 	std::stringstream buffer;
 	std::copy(data.begin(), data.end(), std::ostream_iterator<int>(buffer, " "));
 	std::string ret = buffer.str();
-	return rtrim(ret);
+	return "[" + rtrim(ret) + "]";
 }
 
 int main(int argc,char**argv){
@@ -147,7 +147,7 @@ int test3Part2(){
 		for (size_t i = 0; i < result.size(); i++) {
 			if (result[i] != correct[i]) {
 				score--;
-				std::cout << "select error on primary key " << key << " : [" << std::setw(20) << printArray(result) << "], correct : [" << std::setw(20) << printArray(correct) << "]" << std::endl;
+				std::cout << "select error on primary key " << key << " : " << std::setw(25) << printArray(result) << ", correct : " << std::setw(25) << printArray(correct) << std::endl;
 				break;
 			}
 		}
@@ -163,7 +163,7 @@ int test3Part2(){
 		for (size_t i = 0; i < result.size(); i++) {
 			if (result[i] != correct[i]) {
 				v2_score--;
-				std::cout << "select error on primary key " << key << " : [" << std::setw(20) << printArray(result) << "], correct : [" << std::setw(20) << printArray(correct) << "]" << std::endl;
+				std::cout << "select error on primary key " << key << " : " << std::setw(25) << printArray(result) << ", correct : " << std::setw(25) << printArray(correct) << std::endl;
 				break;
 			}
 		}
@@ -183,7 +183,7 @@ int test3Part2(){
 		for (size_t i = 0; i < result.size(); i++) {
 			if (result[i] != correct[i]) {
 				score--;
-				std::cout << "select error on primary key " << key << " : [" << std::setw(20) << printArray(result) << "], correct : [" << std::setw(20) << printArray(correct) << "]" << std::endl;
+				std::cout << "select error on primary key " << key << " : " << std::setw(25) << printArray(result) << ", correct : " << std::setw(25) << printArray(correct) << std::endl;
 				break;
 			}
 		}
@@ -325,8 +325,8 @@ int test3Part1(){
 			std::vector<int> toPrint = records.find(key)->second;
 			std::string msg = printArray(toPrint);
 
-			std::cout<<"Select error on "<<key<<" : ["<<printArray(r.columns)<<"] correct: ["
-					<<msg << "]"<<std::endl;
+			std::cout<<"Select error on "<<key<<" : " << std::setw(25) <<printArray(r.columns)<<" correct: "
+					 << std::setw(25) <<msg << ""<<std::endl;
 		}
 	}
 
