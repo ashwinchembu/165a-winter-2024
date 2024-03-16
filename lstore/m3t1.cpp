@@ -19,7 +19,7 @@ const int _NONE = -2147481000;
 int number_of_records = 1000;
 int number_of_transactions = 100;
 int number_of_operations_per_record = 1;
-int num_threads = 8;
+int num_threads = 1;
 int number_of_aggregates = 100;
 int aggregate_size = 100;
 
