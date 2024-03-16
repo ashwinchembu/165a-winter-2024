@@ -13,7 +13,7 @@
 #include <iterator>
 #include <random>
 
-const int NONE = -2147481000;
+const int _NONE = -2147481000;
 
 
 int number_of_records = 1000;
@@ -107,7 +107,7 @@ int test3Part2(){
 
 	for (int j = 0; j < number_of_operations_per_record; j++) {
 		for (int key : keys) {
-			std::vector<int> updated_columns{NONE, NONE, NONE, NONE, NONE};
+			std::vector<int> updated_columns{_NONE, _NONE, _NONE, _NONE, _NONE};
 			updated_records.insert({key,records.find(key)->second});
 			for (int i = 2; i < grades_table->num_columns; i++) {
 				int value = rand() % 20;
@@ -391,11 +391,11 @@ int bench() {
 	std::cout << "Inserting " << number_of_records << "records took :" << std::endl;
 
 	for(int i =0; i < number_of_records;i++){
-		std::vector<int> toUpdate0{NONE, NONE, NONE, NONE, NONE};
-		std::vector<int> toUpdate1{NONE, rand() % 20 + i * 20,  NONE, NONE, NONE};
-		std::vector<int> toUpdate2{NONE, NONE,  rand() % 20 + i * 20, NONE, NONE};
-		std::vector<int> toUpdate3{NONE, NONE, NONE, rand() % 20 + i * 20, NONE};
-		std::vector<int> toUpdate4{NONE, NONE, NONE, NONE, rand() % 20 + i * 20};
+		std::vector<int> toUpdate0{_NONE, _NONE, _NONE, _NONE, _NONE};
+		std::vector<int> toUpdate1{_NONE, rand() % 20 + i * 20,  _NONE, _NONE, _NONE};
+		std::vector<int> toUpdate2{_NONE, _NONE,  rand() % 20 + i * 20, _NONE, _NONE};
+		std::vector<int> toUpdate3{_NONE, _NONE, _NONE, rand() % 20 + i * 20, _NONE};
+		std::vector<int> toUpdate4{_NONE, _NONE, _NONE, _NONE, rand() % 20 + i * 20};
 		std::vector<std::vector<int>> update_cols{toUpdate0, toUpdate1, toUpdate2, toUpdate3, toUpdate4};
 
 		Transaction* t = update_transactions[i%number_of_transactions];
