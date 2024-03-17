@@ -1,5 +1,6 @@
 #include <thread>
 #include <iostream>
+#include <chrono>
 #include "config.h"
 #include "../DllConfig.h"
 #include "transaction_worker.h"
@@ -16,30 +17,40 @@ TransactionWorker::~TransactionWorker () {
 // Append transaction t to the appropriate place.
 // Operation that happens on same place in same page goes to same place. Best effort model.
 void TransactionWorker::add_transaction(const Transaction& t) {
-    transactions[t.hash_key % MAX_THREADS].push_back(t);
+    transactions.push_back(t);
 }
 
 // Start all the transactions. Create thread and run.
 void TransactionWorker::run() {
+    query_thread = std::thread(&TransactionWorker::_run, this);
+    // std::cout << "Running transaction with id " << query_thread.get_id() << std::endl;
+    // thread = std::thread(&TransactionWorker::_run, this);
+}
+
+// void TransactionWorker::_run_visualize() {
+//
+// }
+
+
+std::mutex threadGate;
+
+void TransactionWorker::_run() {
     for (size_t i = 0; i < transactions.size(); i++) {
-        int num_transaction = transactions[i].size();
-        if (num_transaction > 0) {
-            for (int j = 0; j < num_transaction; j++) {
-                threads.push_back(std::thread(&Transaction::run, &(transactions[i][j])));
-            }
+        std::unique_lock<std::mutex> gate(threadGate);
+        bool result = transactions[i].run();
+        if(!result){
+          transactions.push_back(transactions[i]);
         }
-    }
+        gate.unlock();
+	}
 }
 
 // call all the join function for the thread we have.
 void TransactionWorker::join() {
-    for (size_t i=0; i < threads.size(); i++) {
-        if (threads[i].joinable()) {
-            threads[i].join();
-        }
+    if (query_thread.joinable()) {
+		// std::cout << "Joining transaction " << query_thread.get_id() << std::endl;
+        query_thread.join();
     }
-
-    threads.clear();
 }
 
 

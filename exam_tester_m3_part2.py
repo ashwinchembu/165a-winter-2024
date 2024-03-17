@@ -1,7 +1,7 @@
-from lstore.db import Database
-from lstore.query import Query
-from lstore.transaction import Transaction
-from lstore.transaction_worker import TransactionWorker
+from lstore.py.db import Database
+from lstore.py.query import Query
+from lstore.py.transaction import Transaction
+from lstore.py.transaction_worker import TransactionWorker
 
 from random import choice, randint, sample, seed
 
@@ -31,7 +31,7 @@ for i in range(0, number_of_records):
     key = 92106429 + i
     keys.append(key)
     records[key] = [key, randint(i * 20, (i + 1) * 20), randint(i * 20, (i + 1) * 20), randint(i * 20, (i + 1) * 20), randint(i * 20, (i + 1) * 20)]
-    print(records[key])
+    #print(records[key])
 
 transaction_workers = []
 transactions = []

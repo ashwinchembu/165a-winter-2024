@@ -2,6 +2,7 @@
 #define TABLEH
 #include <vector>
 #include <map>
+#include <unordered_map>
 #include <utility>
 #include <ctime>
 #include <string>
@@ -9,6 +10,8 @@
 #include <memory>
 #include <queue>
 #include <mutex>
+#include <shared_mutex>
+#include <atomic>
 #include "config.h"
 #include "../Toolkit.h"
 // Avoid recursive include
@@ -38,30 +41,35 @@ extern const int DELETE_NONE;
 extern const int DELETE_CASCADE;
 extern const int DELETE_NULL;
 
-class RIDJoin;
-
 class Table {
 public:
-	Toolkit::BasicSharedPtr<std::mutex>mutex_insert = Toolkit::BasicSharedPtr<std::mutex>(new std::mutex());
-	Toolkit::BasicSharedPtr<std::mutex>mutex_update = Toolkit::BasicSharedPtr<std::mutex>(new std::mutex());;
-
 	long long int baseVersion = 0;
+
+    std::mutex insert_lock;
+    std::mutex insert_lock2;
+    std::mutex update_lock;
+
+    std::unordered_map<int, RID> page_directory; //<RID.id, RID>
+    std::shared_mutex page_directory_lock;
+
+    std::vector<std::shared_ptr<PageRange>> page_range;
+    std::shared_mutex page_range_lock;
+
 
     std::string name;
     int key; //primary key
-    std::map<int, RID> page_directory; //<RID.id, RID>
     std::queue<std::vector<Frame*>> merge_queue;
-    std::vector<std::shared_ptr<PageRange>> page_range;
     std::map<int, int> page_range_update;
     Index* index = nullptr;
-    int num_update = 0;
-    int num_insert = 0;
-
-    std::map<int,std::vector<RIDJoin>>referencesOut;
+    // int num_update = 0;
+    // int num_insert = 0;
+    std::atomic_int num_update = 0;
+    std::atomic_int num_insert = 0;
 
     int num_columns; //number of columns of actual data, excluding the metadata
 
     Table () {};
+    Table (const Table& rhs);
     ~Table ();
     Table(const std::string& name, const int& num_columns, const int& key);
 
@@ -79,21 +87,8 @@ public:
     
     void PrintTable();
 
-    bool ridIsJoined(RID rid,int col);
-    RIDJoin getJoin(RID rid, int col);
     int poolSizeRoundUp(int size);
 };
 
-class RIDJoin{
-	public:
-		RID ridSrc;
-		RID ridTarget;
-
-		int srcCol;
-		int targetCol;
-
-		int modificationPolicy;
-		Table* targetTable;
-};
 
 #endif

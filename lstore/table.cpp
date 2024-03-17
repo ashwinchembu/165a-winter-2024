@@ -1,27 +1,31 @@
-#include "table.h"
+#include <cmath>
+#include <sys/types.h>
+#include <chrono>
+#include <mutex>
+#include <thread>
+#include <vector>
+#include <map>
+#include <string>
+#include <cstring>
+#include <cstdio>
+#include <memory>
+#include <sys/stat.h>
+#include <set>
+#include <map>
+#include <algorithm>
 #include "RID.h"
-#include "bufferpool.h"
-#include "config.h"
 #include "index.h"
 #include "page.h"
-#include <cmath>
-#include <cstdio>
-#include <cstring>
-#include <map>
-#include <memory>
-#include <set>
-#include <string>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <vector>
-
+#include "table.h"
+#include "bufferpool.h"
+#include "config.h"
+#include "lock_manager.h"
 #include "../DllConfig.h"
 #include "../Toolkit.h"
 
-Table::Table(const std::string &name, const int &num_columns, const int &key) : name(name), key(key), num_columns(num_columns) {
-    index = new Index();
-    index->setTable(this);
-
+Table::Table(const std::string& name, const int& num_columns, const int& key): name(name), key(key), num_columns(num_columns) {
+	index = new Index();
+	index->setTable(this);
     if (buffer_pool.tableVersions.find(name) != buffer_pool.tableVersions.end()) {
         buffer_pool.tableVersions.erase(name);
     }
@@ -30,11 +34,31 @@ Table::Table(const std::string &name, const int &num_columns, const int &key) : 
 };
 
 Table::~Table() {
-    for (size_t i = 0; i < page_range.size(); i++) {
-        if (page_range[i].unique()) {
-            page_range[i].reset();
-        }
-    }
+	for (size_t i = 0; i <page_range.size(); i++) {
+		page_range[i].reset();
+	}
+}
+
+Table::Table (const Table& rhs) {
+	name = rhs.name;
+	key = rhs.key;
+	merge_queue = rhs.merge_queue;
+	page_range_update = rhs.page_range_update;
+	index = rhs.index;
+	num_columns = rhs.num_columns;
+	int num_update_now = rhs.num_update;
+	num_update = num_update_now;
+	int num_insert_now = rhs.num_insert;
+	num_insert = num_insert_now;
+	page_directory = rhs.page_directory;
+
+	transform(
+        rhs.page_range.begin(),
+        rhs.page_range.end(),
+        back_inserter(page_range),
+        [](const std::shared_ptr<PageRange>& ptr) -> std::shared_ptr<PageRange> { return ptr->clone(); }
+    );
+	// page_range = rhs.page_range;
 }
 
 /***
@@ -45,26 +69,47 @@ Table::~Table() {
  * @return const std::vector<int>& columns the values of the record
  *
  */
-RID Table::insert(const std::vector<int> &columns) {
-    num_insert++;
-    int rid_id = num_insert;
-    RID record;
-    record.table_name = name;
-    record.id = rid_id;
+RID Table::insert(const std::vector<int>& columns) {
+	std::unique_lock insert_lock2_unique(insert_lock2);
+	num_insert++; // Should not need mutex here. num_insert is std::atomic and rid solely depend on that.
+	const int rid_id = num_insert;
 
-    if (page_range.size() == 0 || !(page_range.back().get()->base_has_capacity())) {
+	RID record(0);
+	record.table_name = name;
+	record.id = rid_id;
+	insert_lock2_unique.unlock();
+	std::unique_lock insert_lock_unique(insert_lock);
 
-        std::shared_ptr<PageRange> newPageRange{new PageRange(record, columns)};
-        page_range.push_back(newPageRange); // Make a base page with given record
-    } else {                                // If there are base page already, just insert it normally.
-        record.first_rid_page_range = (page_range.back().get())->pages[0].first_rid_page_range;
-        (page_range.back().get())->insert(record, columns);
-    }
+	std::unique_lock page_range_shared(page_range_lock);
+	if (page_range.size() == 0 || !(page_range.back().get()->base_has_capacity())) {
+		page_range_shared.unlock();
+		std::shared_ptr<PageRange>newPageRange{new PageRange(record, columns)};
+		std::unique_lock page_range_unique(page_range_lock);
+		page_range.push_back(newPageRange); // Make a base page with given record
+		page_range_unique.unlock();
+		insert_lock_unique.unlock();
+	} else { // If there are base page already, just insert it normally.
 
-    // update(record, columns);
+		PageRange* prange = (page_range.back().get());
+		std::shared_lock pshared(prange->page_lock);
+		record.first_rid_page_range = prange->pages[0].first_rid_page_range;
+		pshared.unlock();
+		page_range_shared.unlock();
+		insert_lock_unique.unlock();
 
-    page_directory.insert({rid_id, record});
-    return record;
+		if (prange->insert(record, columns)) { /// @TODO Get this out of if statement
+			return RID(0);
+		}
+	}
+
+
+	std::unique_lock page_directory_unique(page_directory_lock);
+	page_directory.insert({rid_id, record});
+	if (page_directory.load_factor() >= page_directory.max_load_factor()) {
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+	}
+	page_directory_unique.unlock();
+	return record;
 }
 
 /***
@@ -77,25 +122,36 @@ RID Table::insert(const std::vector<int> &columns) {
  *
  */
 RID Table::update(RID &rid, const std::vector<int> &columns) {
+	std::unique_lock update_lock_unique(update_lock);
+	num_update++;
+	const int rid_id = num_update * -1;
     if (num_update % MAX_TABLE_UPDATES == 0) {
 
         merge();
     }
+	update_lock_unique.unlock();
 
-    num_update++;
-    const int rid_id = num_update * -1;
-    size_t i = 0;
-    for (; i < page_range.size(); i++) {
-        if ((page_range[i].get())->pages[0].first_rid_page_range == rid.first_rid_page_range) {
-            break;
-        }
-    }
+	std::unique_lock page_range_shared(page_range_lock);
+	PageRange* prange = nullptr;
+	size_t i = 0;
+	for (; i < page_range.size(); i++) {
+		std::shared_lock pshared((page_range[i].get())->page_lock);
+		if ((page_range[i].get())->pages[0].first_rid_page_range == rid.first_rid_page_range) {
+			prange = (page_range[i].get());
+			pshared.unlock();
+			break;
+		}
+		pshared.unlock();
+	}
+	page_range_shared.unlock();
 
     RID new_rid(rid_id);
     new_rid.table_name = name;
     new_rid.first_rid_page_range = rid.first_rid_page_range;
 
-    (page_range[i].get())->update(rid, new_rid, columns, page_directory);
+	if (prange->update(rid, new_rid, columns, page_directory, &page_range_lock)) {
+		return RID(0);
+	}
     page_range_update[i]++;
 
     if (page_range_update[i] % MAX_PAGE_RANGE_UPDATES == 0) {
@@ -133,8 +189,6 @@ RID Table::update(RID &rid, const std::vector<int> &columns) {
 
         merge_queue.push(insert_to_queue);
     }
-
-    page_directory.insert({rid_id, new_rid});
     return new_rid;
 }
 
@@ -142,13 +196,15 @@ int Table::write(FILE *fp) {
     fwrite(&baseVersion, sizeof(long long int), 1, fp);
 
     fwrite(&key, sizeof(int), 1, fp);
-    fwrite(&num_columns, sizeof(int), 1, fp);
-    fwrite(&num_update, sizeof(int), 1, fp);
-    fwrite(&num_insert, sizeof(int), 1, fp);
-    char nameBuffer[128];
-    strcpy(nameBuffer, name.c_str());
-    fwrite(nameBuffer, 128, 1, fp);
-    for (std::map<int, RID>::iterator iter = page_directory.begin(); iter != page_directory.end(); iter++) {
+	fwrite(&num_columns, sizeof(int), 1, fp);
+	int curr_val = num_update;
+	fwrite(&curr_val, sizeof(int), 1, fp);
+	curr_val = num_insert;
+	fwrite(&curr_val, sizeof(int), 1, fp);
+	char nameBuffer[128];
+	strcpy(nameBuffer,name.c_str());
+	fwrite(nameBuffer,128,1,fp);
+    for (std::unordered_map<int, RID>::iterator iter = page_directory.begin(); iter != page_directory.end(); iter++) {
         fwrite(&(iter->first), sizeof(int), 1, fp);
         iter->second.write(fp);
     }
@@ -186,12 +242,14 @@ int Table::read(FILE *fp) {
     int num_element = num_insert + num_update;
     RID value;
     int key;
+	std::unique_lock<std::shared_mutex> lock(page_directory_lock);
     for (int i = 0; i < num_element; i++) {
         e = e + fread(&key, sizeof(int), 1, fp);
         value.read(fp);
         value.table_name = name;
         page_directory.insert({key, value});
     }
+	lock.unlock();
     page_range.clear();
     int num_page_range = 0;
     e = e + fread(&(num_page_range), sizeof(int), 1, fp);
@@ -375,40 +433,6 @@ int Table::poolSizeRoundUp(int size) {
     float div_four = size / (float)NUM_BUFFERPOOL_HASH_PARTITIONS;
     int roundedUp = ceil(div_four);
     return roundedUp * 4;
-}
-
-/*
- * checks if a rid is referenced by another rid over a column.
- */
-bool Table::ridIsJoined(RID rid, int col) {
-    if (referencesOut.find(col) != referencesOut.end()) {
-        return false;
-    }
-
-    std::vector<RIDJoin> joins = referencesOut.find(col)->second;
-
-    for (RIDJoin &j : joins) {
-        if (j.ridSrc.id == rid.id) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-/*
- * Returns the relationship between the argument rid
- * and another rid over a column.
- */
-RIDJoin Table::getJoin(RID rid, int col) {
-    std::vector<RIDJoin> joins = referencesOut.find(col)->second;
-
-    for (RIDJoin &j : joins) {
-        if (j.ridSrc.id == rid.id) {
-            return j;
-        }
-    }
-    return RIDJoin();
 }
 
 void Table::PrintData() {

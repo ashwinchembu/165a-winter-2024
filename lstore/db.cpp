@@ -8,12 +8,16 @@
 #include "table.h"
 #include "db.h"
 #include "bufferpool.h"
+#include "log.h"
 #include <cstdio>
 #include <cstring>
 #include "config.h"
 #include "../DllConfig.h"
+#include "lock_manager.h"
 
-BufferPool buffer_pool(BUFFER_POOL_SIZE);
+
+BufferPool buffer_pool(BUFFER_POOL_SIZE * NUM_BUFFERPOOL_HASH_PARTITIONS);
+Log db_log;
 
 Database::Database() {
 	buffer_pool.set_path(file_path);
@@ -80,6 +84,14 @@ void Database::read(const std::string& path){
 		Table* t = new Table();
 		t->read(fp);
 		tables.insert({{nameBuffer},t});
+
+		std::unique_lock<std::shared_mutex> unique_lock(buffer_pool.lock_manager_lock);
+		LockManager new_lock_manager;
+		buffer_pool.lock_manager.insert({t->name, new_lock_manager});
+		unique_lock.unlock();
+	}
+	if (e != numTables + 1) {
+		std::cerr << "Possible error (Database open : Number of read does not match)" << std::endl;
 	}
 	if (e != numTables + 1) {
 		std::cerr << "Possible error (Database open : Number of read does not match)" << std::endl;
@@ -128,7 +140,10 @@ Table* Database::create_table(const std::string& name, const int& num_columns, c
 	if (insert.second == false) {
 		throw std::invalid_argument("A table with this name already exists in the database. The table was not added. (Is old data removed?)");
 	}
-
+	std::unique_lock<std::shared_mutex> unique_lock(buffer_pool.lock_manager_lock);
+	LockManager new_lock_manager;
+	buffer_pool.lock_manager.insert({name, new_lock_manager});
+	unique_lock.unlock();
 	return table;
 }
 
@@ -145,6 +160,9 @@ void Database::drop_table(const std::string& name){
 	}
 	delete tables.find(name)->second;
 	tables.erase(name);
+	std::unique_lock<std::shared_mutex> unique_lock(buffer_pool.lock_manager_lock);
+	buffer_pool.lock_manager.erase(name);
+	unique_lock.unlock();
 	return;
 }
 
@@ -159,20 +177,15 @@ void Database::drop_table(const std::string& name){
  * @return Table Return the specified table
  *
  */
-Table Database::get_table(const std::string& name){
+Table* Database::get_table(const std::string& name){
 	std::map<std::string, Table*>::iterator table = tables.find(name);
 	if(table == tables.end()){
 		throw std::invalid_argument("No table with that name was located.");
 	}
 
-	return *(table->second);
+	return (table->second);
 }
 
-/*
- * was having compiler issues with one of my makefiles
- * so I chucked the main here for now
- */
-int main(){}
 
 COMPILER_SYMBOL int* Database_constructor(){
 	return (int*)(new Database());
@@ -194,7 +207,7 @@ COMPILER_SYMBOL void Database_drop_table(int* obj, char* name){
 
 COMPILER_SYMBOL int* Database_get_table(int* obj,char* name){
 	Database* self = ((Database*)obj);
-	Table* ret = new Table(self->get_table({name}));
+	Table* ret = self->get_table({name});
 
 	return (int*)ret;
 }

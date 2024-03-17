@@ -82,4 +82,5 @@ for i in range(0, number_of_aggregates):
         pass
         # print('sum on [', keys[r[0]], ',', keys[r[1]], ']: ', column_sum)
 print("Aggregate finished")
+print(query.select(92106429, 0, [1, 1, 1, 1, 1])[0])
 db.close()

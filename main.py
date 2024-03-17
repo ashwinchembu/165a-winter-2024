@@ -11,7 +11,7 @@ from shutil import rmtree
 
 def validate():
 	db = Database()
-	db.open('./meme')
+	db.open('./ECS165')
 	# Create a table  with 5 columns
 	#   Student Id and 4 grades
 	#   The first argument is name of the table
@@ -132,7 +132,7 @@ def validate():
 
 def benchmark():
 	db = Database()
-	db.open('./meme')
+	db.open('./Bench')
 	grades_table = db.create_table('Grades', 5, 0)
 	query = Query(grades_table)
 	keys = []

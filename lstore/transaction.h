@@ -1,26 +1,32 @@
+#ifndef TRANSACTION_H
+#define TRANSACTION_H
+#include <limits.h>
+#include <thread>
+#include <climits>
 #include "table.h"
 #include "index.h"
 #include "query.h"
+#include "config.h"
 
-enum OpCode { NOTHING, INSERT, UPDATE, SELECT, SELECT_VER, SUM, SUM_VER };
+enum OpCode { NOTHING, INSERT, UPDATE, SELECT, SELECT_VER, SUM, SUM_VER, INCREMENT };
 
 class QueryOperation {
 public:
     /* Data for things necessary to run query, i.e. table, key, columns... */
     Query* q = nullptr;
-    const OpCode type = NOTHING;
+    OpCode type = OpCode::NOTHING;
     Table* table = nullptr;
 
-    int* key = nullptr; // Update, Select, Select version
+    int key = NONE; // Update, Select, Select version, Increment
     std::vector<int> columns; // Columns and projected_columns_index combined. For insert, update, select, select ver.
     int search_key_index = -1; // Select and Select ver
     int relative_version = 1; // Select ver and Sum ver
-    int* start_range = nullptr; // Sum and Sum ver
-    int* end_range = nullptr; // Sum and Sum ver
-    int aggregate_column_index = -1; // Sum and Sum ver
+    int start_range = NONE; // Sum and Sum ver
+    int end_range = NONE; // Sum and Sum ver
+    int aggregate_column_index = -1; // Sum and Sum ver and Increment
 
     /* Return values */
-    unsigned long int* sum_result = nullptr;
+    unsigned long int sum_result = ULONG_MAX;
     std::vector<Record> select_result;
 
     QueryOperation (Query* query, const OpCode& op, Table* t) : q(query), type(op), table(t) {}
@@ -31,28 +37,23 @@ public:
 
 class Transaction {
 public:
-    std::vector<QueryOperation> queries; // To hold onto queries for abort?
+    std::vector<QueryOperation> queries; // To hold onto queries
     int num_queries = 0;
-    int hash_key = 0;
+    int xact_id = -1;
     Transaction ();
+    Transaction (const Transaction& rhs);
     virtual ~Transaction ();
-    // I believe wrapper can simplify these function pointers
-    // void add_query(bool (*insert_func)(std::vector<int>), Table& t, const std::vector<int>& columns);
-    // void add_query(bool (*update_func)(int, std::vector<int>), Table& t, const int& key, const std::vector<int>& columns);
-    // void add_query(std::vector<Record> (*select_func)(int, int, std::vector<int>), Table& t, const int& key, const int& search_key_index, const std::vector<int>& projected_columns_index);
-    // void add_query(std::vector<Record> (*select_version_func)(int, int, std::vector<int>, int), Table& t, const int& key, const int& search_key_index, const std::vector<int>& projected_columns_index,  const int& relative_version);
-    // void add_query(unsigned long int (*sum_func)(int, int, int), Table& t, const int& start_range, const int& end_range, const int& aggregate_column_index);
-    // void add_query(unsigned long int (*sum_version_func)(int, int, int, int), Table& t, const int& start_range, const int& end_range, const int& aggregate_column_index, const int& relative_version);
 
+    void add_query(Query& q, Table& t, const std::vector<int>& columns); // Insert
+    void add_query(Query& q, Table& t, int& key, const std::vector<int>& columns); // Update
+    void add_query(Query& q, Table& t, int& key, const int& search_key_index, const std::vector<int>& projected_columns_index); // Select
+    void add_query(Query& q, Table& t, int& key, const int& search_key_index, const std::vector<int>& projected_columns_index,  const int& relative_version); // Select Ver
+    void add_query(Query& q, Table& t, int& start_range, int& end_range, const int& aggregate_column_index); // Sum
+    void add_query(Query& q, Table& t, int& start_range, int& end_range, const int& aggregate_column_index, const int& relative_version); // Sum ver
+    void add_query(Query& q, Table& t, int& key, const int& column); // Increment
 
-    void add_query(Query& q, Table& t, const std::vector<int>& columns);
-    void add_query(Query& q, Table& t, int& key, const std::vector<int>& columns);
-    void add_query(Query& q, Table& t, int& key, const int& search_key_index, const std::vector<int>& projected_columns_index);
-    void add_query(Query& q, Table& t, int& key, const int& search_key_index, const std::vector<int>& projected_columns_index,  const int& relative_version);
-    void add_query(Query& q, Table& t, int& start_range, int& end_range, const int& aggregate_column_index);
-    void add_query(Query& q, Table& t, int& start_range, int& end_range, const int& aggregate_column_index, const int& relative_version);
-
-    void run(); // Called by transaction worker. Return 0 if fails
+    bool run(); // Called by transaction worker. Return 0 if need to re-attempt
     void abort(); // Transaction worker check the work. If it contain anomaly, abort.
     void commit(); // Transaction worker check the work. If it run successfully, commit.
 };
+#endif

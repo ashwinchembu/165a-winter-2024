@@ -1,6 +1,8 @@
+#include <thread>
 #include <vector>
 #include <string>
 #include <cmath>
+#include <chrono>
 #include "config.h"
 #include "table.h"
 #include "page.h"
@@ -19,10 +21,15 @@ bool Query::deleteRecord(const int& primary_key) {
     std::vector<int> rids = table->index->locate(table->key, primary_key);
     if(rids.size() != 0){
         int target = rids[0];
+        std::shared_lock page_directory_shared(table->page_directory_lock);
         if (table->page_directory.find(target)->second.id == 0) {
+            page_directory_shared.unlock();
             return false;
         } else {
+            page_directory_shared.unlock();
+            std::unique_lock page_directory_unique(table->page_directory_lock);
             table->page_directory.find(target)->second.id = 0;
+            page_directory_unique.unlock();
             return true;
         }
     }
@@ -51,11 +58,21 @@ std::vector<Record> Query::select_version(const int& search_key, const int& sear
     std::vector<Record> records;
     std::vector<int> rids = table->index->locate(search_key_index, search_key); //this returns the RIDs of the base pages
     for(size_t i = 0; i < rids.size(); i++){ //go through each matching RID that was returned from index
-        RID rid = table->page_directory.find(rids[i])->second;
+        std::shared_lock page_directory_shared(table->page_directory_lock);
+        RID rid(table->page_directory.find(rids[i])->second);
+        page_directory_shared.unlock();
         if(rid.id != 0){
             for(int j = 0; j <= relative_version; j++){ //go through indirection to get to correct version
-                rid = table->page_directory.find((buffer_pool.get(rid, INDIRECTION_COLUMN)))->second; //go one step further in indirection
+                int new_int = 0;
+                new_int = buffer_pool.get(rid, INDIRECTION_COLUMN);
+                if(new_int < NONE){
+                  std::vector<Record> failed_records;
+                  return failed_records;
+                }
+                page_directory_shared.lock();
+                rid = table->page_directory.find(new_int)->second; //go one step further in indirection
 
+                page_directory_shared.unlock();
                 if(rid.id > 0){
                     break;
                 }
@@ -64,6 +81,10 @@ std::vector<Record> Query::select_version(const int& search_key, const int& sear
             for(int j = 0; j < table->num_columns; j++){ //transfer columns from desired version into record object
                 if(projected_columns_index[j]){
                     record_columns[j] = buffer_pool.get(rid, j + NUM_METADATA_COLUMNS);
+                    if(record_columns[j] < NONE){
+                      std::vector<Record> failed_records;
+                      return failed_records;
+                    }
                 }
             }
             records.push_back(Record(rids[i], search_key, record_columns)); //add a record with RID of base page, value of primary key, and contents of desired version
@@ -73,25 +94,40 @@ std::vector<Record> Query::select_version(const int& search_key, const int& sear
 }
 
 bool Query::update(const int& primary_key, const std::vector<int>& columns) {
-
     if ((primary_key != columns[table->key] && table->index->locate(table->key, columns[table->key]).size() != 0) || (table->index->locate(table->key, primary_key).size() == 0)) {
         std::cerr << "Record with the primary key you are trying to update already exists or Update called on key that does not exist" << std::endl;
         return false;
     }
-
+    std::shared_lock page_directory_shared(table->page_directory_lock);
     RID base_rid = table->page_directory.find(table->index->locate(table->key, primary_key)[0])->second; //locate base RID of record to be updated
-    RID last_update = table->page_directory.find(buffer_pool.get(base_rid, INDIRECTION_COLUMN))->second; //locate the previous update
+    page_directory_shared.unlock();
+    int indirection_rid = buffer_pool.get(base_rid, INDIRECTION_COLUMN);
+    if (indirection_rid < NONE){
+        return false;
+    }
+    page_directory_shared.lock();
+    RID last_update = table->page_directory.find(indirection_rid)->second; //locate the previous update
+
+    page_directory_shared.unlock();
+
     RID update_rid = table->update(base_rid, columns); // insert update into the table
     std::vector<int> old_columns;
-
     std::vector<int> new_columns;
     for(int i = 0; i < table->num_columns; i++){ // fill old_columns with the contents of previous update
-        old_columns.push_back(buffer_pool.get(last_update, i + NUM_METADATA_COLUMNS));
-        if (std::isnan(columns[i]) || columns[i] < -2147480000) {
-            new_columns.push_back(old_columns[i]);
-        } else {
-            new_columns.push_back(buffer_pool.get(update_rid, i + NUM_METADATA_COLUMNS));
+      int column_var = buffer_pool.get(last_update, i + NUM_METADATA_COLUMNS); //<======== Couldn't open... last_update is broken. All 0s.
+      if (column_var < NONE){
+        return false;
+      }
+      old_columns.push_back(column_var);
+      if (std::isnan(columns[i]) || columns[i] < NONE) {
+          new_columns.push_back(old_columns[i]);
+      } else {
+        column_var = buffer_pool.get(update_rid, i + NUM_METADATA_COLUMNS);
+        if (column_var < NONE){
+          return false;
         }
+        new_columns.push_back(column_var);
+      }
     }
     if(update_rid.id != 0){
         table->index->update_index(base_rid.id, new_columns, old_columns); //update the index
@@ -110,151 +146,77 @@ unsigned long int Query::sum_version(const int& start_range, const int& end_rang
     std::vector<int> rids = table->index->locate_range(start_range, end_range, table->key);
     int num_add = 0;
     for (size_t i = 0; i < rids.size(); i++) { //for each of the rids, find the old value and sum
+        std::shared_lock page_directory_shared(table->page_directory_lock);
         RID rid = table->page_directory.find(rids[i])->second;
+        page_directory_shared.unlock();
         if (rid.id != 0) { //If RID is valid i.e. not deleted
             int indirection = buffer_pool.get(rid, INDIRECTION_COLUMN); // the new indirection
+            if (indirection < NONE){
+              return NONE - 10;
+            }
             for (int j = 1; j <= relative_version; j++) {
-                indirection = buffer_pool.get(table->page_directory.find(indirection)->second, INDIRECTION_COLUMN); //get the next indirection
+                page_directory_shared.lock();
+                RID new_thing = table->page_directory.find(indirection)->second;
+                page_directory_shared.unlock();
+                indirection = buffer_pool.get(new_thing, INDIRECTION_COLUMN); //get the next indirection
+                if (indirection < NONE){
+                  return NONE - 10;
+                }
                 if(indirection > 0){
                     break;
                 }
             }
+            std::shared_lock page_directory_shared(table->page_directory_lock);
             RID old_rid = table->page_directory.find(indirection)->second;
-            sum += buffer_pool.get((old_rid), NUM_METADATA_COLUMNS+aggregate_column_index); // add the value for the old rid
+            page_directory_shared.unlock();
+            int value = buffer_pool.get(old_rid, NUM_METADATA_COLUMNS+aggregate_column_index);
+            if (value < NONE){
+              return NONE - 10;
+            }
+            sum += value; // add the value for the old rid
             num_add++;
         }
     }
     if (num_add == 0) {
-        return -1;
+        return NONE - 10;
     }
     return sum;
 }
 
 bool Query::increment(const int& key, const int& column) {
     std::vector<int> rids = table->index->locate(table->key, key); //find key in primary key column
+    std::shared_lock page_directory_shared(table->page_directory_lock);
     RID rid = table->page_directory.find(rids[0])->second;
+    page_directory_shared.unlock();
     if (rids.size() == 0 || rid.id == 0) { // if none found or deleted
         return false;
     }
     int value = buffer_pool.get(rid, NUM_METADATA_COLUMNS+column);
-    (buffer_pool.set(rid, NUM_METADATA_COLUMNS+column, value++, false)); //increment the column in record
-
-    // void Index::update_index(RID rid, std::vector<int>columns, std::vector<int>old_columns){
+    if (value < NONE){
+      return false;
+    }
+    buffer_pool.pin(rid, NUM_METADATA_COLUMNS+column);
+    bool set_success = buffer_pool.set(rid, NUM_METADATA_COLUMNS+column, value++, false); //increment the column in record
+    if (!set_success){
+      return false;
+    }
+    buffer_pool.unpin(rid, NUM_METADATA_COLUMNS+column);
     std::vector<int> columns;
     std::vector<int> old_columns;
     for (int i = 0; i < table->num_columns; i++) {
-        if (i != (4+column)) {
-            columns.push_back((buffer_pool.get(rid, i)));
-            old_columns.push_back((buffer_pool.get(rid, i)));
+        int data = buffer_pool.get(rid, i);
+        if(data < NONE){
+          return false;
+        }
+        columns.push_back(data);
+        if (i != NUM_METADATA_COLUMNS + column) {
+            old_columns.push_back(data);
         } else {
-            columns.push_back((buffer_pool.get(rid, i)));
             old_columns.push_back(value);
         }
     }
     table->index->update_index(rid.id, columns, old_columns);
     return true;
-}
-
-void deleteWithinJoin(RIDJoin ridJoin);
-
-/*
- * Any records that reference this rid will have data deleted.
- */
-void Query::performDeleteOnColumnReferences(RID base_rid){
-    for(int col = 0; col < table->num_columns;col++){
-        if(table->ridIsJoined(base_rid, col)){
-
-            RIDJoin ridJoin = table->getJoin(base_rid,col);
-
-            if(ridJoin.modificationPolicy == -1){//supposed to be DELETE_NULL, had to change for now
-                deleteWithinJoin(ridJoin);
-
-            } else if(ridJoin.modificationPolicy == -1){//supposed to be DELETE_CASCADE, had to change for now
-                std::vector<RIDJoin> allJoins;
-
-                RIDJoin currentJoin = ridJoin;
-
-                allJoins.push_back(currentJoin);
-
-                while(currentJoin.targetTable->ridIsJoined(currentJoin.ridTarget, currentJoin.targetCol)){
-
-                    allJoins.push_back(currentJoin);
-                    currentJoin = currentJoin.targetTable->getJoin(currentJoin.ridTarget, col);
-                }
-
-                for(auto& j : allJoins){
-                    deleteWithinJoin(j);
-                }
-            }
-        }
-    }
-}
-
-/*
- * Makes one column of a table reference column of another table.
- *
- */
-void referenceOnColumns(Table* srcTable, Table* targetTable,
-                        int srcCol, int targetCol, int modificationPolicy){
-    if(srcTable->page_directory.size() != targetTable->page_directory.size()){
-        return;
-    }
-
-    auto srcRecords =  srcTable->page_directory.begin();
-    auto targetRecords = targetTable->page_directory.begin();
-
-    for(;srcRecords != srcTable->page_directory.end(); srcRecords++, targetRecords++){
-        RIDJoin join;
-
-        join.ridSrc = srcRecords->second;
-        join.ridTarget = targetRecords->second;
-
-        join.srcCol = srcCol;
-        join.targetCol = targetCol;
-
-        join.targetTable = targetTable;
-        join.modificationPolicy = modificationPolicy;
-
-        if(srcTable->referencesOut.find(srcCol)!= srcTable->referencesOut.end()){
-            (srcTable->referencesOut.find(srcCol)->second).push_back(join);
-
-        } else {
-            srcTable->referencesOut.insert({srcCol,std::vector<RIDJoin>()});
-            srcTable->referencesOut.find(srcCol)->second.push_back(join);
-        }
-    }
-}
-
-/*
- * Performs delete on referencing column
- */
-void deleteWithinJoin(RIDJoin ridJoin){
-	std::vector<int>targetCols;
-	int columns = ridJoin.targetTable->num_columns;
-
-	buffer_pool.pin(ridJoin.ridTarget,INDIRECTION_COLUMN);
-
-	RID lastUpdateOtherTable
-	= ridJoin.targetTable->page_directory.find(buffer_pool.get(
-		ridJoin.ridTarget,INDIRECTION_COLUMN))->second;
-
-		buffer_pool.unpin(ridJoin.ridTarget,INDIRECTION_COLUMN);
-
-		for(int c = 0; c < columns;c++){
-
-			buffer_pool.pin(lastUpdateOtherTable,NUM_METADATA_COLUMNS + c);
-
-			targetCols.push_back(buffer_pool.get(lastUpdateOtherTable,NUM_METADATA_COLUMNS + c));
-
-			buffer_pool.unpin(lastUpdateOtherTable,NUM_METADATA_COLUMNS + c);
-		}
-
-		std::vector<int>oldTargetCols = targetCols;
-
-		targetCols[ridJoin.targetCol]=0;
-
-		ridJoin.targetTable->update(ridJoin.ridTarget,targetCols);
-		ridJoin.targetTable->index->update_index(ridJoin.ridTarget.id,targetCols,oldTargetCols);
 }
 
 COMPILER_SYMBOL int* Query_constructor(int* table){

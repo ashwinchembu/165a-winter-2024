@@ -1,7 +1,7 @@
 from lstore.py.db import Database
 from lstore.py.query import Query
 from lstore.py.transaction import Transaction
-from lstore.py.Stransaction_worker import TransactionWorker
+from lstore.py.transaction_worker import TransactionWorker
 
 from random import choice, randint, sample, seed
 
@@ -60,10 +60,9 @@ for j in range(number_of_operations_per_record):
             records[key][i] = value
             transactions[key % number_of_transactions].add_query(query.select, grades_table, key, 0, [1, 1, 1, 1, 1])
             transactions[key % number_of_transactions].add_query(query.update, grades_table, key, *updated_columns)
-print("Update finished")
 
 
-# add trasactions to transaction workers  
+# add trasactions to transaction workers
 for i in range(number_of_transactions):
     transaction_workers[i % num_threads].add_transaction(transactions[i])
 
@@ -77,6 +76,7 @@ for i in range(num_threads):
 for i in range(num_threads):
     transaction_workers[i].join()
 
+print("Update finished")
 
 score = len(keys)
 for key in keys:

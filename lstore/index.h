@@ -1,8 +1,11 @@
 #ifndef INDEXH
 #define INDEXH
+#include <future>
 #include <unordered_map>
 #include <vector>
 #include <mutex>
+#include <atomic>
+#include <shared_mutex>
 #include "RID.h"
 #include "table.h"
 
@@ -10,7 +13,8 @@ class Table;
 
 class Index {
 public:
-    std::mutex mutex;
+    std::unordered_map<int, std::shared_mutex*> mutex_list;
+
     Table* table = nullptr;
     std::unordered_map<int, std::unordered_multimap<int, int>> indices; //column, (value, rid id)
 

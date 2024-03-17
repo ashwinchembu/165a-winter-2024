@@ -4,6 +4,7 @@ from lstore.py.transaction import Transaction
 from lstore.py.transaction_worker import TransactionWorker
 
 from random import choice, randint, sample, seed
+import time
 
 db = Database()
 db.open('./ECS165')
@@ -54,10 +55,10 @@ for i in range(number_of_transactions):
     transaction_workers[i % num_threads].add_transaction(insert_transactions[i])
 
 
-
 # run transaction workers
 for i in range(num_threads):
     transaction_workers[i].run()
+    
 
 # wait for workers to finish
 for i in range(num_threads):

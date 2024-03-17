@@ -4,7 +4,10 @@
  *
  */
 
+#include <mutex>
+#include <shared_mutex>
 #include <string>
+#include <thread>
 #include <vector>
 #include <unordered_map> // unordered_multimap is part of this library
 #include <stdexcept> // Throwing errors
@@ -39,7 +42,10 @@ std::vector<int> Index::locate (const int& column_number, const int& value) {
         create_index(column_number);
         index = indices.find(column_number);
     }
+
+    std::shared_lock lock(*(mutex_list.find(column_number)->second));
     auto range = (*index).second.equal_range(value); //check for all matching records in the index
+    lock.unlock();
     for(auto iter = range.first; iter != range.second; iter++){
         matching_records.push_back(iter->second);
     }
@@ -73,19 +79,33 @@ std::vector<int> Index::locate_range(const int& begin, const int& end, const int
  * @param int column_number Which column to create index on
  *
  */
-/// @TODO Adopt to the change in RID
 void Index::create_index(const int& column_number) {
     std::unordered_multimap<int, int> index;
+    std::shared_mutex* new_mutex = new std::shared_mutex();
 
+    if (column_number > table->num_columns) {
+        std::cerr << "The specified column number doesn't exist" << std::endl;
+        return;
+    }
+
+    mutex_list.insert({column_number, new_mutex});
+
+    std::unique_lock lock(*(mutex_list.find(column_number)->second));
+    std::shared_lock page_d_lock(table->page_directory_lock, std::defer_lock);
     for (int i = 1; i <= table->num_insert; i++) {
+        page_d_lock.lock();
         auto loc = table->page_directory.find(i); // Find RID for every rows
-        if (loc != table->page_directory.end()) { // if RID ID exist ie. not deleted
-            RID rid = table->page_directory.find(loc->second.id)->second;
+        page_d_lock.unlock();
+
+        if (loc->second.id != 0) { // if RID ID exist ie. not deleted
+            RID rid = loc->second;
             int value;
             int indirection_num = buffer_pool.get(rid, INDIRECTION_COLUMN);
 
             if ((buffer_pool.get(rid, SCHEMA_ENCODING_COLUMN) >> (column_number - 1)) & (0b1)) { // If the column of the record at loc is updated
+                page_d_lock.lock();
                 RID update_rid = table->page_directory.find(indirection_num)->second;
+                page_d_lock.unlock();
                 value = buffer_pool.get(update_rid, column_number + NUM_METADATA_COLUMNS);
             } else {
                 value = buffer_pool.get(rid, column_number + NUM_METADATA_COLUMNS);
@@ -94,6 +114,7 @@ void Index::create_index(const int& column_number) {
         }
     }
     indices.insert({column_number, index});
+    lock.unlock();
     return;
 }
 
@@ -111,6 +132,8 @@ void Index::drop_index(const int& column_number) {
         throw std::invalid_argument("No index for that column was located. The index was not dropped.");
     }
     indices.erase(column_number);
+    delete mutex_list.find(column_number)->second;
+    mutex_list.erase(column_number);
     return;
 }
 
@@ -118,7 +141,12 @@ void Index::insert_index(int& rid, std::vector<int> columns) {
     for (size_t i = 0; i < columns.size(); i++) {
         auto itr = indices.find(i);
         if (itr != indices.end()) {
+            std::unique_lock lock(*(mutex_list.find(i)->second));
             itr->second.insert({columns[i], rid});
+            if (itr->second.load_factor() >= itr->second.max_load_factor()) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            }
+            lock.unlock();
         }
     }
 
@@ -128,14 +156,23 @@ void Index::update_index(int& rid, std::vector<int> columns, std::vector<int> ol
     for (size_t i = 0; i< indices.size(); i++) {
         if (indices[i].size() > 0) {	//if there is a index for that column
             int old_value = old_columns[i];
+            std::unique_lock update_lock_shrd(*(mutex_list.find(i)->second));
             auto range = indices[i].equal_range(old_value);
+            update_lock_shrd.unlock();
             for(auto itr = range.first; itr != range.second; itr++){
                 if (itr->second == rid) {
+                    std::unique_lock lock(*(mutex_list.find(i)->second));
                     indices[i].erase(itr);
+                    lock.unlock();
                     break;
                 }
             }
+            std::unique_lock update_lock_uniq(*(mutex_list.find(i)->second));
             indices[i].insert({columns[i], rid});
+            if (indices[i].load_factor() >= indices[i].max_load_factor()) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            }
+            update_lock_uniq.unlock();
         }
     }
 }
@@ -196,9 +233,9 @@ void Index::setTable(Table* t){
 void Index::printData(){
     for(auto& e: indices){
         printf("---Column %d:---\n\n", e.first);
-        printf("%lu\n\n", e.second.size());
+        std::cout << "Size: " << e.second.size() << '\n' << std::endl;
         for(auto& j : e.second){
-            std::cout << j.second << std::endl;
+            std::cout << j.first << ", " << j.second << std::endl;
         }
     }
 }

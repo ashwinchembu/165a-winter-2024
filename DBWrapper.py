@@ -253,18 +253,6 @@ Table_num_columns=DB.Table_num_columns
 Table_num_columns.restype = c_int
 Table_num_columns.argtypes = [POINTER(c_int)]
 
-Table_print_lineage = DB.Table_print_lineage
-Table_print_lineage.argtypes = [POINTER(c_int)]
-
-Table_print_table=DB.Table_print_table
-Table_print_table.argtypes = [POINTER(c_int)]
-
-
-#bufferpool.cpp
-
-force_write_back_all=DB.force_write_back_all
-
-
 #Toolkit.cpp
 
 cpp_unreasonable_number = DB.cpp_unreasonable_number
@@ -335,6 +323,16 @@ def fillAndReturnIntBuffer(*args):
         add_to_buffer_vector(c_intOrUnreasonable(i))
         
     return get_buffer_vector()
+
+
+def fillAndReturnIntBuffer_Insert(*args):
+    lst = list(args[0])
+    erase_buffer_vector()
+    for i in lst:
+        add_to_buffer_vector(c_intOrUnreasonable(i))
+
+    return get_buffer_vector()
+
 
 # Functions from page.cpp
 
