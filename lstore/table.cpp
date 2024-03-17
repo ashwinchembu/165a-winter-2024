@@ -1,4 +1,6 @@
+#include <chrono>
 #include <mutex>
+#include <thread>
 #include <vector>
 #include <map>
 #include <string>
@@ -99,6 +101,9 @@ RID Table::insert(const std::vector<int>& columns) {
 
 	std::unique_lock page_directory_unique(page_directory_lock);
 	page_directory.insert({rid_id, record});
+	if (page_directory.load_factor() >= page_directory.max_load_factor()) {
+		std::this_thread::sleep_for(std::chrono::milliseconds(5));
+	}
 	page_directory_unique.unlock();
 	return record;
 }
@@ -317,12 +322,8 @@ int Table::merge() {
 								merge_vals.push_back(value);
 							}
 							latest_update[baseRID].second = merge_vals;
-							//std::cout << latest_update.size() << std::endl;
 						}
 					}
-					// if (currentRID < tail_rid_last) {
-					// 	tail_rid_last = currentRID;
-					// }
 				}
 			}
 		}

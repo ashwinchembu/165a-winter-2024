@@ -7,6 +7,7 @@
 #include <mutex>
 #include <shared_mutex>
 #include <string>
+#include <thread>
 #include <vector>
 #include <unordered_map> // unordered_multimap is part of this library
 #include <stdexcept> // Throwing errors
@@ -143,9 +144,10 @@ void Index::insert_index(int& rid, std::vector<int> columns) {
         auto itr = indices.find(i);
         if (itr != indices.end()) {
             std::unique_lock lock(*(mutex_list.find(i)->second));
-            // unique_lock_list.find(i)->second->lock();
             itr->second.insert({columns[i], rid});
-            // unique_lock_list.find(i)->second->unlock();
+            if (itr->second.load_factor() >= itr->second.max_load_factor()) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(5));
+            }
             lock.unlock();
         }
     }
