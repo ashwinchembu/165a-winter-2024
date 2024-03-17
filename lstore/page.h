@@ -31,9 +31,6 @@ public:
     std::mutex mutex_update;
     std::shared_mutex page_lock; /// TODO Make this shared mutex
 
-    // Toolkit::BasicSharedPtr<std::mutex>mutex_insert = Toolkit::BasicSharedPtr<std::mutex>(new std::mutex());
-    // Toolkit::BasicSharedPtr<std::mutex>mutex_update = Toolkit::BasicSharedPtr<std::mutex>(new std::mutex());
-
     const int NUM_SLOTS = 4096*LOGICAL_PAGE;
     std::atomic_int num_slot_left = NUM_SLOTS;
     std::atomic_int num_slot_used_base = 1;
@@ -51,7 +48,6 @@ public:
     std::shared_ptr<PageRange> clone();
     int insert(RID& new_rid, const std::vector<int>& columns);
     int update(RID& rid, RID& rid_new, const std::vector<int>& columns, const std::map<int, RID>& page_directory, std::shared_mutex* lock);
-    // int update(RID& rid, RID& rid_new, const std::vector<int>& columns, const std::map<int, RID>& page_directory, std::shared_lock<std::shared_mutex>* lock);
     bool base_has_capacity () const;
     int write(FILE* fp);
     int read(FILE* fp);

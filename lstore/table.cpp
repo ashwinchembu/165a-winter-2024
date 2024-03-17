@@ -24,10 +24,6 @@
 Table::Table(const std::string& name, const int& num_columns, const int& key): name(name), key(key), num_columns(num_columns) {
 	index = new Index();
 	index->setTable(this);
-	// page_directory_unique = std::unique_lock<std::shared_mutex>(page_directory_lock, std::defer_lock);
-	// page_directory_shared = std::shared_lock<std::shared_mutex>(page_directory_lock, std::defer_lock);
-	// page_range_unique = std::unique_lock<std::shared_mutex>(page_range_lock, std::defer_lock);
-	// page_range_shared = std::shared_lock<std::shared_mutex>(page_range_lock, std::defer_lock);
 };
 
 Table::~Table() {
@@ -146,6 +142,10 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 	if (prange->update(rid, new_rid, columns, page_directory, &page_range_lock)) {
 		return RID(0);
 	}
+	std::unique_lock page_directory_unique(page_directory_lock);
+	page_directory.insert({rid_id, new_rid});
+	std::cout << rid_id <<", " << new_rid.id << std::endl;
+	page_directory_unique.unlock();
 	// page_range_update[i]++;
 	// if (page_range_update[i] >= MAX_PAGE_RANGE_UPDATES){
 	// 	// Make a deep copy of page_range[i]
@@ -161,9 +161,6 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 	// 	}
 	// 	merge_queue.push(insert_to_queue);
 	// }
-	std::unique_lock page_directory_unique(page_directory_lock);
-	page_directory.insert({rid_id, new_rid});
-	page_directory_unique.unlock();
 	return new_rid;
 }
 

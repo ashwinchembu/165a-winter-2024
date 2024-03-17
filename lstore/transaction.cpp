@@ -156,6 +156,7 @@ inline bool lock_shared_key(std::string& table_name, int& key) {
     LockManagerEntry* new_entry = new LockManagerEntry;
     new_lock = new std::shared_lock(*(new_entry->mutex), std::defer_lock);
     if(!(new_lock->try_lock())){
+      std::cout << "abort, shared" << std::endl;
       delete new_entry;
       delete new_lock;
       return false;
@@ -180,6 +181,7 @@ inline bool lock_unique_key(std::string& table_name, int& key) {
     LockManagerEntry* new_entry = new LockManagerEntry;
     new_lock = new std::unique_lock(*(new_entry->mutex), std::defer_lock);
     if(!(new_lock->try_lock())){
+      std::cout << "abort, lock" << std::endl;
       delete new_entry;
       delete new_lock;
       return false;

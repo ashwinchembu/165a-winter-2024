@@ -91,31 +91,21 @@ void Index::create_index(const int& column_number) {
 
     mutex_list.insert({column_number, new_mutex});
 
-    // unique_lock_list.find(column_number)->second->lock();
     std::unique_lock lock(*(mutex_list.find(column_number)->second));
     std::shared_lock page_d_lock(table->page_directory_lock, std::defer_lock);
     for (int i = 1; i <= table->num_insert; i++) {
-        // table->page_directory_shared.lock();
         page_d_lock.lock();
         auto loc = table->page_directory.find(i); // Find RID for every rows
-        // table->page_directory_shared.unlock();
         page_d_lock.unlock();
 
         if (loc->second.id != 0) { // if RID ID exist ie. not deleted
-            // table->page_directory_shared.lock();
-            // page_d_lock.lock();
-            // RID rid = table->page_directory.find(loc->second.id)->second;
-            // // table->page_directory_shared.unlock();
-            // page_d_lock.unlock();
             RID rid = loc->second;
             int value;
             int indirection_num = buffer_pool.get(rid, INDIRECTION_COLUMN);
 
             if ((buffer_pool.get(rid, SCHEMA_ENCODING_COLUMN) >> (column_number - 1)) & (0b1)) { // If the column of the record at loc is updated
-                // table->page_directory_shared.lock();
                 page_d_lock.lock();
                 RID update_rid = table->page_directory.find(indirection_num)->second;
-                // table->page_directory_shared.unlock();
                 page_d_lock.unlock();
 
                 value = buffer_pool.get(update_rid, column_number + NUM_METADATA_COLUMNS);
@@ -126,7 +116,6 @@ void Index::create_index(const int& column_number) {
         }
     }
     indices.insert({column_number, index});
-    // unique_lock_list.find(column_number)->second->unlock();
     lock.unlock();
     return;
 }
