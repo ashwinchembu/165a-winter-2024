@@ -4,7 +4,7 @@ from time import sleep
 from random import choice, randint, sample, seed
 
 db = Database()
-db.open('./meme')
+db.open('./ECS165')
 
 grades_table = db.create_table('Grades', 5, 0)
 
@@ -50,8 +50,8 @@ print('successfully updated : ', query.update(90, *[1, 1, 1, 1]))
 print('test 5 finished')
 
 # test 6: THE GIGA INSERT QUERY
-for _ in range(100000):
+for _ in range(10000000):
     query.insert(*[key, 69, 420, 69, 420])
 print(query.select(420, 2, [1, 1, 1, 1,]))
-print('GIGA INSERT FINISHED')
+print('10M insert finished')
 db.close()
