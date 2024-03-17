@@ -121,7 +121,7 @@ bool Query::update(const int& primary_key, const std::vector<int>& columns) {
     if (last_update.first_rid_page == 0) {
             std::cerr << "Something unexpected happen in update again" << std::endl;
             std::cout << primary_key << std::endl;
-            std::cout << "Indirection times 100" << indirection_rid * 100 << std::endl;
+            std::cout << "Indirection" << indirection_rid << std::endl;
     }
 
 
