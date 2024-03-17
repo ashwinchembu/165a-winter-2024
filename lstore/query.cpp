@@ -58,7 +58,7 @@ std::vector<Record> Query::select_version(const int& search_key, const int& sear
     std::vector<Record> records;
     std::vector<int> rids = table->index->locate(search_key_index, search_key); //this returns the RIDs of the base pages
     for(size_t i = 0; i < rids.size(); i++){ //go through each matching RID that was returned from index
-        std::unique_lock page_directory_unique(table->page_directory_lock);
+        std::shared_lock page_directory_shared(table->page_directory_lock);
         if(table->page_directory.find(rids[i]) == table->page_directory.end()) {
             std::unique_lock<std::mutex> debug_lock(table->debug);
             std::cout << "we are looking for " << rids[i] << std::endl;
@@ -70,7 +70,7 @@ std::vector<Record> Query::select_version(const int& search_key, const int& sear
             debug_lock.unlock();
         }
         RID rid(table->page_directory.find(rids[i])->second);
-        page_directory_unique.unlock();
+        page_directory_shared.unlock();
         if(rid.id != 0){
             for(int j = 0; j <= relative_version; j++){ //go through indirection to get to correct version
                 int new_int = 0;
@@ -79,10 +79,10 @@ std::vector<Record> Query::select_version(const int& search_key, const int& sear
                   std::vector<Record> failed_records;
                   return failed_records;
                 }
-                page_directory_unique.lock();
+                page_directory_shared.lock();
                 rid = table->page_directory.find(new_int)->second; //go one step further in indirection
 
-                page_directory_unique.unlock();
+                page_directory_shared.unlock();
 
                 if(rid.id > 0){
                     break;
@@ -109,17 +109,17 @@ bool Query::update(const int& primary_key, const std::vector<int>& columns) {
         std::cerr << "Record with the primary key you are trying to update already exists or Update called on key that does not exist" << std::endl;
         return false;
     }
-    std::unique_lock page_directory_unique(table->page_directory_lock);
+    std::shared_lock page_directory_shared(table->page_directory_lock);
     RID base_rid = table->page_directory.find(table->index->locate(table->key, primary_key)[0])->second; //locate base RID of record to be updated
-    page_directory_unique.unlock();
+    page_directory_shared.unlock();
     int indirection_rid = buffer_pool.get(base_rid, INDIRECTION_COLUMN);
     if (indirection_rid < NONE){
         return false;
     }
-    page_directory_unique.lock();
+    page_directory_shared.lock();
     RID last_update = table->page_directory.find(indirection_rid)->second; //locate the previous update
 
-    page_directory_unique.unlock();
+    page_directory_shared.unlock();
 
     RID update_rid = table->update(base_rid, columns); // insert update into the table
     std::vector<int> old_columns;
