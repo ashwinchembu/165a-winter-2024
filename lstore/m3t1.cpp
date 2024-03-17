@@ -570,17 +570,24 @@ int bench() {
 
 extern BufferPool buffer_pool;
 
+bool sorter(const std::pair<int, RID>& a, const std::pair<int, RID>& b) {
+    return a.first < b.first; // Sort based on the first element of the pair (int)
+}
+
 void dumpTable(Table* table){
 
 	if(!allowTableDump){
 		return;
 	}
 
-	std::printf("%-10s%-10s%-10s%-10s%-10s%-10s\n\n","INDIR","RID","TIME","SCHEM","BASE","TPS");
+	std::vector<std::pair<int, RID>> pd
+	        (table->page_directory.begin() ,table->page_directory.end());
+
+	std::sort(pd.begin(), pd.end(),sorter);
 
 	int lines = 0;
 
-	for(auto& e: table->page_directory){
+	for(auto& e: pd){
 		if(lines++ % 50 ==0){
 			std::printf("\n%-10s%-10s%-10s%-10s%-10s%-10s\n\n","INDIR","RID","TIME","SCHEM","BASE","TPS");
 		}
