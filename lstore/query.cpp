@@ -70,10 +70,6 @@ std::vector<Record> Query::select_version(const int& search_key, const int& sear
                 }
                 page_directory_shared.lock();
                 rid = table->page_directory.find(new_int)->second; //go one step further in indirection
-                if (rid.first_rid_page) {
-                    std::cerr << "Something unexpected happened in select_version" << std::endl;
-                }
-
 
                 if (rid.first_rid_page == 0) {
                     while (rid.first_rid_page == 0) {
