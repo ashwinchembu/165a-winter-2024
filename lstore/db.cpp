@@ -15,7 +15,7 @@
 #include "../DllConfig.h"
 #include "lock_manager.h"
 
-BufferPool buffer_pool(BUFFER_POOL_SIZE);
+BufferPool buffer_pool(BUFFER_POOL_SIZE * NUM_BUFFERPOOL_HASH_PARTITIONS);
 Log db_log;
 
 Database::Database() {
