@@ -199,7 +199,7 @@ int test3Part2(){
 		int end = rand() % keys.size();
 		int r[2] = {std::min(start, end), std::max(start, end)};
 		unsigned long int column_sum = 0;
-		for (int j = r[0]; j < r[1]; j++) {
+		for (int j = r[0]; j <= r[1]; j++) {
 			column_sum = column_sum + one_ver_ago.find(keys[j])->second[0];
 		}
 		unsigned long int result = query->sum_version(keys[r[0]], keys[r[1]], 0, -1);
@@ -217,7 +217,7 @@ int test3Part2(){
 		int end = rand() % keys.size();
 		int r[2] = {std::min(start, end), std::max(start, end)};
 		unsigned long int column_sum = 0;
-		for (int j = r[0]; j < r[1]; j++) {
+		for (int j = r[0]; j <= r[1]; j++) {
 			column_sum = column_sum + two_ver_ago.find(keys[j])->second[0];
 		}
 		unsigned long int result = query->sum_version(keys[r[0]], keys[r[1]], 0, -2);
