@@ -377,7 +377,7 @@ void Transaction::abort() {
               int second_most_recent_update = buffer_pool.get(most_recent_update, INDIRECTION_COLUMN);
 
               std::unique_lock page_directory_unique(queries[i].table->page_directory_lock);
-              queries[i].table->page_directory.find(most_recent_update.id)->second.id = 0; //delete in page directory
+              queries[i].table->page_directory[most_recent_update.id].id = 0; //delete in page directory
               page_directory_unique.unlock();
 
               buffer_pool.pin(base_rid, SCHEMA_ENCODING_COLUMN);

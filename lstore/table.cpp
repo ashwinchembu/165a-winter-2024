@@ -199,12 +199,14 @@ int Table::read(FILE* fp) {
 	int num_element = num_insert + num_update;
 	RID value;
 	int key;
+	std::unique_lock<std::shared_mutex> lock(page_directory_lock);
 	for(int i = 0; i < num_element; i++){
 		e = e + fread(&key, sizeof(int), 1, fp);
 		value.read(fp);
 		value.table_name = name;
 		page_directory.insert({key, value});
 	}
+	lock.unlock();
 	page_range.clear();
 	int num_page_range = 0;
 	e = e + fread(&(num_page_range), sizeof(int), 1, fp);
