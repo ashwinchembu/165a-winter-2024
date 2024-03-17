@@ -97,7 +97,7 @@ RID Table::insert(const std::vector<int>& columns) {
 			page_range_shared.unlock();
 			insert_lock_unique.unlock();
 
-			if (prange->insert(record, columns)) {
+			if (prange->insert(record, columns)) { /// @TODO Get this out of if statement
 				return RID(0);
 			}
 		}
