@@ -31,9 +31,15 @@ void TransactionWorker::run() {
 //
 // }
 
+extern bool test2;
+
 void TransactionWorker::_run() {
     for (size_t i = 0; i < transactions.size(); i++) {
         bool result = transactions[i].run();
+
+	    //        if(test2 && i == 10){
+//		  while(true){}
+//	    }
         if(!result){
           transactions.push_back(transactions[i]);
         }

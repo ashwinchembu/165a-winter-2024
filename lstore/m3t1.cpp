@@ -18,6 +18,8 @@
 
 const int _NONE = -2147481000;
 
+bool test2 = false;
+
 
 int number_of_records = 5000;
 int number_of_transactions = 100;
@@ -86,6 +88,7 @@ int main(int argc,char**argv){
 }
 
 int test3Part2(){
+	test2 = true;
 	Database* db = new Database();
 
 	db->open("./ECS165");
