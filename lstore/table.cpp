@@ -128,10 +128,11 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 	update_lock_unique.unlock();
 
 	std::unique_lock page_range_shared(page_range_lock);
-	size_t i = 0;
-	for (; i < page_range.size(); i++) {
+	PageRange* prange = nullptr;
+	for (size_t i = 0; i < page_range.size(); i++) {
 		std::shared_lock pshared((page_range[i].get())->page_lock);
 		if ((page_range[i].get())->pages[0].first_rid_page_range == rid.first_rid_page_range) {
+			prange = (page_range[i].get());
 			pshared.unlock();
 			break;
 		}
@@ -142,27 +143,24 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 	new_rid.table_name = name;
 	new_rid.first_rid_page_range = rid.first_rid_page_range;
 
-	page_range_shared.lock();
-	PageRange* prange = (page_range[i].get());
-	page_range_shared.unlock();
 	if (prange->update(rid, new_rid, columns, page_directory, &page_range_lock)) {
 		return RID(0);
 	}
-	page_range_update[i]++;
-	if (page_range_update[i] >= MAX_PAGE_RANGE_UPDATES){
-		// Make a deep copy of page_range[i]
-		std::shared_ptr<PageRange> deep_copy = std::make_shared<PageRange>(*(page_range[i].get()));
-		std::vector<Frame*> insert_to_queue;
-		for (int i = deep_copy->pages.size() - 1; i >= 0; i--) {
-			RID rid = deep_copy->pages[i];
-			// load all of the pages in pagerange into bufferpool
-			for (int to_load_tail_page_col = 0; to_load_tail_page_col < num_columns + NUM_METADATA_COLUMNS; to_load_tail_page_col++){
-				Frame* new_frame = buffer_pool.get_page(rid, to_load_tail_page_col);
-				insert_to_queue.push_back(new_frame);
-			}
-		}
-		merge_queue.push(insert_to_queue);
-	}
+	// page_range_update[i]++;
+	// if (page_range_update[i] >= MAX_PAGE_RANGE_UPDATES){
+	// 	// Make a deep copy of page_range[i]
+	// 	std::shared_ptr<PageRange> deep_copy = std::make_shared<PageRange>(*(page_range[i].get()));
+	// 	std::vector<Frame*> insert_to_queue;
+	// 	for (int i = deep_copy->pages.size() - 1; i >= 0; i--) {
+	// 		RID rid = deep_copy->pages[i];
+	// 		// load all of the pages in pagerange into bufferpool
+	// 		for (int to_load_tail_page_col = 0; to_load_tail_page_col < num_columns + NUM_METADATA_COLUMNS; to_load_tail_page_col++){
+	// 			Frame* new_frame = buffer_pool.get_page(rid, to_load_tail_page_col);
+	// 			insert_to_queue.push_back(new_frame);
+	// 		}
+	// 	}
+	// 	merge_queue.push(insert_to_queue);
+	// }
 	std::unique_lock page_directory_unique(page_directory_lock);
 	page_directory.insert({rid_id, new_rid});
 	page_directory_unique.unlock();
