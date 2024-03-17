@@ -140,7 +140,6 @@ int test3Part2(){
 	for (int i = 0; i < num_threads; i++) {
 		transaction_workers.push_back(new TransactionWorker());
 	}
-	std::cout << "Insert finished" << std::endl;
 
 	std::map<int,std::vector<int>> updated_records = records;
 	std::map<int,std::vector<int>> one_ver_ago = records;

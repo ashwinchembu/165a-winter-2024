@@ -1,3 +1,4 @@
+#include <chrono>
 #include <memory>
 #include <thread>
 #include <vector>
@@ -253,6 +254,9 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, s
     std::unique_lock pdlock_uniq(*lock);
    	page_directory.insert({rid_new.id, rid_new});
     buffer_pool.set(rid, INDIRECTION_COLUMN, rid_new.id, false);
+    if (page_directory.load_factor() >= page_directory.max_load_factor()) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+    }
     pdlock_uniq.unlock();
 
     buffer_pool.pin(rid, SCHEMA_ENCODING_COLUMN);
