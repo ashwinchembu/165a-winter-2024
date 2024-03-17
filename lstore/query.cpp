@@ -63,7 +63,9 @@ std::vector<Record> Query::select_version(const int& search_key, const int& sear
             std::unique_lock<std::mutex> debug_lock(table->debug);
             std::cout << "we are looking for " << rids[i] << std::endl;
             for(auto iter = table->page_directory.begin(); iter != table->page_directory.end(); iter++){
-                std::cout << (*iter).first << std::endl;
+                if((*iter).first == rids[i]){
+                    std::cout << (*iter).first << std::endl;
+                }
             }
             debug_lock.unlock();
         }
