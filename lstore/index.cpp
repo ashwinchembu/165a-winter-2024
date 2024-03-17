@@ -175,9 +175,6 @@ void Index::update_index(int& rid, std::vector<int> columns, std::vector<int> ol
                 std::this_thread::sleep_for(std::chrono::milliseconds(10));
             }
             update_lock_uniq.unlock();
-
-
-
         }
     }
 }
