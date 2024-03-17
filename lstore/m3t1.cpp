@@ -13,11 +13,12 @@
 #include <algorithm>
 #include <iterator>
 #include <random>
+#include <chrono>
 
 const int _NONE = -2147481000;
 
 
-int number_of_records = 1000;
+int number_of_records = 10000;
 int number_of_transactions = 100;
 int number_of_operations_per_record = 1;
 int num_threads = 1;
@@ -93,7 +94,7 @@ int test3Part2(){
 	}
 
 	std::vector<Transaction*> transactions;
-	std::vector<TransactionWorker*>transaction_workers;
+	std::vector<TransactionWorker*> transaction_workers;
 
 	for (int i = 0; i < number_of_transactions; i++) {
 		transactions.push_back(new Transaction());
@@ -136,6 +137,7 @@ int test3Part2(){
 	for(int i = 0; i < num_threads;i++){
 		transaction_workers[i]->join();
 	}
+	delete query;
 
 	int score = keys.size();
 	for (int key : keys) {
@@ -152,6 +154,7 @@ int test3Part2(){
 		}
 	}
 	std::cout << "Version -1 Score: " << score << "/" << keys.size() << std::endl;
+	delete query;
 
 	int v2_score = keys.size();
 	for (int key : keys) {
@@ -172,6 +175,7 @@ int test3Part2(){
 	if (score != v2_score) {
 		std::cout << "Failure : Version -1 and Version -2 scores must be the same" << std::endl;
 	}
+	delete query;
 
 	score = keys.size();
 	for (int key : keys) {
@@ -238,6 +242,16 @@ int test3Part2(){
 	}
 	std::cout << "Aggregate version 0 finished. Valid Aggregatinos: " << valid_sums << "/" <<number_of_aggregates << std::endl;
 	db->close();
+
+	delete db;
+	delete query;
+	for(int i = 0;i<number_of_transactions;i++){
+		delete transactions[i];
+	}
+
+	for(int i = 0; i < num_threads;i++){
+		delete transaction_workers[i];
+	}
 	return 0;
 }
 
@@ -332,11 +346,21 @@ int test3Part1(){
 	std::cout<<"select finished"<<std::endl;
 
 	db->close();
+	delete db;
+	delete query;
+	for(int i = 0;i<number_of_transactions;i++){
+		delete insert_transactions[i];
+	}
+
+	for(int i = 0; i < num_threads;i++){
+		delete transaction_workers[i];
+	}
 
 	return 0;
 }
 
 int bench() {
+	std::chrono::time_point<std::chrono::system_clock> start, end;
 	Database* db = new Database();
 
 	db->open("./Bench");
@@ -380,6 +404,7 @@ int bench() {
 		insert_transaction_workers[i%num_threads]->add_transaction(*insert_transactions[i]);
 	}
 
+	start = std::chrono::system_clock::now();
 	for(int i = 0; i < num_threads;i++){
 		insert_transaction_workers[i]->run();
 	}
@@ -387,8 +412,9 @@ int bench() {
 	for(int i = 0; i < num_threads;i++){
 		insert_transaction_workers[i]->join();
 	}
+	end = std::chrono::system_clock::now();
 
-	std::cout << "Inserting " << number_of_records << " records took :" << std::endl;
+	std::cout << "Inserting " << number_of_records << " records took :" << (end - start).count() << "s" << std::endl;
 
 	for(int i =0; i < number_of_records;i++){
 		std::vector<int> toUpdate0{_NONE, _NONE, _NONE, _NONE, _NONE};
@@ -406,6 +432,7 @@ int bench() {
 		update_transaction_workers[i%num_threads]->add_transaction(*update_transactions[i]);
 	}
 
+	start = std::chrono::system_clock::now();
 	for(int i = 0; i < num_threads;i++){
 		update_transaction_workers[i]->run();
 	}
@@ -413,8 +440,9 @@ int bench() {
 	for(int i = 0; i < num_threads;i++){
 		update_transaction_workers[i]->join();
 	}
+	end = std::chrono::system_clock::now();
 
-	std::cout << "Updating " << number_of_records << " records took :" << std::endl;
+	std::cout << "Updating " << number_of_records << " records took :" << (end - start).count() << "s" << std::endl;
 
 
 	for(int i =0; i < number_of_records;i++){
@@ -426,6 +454,7 @@ int bench() {
 		select_transaction_workers[i%num_threads]->add_transaction(*select_transactions[i]);
 	}
 
+	start = std::chrono::system_clock::now();
 	for(int i = 0; i < num_threads;i++){
 		select_transaction_workers[i]->run();
 	}
@@ -433,8 +462,9 @@ int bench() {
 	for(int i = 0; i < num_threads;i++){
 		select_transaction_workers[i]->join();
 	}
+	end = std::chrono::system_clock::now();
 
-	std::cout << "Selecting " << number_of_records << " records took :" << std::endl;
+	std::cout << "Selecting " << number_of_records << " records took :" << (end - start).count() << "s" << std::endl;
 
 
 	for(int i =0; i < number_of_records; i = i + aggregate_size){
@@ -448,6 +478,7 @@ int bench() {
 		aggreg_transaction_workers[i%num_threads]->add_transaction(*aggreg_transactions[i]);
 	}
 
+	start = std::chrono::system_clock::now();
 	for(int i = 0; i < num_threads;i++){
 		aggreg_transaction_workers[i]->run();
 	}
@@ -455,9 +486,28 @@ int bench() {
 	for(int i = 0; i < num_threads;i++){
 		aggreg_transaction_workers[i]->join();
 	}
+	end = std::chrono::system_clock::now();
 
-	std::cout << "Aggregate " << number_of_records << " of " << aggregate_size << " record batch took:" << std::endl;
+	std::cout << "Aggregate " << number_of_records << " of " << aggregate_size << " record batch took:" << (end - start).count() << "s" << std::endl;
 
 	db->close();
+
+	delete db;
+	delete query;
+	for(int i = 0;i<number_of_transactions;i++){
+		delete insert_transactions[i];
+		delete update_transactions[i];
+		delete select_transactions[i];
+		delete aggreg_transactions[i];
+	}
+
+	for(int i = 0; i < num_threads;i++){
+		delete insert_transaction_workers[i];
+		delete update_transaction_workers[i];
+		delete select_transaction_workers[i];
+		delete aggreg_transaction_workers[i];
+	}
+
+
 	return 0;
 }

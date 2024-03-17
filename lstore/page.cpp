@@ -289,7 +289,6 @@ int PageRange::read(FILE* fp) {
     }
     base_last_wasfull = (num_slot_used_base == PAGE_SIZE);
     tail_last_wasfull = (num_slot_used_tail == PAGE_SIZE) || (tail_last == base_last);
-    std::cout << tail_last_wasfull << std::endl;
     e = e + fread(&num_column, sizeof(int), 1, fp);
     return e;
 }
