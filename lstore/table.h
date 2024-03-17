@@ -47,6 +47,8 @@ public:
     std::mutex insert_lock2;
     std::mutex update_lock;
 
+    std::mutex debug;
+
     std::unordered_map<int, RID> page_directory; //<RID.id, RID>
     std::shared_mutex page_directory_lock;
 

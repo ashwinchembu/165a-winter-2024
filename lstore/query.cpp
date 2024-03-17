@@ -59,12 +59,13 @@ std::vector<Record> Query::select_version(const int& search_key, const int& sear
     std::vector<int> rids = table->index->locate(search_key_index, search_key); //this returns the RIDs of the base pages
     for(size_t i = 0; i < rids.size(); i++){ //go through each matching RID that was returned from index
         std::shared_lock page_directory_shared(table->page_directory_lock);
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
         if(table->page_directory.find(rids[i]) == table->page_directory.end()) {
+            std::unique_lock<std::mutex> debug_lock(table->debug);
             std::cout << "we are looking for " << rids[i] << std::endl;
             for(auto iter = table->page_directory.begin(); iter != table->page_directory.end(); iter++){
                 std::cout << (*iter).first << std::endl;
             }
+            debug_lock.unlock();
         }
         RID rid(table->page_directory.find(rids[i])->second);
         page_directory_shared.unlock();
