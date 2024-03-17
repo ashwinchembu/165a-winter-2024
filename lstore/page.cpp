@@ -288,7 +288,7 @@ int PageRange::read(FILE* fp) {
         pages.push_back(temp);
     }
     base_last_wasfull = (num_slot_used_base == PAGE_SIZE);
-    tail_last_wasfull = (num_slot_used_tail == PAGE_SIZE);
+    tail_last_wasfull = (num_slot_used_tail == PAGE_SIZE) || (tail_last == base_last);
     e = e + fread(&num_column, sizeof(int), 1, fp);
     return e;
 }
