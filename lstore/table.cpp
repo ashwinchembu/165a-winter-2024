@@ -175,7 +175,7 @@ int Table::write(FILE* fp) {
 	char nameBuffer[128];
 	strcpy(nameBuffer,name.c_str());
 	fwrite(nameBuffer,128,1,fp);
-	for(std::map<int, RID>::iterator iter=page_directory.begin(); iter!=page_directory.end(); iter++){
+	for(std::unordered_map<int, RID>::iterator iter=page_directory.begin(); iter!=page_directory.end(); iter++){
 		fwrite(&(iter->first), sizeof(int), 1, fp);
 		iter->second.write(fp);
 	}
