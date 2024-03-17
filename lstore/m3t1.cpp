@@ -2,6 +2,7 @@
 #include "db.h"
 #include "table.h"
 #include "transaction_worker.h"
+#include "bufferpool.h"
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -29,6 +30,10 @@ int test3Part1();
 int test3Part2();
 int bench();
 
+bool allowTableDump = false;
+
+void dumpTable(Table* table);
+
 inline std::string rtrim(std::string &s) {
     s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
         return !std::isspace(ch);
@@ -45,13 +50,22 @@ std::string printArray(std::vector<int> data) {
 
 int main(int argc,char**argv){
 	if (argc != 2) {
-		std::cerr << "Usage: " << argv[0] << " <part>" << std::endl;
-		std::cerr << "Part 1:  " << argv[0] << "  1" << std::endl;
-		std::cerr << "Part 2:  " << argv[0] << "  2" << std::endl;
-		std::cerr << "Bench :  " << argv[0] << "  4" << std::endl;
-		return 1;
-	}
+		std::string maybeTheLetterD;
 
+		if(argc == 3 && (maybeTheLetterD = argv[2]) == "d"){
+			allowTableDump = true;
+
+		} else {
+
+			std::cerr << "Usage: " << argv[0] << " <part>" << std::endl;
+			std::cerr << "Part 1:  " << argv[0] << "  1" << std::endl;
+			std::cerr << "Part 2:  " << argv[0] << "  2" << std::endl;
+			std::cerr << "Bench :  " << argv[0] << "  4" << std::endl;
+
+			return 1;
+		}
+
+	}
 	std::string part = argv[1];
 
 	if (part == "1") {
@@ -247,6 +261,9 @@ int test3Part2(){
 		}
 	}
 	std::cout << "Aggregate version 0 finished. Valid Aggregatinos: " << valid_sums << "/" <<number_of_aggregates << std::endl;
+
+	dumpTable(grades_table);
+	
 	db->close();
 
 	delete db;
@@ -350,6 +367,8 @@ int test3Part1(){
 	}
 
 	std::cout<<"select finished"<<std::endl;
+
+	dumpTable(grades_table);
 
 	db->close();
 	delete db;
@@ -502,6 +521,8 @@ int bench() {
 
 	std::cout << "Aggregate " << number_of_records << " of " << aggregate_size << " record batch took : " << elapsed_seconds.count() << "s" << std::endl;
 
+	dumpTable(grades_table);
+
 	db->close();
 
 	delete db;
@@ -522,4 +543,28 @@ int bench() {
 
 
 	return 0;
+}
+
+extern BufferPool buffer_pool;
+
+void dumpTable(Table* table){
+
+	if(!allowTableDump){
+		return;
+	}
+
+	std::printf("%-10s%-10s%-10s%-10s%-10s%-10s\n\n","INDIR","RID","TIME","SCHEM","BASE","TPS");
+
+	int lines = 0;
+
+	for(auto& e: table->page_directory){
+		if(lines++ % 50 ==0){
+			std::printf("\n%-10s%-10s%-10s%-10s%-10s%-10s\n\n","INDIR","RID","TIME","SCHEM","BASE","TPS");
+		}
+
+		for(int i = 0;i<NUM_METADATA_COLUMNS+table->num_columns;i++){
+			printf("%-10d",buffer_pool.get(e.second,i));
+		}
+		printf("\n");
+	}
 }
