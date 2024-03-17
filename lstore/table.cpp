@@ -101,6 +101,7 @@ RID Table::insert(const std::vector<int>& columns) {
 
 	std::unique_lock page_directory_unique(page_directory_lock);
 	page_directory.insert({rid_id, record});
+	std::cout << rid_id <<", " << record.id << std::endl;
 	page_directory_unique.unlock();
 	return record;
 }
