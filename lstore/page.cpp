@@ -116,21 +116,21 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
         for (int i = NUM_METADATA_COLUMNS; i < num_column; i++) {
             buffer_pool.insert_new_page(new_rid, i, columns[i - NUM_METADATA_COLUMNS]);
         }
-        lock.unlock();
-
         // Protecting pages vector from multiple thread writing simultaneously
         std::unique_lock plock(page_lock);
         // Insert the first rid of the logical page into appropriate place
         pages.insert(pages.begin() + base_last, new_rid);
         plock.unlock();
+        lock.unlock();
+
     } else {
         // Update status of the page range
         base_last_wasfull = (num_slot_used_base == PAGE_SIZE);
         num_slot_used_base++;
-        lock.unlock();
-
         // Update information in the rid class
         new_rid.offset = num_slot_used_base - 1;
+        lock.unlock();
+
         std::shared_lock pshared(page_lock);
         new_rid.first_rid_page = pages[base_last].id;
         pshared.unlock();
