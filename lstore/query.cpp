@@ -71,14 +71,6 @@ std::vector<Record> Query::select_version(const int& search_key, const int& sear
                 page_directory_shared.lock();
                 rid = table->page_directory.find(new_int)->second; //go one step further in indirection
 
-                if (rid.first_rid_page == 0) {
-                        std::cerr << "Something unexpected happen in update again" << std::endl;
-                        std::cout << "New int" << new_int << std::endl;
-                        std::cout << "ridid" << rid.id << std::endl;
-                }
-
-
-
                 page_directory_shared.unlock();
 
                 if(rid.id > 0){
@@ -115,17 +107,6 @@ bool Query::update(const int& primary_key, const std::vector<int>& columns) {
     }
     page_directory_shared.lock();
     RID last_update = table->page_directory.find(indirection_rid)->second; //locate the previous update
-
-
-
-    if (last_update.first_rid_page == 0) {
-            std::cerr << "Something unexpected happen in update again" << std::endl;
-            std::cout << primary_key << std::endl;
-            std::cout << "Indirection" << indirection_rid << std::endl;
-    }
-
-
-
 
     page_directory_shared.unlock();
 
