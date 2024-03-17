@@ -114,9 +114,9 @@ int test3Part2(){
 				int value = rand() % 20;
 				updated_columns[i] = value;
 				updated_records.find(key)->second[i] = value;
-				if(j < number_of_operations_per_record - 1) {
+				if(i < number_of_operations_per_record - 1) {
 					one_ver_ago.find(key)->second[i] = value;
-				} else if(j < number_of_operations_per_record - 2) {
+				} else if(i < number_of_operations_per_record - 2) {
 					two_ver_ago.find(key)->second[i] = value;
 				}
 			}
