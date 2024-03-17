@@ -100,7 +100,6 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
         num_slot_used_base = 1;
         tail_last++;
         base_last++;
-        lock.unlock();
 
         // Update information in the rid class
         new_rid.offset = 0;
@@ -117,6 +116,7 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
         for (int i = NUM_METADATA_COLUMNS; i < num_column; i++) {
             buffer_pool.insert_new_page(new_rid, i, columns[i - NUM_METADATA_COLUMNS]);
         }
+        lock.unlock();
 
         // Protecting pages vector from multiple thread writing simultaneously
         std::unique_lock plock(page_lock);
