@@ -182,7 +182,6 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
         tail_last_wasfull = false;
         tail_last++;
         num_slot_used_tail = 1;
-        mlock.unlock();
 
         // Update the information in the new rid class
         rid_new.offset = 0;
@@ -207,6 +206,7 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
         }
         // Write in the schema encoding once we know which one is updated.
         buffer_pool.insert_new_page(rid_new, SCHEMA_ENCODING_COLUMN, schema_encoding);
+        mlock.unlock();
 
         // Setting the new RID to be representation of the page if the page was newly created
         std::unique_lock plock(page_lock);
