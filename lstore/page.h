@@ -47,7 +47,7 @@ public:
     ~PageRange();
     std::shared_ptr<PageRange> clone();
     int insert(RID& new_rid, const std::vector<int>& columns);
-    int update(RID& rid, RID& rid_new, const std::vector<int>& columns, std::map<int, RID>& page_directory, std::shared_mutex* lock);
+    int update(RID& rid, RID& rid_new, const std::vector<int>& columns, std::unordered_map<int, RID>& page_directory, std::shared_mutex* lock);
     bool base_has_capacity () const;
     int write(FILE* fp);
     int read(FILE* fp);
