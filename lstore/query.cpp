@@ -61,7 +61,7 @@ std::vector<Record> Query::select_version(const int& search_key, const int& sear
         if(table->page_directory.find(rids[i]) == table->page_directory.end()) {
             std::cout << "we are looking for " << rids[i] << std::endl;
             for(auto iter = table->page_directory.begin(); iter != table->page_directory.end(); iter++){
-                std::cout << *(iter) << std::endl;
+                std::cout << (*iter).first << std::endl;
             }
         }
         RID rid(table->page_directory.find(rids[i])->second);
