@@ -162,7 +162,7 @@ int PageRange::insert(RID& new_rid, const std::vector<int>& columns) {
  * @return return RID of updated record upon successful insertion.
  *
  */
-int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, const std::map<int, RID>& page_directory, std::shared_mutex* lock) {
+int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, std::map<int, RID>& page_directory, std::shared_mutex* lock) {
     // Protecting page directory from thread writing while another thread is reading
     std::shared_lock pdlock(*lock);
     int latest_rid_id = buffer_pool.get(rid, INDIRECTION_COLUMN);
@@ -250,7 +250,11 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, c
         buffer_pool.set(rid_new, SCHEMA_ENCODING_COLUMN, schema_encoding, true);
     }
     // Updating indirection column and schema encoding column for the base page
+    std::shared_lock pdlock_uniq(*lock);
     buffer_pool.set(rid, INDIRECTION_COLUMN, rid_new.id, false);
+   	page_directory.insert({rid_new.id, rid_new});
+    pdlock_uniq.unlock();
+
     buffer_pool.pin(rid, SCHEMA_ENCODING_COLUMN);
     int base_schema = buffer_pool.get(rid, SCHEMA_ENCODING_COLUMN);
     buffer_pool.set(rid, SCHEMA_ENCODING_COLUMN, base_schema | schema_encoding, false);
