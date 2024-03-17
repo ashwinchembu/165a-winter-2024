@@ -117,6 +117,7 @@ int test3Part2(){
 	for (int i = 0; i < num_threads; i++) {
 		transaction_workers.push_back(new TransactionWorker());
 	}
+	std::cout << "Insert finished" << std::endl;
 
 	std::map<int,std::vector<int>> updated_records = records;
 	std::map<int,std::vector<int>> one_ver_ago = records;
@@ -139,7 +140,6 @@ int test3Part2(){
 			transactions[key % number_of_transactions]->add_query(*query, *grades_table, key, updated_columns);
 		}
 	}
-	std::cout << "Update finished" << std::endl;
 	for(int i = 0;i<number_of_transactions;i++){
 		transaction_workers[i%num_threads]->add_transaction(*transactions[i]);
 	}
@@ -151,6 +151,7 @@ int test3Part2(){
 	for(int i = 0; i < num_threads;i++){
 		transaction_workers[i]->join();
 	}
+	std::cout << "Update finished" << std::endl;
 	delete query;
 
 	int score = keys.size();
