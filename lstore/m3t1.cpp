@@ -361,6 +361,8 @@ int test3Part1(){
 
 int bench() {
 	std::chrono::time_point<std::chrono::system_clock> start, end;
+	std::chrono::duration<double> elapsed_seconds;
+
 	Database* db = new Database();
 
 	db->open("./Bench");
@@ -413,8 +415,9 @@ int bench() {
 		insert_transaction_workers[i]->join();
 	}
 	end = std::chrono::system_clock::now();
+	elapsed_seconds = end - start;
 
-	std::cout << "Inserting " << number_of_records << " records took :" << (end - start).count() << "s" << std::endl;
+	std::cout << "Inserting " << number_of_records << " records took :" << elapsed_seconds.count() << "s" << std::endl;
 
 	for(int i =0; i < number_of_records;i++){
 		std::vector<int> toUpdate0{_NONE, _NONE, _NONE, _NONE, _NONE};
@@ -441,8 +444,9 @@ int bench() {
 		update_transaction_workers[i]->join();
 	}
 	end = std::chrono::system_clock::now();
+	elapsed_seconds = end - start;
 
-	std::cout << "Updating " << number_of_records << " records took :" << (end - start).count() << "s" << std::endl;
+	std::cout << "Updating " << number_of_records << " records took :" << elapsed_seconds.count() << "s" << std::endl;
 
 
 	for(int i =0; i < number_of_records;i++){
@@ -463,8 +467,9 @@ int bench() {
 		select_transaction_workers[i]->join();
 	}
 	end = std::chrono::system_clock::now();
+	elapsed_seconds = end - start;
 
-	std::cout << "Selecting " << number_of_records << " records took :" << (end - start).count() << "s" << std::endl;
+	std::cout << "Selecting " << number_of_records << " records took :" << elapsed_seconds.count() << "s" << std::endl;
 
 
 	for(int i =0; i < number_of_records; i = i + aggregate_size){
@@ -487,8 +492,9 @@ int bench() {
 		aggreg_transaction_workers[i]->join();
 	}
 	end = std::chrono::system_clock::now();
+	elapsed_seconds = end - start;
 
-	std::cout << "Aggregate " << number_of_records << " of " << aggregate_size << " record batch took:" << (end - start).count() << "s" << std::endl;
+	std::cout << "Aggregate " << number_of_records << " of " << aggregate_size << " record batch took:" << elapsed_seconds.count() << "s" << std::endl;
 
 	db->close();
 
