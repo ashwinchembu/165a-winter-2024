@@ -41,8 +41,6 @@ extern const int DELETE_NONE;
 extern const int DELETE_CASCADE;
 extern const int DELETE_NULL;
 
-class RIDJoin;
-
 class Table {
 public:
     std::mutex insert_lock;
@@ -65,8 +63,6 @@ public:
     std::atomic_int num_update = 0;
     std::atomic_int num_insert = 0;
 
-    std::map<int,std::vector<RIDJoin>>referencesOut;
-
     int num_columns; //number of columns of actual data, excluding the metadata
 
     Table () {};
@@ -83,21 +79,7 @@ public:
     int write(FILE* fp);
     int read(FILE* fp);
     void PrintData();
-
-    bool ridIsJoined(RID rid,int col);
-    RIDJoin getJoin(RID rid, int col);
 };
 
-class RIDJoin{
-	public:
-		RID ridSrc;
-		RID ridTarget;
-
-		int srcCol;
-		int targetCol;
-
-		int modificationPolicy;
-		Table* targetTable;
-};
 
 #endif

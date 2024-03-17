@@ -354,39 +354,6 @@ int Table::merge() {
 	return -1;
 }
 
-/*
- * checks if a rid is referenced by another rid over a column.
- */
-bool Table::ridIsJoined(RID rid, int col){
-	if(referencesOut.find(col)!=referencesOut.end()){
-		return false;
-	}
-
-	std::vector<RIDJoin> joins = referencesOut.find(col)->second;
-
-	for(RIDJoin& j : joins){
-		if(j.ridSrc.id == rid.id){
-			return true;
-		}
-	}
-
-	return false;
-}
-
-/*
- * Returns the relationship between the argument rid
- * and another rid over a column.
- */
-RIDJoin Table::getJoin(RID rid, int col){
-	std::vector<RIDJoin> joins = referencesOut.find(col)->second;
-
-	for(RIDJoin& j : joins){
-		if(j.ridSrc.id == rid.id){
-			return j;
-		}
-	}
-	return RIDJoin();
-}
 
 void Table::PrintData() {
 	std::cout << "--Page Directory--" << std::endl;

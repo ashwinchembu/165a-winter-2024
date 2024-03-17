@@ -21,10 +21,6 @@ public:
     unsigned long int sum(const int& start_range, const int& end_range, const int& aggregate_column_index);
     unsigned long int sum_version(const int& start_range, const int& end_range, const int& aggregate_column_index, const int& _relative_version);
     bool increment(const int& key, const int& column);
-
-    void referenceOnColumns(Table* srcTable, Table* targetTable, int srcCol, int targetCol, int modificationPolicy);
-
-    void performDeleteOnColumnReferences(RID base_rid);
 };
 
 #endif // QUERY_H
