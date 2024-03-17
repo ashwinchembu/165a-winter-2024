@@ -10,13 +10,15 @@ class LockManagerEntry{
     LockManagerEntry();
     virtual ~LockManagerEntry();
     std::shared_mutex* mutex;
-  //  std::shared_lock<std::shared_mutex>* shared_lock;
-  //  std::unique_lock<std::shared_mutex>* unique_lock;
 };
 
 class LockManager{
   public:
+    std::shared_mutex active_unique_lock;
+    std::shared_mutex active_shared_lock;
     LockManager();
+    LockManager(const LockManager& rhs);
+    LockManager& operator=(const LockManager& rhs);
     virtual ~LockManager();
     std::unordered_map<int, LockManagerEntry*> locks; //<primary_key, LockManagerEntry>
     std::unordered_multimap<std::thread::id, std::shared_lock<std::shared_mutex>*> active_shared_locks;

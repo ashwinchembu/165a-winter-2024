@@ -156,7 +156,6 @@ inline bool lock_shared_key(std::string& table_name, int& key) {
     LockManagerEntry* new_entry = new LockManagerEntry;
     new_lock = new std::shared_lock(*(new_entry->mutex), std::defer_lock);
     if(!(new_lock->try_lock())){
-      std::cout << "abort, shared" << std::endl;
       delete new_entry;
       delete new_lock;
       return false;
@@ -169,7 +168,12 @@ inline bool lock_shared_key(std::string& table_name, int& key) {
       return false;
     }
   }
+  std::unique_lock<std::shared_mutex> lock_mng_lock(lock_mng.active_shared_lock);
   lock_mng.active_shared_locks.insert({std::this_thread::get_id(), new_lock});
+  if (lock_mng.active_shared_locks.load_factor() >= lock_mng.active_shared_locks.max_load_factor()) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(7));
+  }
+  lock_mng_lock.unlock();
   return true;
 }
 
@@ -181,7 +185,6 @@ inline bool lock_unique_key(std::string& table_name, int& key) {
     LockManagerEntry* new_entry = new LockManagerEntry;
     new_lock = new std::unique_lock(*(new_entry->mutex), std::defer_lock);
     if(!(new_lock->try_lock())){
-      std::cout << "abort, lock" << std::endl;
       delete new_entry;
       delete new_lock;
       return false;
@@ -194,25 +197,47 @@ inline bool lock_unique_key(std::string& table_name, int& key) {
       return false;
     }
   }
+  std::unique_lock<std::shared_mutex> lock_mng_lock(lock_mng.active_unique_lock);
   lock_mng.active_unique_locks.insert({std::this_thread::get_id(), new_lock});
+  if (lock_mng.active_unique_locks.load_factor() >= lock_mng.active_unique_locks.max_load_factor()) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(7));
+  }
+  lock_mng_lock.unlock();
   return true;
 }
 
 void release_locks(const std::string& table_name){
     LockManager lock_mng = buffer_pool.lock_manager.find(table_name)->second;
+
+    std::shared_lock<std::shared_mutex> lock_mng_lock_uniq(lock_mng.active_unique_lock);
     auto uniq_locks = lock_mng.active_unique_locks.equal_range(std::this_thread::get_id());
+    lock_mng_lock_uniq.unlock();
+
+    std::unique_lock<std::shared_mutex> lock_mng_lock_uniq_uniq(lock_mng.active_unique_lock);
     for (auto iter = uniq_locks.first; iter != uniq_locks.second; iter++) {
       iter->second->unlock();
       delete iter->second;
       lock_mng.active_unique_locks.erase(iter);
     }
+    if (lock_mng.active_unique_locks.load_factor() >= lock_mng.active_unique_locks.max_load_factor()) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(7));
+    }
+    lock_mng_lock_uniq_uniq.unlock();
 
+    std::shared_lock<std::shared_mutex> lock_mng_lock_shrd(lock_mng.active_shared_lock);
     auto shrd_locks = lock_mng.active_shared_locks.equal_range(std::this_thread::get_id());
+    lock_mng_lock_shrd.unlock();
+
+    std::unique_lock<std::shared_mutex> lock_mng_lock_shrd_uniq(lock_mng.active_shared_lock);
     for (auto iter = shrd_locks.first; iter != shrd_locks.second; iter++) {
       iter->second->unlock();
       delete iter->second;
       lock_mng.active_shared_locks.erase(iter);
     }
+    if (lock_mng.active_shared_locks.load_factor() >= lock_mng.active_shared_locks.max_load_factor()) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(7));
+    }
+    lock_mng_lock_shrd_uniq.unlock();
 
 }
 
