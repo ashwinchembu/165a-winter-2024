@@ -33,16 +33,16 @@ void TransactionWorker::run() {
 
 extern bool test2;
 
+std::mutex threadGate;
+
 void TransactionWorker::_run() {
     for (size_t i = 0; i < transactions.size(); i++) {
+        std::unique_lock<std::mutex> gate(threadGate);
         bool result = transactions[i].run();
-
-	    //        if(test2 && i == 10){
-//		  while(true){}
-//	    }
         if(!result){
           transactions.push_back(transactions[i]);
         }
+        gate.unlock();
 	}
 }
 
