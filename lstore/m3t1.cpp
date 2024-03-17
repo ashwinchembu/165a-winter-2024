@@ -34,6 +34,8 @@ int bench();
 
 bool allowTableDump = false;
 
+bool overrideTableDump = false;
+
 void dumpTable(Table* table);
 
 inline std::string rtrim(std::string &s) {
@@ -63,6 +65,7 @@ int main(int argc,char**argv){
 			std::cerr << "Part 1:  " << argv[0] << "  1" << std::endl;
 			std::cerr << "Part 2:  " << argv[0] << "  2" << std::endl;
 			std::cerr << "Bench :  " << argv[0] << "  4" << std::endl;
+			std::cerr << "Part 1 & 2 :  " << argv[0] << "  12" << std::endl;
 
 			return 1;
 		}
@@ -79,6 +82,23 @@ int main(int argc,char**argv){
 	} else if (part == "4") {
 		std::cout << "Selected: Bench" << std::endl;
 		bench();
+	}else if(part == "12"){
+		std::cout << "Selected: Part 1 & 2" << std::endl;
+		std::cout << "---Part 1---" << std::endl;
+
+		if(allowTableDump){
+			overrideTableDump = true;
+			allowTableDump = false;
+		}
+
+		test3Part1();
+
+		if(overrideTableDump){
+			allowTableDump = true;
+		}
+
+		std::cout << "---Part 2---" << std::endl;
+		test3Part2();
 	} else {
 		std::cerr << "Invalid part. Please specify either 'part1' or 'part2'." << std::endl;
 		return 1;
