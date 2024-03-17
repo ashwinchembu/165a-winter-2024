@@ -8,7 +8,7 @@ db = Database()
 grades_table = db.create_table('Grades', 5, 0)
 query = Query(grades_table)
 keys = []
-
+print("")
 insert_time_0 = process_time()
 for i in range(0, 10000):
     # print("inserting ", i, "th value")
