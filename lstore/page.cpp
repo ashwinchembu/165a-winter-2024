@@ -255,7 +255,7 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, s
    	page_directory.insert({rid_new.id, rid_new});
     buffer_pool.set(rid, INDIRECTION_COLUMN, rid_new.id, false);
     if (page_directory.load_factor() >= page_directory.max_load_factor()) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
     pdlock_uniq.unlock();
 

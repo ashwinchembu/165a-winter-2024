@@ -146,7 +146,7 @@ void Index::insert_index(int& rid, std::vector<int> columns) {
             std::unique_lock lock(*(mutex_list.find(i)->second));
             itr->second.insert({columns[i], rid});
             if (itr->second.load_factor() >= itr->second.max_load_factor()) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(5));
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
             }
             lock.unlock();
         }
@@ -158,12 +158,9 @@ void Index::update_index(int& rid, std::vector<int> columns, std::vector<int> ol
     for (size_t i = 0; i< indices.size(); i++) {
         if (indices[i].size() > 0) {	//if there is a index for that column
             int old_value = old_columns[i];
-
             std::unique_lock update_lock_shrd(*(mutex_list.find(i)->second));
             auto range = indices[i].equal_range(old_value);
             update_lock_shrd.unlock();
-
-
             for(auto itr = range.first; itr != range.second; itr++){
                 if (itr->second == rid) {
                     std::unique_lock lock(*(mutex_list.find(i)->second));
@@ -172,12 +169,10 @@ void Index::update_index(int& rid, std::vector<int> columns, std::vector<int> ol
                     break;
                 }
             }
-
-
             std::unique_lock update_lock_uniq(*(mutex_list.find(i)->second));
             indices[i].insert({columns[i], rid});
             if (indices[i].load_factor() >= indices[i].max_load_factor()) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(5));
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
             }
             update_lock_uniq.unlock();
 
