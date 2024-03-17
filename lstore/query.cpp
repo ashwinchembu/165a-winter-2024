@@ -105,12 +105,16 @@ bool Query::update(const int& primary_key, const std::vector<int>& columns) {
     }
     page_directory_shared.lock();
     RID last_update = table->page_directory.find(indirection_rid)->second; //locate the previous update
+    if (last_update.first_rid_page == 0) {
+        std::cout << "HI" << std::endl;
+        last_update = table->page_directory.find(indirection_rid)->second; //locate the previous update
+    }
     page_directory_shared.unlock();
     RID update_rid = table->update(base_rid, columns); // insert update into the table
     std::vector<int> old_columns;
     std::vector<int> new_columns;
     for(int i = 0; i < table->num_columns; i++){ // fill old_columns with the contents of previous update
-      int column_var = buffer_pool.get(last_update, i + NUM_METADATA_COLUMNS);
+      int column_var = buffer_pool.get(last_update, i + NUM_METADATA_COLUMNS); //<======== Couldn't open... last_update is broken. All 0s.
       if (column_var < NONE){
         return false;
       }

@@ -158,7 +158,7 @@ int test3Part2(){
 		std::vector<int> correct = one_ver_ago.find(key)->second;
 		query = new Query(grades_table);
 
-		std::vector<int> result = query->select_version(key, 0, std::vector<int>{1, 1, 1, 1, 1}, -1)[0].columns;
+		std::vector<int> result = query->select_version(key, 0, std::vector<int>{1, 1, 1, 1, 1}, -1)[0].columns; // <======== Fails because select version does not return anything here
 		for (size_t i = 0; i < result.size(); i++) {
 			if (result[i] != correct[i]) {
 				score--;
