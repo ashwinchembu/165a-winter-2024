@@ -49,7 +49,7 @@ public:
 
     std::mutex debug;
 
-    std::unordered_map<int, RID> page_directory; //<RID.id, RID>
+    std::unordered_map<int&, RID&> page_directory; //<RID.id, RID>
     std::shared_mutex page_directory_lock;
 
     std::vector<std::shared_ptr<PageRange>> page_range;
