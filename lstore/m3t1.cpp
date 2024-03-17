@@ -205,6 +205,8 @@ int test3Part2(){
 		unsigned long int result = query->sum_version(keys[r[0]], keys[r[1]], 0, -1);
 		if (result == column_sum) {
 			valid_sums++;
+		} else {
+			std::cout << "aggregation error on range [" << r[0] << ", " << r[1] << "] : " << result << ", correct : " << column_sum << std::endl;
 		}
 	}
 	std::cout << "Aggregate version -1 finished. Valid Aggregatinos: " << valid_sums << "/" <<number_of_aggregates << std::endl;
@@ -221,6 +223,8 @@ int test3Part2(){
 		unsigned long int result = query->sum_version(keys[r[0]], keys[r[1]], 0, -2);
 		if (result == column_sum) {
 			v2_valid_sums++;
+		} else {
+			std::cout << "aggregation error on range [" << r[0] << ", " << r[1] << "] : " << result << ", correct : " << column_sum << std::endl;
 		}
 	}
 	std::cout << "Aggregate version -2 finished. Valid Aggregatinos: " << v2_valid_sums << "/" <<number_of_aggregates << std::endl;
@@ -238,6 +242,8 @@ int test3Part2(){
 		unsigned long int result = query->sum(keys[r[0]], keys[r[1]], 0);
 		if (result == column_sum) {
 			valid_sums++;
+		} else {
+			std::cout << "aggregation error on range [" << r[0] << ", " << r[1] << "] : " << result << ", correct : " << column_sum << std::endl;
 		}
 	}
 	std::cout << "Aggregate version 0 finished. Valid Aggregatinos: " << valid_sums << "/" <<number_of_aggregates << std::endl;
