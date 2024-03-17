@@ -1,6 +1,8 @@
 #ifndef TRANSACTION_H
 #define TRANSACTION_H
+#include <limits.h>
 #include <thread>
+#include <climits>
 #include "table.h"
 #include "index.h"
 #include "query.h"
@@ -24,7 +26,7 @@ public:
     int aggregate_column_index = -1; // Sum and Sum ver and Increment
 
     /* Return values */
-    unsigned long int* sum_result = nullptr;
+    unsigned long int sum_result = ULONG_MAX;
     std::vector<Record> select_result;
 
     QueryOperation (Query* query, const OpCode& op, Table* t) : q(query), type(op), table(t) {}

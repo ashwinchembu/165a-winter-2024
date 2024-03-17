@@ -40,8 +40,8 @@ bool QueryOperation::run() {
         case OpCode::SUM:
         case OpCode::SUM_VER:
             if (check_req()) {
-                *sum_result = q->sum_version(start_range, end_range, aggregate_column_index, relative_version);
-                return sum_result != nullptr;
+                sum_result = q->sum_version(start_range, end_range, aggregate_column_index, relative_version);
+                return sum_result != ULONG_MAX;
             } else {
                 std::cerr << "Query with Not enough data : Sum or Sum_ver" << std::endl;
                 return false;
