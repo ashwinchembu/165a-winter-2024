@@ -72,10 +72,10 @@ RID Table::insert(const std::vector<int>& columns) {
 	num_insert++; // Should not need mutex here. num_insert is std::atomic and rid solely depend on that.
 	int rid_id = num_insert;
 
-	insert_lock2_unique.unlock();
 	RID record(0);
 	record.table_name = name;
 	record.id = rid_id;
+	insert_lock2_unique.unlock();
 	// std::lock(insert_lock, page_directory_shared);
 	// std::lock_guard insert_lk(insert_lock);
 	std::unique_lock insert_lock_unique(insert_lock);
