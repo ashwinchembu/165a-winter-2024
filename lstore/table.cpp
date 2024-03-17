@@ -144,7 +144,6 @@ RID Table::update(RID& rid, const std::vector<int>& columns) {
 	}
 	std::unique_lock page_directory_unique(page_directory_lock);
 	page_directory.insert({rid_id, new_rid});
-	std::cout << rid_id <<", " << new_rid.id << std::endl;
 	page_directory_unique.unlock();
 	// page_range_update[i]++;
 	// if (page_range_update[i] >= MAX_PAGE_RANGE_UPDATES){
