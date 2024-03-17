@@ -75,29 +75,29 @@ RID Table::insert(const std::vector<int>& columns) {
 	// std::lock(insert_lock, page_directory_shared);
 	// std::lock_guard insert_lk(insert_lock);
 	std::unique_lock insert_lock_unique(insert_lock);
-	{
-		std::unique_lock page_range_shared(page_range_lock);
-		if (page_range.size() == 0 || !(page_range.back().get()->base_has_capacity())) {
-			page_range_shared.unlock();
-			std::shared_ptr<PageRange>newPageRange{new PageRange(record, columns)};
-			std::unique_lock page_range_unique(page_range_lock);
-			page_range.push_back(newPageRange); // Make a base page with given record
-			page_range_unique.unlock();
-			insert_lock_unique.unlock();
-		} else { // If there are base page already, just insert it normally.
 
-			PageRange* prange = (page_range.back().get());
-			std::shared_lock pshared(prange->page_lock);
-			record.first_rid_page_range = prange->pages[0].first_rid_page_range;
-			pshared.unlock();
-			page_range_shared.unlock();
-			insert_lock_unique.unlock();
+	std::unique_lock page_range_shared(page_range_lock);
+	if (page_range.size() == 0 || !(page_range.back().get()->base_has_capacity())) {
+		page_range_shared.unlock();
+		std::shared_ptr<PageRange>newPageRange{new PageRange(record, columns)};
+		std::unique_lock page_range_unique(page_range_lock);
+		page_range.push_back(newPageRange); // Make a base page with given record
+		page_range_unique.unlock();
+		insert_lock_unique.unlock();
+	} else { // If there are base page already, just insert it normally.
 
-			if (prange->insert(record, columns)) { /// @TODO Get this out of if statement
-				return RID(0);
-			}
+		PageRange* prange = (page_range.back().get());
+		std::shared_lock pshared(prange->page_lock);
+		record.first_rid_page_range = prange->pages[0].first_rid_page_range;
+		pshared.unlock();
+		page_range_shared.unlock();
+		insert_lock_unique.unlock();
+
+		if (prange->insert(record, columns)) { /// @TODO Get this out of if statement
+			return RID(0);
 		}
 	}
+
 
 	std::unique_lock page_directory_unique(page_directory_lock);
 	page_directory.insert({rid_id, record});

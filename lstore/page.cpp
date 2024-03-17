@@ -251,8 +251,8 @@ int PageRange::update(RID& rid, RID& rid_new, const std::vector<int>& columns, s
     }
     // Updating indirection column and schema encoding column for the base page
     std::shared_lock pdlock_uniq(*lock);
-    buffer_pool.set(rid, INDIRECTION_COLUMN, rid_new.id, false);
    	page_directory.insert({rid_new.id, rid_new});
+    buffer_pool.set(rid, INDIRECTION_COLUMN, rid_new.id, false);
     pdlock_uniq.unlock();
 
     buffer_pool.pin(rid, SCHEMA_ENCODING_COLUMN);

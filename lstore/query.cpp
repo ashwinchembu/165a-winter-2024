@@ -1,6 +1,7 @@
 #include <vector>
 #include <string>
 #include <cmath>
+#include <chrono>
 #include "config.h"
 #include "table.h"
 #include "page.h"
@@ -68,7 +69,26 @@ std::vector<Record> Query::select_version(const int& search_key, const int& sear
                   return failed_records;
                 }
                 page_directory_shared.lock();
-                rid = table->page_directory.find((new_int))->second; //go one step further in indirection
+                rid = table->page_directory.find(new_int)->second; //go one step further in indirection
+                if (rid.first_rid_page) {
+                    std::cerr << "Something unexpected happened in select_version" << std::endl;
+                }
+
+
+                if (rid.first_rid_page == 0) {
+                    while (rid.first_rid_page == 0) {
+                        std::cerr << "Something unexpected happen in update again" << std::endl;
+                        std::cout << new_int << std::endl;
+                        std::cout << rid.id << std::endl;
+                        page_directory_shared.unlock();
+                        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                        page_directory_shared.lock();
+                        rid = table->page_directory.find(new_int)->second; //locate the previous update
+                    }
+                }
+
+
+
                 page_directory_shared.unlock();
 
                 if(rid.id > 0){
@@ -101,15 +121,30 @@ bool Query::update(const int& primary_key, const std::vector<int>& columns) {
     page_directory_shared.unlock();
     int indirection_rid = buffer_pool.get(base_rid, INDIRECTION_COLUMN);
     if (indirection_rid < NONE){
-      return false;
+        return false;
     }
     page_directory_shared.lock();
     RID last_update = table->page_directory.find(indirection_rid)->second; //locate the previous update
+
+
+
     if (last_update.first_rid_page == 0) {
-        std::cout << "HI" << std::endl;
-        last_update = table->page_directory.find(indirection_rid)->second; //locate the previous update
+        while (last_update.first_rid_page == 0) {
+            std::cerr << "Something unexpected happen in update again" << std::endl;
+            std::cout << primary_key << std::endl;
+            std::cout << indirection_rid << std::endl;
+            page_directory_shared.unlock();
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            page_directory_shared.lock();
+            last_update = table->page_directory.find(indirection_rid)->second; //locate the previous update
+        }
     }
+
+
+
+
     page_directory_shared.unlock();
+
     RID update_rid = table->update(base_rid, columns); // insert update into the table
     std::vector<int> old_columns;
     std::vector<int> new_columns;
