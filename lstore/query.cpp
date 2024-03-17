@@ -72,15 +72,9 @@ std::vector<Record> Query::select_version(const int& search_key, const int& sear
                 rid = table->page_directory.find(new_int)->second; //go one step further in indirection
 
                 if (rid.first_rid_page == 0) {
-                    while (rid.first_rid_page == 0) {
                         std::cerr << "Something unexpected happen in update again" << std::endl;
                         std::cout << new_int << std::endl;
                         std::cout << rid.id << std::endl;
-                        page_directory_shared.unlock();
-                        std::this_thread::sleep_for(std::chrono::milliseconds(1));
-                        page_directory_shared.lock();
-                        rid = table->page_directory.find(new_int)->second; //locate the previous update
-                    }
                 }
 
 
@@ -125,15 +119,9 @@ bool Query::update(const int& primary_key, const std::vector<int>& columns) {
 
 
     if (last_update.first_rid_page == 0) {
-        while (last_update.first_rid_page == 0) {
             std::cerr << "Something unexpected happen in update again" << std::endl;
             std::cout << primary_key << std::endl;
             std::cout << indirection_rid << std::endl;
-            page_directory_shared.unlock();
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
-            page_directory_shared.lock();
-            last_update = table->page_directory.find(indirection_rid)->second; //locate the previous update
-        }
     }
 
 
