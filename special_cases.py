@@ -90,22 +90,22 @@ print('test 7 finished')
 pk_transactions = []
 pk_transaction_workers = []
 
-for i in range(1,2):
+for i in range(1,3):
     pk_transactions.append(Transaction())
 
-for i in range(1,2):
+for i in range(1,3):
     pk_transaction_workers.append(TransactionWorker())
 
 pk_transactions[0].add_query(query.update, grades_table, 92106429, [28, None, None, None, None])
 pk_transactions[1].add_query(query.update, grades_table, 92106429, [28, None, None, None, None])
 
-for i in range(1,2):
+for i in range(1,3):
     pk_transaction_workers[i-1].add_transaction(pk_transactions[i-1])
 
-for i in range(1,2):
+for i in range(1,3):
     pk_transaction_workers[i-1].run()
 
-for i in range(1,2):
+for i in range(1,3):
     pk_transaction_workers[i-1].join()
 
 print('test 8 finished')
@@ -115,22 +115,22 @@ print('test 8 finished')
 same_pk_transactions = []
 same_pk_transaction_workers = []
 
-for i in range(1,2):
+for i in range(1,3):
     same_pk_transactions.append(Transaction())
 
-for i in range(1,2):
+for i in range(1,3):
     same_pk_transaction_workers.append(TransactionWorker())
 
 same_pk_transactions[0].add_query(query.insert, grades_table, [264, None, None, None, None])
 same_pk_transactions[1].add_query(query.insert, grades_table, [264, None, None, None, None])
 
-for i in range(1,2):
+for i in range(1,3):
     same_pk_transaction_workers[i-1].add_transaction(same_pk_transactions[i-1])
 
-for i in range(1,2):
+for i in range(1,3):
     same_pk_transaction_workers[i-1].run()
 
-for i in range(1,2):
+for i in range(1,3):
     same_pk_transaction_workers[i-1].join()
 
 print('test 9 finished')
