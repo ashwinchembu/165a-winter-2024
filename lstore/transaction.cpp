@@ -374,15 +374,17 @@ void Transaction::abort() {
           //  queries[i].q->deleteRecord(queries[i].columns[queries[i].key]);
             break;
         case OpCode::UPDATE: //delete the update
-            {
+            { std::cout << "broken here 1" << std::endl;
               std::unique_lock page_directory_shared(queries[i].table->page_directory_lock);
               base_rid = queries[i].table->page_directory.find(queries[i].columns[queries[i].key])->second;
               page_directory_shared.unlock();
-
+  std::cout << "broken here 2" << std::endl;
               base_record_indirection = buffer_pool.get(base_rid, INDIRECTION_COLUMN);
               page_directory_shared.lock();
+              std::cout << "broken here 3" << std::endl;
               most_recent_update = queries[i].table->page_directory.find(base_record_indirection)->second;
               page_directory_shared.unlock();
+              std::cout << "broken here 4" << std::endl;
             }
 
 
@@ -395,14 +397,19 @@ void Transaction::abort() {
                     }
                 }
             }
+            std::cout << "broken here 5" << std::endl;
             if (update_written) {
-
+std::cout << "broken here 6" << std::endl;
               int second_most_recent_update = buffer_pool.get(most_recent_update, INDIRECTION_COLUMN);
               std::unique_lock page_directory_unique(queries[i].table->page_directory_lock);
+              std::cout << "broken here 7" << std::endl;
               queries[i].table->page_directory[most_recent_update.id].id = 0; //delete in page directory
+              std::cout << "broken here 8" << std::endl;
               page_directory_unique.unlock();
               buffer_pool.pin(base_rid, SCHEMA_ENCODING_COLUMN);
+              std::cout << "broken here 9" << std::endl;
               buffer_pool.set(base_rid, INDIRECTION_COLUMN, second_most_recent_update, false); //fix indirection
+              std::cout << "broken here 10" << std::endl;
               buffer_pool.unpin(base_rid, SCHEMA_ENCODING_COLUMN);
               break;
             }
@@ -410,9 +417,11 @@ void Transaction::abort() {
             break;
     }
   }
-
+  std::cout << "broken here 11" << std::endl;
   std::unique_lock lk(db_log.db_log_lock);
+  std::cout << "broken here 12" << std::endl;
   db_log.entries.erase(xact_id);
+  std::cout << "broken here 13" << std::endl;
   lk.unlock();
 }
 
