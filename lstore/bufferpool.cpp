@@ -294,58 +294,6 @@ Frame* BufferPool::evict(const RID& rid){ //return the frame that was evicted
   }
 }
 
-std::string BufferPool::buildDatPath(std::string tname,int first_rid_page,int first_rid_page_range,int column){
-//	char ret[1024];
-//	char* ptr =  ret;
-
-//	bool isBase = false;
-
-	std::string buildPath = this->path;
-	buildPath.append("/")
-			 .append(tname);
-
-//	ptr += sprintf(ptr,"%s/",path.c_str());
-//
-//	ptr += sprintf(ptr, "%s",tname.c_str());
-
-	if(column < NUM_METADATA_COLUMNS){
-//		ptr+= sprintf(ptr," M ");
-		buildPath.append("_M_");
-
-	} else if(first_rid_page < 0){
-//		ptr+= sprintf(ptr," T ");
-		buildPath.append("_T_");
-
-	} else if(first_rid_page > 0){
-//		ptr+= sprintf(ptr," B ");
-		buildPath.append("_B_");
-//		isBase = true;
-	}
-
-	buildPath.append(std::to_string(first_rid_page))
-			 .append("_")
-			 .append(std::to_string(first_rid_page_range))
-			 .append("_")
-			 .append(std::to_string(column));
-
-//	ptr+=sprintf(ptr,"%d %d %d",first_rid_page,first_rid_page_range,column);
-
-//	if(isBase){
-////		ptr+=sprintf(ptr," %d",mergeNumber);
-//
-//		buildPath.append("_")
-//		         .append(std::to_string(tableVersions.find(tname)->second));
-//	}
-
-	buildPath.append(".dat");
-
-//	sprintf(ptr, ".dat");
-//
-//	return {ret};
-
-	return buildPath;
-}
-
 void BufferPool::write_back(Frame* frame){
   std::string data_path = buildDatPath(frame->table_name,frame->first_rid_page,
           frame->first_rid_page_range,frame->column);
