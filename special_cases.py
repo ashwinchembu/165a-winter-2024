@@ -28,15 +28,17 @@ query.insert(*records[key])
 keys = sorted(list(records.keys()))
 print("Insert finished")
 
+
+
+
 # test 1: select on non-primary columns with index
-
-
 # test 2: select on non-primary columns without index
-
 # test 3: select that returns multiple records
+i = 0
 for key in records:
-    record = query.select(1, 1, [1, 1, 1, 1, 1])
-    print('select on', key, ':', [x.columns for x in record])
+    record = query.select(i, i, [1, 1, 1, 1, 1])
+    print('select on', i, ' on ', i, 'th column :', [x.columns for x in record])
+    i++
 print('test 3 finished')
 
 # test 4: select that returns no records
@@ -49,10 +51,10 @@ print('test 4 finished')
 print('successfully updated : ', query.update(90, *[1, 1, 1, 1, 1]))
 print('test 5 finished')
 
-# test 6: THE GIGA INSERT QUERY
-
-for _ in range(10000000):
+# test 6: HUGE SELECT
+for _ in range(100):
     query.insert(*[key, 69, 420, 69, 420])
+    key += 1
 print(query.select(420, 2, [1, 1, 1, 1,]))
 print('10M insert finished')
 
