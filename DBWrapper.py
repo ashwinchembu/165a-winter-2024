@@ -310,7 +310,6 @@ fillRecordBuffer.argtypes = [POINTER(c_int)]
 getRecordSize = DB.getRecordSize
 getRecordSize.restype =  c_int
 
-print_buffer_vector = DB.print_buffer_vector
 
 def c_intOrZero(number):
     return c_int(number) if isinstance(number, int) else c_int(0)
