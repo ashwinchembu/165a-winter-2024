@@ -125,10 +125,10 @@ RID Table::update(RID &rid, const std::vector<int> &columns) {
 	std::unique_lock update_lock_unique(update_lock);
 	num_update++;
 	const int rid_id = num_update * -1;
-    // if (num_update % MAX_TABLE_UPDATES == 0) {
-    //     std::thread merge_thread = std::thread(&Table::merge, this);
-    //     merge_thread.detach();
-    // }
+    if (num_update % MAX_TABLE_UPDATES == 0) {
+        std::thread merge_thread = std::thread(&Table::merge, this);
+        merge_thread.detach();
+    }
 	update_lock_unique.unlock();
 
 	std::unique_lock page_range_shared(page_range_lock);
