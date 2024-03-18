@@ -35,18 +35,18 @@ print("Insert finished")
 
 # test 3: select that returns multiple records
 for key in records:
-    record = query.select(1, 1, [1, 1, 1, 1])
+    record = query.select(1, 1, [1, 1, 1, 1, 1])
     print('select on', key, ':', [x.columns for x in record])
 print('test 3 finished')
 
 # test 4: select that returns no records
 for key in records:
-    record = query.select(key, 5, [1, 1, 1, 1])
+    record = query.select(key, 5, [1, 1, 1, 1, 1])
     print('select on', key, ': ', [x.columns for x in record])
 print('test 4 finished')
 
 # test 5: update on no record (primary key does not exist in the table)
-print('successfully updated : ', query.update(90, *[1, 1, 1, 1]))
+print('successfully updated : ', query.update(90, *[1, 1, 1, 1, 1]))
 print('test 5 finished')
 
 # test 6: THE GIGA INSERT QUERY
