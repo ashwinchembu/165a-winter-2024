@@ -358,7 +358,9 @@ bool Transaction::run() {
 void Transaction::abort() {
   std::cout << "aborting " << std::this_thread::get_id() << std::endl;
   std::unique_lock lk_shared(db_log.db_log_lock);
+  std::cout << "broken here? 1" << std::endl;
   LogEntry log_entry = db_log.entries.find(xact_id)->second;
+  std::cout << "broken here? 2" << std::endl;
   lk_shared.unlock();
 
   for(size_t i = 0; i < log_entry.queries.size(); i++){ //undo all queries in the transaction
@@ -367,7 +369,7 @@ void Transaction::abort() {
     int base_record_indirection = 0;
     RID most_recent_update = RID(0);
     bool update_written = true;
-
+  std::cout << "broken here? 3" << std::endl;
     switch (type) {
         case OpCode::NOTHING:
             std::cerr << "Query with No type" << std::endl;
@@ -376,14 +378,18 @@ void Transaction::abort() {
             queries[i].q->deleteRecord(queries[i].columns[queries[i].key]);
             break;
         case OpCode::UPDATE: //delete the update
+          std::cout << "broken here? 4" << std::endl;
             {
               std::unique_lock page_directory_shared(queries[i].table->page_directory_lock);
               base_rid = queries[i].table->page_directory.find(queries[i].columns[queries[i].key])->second;
+              std::cout << "broken here? 5" << std::endl;
               page_directory_shared.unlock();
 
               base_record_indirection = buffer_pool.get(base_rid, INDIRECTION_COLUMN);
+              std::cout << "broken here? 6" << std::endl;
               page_directory_shared.lock();
               most_recent_update = queries[i].table->page_directory.find(base_record_indirection)->second;
+              std::cout << "broken here? 7" << std::endl;
               page_directory_shared.unlock();
             }
 
@@ -397,20 +403,21 @@ void Transaction::abort() {
                     }
                 }
             }
-
+  std::cout << "broken here? 8" << std::endl;
             if (update_written) {
 
               int second_most_recent_update = buffer_pool.get(most_recent_update, INDIRECTION_COLUMN);
-
+std::cout << "broken here? 9" << std::endl;
               std::unique_lock page_directory_unique(queries[i].table->page_directory_lock);
               queries[i].table->page_directory[most_recent_update.id].id = 0; //delete in page directory
               page_directory_unique.unlock();
-
+std::cout << "broken here? 10" << std::endl;
               buffer_pool.pin(base_rid, SCHEMA_ENCODING_COLUMN);
               buffer_pool.set(base_rid, INDIRECTION_COLUMN, second_most_recent_update, false); //fix indirection
               buffer_pool.unpin(base_rid, SCHEMA_ENCODING_COLUMN);
               break;
             }
+            std::cout << "broken here? 11" << std::endl;
         default:
             break;
     }
@@ -418,7 +425,9 @@ void Transaction::abort() {
 
   std::unique_lock lk(db_log.db_log_lock);
   db_log.entries.erase(xact_id);
+  std::cout << "broken here? 12" << std::endl;
   lk.unlock();
+  std::cout << "broken here? 13" << std::endl;
 }
 
 void Transaction::commit() {
