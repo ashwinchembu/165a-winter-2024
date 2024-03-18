@@ -199,5 +199,6 @@ transaction_workers[2].run()
 transaction_workers[0].join()
 transaction_workers[1].join()
 transaction_workers[2].join()
+print('test 11 finished')
 
 db.close()
