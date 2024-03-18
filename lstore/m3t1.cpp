@@ -24,7 +24,7 @@ bool test2 = false;
 int number_of_records = 10000;
 int number_of_transactions = 100;
 int number_of_operations_per_record = 1;
-int num_threads = 35;
+int num_threads = 8;
 int number_of_aggregates = 100;
 int aggregate_size = 100;
 
