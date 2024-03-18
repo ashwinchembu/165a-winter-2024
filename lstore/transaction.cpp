@@ -264,7 +264,8 @@ bool Transaction::run() {
               release_locks(queries[j].table->name);
             }
             unique_lock.unlock();
-            return false;
+            // If we fail here it means some other thread already inserted or inserting a record with same key.
+            return true;
           }
           unique_lock.unlock();
           break;
