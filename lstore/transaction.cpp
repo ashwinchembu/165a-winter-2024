@@ -372,9 +372,11 @@ void Transaction::abort() {
   std::cout << "broken here? 3" << std::endl;
     switch (type) {
         case OpCode::NOTHING:
+          std::cout << "broken here? 3.5" << std::endl;
             std::cerr << "Query with No type" << std::endl;
             break;
         case OpCode::INSERT: //delete the newly added record
+          std::cout << "broken here? 3.75" << std::endl;
             queries[i].q->deleteRecord(queries[i].columns[queries[i].key]);
             break;
         case OpCode::UPDATE: //delete the update
