@@ -53,9 +53,10 @@ print('test 5 finished')
 
 # test 6: HUGE SELECT
 for _ in range(100):
-    query.insert(*[key, 69, 420, 69, 420])
     key += 1
-print(query.select(420, 2, [1, 1, 1, 1, 1]))
+    query.insert(*[key, 69, 420, 69, 420])
+record = query.select(420, 2, [1, 1, 1, 1, 1])
+print('selected records :', [x.columns for x in record])
 print('test 6 finished')
 
 db.close()
