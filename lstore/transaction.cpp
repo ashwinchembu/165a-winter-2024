@@ -376,7 +376,11 @@ void Transaction::abort() {
         case OpCode::UPDATE: //delete the update
             { std::cout << "broken here 1" << std::endl;
               std::unique_lock page_directory_shared(queries[i].table->page_directory_lock);
-              base_rid = queries[i].table->page_directory.find(queries[i].columns[queries[i].key])->second;
+              std::vector<int> found = queries[i].table->index->locate(queries[i].table->key, queries[i].key);
+              if (found.size() == 0) {
+                break;
+              }
+              base_rid = queries[i].table->page_directory.find(found[0])->second;
               page_directory_shared.unlock();
   std::cout << "broken here 2" << std::endl;
               base_record_indirection = buffer_pool.get(base_rid, INDIRECTION_COLUMN);
