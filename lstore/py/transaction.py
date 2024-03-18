@@ -28,17 +28,17 @@ class Transaction:
         if queryCode == Query.insert.__code__:
 
             Transaction_add_query_insert(self.selfPtr, queryObj.selfPtr,
-                    table.selfPtr, fillAndReturnIntBuffer_Insert(args))
+                    table.selfPtr, fillAndReturnIntBuffer(args))
            
         elif queryCode == Query.update.__code__:
 
             Transaction_add_query_update(self.selfPtr,queryObj.selfPtr,
-                    table.selfPtr,args[0],fillAndReturnIntBuffer(args[1]))
+                    table.selfPtr,args[0],fillAndReturnIntBuffer(args[1 : len(args)]))
          
         elif queryCode == Query.select.__code__:
             
             Transaction_add_query_select(self.selfPtr,queryObj.selfPtr,
-                    table.selfPtr,args[0],args[1],fillAndReturnIntBuffer(args[2]))
+                    table.selfPtr,args[0],args[1],fillAndReturnIntBuffer(args[2 : len(args)]))
       
         elif queryCode == Query.select_version.__code__:
             
