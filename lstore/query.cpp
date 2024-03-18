@@ -90,6 +90,7 @@ std::vector<Record> Query::select_version(const int& search_key, const int& sear
             records.push_back(Record(rids[i], search_key, record_columns)); //add a record with RID of base page, value of primary key, and contents of desired version
         }
     }
+    std::cout << "[" << records[0].columns[0] << " " << records[0].columns[1] <<  " " << records[0].columns[2] <<  " " << records[0].columns[3] <<  " " << records[0].columns[4] << "]" << std::endl;
     return records;
 }
 
