@@ -465,31 +465,31 @@ void Table::PrintLineage() {
     }
 }
 
-std::string metacols[6] = {"INDIR", "RID", "TIME", "SCHEM", "BASE", "TPS"};
+bool sorter(const std::pair<int, RID>& a, const std::pair<int, RID>& b) {
+    return a.first < b.first; // Sort based on the first element of the pair (int)
+}
 
 void Table::PrintTable() {
-    int row = 0;
-    for (auto &rid : page_directory) {
+	std::vector<std::pair<int, RID>> pd
+		        (this->page_directory.begin(),this->page_directory.end());
 
-        if (row % 50 == 0) {
+	std::sort(pd.begin(), pd.end(),sorter);
 
-            printf("\n\n");
+	int lines = 0;
 
-            for (int i = 0; i < 6; i++) {
-                printf("%15s", metacols[i].c_str());
-            }
+	for(auto& e: pd){
+		if(lines++ % 50 ==0){
+			std::printf("\n%-10s%-10s%-10s%-10s%-10s%-10s\n\n","INDIR","RID","TIME","SCHEM","BASE","TPS");
+		}
 
-            printf("\n\n");
-        }
+		for(int i = 0;i<NUM_METADATA_COLUMNS+num_columns;i++){
+			printf("%-10d",buffer_pool.get(e.second,i));
+		}
 
-        row++;
+		printf("\n");
+	}
 
-        for (int i = 0; i < NUM_METADATA_COLUMNS + num_columns; i++) {
-            printf("%15d", buffer_pool.get(rid.second, i));
-        }
-
-        printf("\n");
-    }
+	printf("\n");
 }
 
 COMPILER_SYMBOL int *Record_constructor(const int rid_in, const int key_in, int *columns_in) {
