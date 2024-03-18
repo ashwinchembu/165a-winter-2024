@@ -39,7 +39,7 @@ for key in records:
     record = query.select(i, i, [1, 1, 1, 1, 1])
     print('select on', i, ' on ', i, 'th column :', [x.columns for x in record])
     i += 1
-print('test 3 finished')
+print('test 1,2,3 finished')
 
 # test 4: select that returns no records
 for key in records:
@@ -55,7 +55,7 @@ print('test 5 finished')
 for _ in range(100):
     query.insert(*[key, 69, 420, 69, 420])
     key += 1
-print(query.select(420, 2, [1, 1, 1, 1,]))
-print('10M insert finished')
+print(query.select(420, 2, [1, 1, 1, 1, 1]))
+print('test 6 finished')
 
 db.close()
