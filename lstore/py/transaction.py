@@ -53,7 +53,7 @@ class Transaction:
       
         elif queryCode == Query.sum_version.__code__:
             
-            Transaction_add_query_sum_version(self.selfPtr,query.selfPtr,
+            Transaction_add_query_sum_version(self.selfPtr,queryObj.selfPtr,
             table.selfPtr,args[0],args[1],args[2],args[3])
      
         # self.queries.append((query, args))
