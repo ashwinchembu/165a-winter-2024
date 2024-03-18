@@ -310,6 +310,8 @@ fillRecordBuffer.argtypes = [POINTER(c_int)]
 getRecordSize = DB.getRecordSize
 getRecordSize.restype =  c_int
 
+print_buffer_vector = DB.print_buffer_vector
+
 def c_intOrZero(number):
     return c_int(number) if isinstance(number, int) else c_int(0)
 
@@ -319,22 +321,32 @@ def c_intOrUnreasonable(number):
 #pass a list of ints to this function to get a pointer
 #to a c++ vector ptr of ints. no need to delete the vector.
 #Elements of None are given an extreme value
-def fillAndReturnIntBuffer(*args):
-    lst = list(args)
+def fillAndReturnIntBuffer(args):
+    # lst = list(args)
+    #
+    # if len(args) == 1:
+    #     lst = list(args[0])
+    #
+    # print(args)
+    #
+    #
+    # lst = list(args)
     erase_buffer_vector()
-    for i in lst:
+    for i in args:
         add_to_buffer_vector(c_intOrUnreasonable(i))
         
     return get_buffer_vector()
 
+def fillAndReturnIntBuffer_Insert(args):
 
-def fillAndReturnIntBuffer_Insert(*args):
-    lst = list(args[0])
     erase_buffer_vector()
-    for i in lst:
+    for i in args:
         add_to_buffer_vector(c_intOrUnreasonable(i))
 
     return get_buffer_vector()
+
+
+
 
 
 # Functions from page.cpp
