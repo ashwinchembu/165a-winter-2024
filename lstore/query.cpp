@@ -56,6 +56,9 @@ std::vector<Record> Query::select(const int& search_key, const int& search_key_i
 std::vector<Record> Query::select_version(const int& search_key, const int& search_key_index, const std::vector<int>& projected_columns_index, const int& _relative_version) {
     const int relative_version = _relative_version * (-1);
     std::vector<Record> records;
+    if (search_key_index >= table->num_columns) {
+        return std::vector<Record>{};
+    }
     std::vector<int> rids = table->index->locate(search_key_index, search_key); //this returns the RIDs of the base pages
     for(size_t i = 0; i < rids.size(); i++){ //go through each matching RID that was returned from index
         std::shared_lock page_directory_shared(table->page_directory_lock);
@@ -141,6 +144,9 @@ unsigned long int Query::sum(const int& start_range, const int& end_range, const
 }
 
 unsigned long int Query::sum_version(const int& start_range, const int& end_range, const int& aggregate_column_index, const int& _relative_version) {
+    if (aggregate_column_index >= table->num_columns) {
+        return NONE;
+    }
     const int relative_version = _relative_version * (-1);
     unsigned long int sum = 0;
     std::vector<int> rids = table->index->locate_range(start_range, end_range, table->key);
