@@ -126,8 +126,8 @@ RID Table::update(RID &rid, const std::vector<int> &columns) {
 	num_update++;
 	const int rid_id = num_update * -1;
     if (num_update % MAX_TABLE_UPDATES == 0) {
-
-        merge();
+        std::thread merge_thread = std::thread(&Table::merge, this);
+        merge_thread.detach();
     }
 	update_lock_unique.unlock();
 
