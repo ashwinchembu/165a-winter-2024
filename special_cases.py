@@ -35,7 +35,7 @@ print("Insert finished")
 
 # test 3: select that returns multiple records
 for key in records:
-    record = query.select(key, 0, [1, 1, 1, 1])
+    record = query.select(1, 1, [1, 1, 1, 1])
     print('select on', key, ':', [x.columns for x in record])
 print('test 3 finished')
 
