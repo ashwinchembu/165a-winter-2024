@@ -192,50 +192,6 @@ std::string BufferPool::buildDatPath(std::string tname,int first_rid_page,int fi
 	return buildPath;
 }
 
-std::string BufferPool::buildTxtPath(std::string tname,int first_rid_page,int first_rid_page_range,int column){
-	char ret[2048];
-	char* ptr =  ret;
-
-	bool isBase = false;
-
-	if(!textOutputEnabled){
-		struct stat checkTextDir;
-
-		if(stat(textPath.c_str(),&checkTextDir)!=0
-			|| !S_ISDIR(checkTextDir.st_mode)){
-			mkdir(textPath.c_str(),0777);
-		}
-
-		textOutputEnabled = true;
-	}
-
-	ptr+=sprintf(ptr,"%s/",textPath.c_str());
-
-	ptr += sprintf(ptr, "%-10s%-40s%-10s", "NAME_",tname.c_str(),"TYPE_");
-
-	if(column < NUM_METADATA_COLUMNS){
-		ptr+= sprintf(ptr,"%-10s","META");
-
-	} else if(first_rid_page < 0){
-		ptr+= sprintf(ptr,"%-10s","TAIL");
-
-	} else if(first_rid_page > 0){
-		ptr+= sprintf(ptr,"%-10s","BASE");
-		isBase = true;
-	}
-
-	ptr+=sprintf(ptr,"%-10s%-10d%-10s%-10d%-10s%-10d","FRP_",first_rid_page,"FRPR_",first_rid_page_range,
-			"COL_",column);
-
-	if(isBase){
-		ptr+=sprintf(ptr,"%-10s%-10lld","MERGE_",tableVersions.find(tname)->second);
-	}
-
-	sprintf(ptr, ".txt");
-
-	return {ret};
-}
-
 // Called by get and set
 Frame* BufferPool::load (const RID& rid, const int& column){ //return the frame that the page was loaded into
   std::string data_path = buildDatPath(rid.table_name,rid.first_rid_page,

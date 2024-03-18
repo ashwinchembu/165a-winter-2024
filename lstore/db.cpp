@@ -21,7 +21,6 @@ Log db_log;
 
 Database::Database() {
 	buffer_pool.set_path(file_path);
-	buffer_pool.textPath = file_path + "/TextOutput";
 
 	struct stat checkDir;
 
@@ -39,7 +38,6 @@ void Database::open(const std::string& path) {
 	file_path = path;
 
 	buffer_pool.set_path(file_path);
-	buffer_pool.textPath = file_path + "/TextOutput";
 
 	struct stat checkDir;
 

@@ -172,7 +172,7 @@ RID Table::update(RID &rid, const std::vector<int> &columns) {
             // load all of the pages in pagerange into bufferpool
         }
 
-        for (int i = 0; i < rids_in_range.size(); i++) {
+        for (size_t i = 0; i < rids_in_range.size(); i++) {
             for (int to_load_tail_page_col = 0; to_load_tail_page_col < num_columns + NUM_METADATA_COLUMNS; to_load_tail_page_col++) {
                 Frame *new_frame = buffer_pool.get_page(rids_in_range[i], to_load_tail_page_col);
                 // Page *page_copy = new_frame->page;
@@ -305,14 +305,13 @@ int Table::merge() {
     mergeBufferPool->tableVersions.insert({name, baseVersion + 1});
 
     mergeBufferPool->set_path(buffer_pool.path);
-    mergeBufferPool->textPath = buffer_pool.textPath;
 
     struct stat checkDir;
     if (stat(mergeBufferPool->path.c_str(), &checkDir) != 0 || !S_ISDIR(checkDir.st_mode)) {
         mkdir(mergeBufferPool->path.c_str(), 0777);
     }
 
-    for (int i = 0; i < to_merge.size(); i++) {
+    for (size_t i = 0; i < to_merge.size(); i++) {
         if (to_merge[i]->first_rid_page_range) {
 
             RID new_rid(to_merge[i]->first_rid_page, to_merge[i]->first_rid_page_range, to_merge[i]->first_rid_page, 0, name);

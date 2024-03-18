@@ -7,7 +7,6 @@
 
 
 TransactionWorker::TransactionWorker () {
-    transactions.resize(MAX_THREADS);
 }
 
 TransactionWorker::~TransactionWorker () {
