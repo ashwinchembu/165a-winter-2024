@@ -253,6 +253,9 @@ Table_num_columns=DB.Table_num_columns
 Table_num_columns.restype = c_int
 Table_num_columns.argtypes = [POINTER(c_int)]
 
+Table_print_table=DB.Table_print_table
+Table_print_table.argtypes = [POINTER(c_int)]
+
 #Toolkit.cpp
 
 cpp_unreasonable_number = DB.cpp_unreasonable_number
