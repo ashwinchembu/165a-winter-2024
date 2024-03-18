@@ -260,7 +260,7 @@ bool Transaction::run() {
       switch(q.type){
         case OpCode::INSERT:
           if (!(lock_unique_key(q.table->name, q.columns[q.table->key]))) {
-            for (int j = i; j >= 0; j--) {
+            for (int j = i - 1; j >= 0; j--) {
               release_locks(queries[j].table->name);
             }
             unique_lock.unlock();
@@ -272,7 +272,7 @@ bool Transaction::run() {
 
         case OpCode::UPDATE:
           if (!(lock_unique_key(q.table->name, q.key))) {
-            for (int j = i; j >= 0; j--) {
+            for (int j = i - 1; j >= 0; j--) {
               release_locks(queries[j].table->name);
             }
             unique_lock.unlock();
@@ -282,7 +282,7 @@ bool Transaction::run() {
           if(q.columns[q.table->key] >= NONE && q.columns[q.table->key] != q.key){
             if (!(lock_unique_key(q.table->name, q.columns[q.table->key]))) {
               // If we fail to acquire lock here, some other thread is probably using the "existing" primary key
-              for (int j = i; j >= 0; j--) {
+              for (int j = i - 1; j >= 0; j--) {
                 release_locks(queries[j].table->name);
               }
               unique_lock.unlock();
@@ -294,7 +294,7 @@ bool Transaction::run() {
 
         case OpCode::INCREMENT:
           if (!(lock_unique_key(q.table->name, q.key))) {
-            for (int j = i; j >= 0; j--) {
+            for (int j = i - 1; j >= 0; j--) {
               release_locks(queries[j].table->name);
             }
             unique_lock.unlock();
@@ -306,7 +306,7 @@ bool Transaction::run() {
         case OpCode::SELECT:
         case OpCode::SELECT_VER:
           if (!(lock_shared_key(q.table->name, q.key))) {
-            for (int j = i; j >= 0; j--) {
+            for (int j = i - 1; j >= 0; j--) {
               release_locks(queries[j].table->name);
             }
             unique_lock.unlock();
@@ -320,7 +320,7 @@ bool Transaction::run() {
           end = q.end_range;
           for (int k = q.start_range; k <= end; k++) {
             if (!(lock_shared_key(q.table->name, k))) {
-              for (int j = i; j >= 0; j--) {
+              for (int j = i - 1; j >= 0; j--) {
                 release_locks(queries[j].table->name);
               }
               unique_lock.unlock();

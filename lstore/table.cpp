@@ -223,9 +223,9 @@ int Table::write(FILE *fp) {
 // }
 
 int Table::read(FILE *fp) {
-    fread(&baseVersion, sizeof(long long int), 1, fp);
+    size_t e = fread(&baseVersion, sizeof(long long int), 1, fp);
 
-    size_t e = fread(&key, sizeof(int), 1, fp);
+    e = e + fread(&key, sizeof(int), 1, fp);
     e = e + fread(&num_columns, sizeof(int), 1, fp);
     e = e + fread(&num_update, sizeof(int), 1, fp);
     e = e + fread(&num_insert, sizeof(int), 1, fp);
