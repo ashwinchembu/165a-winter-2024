@@ -15,16 +15,17 @@ OBJS = $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(SRCS))
 
 # Executable name
 EXE_NAME = tester
+OPTIMIZATION := -Ofast -flto=auto -march=native -fopenmp -D_GLIBCXX_PARALLEL -frename-registers -funroll-loops
 
 .PHONY: all clean
 
 all: $(BIN_DIR)/$(EXE_NAME)
 
 $(BIN_DIR)/$(EXE_NAME): $(OBJS) | $(BIN_DIR)
-	$(CXX) $(CXXFLAGS) $^ -o $@
+	$(CXX) $(CXXFLAGS) $^ -o $@ $(OPTIMIZATION)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp | $(OBJ_DIR)
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) -c $< -o $@ $(OPTIMIZATION)
 
 $(BIN_DIR):
 	mkdir -p $(BIN_DIR)
