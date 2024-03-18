@@ -465,7 +465,7 @@ void Table::PrintLineage() {
     }
 }
 
-bool sorter(const std::pair<int, RID>& a, const std::pair<int, RID>& b) {
+bool sorter2(const std::pair<int, RID>& a, const std::pair<int, RID>& b) {
     return a.first < b.first; // Sort based on the first element of the pair (int)
 }
 
@@ -473,7 +473,7 @@ void Table::PrintTable() {
 	std::vector<std::pair<int, RID>> pd
 		        (this->page_directory.begin(),this->page_directory.end());
 
-	std::sort(pd.begin(), pd.end(),sorter);
+	std::sort(pd.begin(), pd.end(),sorter2);
 
 	int lines = 0;
 
