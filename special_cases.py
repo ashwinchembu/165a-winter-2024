@@ -56,7 +56,7 @@ for _ in range(100):
     key += 1
     query.insert(*[key, 69, 420, 69, 420])
 record = query.select(420, 2, [1, 1, 1, 1, 1])
-print('selected records :', [x.columns for x in record])
+print('number of selected records : ', len(record), '/100')
 print('test 6 finished')
 
 db.close()
