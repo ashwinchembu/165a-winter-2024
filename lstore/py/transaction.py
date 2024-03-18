@@ -43,8 +43,8 @@ class Transaction:
         elif queryCode == Query.select_version.__code__:
             
             Transaction_add_query_select_version(self.selfPtr,queryObj.selfPtr,
-                    table.selfPtr,args[0],args[1],fillAndReturnIntBuffer(args[2]),
-                    args[3])
+                    table.selfPtr,args[0],args[1],fillAndReturnIntBuffer(args[2 : (len(args) - 1)]),
+                    args[len(args) - 1])
  
         elif queryCode == Query.sum.__code__:
             
