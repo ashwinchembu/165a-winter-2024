@@ -377,7 +377,7 @@ void Transaction::abort() {
             break;
         case OpCode::INSERT: //delete the newly added record
           std::cout << "broken here? 3.75" << std::endl;
-            queries[i].q->deleteRecord(queries[i].columns[queries[i].key]);
+          //  queries[i].q->deleteRecord(queries[i].columns[queries[i].key]);
             break;
         case OpCode::UPDATE: //delete the update
           std::cout << "broken here? 4" << std::endl;
