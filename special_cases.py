@@ -38,7 +38,7 @@ i = 0
 for key in records:
     record = query.select(i, i, [1, 1, 1, 1, 1])
     print('select on', i, ' on ', i, 'th column :', [x.columns for x in record])
-    i++
+    i += 1
 print('test 3 finished')
 
 # test 4: select that returns no records
